@@ -1,7 +1,7 @@
 Requirements
 ------------
 
-This module requires CVS Drupal as of May 2003. Drupal 4.2 will be sufficient also.
+This module requires Drupal 4.3.0.
 
 Installation
 ------------
@@ -13,7 +13,7 @@ Installation
 Notes
 -----
 
-Anyone with 'administer nodes' permission will be able to adaministrate schedules.
+Anyone with 'administer nodes' permission will be able to administer schedules.
 
 Authors
 -------
