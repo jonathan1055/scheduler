@@ -1,13 +1,13 @@
 <?php
   
   function scheduler_system($field){
-    $system["description"] = t("A module to schedule node publishing.");
+    $system["description"] = t("A module to schedule node (un)publishing.");
     return $system[$field];
   }
   
   function scheduler_link($type, $node = 0, $main = 0) {
     
-    if ($type == "admin" && user_access("administer nodes")) {
+    if ($type == "system" && user_access("administer nodes")) {
       $help["scheduler"] = t("The scheduler is a tool for automatically publishing and unpublishing posts at a particular time in the future.");
       menu("admin/node/scheduler", t("schedule"), "scheduler_admin", $help["scheduler"], 8);
     }  
@@ -138,7 +138,7 @@
     if ($pager = pager_display(NULL, 50, 0, "admin")) {
       $rows[] = array(array("data" => $pager, "colspan" => 6));
     }
-    print table($header, $rows);
+    return table($header, $rows);
   }  
   
 ?>
