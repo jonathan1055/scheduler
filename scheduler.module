@@ -14,7 +14,7 @@
   }
   
   function scheduler_write($node, $op, $arg) {
-    if (user_access("administer nodes" && ($node->timestamp_hidden || $node->timestamp_posted))) {
+    if (user_access("administer nodes") && ($node->timestamp_hidden || $node->timestamp_posted)) {
       if ($node->timestamp_hidden) {
         $conds["timestamp_hidden"] = strtotime($node->timestamp_hidden);
       }
@@ -105,8 +105,9 @@
     $sql = "SELECT n.nid, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid ORDER BY s.nid DESC";
     $result = db_query($sql);
     while ($node = db_fetch_object($result)) {
+      // current logic is "If we are past the hide time, hide the node". Same for 'post', which takes precedence over hide. this logic may be suboptimum.
       db_query("UPDATE node SET status = '0' WHERE $node->timestamp_hidden > 0 AND $node->timestamp_hidden < ".time());
-      db_query("UPDATE node SET created = $node->timestamp_posted, changed = $node->timestamp_posted, status = 1 WHERE $ndoe->timestamp_posted > 0 AND $node->timestamp_posted < ".time());
+      db_query("UPDATE node SET created = $node->timestamp_posted, changed = $node->timestamp_posted, status = '1' WHERE $node->timestamp_posted > 0 AND $node->timestamp_posted < ".time());
     }  
   }
   
