@@ -93,7 +93,8 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           if (!checkdate($node->scheduler_post_month, $node->scheduler_post_day, $node->scheduler_post_year)) {
             form_set_error('scheduler_post', t('Invalid scheduled post date set; automatically adjusted'));
             $error['scheduler_post'] = theme('error', t('Invalid date set, automatically adjusted'));
-          } else {
+          }
+          else {
             $post_date = scheduler_nodetime($node, 'post');
             if (time() > $post_date) {
               form_set_error('scheduler_post', t('Scheduled post date in the past'));
@@ -110,7 +111,8 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           if (!checkdate($node->scheduler_hide_month, $node->scheduler_hide_day, $node->scheduler_hide_year)) {
             form_set_error('scheduler_hide', t('Invalid scheduled hide date set; automatically adjusted'));
             $error["scheduler_hide"] = theme("error", t('Invalid date set, automatically adjusted'));
-          } else {
+          }
+          else {
             $hide_date = scheduler_nodetime($node, 'hide');
             if (time() > $hide_date) {
               form_set_error('scheduler_hide', t('Scheduled hide date in the past'));
