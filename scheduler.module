@@ -199,7 +199,7 @@
       $rows[] = array(($node->status ? l($node->title, "node/view/$node->nid") : $node->title), format_name($node), $node->timestamp_posted ? format_date($node->timestamp_posted) : "&nbsp;", $node->timestamp_hidden ? format_date($node->timestamp_hidden) : "&nbsp;", l(t("edit node"), "admin/node/edit/$node->nid"), l(t("delete node"), "admin/node/delete/$node->nid"));
     }
 
-    if ($pager = pager_display(NULL, 50, 0, "admin", tablesort_pager())) {
+    if ($pager = theme("pager", NULL, 50, 0, tablesort_pager())) {
       $rows[] = array(array("data" => $pager, "colspan" => 6));
     }
     print theme("page", theme("table", $header, $rows));
