@@ -107,7 +107,7 @@
           // Form element specs (time, enabled, title, description)
           $form_elements = array(
             "scheduler_post" => array(time(), FALSE, t("Automatically post document"), t("The date at which your document will be automatically posted.  Do not check the enabling checkbox, if you don't want to schedule this document.")),
-            "scheduler_hide" => array(time(), FALSE, t("Automatically post document"), t("The date at which your document will be automatically hidden.  Do not check the enabling checkbox, if you don't want to schedule this document."))
+            "scheduler_hide" => array(time(), FALSE, t("Automatically hide document"), t("The date at which your document will be automatically hidden.  Do not check the enabling checkbox, if you don't want to schedule this document."))
           );
 
           // Override the date in case we have some previously set data (from form or DB)
