@@ -2,7 +2,7 @@ Readme
 ------
 
 This module adds scheduled publish/unpublish capability to Drupal.
-Specifically, two input boxes are added to node forms for automatically
+Specifically, two dropdowns are added to node forms for automatically
 publishing or unpublishing a node at some future date. The actual
 publish/unpublish operation is handled by Drupal's cron hook.
 
