@@ -202,7 +202,7 @@
     if ($pager = pager_display(NULL, 50, 0, "admin", tablesort_pager())) {
       $rows[] = array(array("data" => $pager, "colspan" => 6));
     }
-    return table($header, $rows);
+    return theme("table", $header, $rows);
   }  
   
   // Generates a range for dates between $start and $end, but
