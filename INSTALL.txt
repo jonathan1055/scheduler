@@ -20,5 +20,6 @@ permissions will be able to administrate schedules.
 Authors
 -------
 
-Moshe Weitzman <weitzman [at] tejasa.com> and
+Moshe Weitzman <weitzman [at] tejasa.com>
 Gabor Hojtsy <goba [at] php.net>
+Tom Dobes <tomdobes [at] purdue.edu>
