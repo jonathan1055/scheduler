@@ -1,0 +1,27 @@
+Requirements
+------------
+
+This module requires CVS Drupal as of May 2003. Drupal 4.2 will be sufficient also.
+
+This module is only useful with Mozilla and Netscape 6 browsers. The module
+tries to detect if an incompatible browser is being used and prints
+appropriate errors in such case.
+
+
+Installation
+------------
+
+1. Copy the scheduler.module to the Drupal modules/ directory. Activate the module in the admin/node/modules page
+
+2. Run the scheduler.mysql file to create the necessary database table.
+
+Notes
+-----
+
+Anyone with 'administer nodes' permission is able to use scheduler.
+
+Author
+------
+
+Moshe Weitzman <weitzman@tejasa.com>
+

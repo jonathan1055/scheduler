@@ -1,0 +1,126 @@
+<?php
+  
+  function scheduler_system($field){
+    $system["description"] = t("A module to schedule node publishing.");
+    return $system[$field];
+  }
+  
+  function scheduler_link($type, $node = 0, $main = 0) {
+    
+    if ($type == "admin" && user_access("administer nodes")) {
+      $help["scheduler"] = "The scheduler is a tool for automatically publishing and unpublishing posts at a particular time in the future.";
+      menu("admin/node/scheduler", "schedule", "scheduler_admin", $help["scheduler"], 8);
+    }  
+  }
+  
+  function scheduler_write($node, $op, $arg) {
+    if (user_access("administer nodes" && ($node->timestamp_hidden || $node->timestamp_posted))) {
+      if ($node->timestamp_hidden) {
+        $conds["timestamp_hidden"] = strtotime($node->timestamp_hidden);
+      }
+      else {
+        $conds["timestamp_hidden"] = 0;
+      }
+      if ($node->timestamp_posted) {
+        $conds["timestamp_posted"] = strtotime($node->timestamp_posted);
+      }
+      else {
+        $conds["timestamp_posted"] = 0;
+      }
+      
+      if ($op !== "insert") {
+        //determine whether we must UPDATE or INSERT, then do it
+        $sql = "SELECT * FROM scheduler WHERE nid = $node->nid";
+        $result = db_query($sql);
+        if (db_num_rows($result)) {
+          foreach ($conds as $key => $value) {
+            $conds2[] = "$key=$value";
+          }
+          $sql = "UPDATE scheduler SET ". implode(", ", $conds2). " WHERE nid = $node->nid";  
+          db_query($sql);
+        }
+        else {
+          scheduler_insert($node, $conds);
+        }
+      }  
+      else {
+        scheduler_insert($node, $conds);
+      }  
+    }
+  }
+  
+  function scheduler_insert($node, $conds) {
+    $conds["nid"] = $node->nid;
+    $sql = "INSERT scheduler (". implode(", ", array_keys($conds)). ") VALUES (". implode(", ", array_values($conds)). ")";
+    db_query($sql);
+  }  
+
+  function scheduler_nodeapi(&$node, $op, &$arg) {
+    global $error;
+    switch ($op) {
+      case "validate":
+        
+        if (user_access("administer nodes")) {
+          if ($node->timestamp_posted) {
+            if (strtotime($node->timestamp_posted) === -1) {
+              $error["timestamp_posted"] = theme("theme_error", t("Invalid date format"));
+            }  
+          }
+          
+          if ($node->timestamp_hidden) {
+            if (strtotime($node->timestamp_hidden) === -1) {
+              $error["timestamp_hidden"] = theme("theme_error", t("Invalid date format"));
+            }
+          }
+          return $error;
+        }  
+        break;
+      case "insert":
+        scheduler_write($node, $op, $arg);
+        break;
+      case "update":
+        scheduler_write($node, $op, $arg);
+        break;
+      case "form admin":
+        if ($node->nid) {
+          $sql = "SELECT timestamp_hidden, timestamp_posted FROM scheduler WHERE nid = '$node->nid'";
+          $result = db_query($sql);
+          $schedule = db_fetch_object($result);
+          if ($schedule->timestamp_posted) {
+            $node->timestamp_posted = format_date($schedule->timestamp_posted);
+          }
+          if ($schedule->timestamp_hidden) {
+            $node->timestamp_hidden = format_date($schedule->timestamp_hidden);
+          }
+        }
+      
+        $form .= form_textfield("Automatically post document", "timestamp_posted", ($node->timestamp_posted ? $node->timestamp_posted : ""), 30, 55, $error["timestamp_posted"] ? $error["timestamp_posted"] : "The date at which your document will be automatically posted.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '". date("j F Y G:i") ."', '". date("m/d/y H:i") ."', '". date("F j, Y H:i") ."', 1 week, ...");
+        $form .= form_textfield("Automatically hide document", "timestamp_hidden", ($node->timestamp_hidden ? $node->timestamp_hidden : ""), 30, 55, $error["timestamp_hidden"] ? $error["timestamp_hidden"] : "The date at which your document will be automatically hidden.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '". date("j F Y G:i") ."', '". date("m/d/y H:i") ."', '". date("F j, Y H:i") ."', next Thursday, ...");
+        return $form;
+    }
+  }
+  
+  function scheduler_cron() {
+    // TODO: add a watchdog entry to say which node we enabled/disabled
+    db_query("UPDATE node SET status = 0 WHERE timestamp_hidden > 0 AND timestamp_hidden < ".time());
+    db_query("UPDATE node SET created = timestamp_posted, changed = timestamp_posted, status = 1 WHERE timestamp_posted > 0 AND timestamp_posted < ".time());
+  }
+  
+  //TODO: currently sorted by 'furthest in the future'. provide more options for sorting and filtering
+  function scheduler_admin() {
+    
+    $sql = "SELECT n.nid, n.uid, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid LEFT JOIN users u ON n.uid = u.uid ORDER BY GREATEST(s.timestamp_hidden, s.timestamp_posted) DESC";
+    $result = pager_query($sql);
+    
+    $header = array(t("title"), t("author"), t("post"), t("hide"), array("data" => t("operations"), "colspan" => 2));
+    while ($node = db_fetch_object($result)) {
+      $rows[] = array(l($node->title, "node/view/$node->nid"), format_name($node), $node->timestamp_posted ? format_date($node->timestamp_posted) : "&nbsp;", $node->timestamp_hidden ? format_date($node->timestamp_hidden) : "&nbsp;", l(t("edit node"), "admin/node/edit/$node->nid"), l(t("delete node"), "admin/node/delete/$node->nid"));
+    }
+
+    if ($pager = pager_display(NULL, 50, 0, "admin")) {
+      $rows[] = array(array("data" => $pager, "colspan" => 6));
+    }
+    print table($header, $rows);
+  }  
+  
+?>
