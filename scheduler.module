@@ -115,21 +115,21 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           "scheduler_hide" => array(time(), FALSE, t("Automatically hide document"), t("The date at which your document will be automatically hidden.  Do not check the enabling checkbox, if you don't want to schedule this document."))
         );
 
-        // Preserve data set in the form
-        $inform = FALSE;
-        if ($node->scheduler_post) {
-          $form_elements['scheduler_post'][0] = scheduler_nodetime($node, "post");
-          $form_elements['scheduler_post'][1] = TRUE;
-          $inform = TRUE;
-        }
-        if ($node->scheduler_hide) {
-          $form_elements['scheduler_hide'][0] = scheduler_nodetime($node, "hide");
-          $form_elements['scheduler_hide'][1] = TRUE;
-          $inform = TRUE;
+        // Get edit information from post if possible
+        if (isset($_POST['edit']) && count($_POST['edit'])) {
+          $edit = (object) $_POST['edit'];
+          if ($edit->scheduler_post) {
+            $form_elements['scheduler_post'][0] = scheduler_nodetime($edit, "post");
+            $form_elements['scheduler_post'][1] = TRUE;
+          }
+          if ($edit->scheduler_hide) {
+            $form_elements['scheduler_hide'][0] = scheduler_nodetime($edit, "hide");
+            $form_elements['scheduler_hide'][1] = TRUE;
+          }
         }
         
-        // Preserve the data set in the DB (if the form have not overriden that)
-        if (!$inform && $node->nid) {
+        // Preserve the data set in the DB (if there was no form)
+        elseif ($node->nid) {
           $result = db_query("SELECT timestamp_hidden, timestamp_posted FROM {scheduler} WHERE nid = %d", $node->nid);
           $schedule = db_fetch_object($result);
           if ($schedule->timestamp_posted) {
@@ -141,7 +141,7 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
             $form_elements['scheduler_hide'][1] = TRUE;
           }
         }
-
+        
         // Compose form to post and hide nodes
         $form = '';
         foreach ($form_elements as $fname => $felem) {
