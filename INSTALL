@@ -6,17 +6,20 @@ This module requires CVS Drupal as of May 2003. Drupal 4.2 will be sufficient al
 Installation
 ------------
 
-1. Copy the scheduler.module to the Drupal modules/ directory. Activate the module in the admin/node/modules page
-
+1. Copy the scheduler.module to the Drupal modules/ directory.
 2. Run the scheduler.mysql file to create the necessary database table.
+3. Activate the module on the admin/system/modules page
+4. Add 'administer node schedules' rights to those user roles you
+   would like to allow to add/edit schedules
 
 Notes
 -----
 
-Anyone with 'administer nodes' permission is able to use scheduler.
+Anyone with 'administer nodes' permission will be able to see the schedule
+overview page, but only those with 'administer node schedules' permission
+will be able to add/edit them.
 
 Author
 ------
 
 Moshe Weitzman <weitzman@tejasa.com>
-
