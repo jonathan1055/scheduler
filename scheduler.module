@@ -1,5 +1,6 @@
 <?php
-  
+// $Id$
+
   function scheduler_help($section){
     if ($section == 'admin/system/modules#description') {
       return t("A module to schedule node (un)publishing.");
