@@ -9,7 +9,7 @@
     
     if ($type == "admin" && user_access("administer nodes")) {
       $help["scheduler"] = t("The scheduler is a tool for automatically publishing and unpublishing posts at a particular time in the future.");
-      menu("admin/node/scheduler", "schedule", "scheduler_admin", $help["scheduler"], 8);
+      menu("admin/node/scheduler", t("schedule"), "scheduler_admin", $help["scheduler"], 8);
     }  
   }
   
