@@ -55,11 +55,11 @@
         if (user_access("administer nodes")) {
           if ($node->scheduler_post) {
             if (!checkdate($node->scheduler_post_month, $node->scheduler_post_day, $node->scheduler_post_year)) {
-              $error["scheduler_post"] = theme("theme_error", t("Invalid date set, automatically adjusted"));
+              $error["scheduler_post"] = theme("error", t("Invalid date set, automatically adjusted"));
             } else {
               $post_date = scheduler_nodetime($node, "post");
               if (time() > $post_date) {
-                $error["scheduler_post"] = theme("theme_error", t("Date in the past"));
+                $error["scheduler_post"] = theme("error", t("Date in the past"));
               }
               // Automatically depublish node if date is fine
               else {
@@ -70,11 +70,11 @@
           
           if ($node->scheduler_hide) {
             if (!checkdate($node->scheduler_hide_month, $node->scheduler_hide_day, $node->scheduler_hide_year)) {
-              $error["scheduler_hide"] = theme("theme_error", t("Invalid date set, automatically adjusted"));
+              $error["scheduler_hide"] = theme("error", t("Invalid date set, automatically adjusted"));
             } else {
               $hide_date = scheduler_nodetime($node, "hide");
               if (time() > $hide_date) {
-                $error["scheduler_hide"] = theme("theme_error", t("Date in the past"));
+                $error["scheduler_hide"] = theme("error", t("Date in the past"));
               }
             }
           }
