@@ -49,7 +49,7 @@ function scheduler_write($node, $op, $arg) {
     
     // No schedule needs to take place (works for update and insert too)
     if (array_sum($conds) == 0) {
-      scheduler_remove_schedule();
+      scheduler_remove_schedule($node);
       return;
     }
 
