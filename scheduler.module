@@ -115,28 +115,30 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           "scheduler_hide" => array(time(), FALSE, t("Automatically hide document"), t("The date at which your document will be automatically hidden.  Do not check the enabling checkbox, if you don't want to schedule this document."))
         );
 
-        // Override the date in case we have some previously set data (from form or DB)
-        if ($node->nid) {
-          if ($node->scheduler_post) {
-            $form_elements['scheduler_post'][0] = scheduler_nodetime($node, "post");
+        // Preserve data set in the form
+        $inform = FALSE;
+        if ($node->scheduler_post) {
+          $form_elements['scheduler_post'][0] = scheduler_nodetime($node, "post");
+          $form_elements['scheduler_post'][1] = TRUE;
+          $inform = TRUE;
+        }
+        if ($node->scheduler_hide) {
+          $form_elements['scheduler_hide'][0] = scheduler_nodetime($node, "hide");
+          $form_elements['scheduler_hide'][1] = TRUE;
+          $inform = TRUE;
+        }
+        
+        // Preserve the data set in the DB (if the form have not overriden that)
+        if (!$inform && $node->nid) {
+          $result = db_query("SELECT timestamp_hidden, timestamp_posted FROM scheduler WHERE nid = '{$node->nid}'");
+          $schedule = db_fetch_object($result);
+          if ($schedule->timestamp_posted) {
+            $form_elements['scheduler_post'][0] = $schedule->timestamp_posted;
             $form_elements['scheduler_post'][1] = TRUE;
           }
-          elseif ($node->scheduler_hide) {
-            $form_elements['scheduler_hide'][0] = scheduler_nodetime($node, "hide");
+          if ($schedule->timestamp_hidden) {
+            $form_elements['scheduler_hide'][0] = $schedule->timestamp_hidden;
             $form_elements['scheduler_hide'][1] = TRUE;
-          }
-          // None of the elements are set in the node, get from DB
-          else {
-            $result = db_query("SELECT timestamp_hidden, timestamp_posted FROM scheduler WHERE nid = '{$node->nid}'");
-            $schedule = db_fetch_object($result);
-            if ($schedule->timestamp_posted) {
-              $form_elements['scheduler_post'][0] = $schedule->timestamp_posted;
-              $form_elements['scheduler_post'][1] = TRUE;
-            }
-            if ($schedule->timestamp_hidden) {
-              $form_elements['scheduler_hide'][0] = $schedule->timestamp_hidden;
-              $form_elements['scheduler_hide'][1] = TRUE;
-            }
           }
         }
 
