@@ -26,6 +26,10 @@ function scheduler_menu($may_cache) {
   return $items;
 }
 
+function scheduler_settings() {
+  return form_radios(t('Form display mode'), 'scheduler_form_mode', variable_get('scheduler_form_mode', 0), array(t('Allow post and hide scheduling'), t('Only allow post scheduling'), t('Only allow hide scheduling')), t('What options should the scheduler form offer?'));
+}
+
 function scheduler_write($node, $op, $arg) {
   if (user_access('schedule nodes') && ($node->scheduler_post || $node->scheduler_hide)) {
 
@@ -157,6 +161,19 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           // $form .= form_item($felem[2], $form_item, $felem[3]);
           }
         }
+        
+        // Hide controls if admin requested
+        switch (variable_get('scheduler_form_mode', 0)) {
+          case 0:
+            // Allow both controls
+            break;
+          case 1:
+            unset($form_elements['scheduler_hide']);
+            break;
+          case 1:
+            unset($form_elements['scheduler_post']);
+            break;
+        }
 
         // Compose form to post and hide nodes
         $form = '';
@@ -174,7 +191,7 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           // $form .= form_item($felem[2], $form_item, $felem[3]);
           $form .= form_item($felem[2], $form_item, ($error[$fname] ? $error[$fname] : $felem[3]));
         }
-        return form_group(t('Scheduling'), $form);
+        return ((count($form_elements) > 1) ? form_group(t('Scheduling'), $form) : $form);
       }
   }
 }
