@@ -101,14 +101,27 @@
   }
   
   function scheduler_cron() {
-    // TODO: add a watchdog entry to say which node we enabled/disabled
-    $sql = "SELECT n.nid, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid ORDER BY s.nid DESC";
+    // current logic (in order of priority). If we are past the posting time, then post. Then "If we are past the hide time, hide the node".
+    $sql = "SELECT s.nid, s.timestamp_posted FROM scheduler s LEFT JOIN node n ON s.nid = n.nid WHERE n.status = 0 AND s.timestamp_posted > 0 AND s.timestamp_posted < ". time();
     $result = db_query($sql);
+    $numpost = db_affected_rows($result);
     while ($node = db_fetch_object($result)) {
-      // current logic is "If we are past the hide time, hide the node". Same for 'post', which takes precedence over hide. this logic may be suboptimum.
-      db_query("UPDATE node SET status = '0' WHERE $node->timestamp_hidden > 0 AND $node->timestamp_hidden < ".time());
-      db_query("UPDATE node SET created = $node->timestamp_posted, changed = $node->timestamp_posted, status = '1' WHERE $node->timestamp_posted > 0 AND $node->timestamp_posted < ".time());
+      $sql = "UPDATE node SET created = $node->timestamp_posted, changed = $node->timestamp_posted, status = 1 WHERE nid = $node->nid";
+      db_query($sql);
     }  
+    
+    $sql = "SELECT s.nid FROM scheduler s LEFT JOIN node n ON s.nid = n.nid WHERE n.status = 1 AND s.timestamp_hidden > 0 AND s.timestamp_hidden < ". time();
+    $result = db_query($sql);
+    $numhide = db_affected_rows($result);
+    while ($node = db_fetch_object($result)) {
+      $sql = "UPDATE node SET status = 0 WHERE nid = $node->nid";
+      db_query($sql);
+    }  
+    
+    if ($numhide || $numpost) {
+      watchdog("special", "Scheduler posted $numpost nodes and hid $numhide nodes.");
+    }  
+      
   }
   
   //TODO: currently sorted by 'furthest in the future'. provide more options for sorting and filtering
