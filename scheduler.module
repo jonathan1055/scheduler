@@ -31,8 +31,9 @@ function scheduler_settings() {
 }
 
 function scheduler_write($node, $op, $arg) {
-  if (user_access('schedule nodes') && ($node->scheduler_post || $node->scheduler_hide)) {
+  if (user_access('schedule nodes')) {
 
+    $conds = array();
     if ($node->scheduler_post) {
       $conds['timestamp_posted'] = scheduler_nodetime($node, 'post');
     }
@@ -44,6 +45,12 @@ function scheduler_write($node, $op, $arg) {
     }
     else {
       $conds['timestamp_hidden'] = 0;
+    }
+    
+    // No schedule needs to take place (works for update and insert too)
+    if (array_sum($conds) == 0) {
+      $result = db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
+      return;
     }
 
     if ($op !== 'insert') {
