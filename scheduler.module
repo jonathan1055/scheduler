@@ -49,7 +49,7 @@ function scheduler_write($node, $op, $arg) {
     
     // No schedule needs to take place (works for update and insert too)
     if (array_sum($conds) == 0) {
-      $result = db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
+      scheduler_remove_schedule();
       return;
     }
 
@@ -63,18 +63,22 @@ function scheduler_write($node, $op, $arg) {
         db_query('UPDATE {scheduler} SET %s WHERE nid = %d', implode(', ', $update_conds), $node->nid);
       }
       else {
-        scheduler_insert($node, $conds);
+        scheduler_insert_schedule($node, $conds);
       }
     }  
     else {
-      scheduler_insert($node, $conds);
+      scheduler_insert_schedule($node, $conds);
     }  
   }
 }
 
-function scheduler_insert($node, $conds) {
+function scheduler_insert_schedule($node, $conds) {
   $conds['nid'] = $node->nid;
   db_query('INSERT {scheduler} (%s) VALUES (%s)', implode(', ', array_keys($conds)), implode(', ', array_values($conds)));
+}
+
+function scheduler_remove_schedule($node) {
+  db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
 }
 
 /**
@@ -121,6 +125,9 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
       break;
     case 'update':
       scheduler_write($node, $op, $arg);
+      break;
+    case 'delete':
+      scheduler_remove_schedule($node);
       break;
     case 'form pre':
       if (user_access('schedule nodes')) {
