@@ -31,12 +31,12 @@ function scheduler_write($node, $op, $arg) {
 
     if ($op !== "insert") {
       // Determine whether we must UPDATE or INSERT, then do it
-      $result = db_query("SELECT * FROM scheduler WHERE nid = %d", $node->nid);
+      $result = db_query("SELECT * FROM {scheduler} WHERE nid = %d", $node->nid);
       if (db_num_rows($result)) {
         foreach ($conds as $key => $value) {
           $update_conds[] = "$key=$value";
         }
-        db_query("UPDATE scheduler SET %s WHERE nid = %d", implode(", ", $update_conds), $node->nid);
+        db_query("UPDATE {scheduler} SET %s WHERE nid = %d", implode(", ", $update_conds), $node->nid);
       }
       else {
         scheduler_insert($node, $conds);
@@ -50,7 +50,7 @@ function scheduler_write($node, $op, $arg) {
   
 function scheduler_insert($node, $conds) {
   $conds["nid"] = $node->nid;
-  db_query("INSERT scheduler (%s) VALUES (%s)", implode(", ", array_keys($conds)), implode(", ", array_values($conds)));
+  db_query("INSERT {scheduler} (%s) VALUES (%s)", implode(", ", array_keys($conds)), implode(", ", array_values($conds)));
 }  
 
 function scheduler_nodeapi(&$node, $op, &$arg) {
@@ -130,7 +130,7 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
         
         // Preserve the data set in the DB (if the form have not overriden that)
         if (!$inform && $node->nid) {
-          $result = db_query("SELECT timestamp_hidden, timestamp_posted FROM scheduler WHERE nid = '{$node->nid}'");
+          $result = db_query("SELECT timestamp_hidden, timestamp_posted FROM {scheduler} WHERE nid = %d", $node->nid);
           $schedule = db_fetch_object($result);
           if ($schedule->timestamp_posted) {
             $form_elements['scheduler_post'][0] = $schedule->timestamp_posted;
@@ -159,17 +159,28 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
   
 function scheduler_cron() {
   // If we are past the posting time, then post.
-  $result = db_query("SELECT s.nid, s.timestamp_posted FROM scheduler s LEFT JOIN node n ON s.nid = n.nid WHERE n.status = 0 AND s.timestamp_posted > 0 AND s.timestamp_posted < %d", time());
+  $result = db_query("SELECT s.nid, s.timestamp_posted, s.timestamp_hidden FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.timestamp_posted > 0 AND s.timestamp_posted < %d", time());
   $numpost = db_num_rows($result);
   while ($node = db_fetch_object($result)) {
-    db_query("UPDATE node SET created = %d, changed = %d, status = 1 WHERE nid = %d", $node->timestamp_posted, $node->timestamp_posted, $node->nid);
+    db_query("UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d", $node->timestamp_posted, $node->timestamp_posted, $node->nid);
+    
+    // No hide information for node, no need to keep record
+    if ($node->timestamp_hidden == 0) {
+      db_query("DELETE FROM {scheduler} WHERE nid = %d", $node->nid);
+    }
+    // This node needs to be hidden later, only set posted to empty
+    else {
+      db_query("UPDATE {scheduler} SET timestamp_posted = 0 WHERE nid = %d", $node->nid);
+    }
   }
 
   //  If we are past the hide time, then hide.
-  $result = db_query("SELECT s.nid FROM scheduler s LEFT JOIN node n ON s.nid = n.nid WHERE n.status = 1 AND s.timestamp_hidden > 0 AND s.timestamp_hidden < %d", time());
+  $result = db_query("SELECT s.nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.timestamp_hidden > 0 AND s.timestamp_hidden < %d", time());
   $numhide = db_num_rows($result);
   while ($node = db_fetch_object($result)) {
-    db_query("UPDATE node SET status = 0 WHERE nid = %d", $node->nid);
+    // Hide node and remove schedule entry
+    db_query("UPDATE {node} SET status = 0 WHERE nid = %d", $node->nid);
+    db_query("DELETE FROM {scheduler} WHERE nid = %d", $node->nid);
   }
 
   if ($numhide || $numpost) {
@@ -194,7 +205,7 @@ function scheduler_admin() {
     $_GET["sort"] = "desc";
   }
 
-  $sql = "SELECT n.nid, n.uid, n.status, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid LEFT JOIN users u ON n.uid = u.uid" . tablesort_sql($header);
+  $sql = "SELECT n.nid, n.uid, n.status, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid" . tablesort_sql($header);
   $result = pager_query($sql, 50);
 
   while ($node = db_fetch_object($result)) {
