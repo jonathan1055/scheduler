@@ -1,6 +1,6 @@
 CREATE TABLE scheduler (
-nid INT( 10 ) UNSIGNED NOT NULL ,
-timestamp_posted INT( 10 ) UNSIGNED, DEFAULT '0' NOT NULL
-timestamp_hidden INT( 10 ) UNSIGNED, DEFAULT '0' NOT NULL
-PRIMARY KEY ( nid )
+  nid int(10) unsigned NOT NULL default '0',
+  timestamp_posted int(10) unsigned NOT NULL default '0',
+  timestamp_hidden int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY  (nid)
 );
