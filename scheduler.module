@@ -174,18 +174,32 @@
       
   }
   
-  //TODO: currently sorted by 'furthest in the future'. provide more options for sorting and filtering
+  //TODO: provide more options for filtering
   function scheduler_admin() {
     
-    $sql = "SELECT n.nid, n.uid, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid LEFT JOIN users u ON n.uid = u.uid ORDER BY GREATEST(s.timestamp_hidden, s.timestamp_posted) DESC";
-    $result = pager_query($sql);
+    $header = array(
+      array("data" => t("title"), "field" => "n.title"),
+      array("data" => t("author"), "field" => "u.name"),
+      array("data" => t("post"), "field" => "s.timestamp_posted"),
+      array("data" => t("hide"), "field" => "s.timestamp_hidden"),
+      array("data" => t("operations"), "colspan" => 2)
+    );
     
-    $header = array(t("title"), t("author"), t("post"), t("hide"), array("data" => t("operations"), "colspan" => 2));
+    // Default ordering
+    if (!isset($_GET["order"]) && !isset($_GET["sort"])) {
+      $_GET["order"] = t("post");
+      $_GET["sort"] = "desc";
+    }
+    
+    $sql = "SELECT n.nid, n.uid, n.status, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid LEFT JOIN users u ON n.uid = u.uid";
+    $sql .= tablesort_sql($header);
+    $result = pager_query($sql, 50);
+    
     while ($node = db_fetch_object($result)) {
-      $rows[] = array(l($node->title, "node/view/$node->nid"), format_name($node), $node->timestamp_posted ? format_date($node->timestamp_posted) : "&nbsp;", $node->timestamp_hidden ? format_date($node->timestamp_hidden) : "&nbsp;", l(t("edit node"), "admin/node/edit/$node->nid"), l(t("delete node"), "admin/node/delete/$node->nid"));
+      $rows[] = array(($node->status ? l($node->title, "node/view/$node->nid") : $node->title), format_name($node), $node->timestamp_posted ? format_date($node->timestamp_posted) : "&nbsp;", $node->timestamp_hidden ? format_date($node->timestamp_hidden) : "&nbsp;", l(t("edit node"), "admin/node/edit/$node->nid"), l(t("delete node"), "admin/node/delete/$node->nid"));
     }
 
-    if ($pager = pager_display(NULL, 50, 0, "admin")) {
+    if ($pager = pager_display(NULL, 50, 0, "admin", tablesort_pager())) {
       $rows[] = array(array("data" => $pager, "colspan" => 6));
     }
     return table($header, $rows);
