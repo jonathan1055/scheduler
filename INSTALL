@@ -3,11 +3,6 @@ Requirements
 
 This module requires CVS Drupal as of May 2003. Drupal 4.2 will be sufficient also.
 
-This module is only useful with Mozilla and Netscape 6 browsers. The module
-tries to detect if an incompatible browser is being used and prints
-appropriate errors in such case.
-
-
 Installation
 ------------
 

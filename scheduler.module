@@ -102,8 +102,12 @@
   
   function scheduler_cron() {
     // TODO: add a watchdog entry to say which node we enabled/disabled
-    db_query("UPDATE node SET status = 0 WHERE timestamp_hidden > 0 AND timestamp_hidden < ".time());
-    db_query("UPDATE node SET created = timestamp_posted, changed = timestamp_posted, status = 1 WHERE timestamp_posted > 0 AND timestamp_posted < ".time());
+    $sql = "SELECT n.nid, s.timestamp_posted, s.timestamp_hidden FROM scheduler s LEFT JOIN node n ON s.nid = n.nid ORDER BY s.nid DESC";
+    $result = db_query($sql);
+    while ($node = db_fetch_object($result)) {
+      db_query("UPDATE node SET status = '0' WHERE $node->timestamp_hidden > 0 AND $node->timestamp_hidden < ".time());
+      db_query("UPDATE node SET created = $node->timestamp_posted, changed = $node->timestamp_posted, status = 1 WHERE $ndoe->timestamp_posted > 0 AND $node->timestamp_posted < ".time());
+    }  
   }
   
   //TODO: currently sorted by 'furthest in the future'. provide more options for sorting and filtering
