@@ -230,6 +230,8 @@ function scheduler_cron() {
 
   if ($numhide || $numpost) {
     watchdog('special', t('Scheduler posted %numpost nodes and hid %numhide nodes.', array('%numpost' => $numpost, '%numhide' => $numhide)));
+    // Clear cache so anonymous users see changes
+    cache_clear_all();
   }
 }
 
