@@ -99,8 +99,7 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
         // Build up date components array
         $month_names = array();
         for ($i = 1; $i <= 12; $i++) {
-          $stamp = mktime(0, 0, 0, $i, 1, 1971);
-          $month_names[$i] = t(date("F", $stamp));
+          $month_names[$i] = format_date(mktime(0, 0, 0, $i, 1, 1971), 'custom', 'F');
         }
         $date_components = array(
           "year"   => array("Y", scheduler_range(2004, 2006)),
