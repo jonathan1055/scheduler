@@ -64,7 +64,9 @@
           if ($node->timestamp_posted) {
             if (strtotime($node->timestamp_posted) === -1) {
               $error["timestamp_posted"] = theme("theme_error", t("Invalid date format"));
-            }  
+            } else {
+              $node->status = 0;
+            }
           }
           
           if ($node->timestamp_hidden) {
@@ -83,19 +85,20 @@
         break;
       case "form admin":
         if ($node->nid) {
+          $date_format = "m/d/y H:i";
           $sql = "SELECT timestamp_hidden, timestamp_posted FROM scheduler WHERE nid = '$node->nid'";
           $result = db_query($sql);
           $schedule = db_fetch_object($result);
           if ($schedule->timestamp_posted) {
-            $node->timestamp_posted = format_date($schedule->timestamp_posted);
+            $node->timestamp_posted = date($date_format, $schedule->timestamp_posted);
           }
           if ($schedule->timestamp_hidden) {
-            $node->timestamp_hidden = format_date($schedule->timestamp_hidden);
+            $node->timestamp_hidden = date($date_format, $schedule->timestamp_hidden);
           }
         }
       
-        $form .= form_textfield(t("Automatically post document"), "timestamp_posted", ($node->timestamp_posted ? $node->timestamp_posted : ""), 30, 55, $error["timestamp_posted"] ? $error["timestamp_posted"] : sprintf(t("The date at which your document will be automatically posted.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '%s', '%s', '%s', '%s' ..."), date("j F Y G:i"), date("m/d/y H:i"), date("F j, Y H:i"), "1 week"));
-        $form .= form_textfield(t("Automatically hide document"), "timestamp_hidden", ($node->timestamp_hidden ? $node->timestamp_hidden : ""), 30, 55, $error["timestamp_hidden"] ? $error["timestamp_hidden"] : sprintf(t("The date at which your document will be automatically hidden.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '%s', '%s', '%s', '%s' ..."), date("j F Y G:i"), date("m/d/y H:i"), date("F j, Y H:i"), "next Thursday"));
+        $form .= form_textfield(t("Automatically post document"), "timestamp_posted", ($node->timestamp_posted ? $node->timestamp_posted : ""), 30, 55, $error["timestamp_posted"] ? $error["timestamp_posted"] : sprintf(t("The date at which your document will be automatically posted.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '%s', '%s', '%s', '%s', '%s' ..."), date("j F Y G:i"), date("m/d/y H:i"), date("F j, Y H:i"), "1 week", "+1 day"));
+        $form .= form_textfield(t("Automatically hide document"), "timestamp_hidden", ($node->timestamp_hidden ? $node->timestamp_hidden : ""), 30, 55, $error["timestamp_hidden"] ? $error["timestamp_hidden"] : sprintf(t("The date at which your document will be automatically hidden.  Leave empty if you don't want to schedule this document, or enter an English date format.  Example input: '%s', '%s', '%s', '%s', '%s' ..."), date("j F Y G:i"), date("m/d/y H:i"), date("F j, Y H:i"), "next Thursday", "+1 week"));
         return $form;
     }
   }
