@@ -145,7 +145,7 @@
             $form_item .= '</div>';
             $form .= form_item($felem[2], $form_item, ($error[$fname] ? $error[$fname] : $felem[3]));
           }
-          return $form;
+          return form_group(t("Scheduling"), $form);
         }
     }
   }
