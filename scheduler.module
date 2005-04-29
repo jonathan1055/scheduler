@@ -303,10 +303,10 @@ function scheduler_admin() {
       $rows[] = array(array('data' => $pager, 'colspan' => 6));
     }
   
-    print theme('page', theme('table', $header, $rows));
+    return theme('table', $header, $rows);
   }
   else {
-    print theme('page', t('There are no scheduled nodes.'));
+    return t('There are no scheduled nodes.');
   }
 }
 
