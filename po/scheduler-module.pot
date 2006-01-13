@@ -1,0 +1,205 @@
+# LANGUAGE translation of Drupal (scheduler.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: scheduler.module,v 1.33 2005/04/29 22:09:20 tdobes
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2005-10-04 08:48+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: scheduler.module:9
+msgid "A module to schedule node (un)publishing."
+msgstr ""
+
+#: scheduler.module:21
+msgid "schedule"
+msgstr ""
+
+#: scheduler.module:30
+msgid "Form display mode"
+msgstr ""
+
+#: scheduler.module:30
+msgid "Allow post and hide scheduling"
+msgstr ""
+
+#: scheduler.module:30
+msgid "Only allow post scheduling"
+msgstr ""
+
+#: scheduler.module:30
+msgid "Only allow hide scheduling"
+msgstr ""
+
+#: scheduler.module:30
+msgid "What options should the scheduler form offer?"
+msgstr ""
+
+#: scheduler.module:94
+msgid "Invalid scheduled post date set; automatically adjusted"
+msgstr ""
+
+#: scheduler.module:95;113
+msgid "Invalid date set, automatically adjusted"
+msgstr ""
+
+#: scheduler.module:100
+msgid "Scheduled post date in the past"
+msgstr ""
+
+#: scheduler.module:101;119
+msgid "Date in the past"
+msgstr ""
+
+#: scheduler.module:112
+msgid "Invalid scheduled hide date set; automatically adjusted"
+msgstr ""
+
+#: scheduler.module:118
+msgid "Scheduled hide date in the past"
+msgstr ""
+
+#: scheduler.module:138
+msgid "January"
+msgstr ""
+
+#: scheduler.module:138
+msgid "February"
+msgstr ""
+
+#: scheduler.module:138
+msgid "March"
+msgstr ""
+
+#: scheduler.module:138
+msgid "April"
+msgstr ""
+
+#: scheduler.module:138
+msgid "May"
+msgstr ""
+
+#: scheduler.module:138
+msgid "June"
+msgstr ""
+
+#: scheduler.module:138
+msgid "July"
+msgstr ""
+
+#: scheduler.module:138
+msgid "August"
+msgstr ""
+
+#: scheduler.module:138
+msgid "September"
+msgstr ""
+
+#: scheduler.module:138
+msgid "October"
+msgstr ""
+
+#: scheduler.module:138
+msgid "November"
+msgstr ""
+
+#: scheduler.module:138
+msgid "December"
+msgstr ""
+
+#: scheduler.module:149
+msgid "Automatically post document"
+msgstr ""
+
+#: scheduler.module:149
+msgid "The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document."
+msgstr ""
+
+#: scheduler.module:150
+msgid "Automatically hide document"
+msgstr ""
+
+#: scheduler.module:150
+msgid "The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document."
+msgstr ""
+
+#: scheduler.module:197
+msgid "Enabled"
+msgstr ""
+
+#: scheduler.module:210
+msgid "Scheduling"
+msgstr ""
+
+#: scheduler.module:224
+msgid "12 am"
+msgstr ""
+
+#: scheduler.module:227
+msgid "12 pm"
+msgstr ""
+
+#: scheduler.module:231
+msgid "%hour pm"
+msgstr ""
+
+#: scheduler.module:234
+msgid "%hour am"
+msgstr ""
+
+#: scheduler.module:265
+msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
+msgstr ""
+
+#: scheduler.module:274
+msgid "Title"
+msgstr ""
+
+#: scheduler.module:275
+msgid "Author"
+msgstr ""
+
+#: scheduler.module:276;283
+msgid "Post"
+msgstr ""
+
+#: scheduler.module:277
+msgid "Hide"
+msgstr ""
+
+#: scheduler.module:278
+msgid "Operations"
+msgstr ""
+
+#: scheduler.module:296
+msgid "edit"
+msgstr ""
+
+#: scheduler.module:297
+msgid "delete"
+msgstr ""
+
+#: scheduler.module:309
+msgid "There are no scheduled nodes."
+msgstr ""
+
+#: scheduler.module:265
+msgid "special"
+msgstr ""
+
+#: scheduler.module:219
+msgid "schedule nodes"
+msgstr ""
+
+#: scheduler.module:0
+msgid "scheduler"
+msgstr ""
+
