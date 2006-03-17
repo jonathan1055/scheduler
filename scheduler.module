@@ -46,7 +46,7 @@ function scheduler_write($node, $op, $arg) {
     else {
       $conds['timestamp_hidden'] = 0;
     }
-    
+
     // No schedule needs to take place (works for update and insert too)
     if (array_sum($conds) == 0) {
       scheduler_remove_schedule($node);
@@ -65,16 +65,16 @@ function scheduler_write($node, $op, $arg) {
       else {
         scheduler_insert_schedule($node, $conds);
       }
-    }  
+    }
     else {
       scheduler_insert_schedule($node, $conds);
-    }  
+    }
   }
 }
 
 function scheduler_insert_schedule($node, $conds) {
   $conds['nid'] = $node->nid;
-  db_query('INSERT {scheduler} (%s) VALUES (%s)', implode(', ', array_keys($conds)), implode(', ', array_values($conds)));
+  db_query('INSERT INTO {scheduler} (%s) VALUES (%s)', implode(', ', array_keys($conds)), implode(', ', array_values($conds)));
 }
 
 function scheduler_remove_schedule($node) {
@@ -177,7 +177,7 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
           // $form .= form_item($felem[2], $form_item, $felem[3]);
           }
         }
-        
+
         // Hide controls if admin requested
         switch (variable_get('scheduler_form_mode', 0)) {
           case 0:
@@ -241,7 +241,7 @@ function scheduler_cron() {
   $numpost = db_num_rows($result);
   while ($node = db_fetch_object($result)) {
     db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->timestamp_posted, $node->timestamp_posted, $node->nid);
-    
+
     // No hide information for node, no need to keep record
     if ($node->timestamp_hidden == 0) {
       db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
@@ -297,12 +297,12 @@ function scheduler_admin() {
       l(t('delete'), "admin/node/delete/$node->nid")
     );
   }
-  
+
   if (count($rows)) {
     if ($pager = theme('pager', NULL, 50, 0, tablesort_pager())) {
       $rows[] = array(array('data' => $pager, 'colspan' => 6));
     }
-  
+
     return theme('table', $header, $rows);
   }
   else {
