@@ -27,32 +27,44 @@ function scheduler_menu($may_cache) {
 }
 
 function scheduler_settings() {
-  return form_radios(t('Form display mode'), 'scheduler_form_mode', variable_get('scheduler_form_mode', 0), array(t('Allow post and hide scheduling'), t('Only allow post scheduling'), t('Only allow hide scheduling')), t('What options should the scheduler form offer?'));
+  $options = array(0 => t('Allow post and hide scheduling'), 
+                   1 => t('Only allow post scheduling'), 
+                   2 => t('Only allow hide scheduling'));
+  $form['scheduler_form_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Form display mode'),
+    '#options' => $options,
+    '#default_value' => variable_get('scheduler_form_mode', 0),
+    '#description' => t('What options should the scheduler form offer?')
+  );
+  return $form;
 }
 
 function scheduler_write($node, $op, $arg) {
   if (user_access('schedule nodes')) {
 
     $conds = array();
-    if ($node->scheduler_post) {
-      $conds['timestamp_posted'] = scheduler_nodetime($node, 'post');
+//    var_dump($node);
+    if ($node->scheduler_post_enabled) {
+      $conds['timestamp_posted'] = _scheduler_get_timestamp_from_post("post");
     }
     else {
       $conds['timestamp_posted'] = 0;
     }
-    if ($node->scheduler_hide) {
-      $conds['timestamp_hidden'] = scheduler_nodetime($node, 'hide');
+    if ($node->scheduler_hide_enabled) {
+      $conds['timestamp_hidden'] = _scheduler_get_timestamp_from_post("hide");
     }
     else {
       $conds['timestamp_hidden'] = 0;
     }
+
 
     // No schedule needs to take place (works for update and insert too)
     if (array_sum($conds) == 0) {
       scheduler_remove_schedule($node);
       return;
     }
-
+    
     if ($op !== 'insert') {
       // Determine whether we must UPDATE or INSERT, then do it
       $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
@@ -85,43 +97,7 @@ function scheduler_remove_schedule($node) {
  * Implementation of hook_nodeapi().
  */
 function scheduler_nodeapi(&$node, $op, &$arg) {
-  static $error;
-  switch ($op) {
-    case 'validate':
-      if (user_access('schedule nodes')) {
-        if ($node->scheduler_post) {
-          if (!checkdate($node->scheduler_post_month, $node->scheduler_post_day, $node->scheduler_post_year)) {
-            form_set_error('scheduler_post', t('Invalid scheduled post date set; automatically adjusted'));
-            $error['scheduler_post'] = theme('error', t('Invalid date set, automatically adjusted'));
-          }
-          else {
-            $post_date = scheduler_nodetime($node, 'post');
-            if (time() > $post_date) {
-              form_set_error('scheduler_post', t('Scheduled post date in the past'));
-              $error['scheduler_post'] = theme('error', t('Date in the past'));
-            }
-            // Automatically depublish node if date is fine
-            else {
-              $node->status = 0;
-            }
-          }
-        }
-
-        if ($node->scheduler_hide) {
-          if (!checkdate($node->scheduler_hide_month, $node->scheduler_hide_day, $node->scheduler_hide_year)) {
-            form_set_error('scheduler_hide', t('Invalid scheduled hide date set; automatically adjusted'));
-            $error["scheduler_hide"] = theme("error", t('Invalid date set, automatically adjusted'));
-          }
-          else {
-            $hide_date = scheduler_nodetime($node, 'hide');
-            if (time() > $hide_date) {
-              form_set_error('scheduler_hide', t('Scheduled hide date in the past'));
-              $error["scheduler_hide"] = theme("error", t('Date in the past'));
-            }
-          }
-        }
-      }
-      break;
+  switch ($op){
     case 'insert':
       scheduler_write($node, $op, $arg);
       break;
@@ -131,85 +107,181 @@ function scheduler_nodeapi(&$node, $op, &$arg) {
     case 'delete':
       scheduler_remove_schedule($node);
       break;
-    case 'form pre':
-      if (user_access('schedule nodes')) {
-
-        // Build up date components array
-        $month_names = array(1 => t('January'), t('February'), t('March'), t('April'), t('May'), t('June'), t('July'), t('August'), t('September'), t('October'), t('November'), t('December'));
-        $date_components = array(
-          'year'   => array('Y', scheduler_range(date('Y'), date('Y') + 5)),
-          'month'  => array('m', $month_names),
-          'day'    => array('d', scheduler_range(1, 31)),
-          'hour'   => array('H', scheduler_range(0, 23)),
-          'minute' => array('i', scheduler_range(0, 59))
-        );
-
-        // Form element specs (time, enabled, title, description)
-        $form_elements = array(
-          'scheduler_post' => array(time(), FALSE, t('Automatically post document'), t('The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document.')),
-          'scheduler_hide' => array(time(), FALSE, t('Automatically hide document'), t('The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document.'))
-        );
-
-        // Get edit information from post if possible
-        if (isset($_POST['edit']) && count($_POST['edit'])) {
-          $edit = (object) $_POST['edit'];
-          if ($edit->scheduler_post) {
-            $form_elements['scheduler_post'][0] = scheduler_nodetime($edit, 'post');
-            $form_elements['scheduler_post'][1] = TRUE;
-          }
-          if ($edit->scheduler_hide) {
-            $form_elements['scheduler_hide'][0] = scheduler_nodetime($edit, 'hide');
-            $form_elements['scheduler_hide'][1] = TRUE;
-          }
-        }
-
-        // Preserve the data set in the DB (if there was no form)
-        elseif ($node->nid) {
-          $result = db_query('SELECT timestamp_hidden, timestamp_posted FROM {scheduler} WHERE nid = %d', $node->nid);
-          $schedule = db_fetch_object($result);
-          if ($schedule->timestamp_posted) {
-            $form_elements['scheduler_post'][0] = $schedule->timestamp_posted;
-            $form_elements['scheduler_post'][1] = TRUE;
-          }
-          if ($schedule->timestamp_hidden) {
-            $form_elements['scheduler_hide'][0] = $schedule->timestamp_hidden;
-            $form_elements['scheduler_hide'][1] = TRUE;
-          // $form .= form_item($felem[2], $form_item, $felem[3]);
-          }
-        }
-
-        // Hide controls if admin requested
-        switch (variable_get('scheduler_form_mode', 0)) {
-          case 0:
-            // Allow both controls
-            break;
-          case 1:
-            unset($form_elements['scheduler_hide']);
-            break;
-          case 1:
-            unset($form_elements['scheduler_post']);
-            break;
-        }
-
-        // Compose form to post and hide nodes
-        $form = '';
-        foreach ($form_elements as $fname => $felem) {
-          $form_item = '<div class="container-inline">' . form_checkbox(t('Enabled'), $fname, 1, $felem[1]);
-          foreach ($date_components as $dname => $ddata) {
-            if ($dname == 'hour' && strpos(variable_get('date_format_medium', 'D, Y-m-d H:i'), 'g:ia')) {
-              $form_item .= form_select('', "{$fname}_{$dname}", date($ddata[0], $felem[0]), drupal_map_assoc($ddata[1], '_scheduler_hour_format'));
-            }
-            else {
-              $form_item .= form_select('', "{$fname}_{$dname}", date($ddata[0], $felem[0]), $ddata[1]);
-            }
-          }
-          $form_item .= '</div>';
-          // $form .= form_item($felem[2], $form_item, $felem[3]);
-          $form .= form_item($felem[2], $form_item, ($error[$fname] ? $error[$fname] : $felem[3]));
-        }
-        return ((count($form_elements) > 1) ? form_group(t('Scheduling'), $form) : $form);
-      }
   }
+}
+
+function scheduler_form_alter($form_id,&$form){
+  if (user_access('schedule nodes')) {
+    $type = (isset($form['type']) && isset($form['type']['#value'])) ? $form['type']['#value'] : NULL;
+    
+    switch($form_id){
+      case $type."_node_settings":
+        $form['workflow']['scheduler_nodeapi_'.$type] = array(
+          '#type' => 'radios',
+          '#title' => t('Scheduler'),
+          '#options' => array(0=>t("Disabled"),1=>t("Enabled")),
+          '#default_value' => variable_get("scheduler_nodeapi_".$type,0)
+        );
+        break;
+      case $type."_node_form":
+        if (variable_get('scheduler_nodeapi_'.$type,0)){
+          // determine which fieldsets to show based on _settings
+          switch(variable_get("scheduler_form_mode",0)){
+            case 0:
+              $fieldsets = array("post","hide");
+              break;
+            case 1:
+              $fieldsets = array("post");
+              break;
+            case 2:
+              $fieldsets = array("hide");
+              break;
+          }
+          
+          // build the form values for the post and/or the hide fieldset
+          foreach ($fieldsets as $stampname){
+            // first check if a value has just been posted (e.g. we are in node validation)
+            $timestamp[$stampname] = _scheduler_get_timestamp_from_post($stampname);
+            $enabled = $_POST['edit']['scheduler_'.$stampname.'_enabled'];
+                        
+            if (empty($timestamp[$stampname])){
+              // no value was POSTed, so check for values from the database
+              if(!$db_result){
+                $db_result = db_fetch_array(db_query("SELECT * FROM {scheduler} WHERE nid=%d",
+                                                     $form['nid']['#value']));
+              }
+              $db_field = ($stampname == "post") ? "timestamp_posted" : "timestamp_hidden";
+              $timestamp[$stampname] = $db_result[$db_field];
+              
+              // if we got a value from the database, then enable the fieldset
+              $enabled = !empty($timestamp[$stampname]);
+            } 
+    
+            if (empty($timestamp[$stampname])){
+              // no value was in the database,
+              // so use the current time/date
+              $timestamp[$stampname] = time();
+            } 
+                        
+            // define $form['posted_scheduler'] or $form['hidden_scheduler']
+            $form[$stampname."_scheduler"] = array(
+              '#type' => 'fieldset',
+              '#collapsible' => true,
+              '#collapsed' => !$enabled,
+              '#weight' => 39,
+              '#title' => t("Automatically $stampname document"),
+              '#description' => t("The date at which your document will be automatically ".
+                                  (($stampname == "post") ? "posted" : "hidden"))
+            );
+            $form[$stampname."_scheduler"]["scheduler_".$stampname."_enabled"] = array(
+              '#type' => 'checkbox',
+              '#title' => t('Enabled'),
+              '#tree' => false,
+              '#return_value' => 1,
+              '#default_value' => $enabled
+            );
+            _scheduler_add_form_from_timestamp($timestamp[$stampname],
+                                               $form[$stampname."_scheduler"],
+                                               $stampname);
+    
+          } // end foreach
+        } // end nodetype check
+    } // end nodetype switch
+  } // end permission check
+}
+
+// check values that have just been POSTed for form submissions
+// if those values exist, parse them into a standard Drupal timestamp
+// and return that value
+function _scheduler_get_timestamp_from_post($stampname){
+  // avoid calculating this twice in one loadtime
+  static $scheduler_timestamps;
+  
+  if (empty($scheduler_timestamps[$stampname])){
+    $edit = $_POST['edit'];
+    $offset = ($edit[$stampname."_ampm"] == "pm") ? 12 : 0;
+    $time = mktime(
+      $edit[$stampname."_hour"] + $offset,
+      $edit[$stampname."_minute"],
+      00, //seconds
+      $edit[$stampname."_month"],
+      $edit[$stampname."_day"],
+      $edit[$stampname."_year"]
+    );
+    if ($time == -1){
+      $out = false;
+    } else {
+      $out = $time;
+    }
+  } else {
+    $out = $scheduler_timestamps[$stampname];
+  }
+  
+  return $out;
+}
+
+// parse a unix timestamp into form elements
+function _scheduler_add_form_from_timestamp($timestamp,&$form,$prefix){
+  $months = array(1 => t('January'), t('February'), t('March'), t('April'), t('May'), t('June'), t('July'), t('August'), t('September'), t('October'), t('November'), t('December'));
+  $hours = drupal_map_assoc(range(1, 12));
+  $am_pms = array('am' => t('am'), 'pm' => t('pm'));
+  // ...minutes (with leading 0s)
+  for ($i = 0; $i <= 59; $i++) $minutes[$i] = $i < 10 ? "0$i" : $i;
+
+  $form[$prefix.'_day'] = array(
+    '#prefix' => '<div class="container-inline"><div class="day">',
+    '#type' => 'textfield',
+    '#default_value' => date('d', $timestamp),
+    '#maxlength' => 2,
+    '#size' => 2,
+    '#description' => t('day'),
+    '#tree' => false,
+    '#required' => TRUE);
+  $form[$prefix.'_month'] = array(
+    '#type' => 'select',
+    '#default_value' => date('m', $timestamp),
+    '#options' => $months,
+    '#description' => t('month'),
+    '#tree' => false,
+    '#required' => TRUE);
+  $form[$prefix.'_year'] = array(
+    '#type' => 'textfield',
+    '#default_value' => date('Y', $timestamp),
+    '#maxlength' => 4,
+    '#size' => 4,
+    '#description' => t('year'),
+    '#tree' => false,
+    '#required' => TRUE);
+  $form[$prefix.'_hour'] = array(
+    '#prefix' => '</div><div class="time">',
+    '#type' => 'select',
+    '#default_value' => date("g", $timestamp),
+    '#options' => $hours,
+    '#required' => TRUE,
+    '#tree' => false,
+    '#description' => t('hour'));
+  $form[$prefix.'_minute'] = array(
+    '#prefix' => ':',
+    '#type' => 'select',
+    '#default_value' => date('i', $timestamp),
+    '#options' => $minutes,
+    '#required' => TRUE,
+    '#tree' => false,
+    '#description' => t('minutes'));
+  $form[$prefix.'_ampm'] = array(
+    '#type' => 'select',
+    '#default_value' => date('a', $timestamp),
+    '#options' => $am_pms,
+    '#tree' => false,
+    '#required' => TRUE);
+  $form['close'] = array(
+    '#type' => 'markup',
+    '#value' => '</div></div>');
+  
+}
+
+function _scheduler_form_to_timestamp(){
+
 }
 
 /**
@@ -321,6 +393,7 @@ function scheduler_range($start, $end) {
 }
 
 // Return the time of post or hide operation on the node
+/*
 function scheduler_nodetime(&$node, $type = 'post') {
   if (!in_array($type, array('post', 'hide'))) {
     return time();
@@ -332,5 +405,5 @@ function scheduler_nodetime(&$node, $type = 'post') {
     );
   }
 }
-
+*/
 ?>
