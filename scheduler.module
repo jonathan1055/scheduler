@@ -141,6 +141,9 @@ function scheduler_cron() {
       db_query('UPDATE {scheduler} SET publish_on = 0 WHERE nid = %d', $node->nid);
     }
     
+    //invoke scheduler API
+    _scheduler_scheduler_api($node, 'publish');
+    
     watchdog('content', t('%type: scheduled publishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
     $clear_cache = TRUE;
   }
@@ -152,6 +155,10 @@ function scheduler_cron() {
     //if this node is to be unpublished, we can update the node and remove the record since it can't be republished
     db_query('UPDATE {node} SET status = 0 AND changed = %d WHERE nid = %d', $node->unpublish_on, $node->nid);
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
+    
+    //invoke scheduler API
+    _scheduler_scheduler_api($node, 'unpublish');
+    
     watchdog('content', t('%type: scheduled unpublishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
     $clear_cache = TRUE;
   }
@@ -159,5 +166,21 @@ function scheduler_cron() {
   if ($clear_cache) {
     // clear the cache so an anonymous poster can see the node being published or unpublished
     cache_clear_all();
+  }
+}
+
+
+/**
+ * Scheduler API to perform actions when nodes are (un)published
+ *
+ * @param $node
+ *  The node object
+ * @param $action
+ *  The action being performed, either "publish" or "unpublish"
+ */
+function _scheduler_scheduler_api($node, $action) {
+  foreach (module_implements('scheduler_api') as $module) {
+    $function = $module .'_scheduler_api';
+    $function($node, $action); 
   }
 }
