@@ -4,406 +4,160 @@
 /**
  * Implementation of hook_help().
  */
-function scheduler_help($section){
+function scheduler_help($section) {
   if ($section == 'admin/modules#description') {
-    return t('A module to schedule node (un)publishing.');
+    return t('A module to schedule when nodes are (un)published.');
   }
 }
 
-/**
- * Implementation of hook_menu().
- */
-function scheduler_menu($may_cache) {
-  $items = array();
-
-  if ($may_cache) {
-    $items[] = array('path' => 'admin/node/scheduler',
-      'title' => t('schedule'),
-      'callback' => 'scheduler_admin',
-      'access' => user_access('administer nodes') && user_access('schedule nodes'),
-      'type' => MENU_LOCAL_TASK);
-  }
-  return $items;
-}
-
-function scheduler_settings() {
-  $options = array(0 => t('Allow post and hide scheduling'), 
-                   1 => t('Only allow post scheduling'), 
-                   2 => t('Only allow hide scheduling'));
-  $form['scheduler_form_mode'] = array(
-    '#type' => 'radios',
-    '#title' => t('Form display mode'),
-    '#options' => $options,
-    '#default_value' => variable_get('scheduler_form_mode', 0),
-    '#description' => t('What options should the scheduler form offer?')
-  );
-  return $form;
-}
-
-function scheduler_write($node, $op, $arg) {
-  if (user_access('schedule nodes')) {
-
-    $conds = array();
-//    var_dump($node);
-    if ($node->scheduler_post_enabled) {
-      $conds['timestamp_posted'] = _scheduler_get_timestamp_from_post("post");
-    }
-    else {
-      $conds['timestamp_posted'] = 0;
-    }
-    if ($node->scheduler_hide_enabled) {
-      $conds['timestamp_hidden'] = _scheduler_get_timestamp_from_post("hide");
-    }
-    else {
-      $conds['timestamp_hidden'] = 0;
-    }
-
-
-    // No schedule needs to take place (works for update and insert too)
-    if (array_sum($conds) == 0) {
-      scheduler_remove_schedule($node);
-      return;
-    }
-    
-    if ($op !== 'insert') {
-      // Determine whether we must UPDATE or INSERT, then do it
-      $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
-      if (db_num_rows($result)) {
-        foreach ($conds as $key => $value) {
-          $update_conds[] = "$key=$value";
-        }
-        db_query('UPDATE {scheduler} SET %s WHERE nid = %d', implode(', ', $update_conds), $node->nid);
-      }
-      else {
-        scheduler_insert_schedule($node, $conds);
-      }
-    }
-    else {
-      scheduler_insert_schedule($node, $conds);
-    }
-  }
-}
-
-function scheduler_insert_schedule($node, $conds) {
-  $conds['nid'] = $node->nid;
-  db_query('INSERT INTO {scheduler} (%s) VALUES (%s)', implode(', ', array_keys($conds)), implode(', ', array_values($conds)));
-}
-
-function scheduler_remove_schedule($node) {
-  db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
-}
-
-/**
- * Implementation of hook_nodeapi().
- */
-function scheduler_nodeapi(&$node, $op, &$arg) {
-  switch ($op){
-    case 'insert':
-      scheduler_write($node, $op, $arg);
-      break;
-    case 'update':
-      scheduler_write($node, $op, $arg);
-      break;
-    case 'delete':
-      scheduler_remove_schedule($node);
-      break;
-  }
-}
-
-function scheduler_form_alter($form_id,&$form){
-  if (user_access('schedule nodes')) {
-    $type = (isset($form['type']) && isset($form['type']['#value'])) ? $form['type']['#value'] : NULL;
-    
-    switch($form_id){
-      case $type."_node_settings":
-        $form['workflow']['scheduler_nodeapi_'.$type] = array(
-          '#type' => 'radios',
-          '#title' => t('Scheduler'),
-          '#options' => array(0=>t("Disabled"),1=>t("Enabled")),
-          '#default_value' => variable_get("scheduler_nodeapi_".$type,0)
-        );
-        break;
-      case $type."_node_form":
-        if (variable_get('scheduler_nodeapi_'.$type,0)){
-          // determine which fieldsets to show based on _settings
-          switch(variable_get("scheduler_form_mode",0)){
-            case 0:
-              $fieldsets = array("post","hide");
-              break;
-            case 1:
-              $fieldsets = array("post");
-              break;
-            case 2:
-              $fieldsets = array("hide");
-              break;
-          }
-          
-          // build the form values for the post and/or the hide fieldset
-          foreach ($fieldsets as $stampname){
-            // first check if a value has just been posted (e.g. we are in node validation)
-            $timestamp[$stampname] = _scheduler_get_timestamp_from_post($stampname);
-            $enabled = $_POST['edit']['scheduler_'.$stampname.'_enabled'];
-                        
-            if (empty($timestamp[$stampname])){
-              // no value was POSTed, so check for values from the database
-              if(!$db_result){
-                $db_result = db_fetch_array(db_query("SELECT * FROM {scheduler} WHERE nid=%d",
-                                                     $form['nid']['#value']));
-              }
-              $db_field = ($stampname == "post") ? "timestamp_posted" : "timestamp_hidden";
-              $timestamp[$stampname] = $db_result[$db_field];
-              
-              // if we got a value from the database, then enable the fieldset
-              $enabled = !empty($timestamp[$stampname]);
-            } 
-    
-            if (empty($timestamp[$stampname])){
-              // no value was in the database,
-              // so use the current time/date
-              $timestamp[$stampname] = time();
-            } 
-                        
-            // define $form['posted_scheduler'] or $form['hidden_scheduler']
-            $form[$stampname."_scheduler"] = array(
-              '#type' => 'fieldset',
-              '#collapsible' => true,
-              '#collapsed' => !$enabled,
-              '#weight' => 39,
-              '#title' => t("Automatically $stampname document"),
-              '#description' => t("The date at which your document will be automatically ".
-                                  (($stampname == "post") ? "posted" : "hidden"))
-            );
-            $form[$stampname."_scheduler"]["scheduler_".$stampname."_enabled"] = array(
-              '#type' => 'checkbox',
-              '#title' => t('Enabled'),
-              '#tree' => false,
-              '#return_value' => 1,
-              '#default_value' => $enabled
-            );
-            _scheduler_add_form_from_timestamp($timestamp[$stampname],
-                                               $form[$stampname."_scheduler"],
-                                               $stampname);
-    
-          } // end foreach
-        } // end nodetype check
-    } // end nodetype switch
-  } // end permission check
-}
-
-// check values that have just been POSTed for form submissions
-// if those values exist, parse them into a standard Drupal timestamp
-// and return that value
-function _scheduler_get_timestamp_from_post($stampname){
-  // avoid calculating this twice in one loadtime
-  static $scheduler_timestamps;
-  
-  if (empty($scheduler_timestamps[$stampname])){
-    $edit = $_POST['edit'];
-    $offset = ($edit[$stampname."_ampm"] == "pm") ? 12 : 0;
-    $time = mktime(
-      $edit[$stampname."_hour"] + $offset,
-      $edit[$stampname."_minute"],
-      00, //seconds
-      $edit[$stampname."_month"],
-      $edit[$stampname."_day"],
-      $edit[$stampname."_year"]
-    );
-    if ($time == -1){
-      $out = false;
-    } else {
-      $out = $time;
-    }
-  } else {
-    $out = $scheduler_timestamps[$stampname];
-  }
-  
-  return $out;
-}
-
-// parse a unix timestamp into form elements
-function _scheduler_add_form_from_timestamp($timestamp,&$form,$prefix){
-  $months = array(1 => t('January'), t('February'), t('March'), t('April'), t('May'), t('June'), t('July'), t('August'), t('September'), t('October'), t('November'), t('December'));
-  $hours = drupal_map_assoc(range(1, 12));
-  $am_pms = array('am' => t('am'), 'pm' => t('pm'));
-  // ...minutes (with leading 0s)
-  for ($i = 0; $i <= 59; $i++) $minutes[$i] = $i < 10 ? "0$i" : $i;
-
-  $form[$prefix.'_day'] = array(
-    '#prefix' => '<div class="container-inline"><div class="day">',
-    '#type' => 'textfield',
-    '#default_value' => date('d', $timestamp),
-    '#maxlength' => 2,
-    '#size' => 2,
-    '#description' => t('day'),
-    '#tree' => false,
-    '#required' => TRUE);
-  $form[$prefix.'_month'] = array(
-    '#type' => 'select',
-    '#default_value' => date('m', $timestamp),
-    '#options' => $months,
-    '#description' => t('month'),
-    '#tree' => false,
-    '#required' => TRUE);
-  $form[$prefix.'_year'] = array(
-    '#type' => 'textfield',
-    '#default_value' => date('Y', $timestamp),
-    '#maxlength' => 4,
-    '#size' => 4,
-    '#description' => t('year'),
-    '#tree' => false,
-    '#required' => TRUE);
-  $form[$prefix.'_hour'] = array(
-    '#prefix' => '</div><div class="time">',
-    '#type' => 'select',
-    '#default_value' => date("g", $timestamp),
-    '#options' => $hours,
-    '#required' => TRUE,
-    '#tree' => false,
-    '#description' => t('hour'));
-  $form[$prefix.'_minute'] = array(
-    '#prefix' => ':',
-    '#type' => 'select',
-    '#default_value' => date('i', $timestamp),
-    '#options' => $minutes,
-    '#required' => TRUE,
-    '#tree' => false,
-    '#description' => t('minutes'));
-  $form[$prefix.'_ampm'] = array(
-    '#type' => 'select',
-    '#default_value' => date('a', $timestamp),
-    '#options' => $am_pms,
-    '#tree' => false,
-    '#required' => TRUE);
-  $form['close'] = array(
-    '#type' => 'markup',
-    '#value' => '</div></div>');
-  
-}
-
-function _scheduler_form_to_timestamp(){
-
-}
 
 /**
  * Implementation of hook_perm().
  */
 function scheduler_perm() {
-  return array('schedule nodes');
+  return array('schedule (un)publishing of nodes');
 }
 
-function _scheduler_hour_format($hour) {
-  if ($hour == 0) {
-    return t('12 am');
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function scheduler_form_alter($form_id, &$form) {
+  //allow scheduling on a per-node-type basis
+  if (isset($form['type']) && $form['type']['#value'] .'_node_settings' == $form_id) {
+    $form['workflow']['scheduler_'. $form['type']['#value']] = array(
+      '#type' => 'checkbox', 
+      '#title' => t('Enable scheduled (un)publishing'), 
+      '#default_value' => variable_get('scheduler_'. $form['type']['#value'], 1),
+      '#description' => t('Check this box to enable scheduled (un)publishing for this node type.')
+    );
   }
-  if ($hour == 12) {
-    return t('12 pm');
-  }
-  if ($hour > 12) {
-    $hour = $hour - 12;
-    return t('%hour pm', array('%hour' => $hour));
-  }
-  else {
-    return t('%hour am', array('%hour' => $hour));
+ 
+  else if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    if (user_access('schedule (un)publishing of nodes')) {
+      // if scheduling has been enabled for this node type
+      if (variable_get('scheduler_'. $form['type']['#value'], 1) == 1) {
+        
+        //use JScalendar picker for dates if the module exists and is enabled
+        $jscalendar = FALSE;
+        if (module_exist('jscalendar')) {
+          $jscalendar = TRUE;
+          // Show 24-hour clock for JScalendar
+          $form['#jscalendar_timeFormat'] = '24';
+        }
+        
+        $node = $form['#node'];
+        
+        //only load the values if we are viewing an existing node
+        if ($node->nid > 0) {
+          $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = %d', $node->nid));
+        }
+        
+        $form['scheduler_settings'] = array(
+          '#type' => 'fieldset',
+          '#title' => t('Scheduling options'),
+          '#collapsible' => TRUE,
+          '#collapsed' => ($defaults->publish_on != 0 || $defaults->unpublish_on != 0) ? FALSE: TRUE,
+          '#weight' => 35
+        );
+        
+        $form['scheduler_settings']['publish_on'] = array(
+          '#type' => 'textfield', 
+          '#title' => t('Publish on'), 
+          '#maxlength' => 25,
+          '#default_value' => $defaults->publish_on ? format_date($defaults->publish_on, 'custom', 'Y-m-d H:i:s') : '',
+          '#description' => t('Format: 1981-11-24 15:24:07. Leave blank to publish on the time of form submission.'),
+          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
+        );
+        
+        $form['scheduler_settings']['unpublish_on'] = array(
+          '#type' => 'textfield', 
+          '#title' => t('Unpublish on'), 
+          '#maxlength' => 25, 
+          '#default_value' => $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', 'Y-m-d H:i:s') : '',
+          '#description' => t('Format: 1981-11-24 15:24:07. Leave blank to not unpublish this node.'),
+          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
+        );
+      }    
+    } 
   }
 }
 
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  if (user_access('schedule (un)publishing of nodes')) {
+    switch ($op) {
+      case 'submit':
+        // right before we save the node, we need to check if a "publish on" value has been set
+        // if it has been set, we want to make sure the node is unpublished
+        // since it will be published at a later date
+        if ($node->publish_on != '') {
+          $node->status = 0;
+        }
+      
+        //adjust the entered times to the sitewide configured timezone
+       $node->publish_on = $node->publish_on ? strtotime($node->publish_on) + variable_get('date_default_timezone', 0) : NULL;
+       $node->unpublish_on = $node->unpublish_on ? strtotime($node->unpublish_on) + variable_get('date_default_timezone', 0) : NULL;
+      
+        break;
+      
+      case 'insert':
+        db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
+        break;
+
+      case 'update':
+        db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
+        break;
+  
+      case 'delete':
+        db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
+        break;
+    }
+  }
+}
+
+
+/**
+ * Implementation of hook_cron().
+ */
 function scheduler_cron() {
-  // If we are past the posting time, then post.
-  $result = db_query('SELECT s.nid, s.timestamp_posted, s.timestamp_hidden FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.timestamp_posted > 0 AND s.timestamp_posted < %d', time());
-  $numpost = db_num_rows($result);
-  while ($node = db_fetch_object($result)) {
-    db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->timestamp_posted, $node->timestamp_posted, $node->nid);
-
-    // No hide information for node, no need to keep record
-    if ($node->timestamp_hidden == 0) {
+  $clear_cache = FALSE;
+  
+  //if the time now is greater than the time to publish a node, publish it
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d', time());
+  
+  while ($node = db_fetch_object($nodes)) {
+    db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->publish_on, $node->publish_on, $node->nid);
+    
+    //if this node is not to be unpublished, then we can delete the record
+    if ($nodes->unpublish_on == 0) {
       db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
     }
-    // This node needs to be hidden later, only set posted to empty
+    //we need to unpublish this node at some time so clear the publish on since it's been published
     else {
-      db_query('UPDATE {scheduler} SET timestamp_posted = 0 WHERE nid = %d', $node->nid);
+      db_query('UPDATE {scheduler} SET publish_on = 0 WHERE nid = %d', $node->nid);
     }
+    
+    watchdog('content', t('%type: scheduled publishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
+    $clear_cache = TRUE;
   }
-
-  //  If we are past the hide time, then hide.
-  $result = db_query('SELECT s.nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.timestamp_hidden > 0 AND s.timestamp_hidden < %d', time());
-  $numhide = db_num_rows($result);
-  while ($node = db_fetch_object($result)) {
-    // Hide node and remove schedule entry
-    db_query('UPDATE {node} SET status = 0 WHERE nid = %d', $node->nid);
+  
+  //if the time is greater than the time to unpublish a node, unpublish it
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d', time());
+  
+  while ($node = db_fetch_object($nodes)) {
+    //if this node is to be unpublished, we can update the node and remove the record since it can't be republished
+    db_query('UPDATE {node} SET status = 0 AND changed = %d WHERE nid = %d', $node->unpublish_on, $node->nid);
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
+    watchdog('content', t('%type: scheduled unpublishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
+    $clear_cache = TRUE;
   }
-
-  if ($numhide || $numpost) {
-    watchdog('special', t('Scheduler posted %numpost nodes and hid %numhide nodes.', array('%numpost' => $numpost, '%numhide' => $numhide)));
-    // Clear cache so anonymous users see changes
+  
+  if ($clear_cache) {
+    // clear the cache so an anonymous poster can see the node being published or unpublished
     cache_clear_all();
   }
 }
-
-//TODO: provide more options for filtering
-function scheduler_admin() {
-  $header = array(
-    array('data' => t('Title'), 'field' => 'n.title'),
-    array('data' => t('Author'), 'field' => 'u.name'),
-    array('data' => t('Post'), 'field' => 's.timestamp_posted'),
-    array('data' => t('Hide'), 'field' => 's.timestamp_hidden'),
-    array('data' => t('Operations'), 'colspan' => 2)
-  );
-
-  // Default ordering
-  if (!isset($_GET['order']) && !isset($_GET['sort'])) {
-    $_GET['order'] = t('Post');
-    $_GET['sort'] = 'desc';
-  }
-
-  $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.timestamp_posted, s.timestamp_hidden FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid' . tablesort_sql($header);
-  $result = pager_query($sql, 50);
-
-  while ($node = db_fetch_object($result)) {
-    $rows[] = array(
-      ($node->status ? l($node->title, "node/$node->nid") : $node->title),
-      format_name($node),
-      ($node->timestamp_posted ? format_date($node->timestamp_posted) : '&nbsp;'),
-      ($node->timestamp_hidden ? format_date($node->timestamp_hidden) : '&nbsp;'),
-      l(t('edit'), 'node/'. $node->nid .'/edit'),
-      l(t('delete'), "admin/node/delete/$node->nid")
-    );
-  }
-
-  if (count($rows)) {
-    if ($pager = theme('pager', NULL, 50, 0, tablesort_pager())) {
-      $rows[] = array(array('data' => $pager, 'colspan' => 6));
-    }
-
-    return theme('table', $header, $rows);
-  }
-  else {
-    return t('There are no scheduled nodes.');
-  }
-}
-
-// Generates a range for dates between $start and $end, but
-// unlike range(), it starts the array index from $start and not 0
-function scheduler_range($start, $end) {
-  $range = array();
-  for($i=$start; $i<=$end; $i++) {
-    $range[$i] = $i;
-  }
-  return $range;
-}
-
-// Return the time of post or hide operation on the node
-/*
-function scheduler_nodetime(&$node, $type = 'post') {
-  if (!in_array($type, array('post', 'hide'))) {
-    return time();
-  }
-  else {
-    return mktime(
-      $node->{"scheduler_{$type}_hour"}, $node->{"scheduler_{$type}_minute"}, rand(0, 59),
-      $node->{"scheduler_{$type}_month"}, $node->{"scheduler_{$type}_day"}, $node->{"scheduler_{$type}_year"}
-    );
-  }
-}
-*/
-?>
