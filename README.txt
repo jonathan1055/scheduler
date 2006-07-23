@@ -4,7 +4,7 @@ README
 --------------------------------------------------------------------------
 This module allows nodes to be published and unpublished on specified dates.
 If JSCalendar is enabled (part of the JSTools module 
-<http://www.drupal.org/modules/jstools>), a popup Javascript
+<http://drupal.org/node/57285>), a popup Javascript
 calendar is used to select the date and time for (un)publishing of nodes, 
 otherwise it defaults to text input.
 
