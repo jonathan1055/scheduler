@@ -105,11 +105,17 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         break;
       
       case 'insert':
-        db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
+        //only insert into database if we need to (un)publish this node at some date
+        if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
+          db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
+        }
         break;
 
       case 'update':
-        db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
+        //only update database if we need to (un)publish this node at some date
+        if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
+          db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
+        }
         break;
   
       case 'delete':
