@@ -31,7 +31,7 @@ INSTALLATION
    aren't, use the following SQL:
    
    MySQL:
-     CREATE TABLE {scheduler} (
+     CREATE TABLE scheduler (
        nid int(10) unsigned NOT NULL,
        publish_on int(11) NOT NULL default '0',
        unpublish_on int(11) NOT NULL default '0',
@@ -39,7 +39,7 @@ INSTALLATION
      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
   
    PostgresSQL:           
-     CREATE TABLE {scheduler} (
+     CREATE TABLE scheduler (
        nid integer NOT NULL default '0',
        publish_on integer NOT NULL default '0',
        unpublish_on integer NOT NULL default '0',
