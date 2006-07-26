@@ -35,6 +35,7 @@ INSTALLATION
        nid int(10) unsigned NOT NULL,
        publish_on int(11) NOT NULL default '0',
        unpublish_on int(11) NOT NULL default '0',
+       timezone int(6) NOT NULL default '0',
        PRIMARY KEY (nid)
      ) /*!40100 DEFAULT CHARACTER SET utf8 */;
   
@@ -43,6 +44,7 @@ INSTALLATION
        nid integer NOT NULL default '0',
        publish_on integer NOT NULL default '0',
        unpublish_on integer NOT NULL default '0',
+       timezone integer NOT NULL default '0',
        PRIMARY KEY (nid)
      );
      
