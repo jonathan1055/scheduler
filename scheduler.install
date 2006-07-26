@@ -9,6 +9,7 @@ function scheduler_install() {
                   nid int(10) unsigned NOT NULL,
                   publish_on int(11) NOT NULL default '0',
                   unpublish_on int(11) NOT NULL default '0',
+                  timezone int(6) NOT NULL default '0',
                   PRIMARY KEY (nid)
                 ) /*!40100 DEFAULT CHARACTER SET utf8 */;"
               );
@@ -18,6 +19,7 @@ function scheduler_install() {
                   nid integer NOT NULL default '0',
                   publish_on integer NOT NULL default '0',
                   unpublish_on integer NOT NULL default '0',
+                  timezone integer NOT NULL default '0',
                   PRIMARY KEY (nid));"
               );
       break;
@@ -34,10 +36,12 @@ function scheduler_update_2() {
     case 'mysqli':
       $ret[] = update_sql("ALTER TABLE {scheduler} CHANGE timestamp_posted publish_on int(11) NOT NULL default '0'");
       $ret[] = update_sql("ALTER TABLE {scheduler} CHANGE timestamp_hidden unpublish_on int(11) NOT NULL default '0'");
+      $ret[] = update_sql("ALTER TABLE {scheduler} ADD timezone int(6) NOT NULL default '0'");
       break;
     case 'pgsql':
       db_change_column($ret, 'scheduler', 'timestamp_posted', 'publish_on', 'integer', array('not null' => TRUE, 'default' => "0"));
       db_change_column($ret, 'scheduler', 'timestamp_hidden', 'unpublish_on', 'integer', array('not null' => TRUE, 'default' => "0"));
+      db_add_column($ret, 'scheduler', 'timezone', 'integer', array('not null' => TRUE, 'default' => "0"));
       break;
   }
 
