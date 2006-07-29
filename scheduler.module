@@ -67,8 +67,11 @@ function scheduler_form_alter($form_id, &$form) {
           '#type' => 'textfield', 
           '#title' => t('Publish on'), 
           '#maxlength' => 25,
-          '#default_value' => $defaults->publish_on ? date('Y-m-d H:i:s', $defaults->publish_on) : '',
-          '#description' => t('Format: 2006-11-24 15:24:07. Leave blank to publish on the time of form submission.'),
+          //we subtract the time zone to show the user the correct time they entered
+          //and below that we show the timezone to adjust this time by
+          //we store the adjusted timezone value in the database for cron
+          '#default_value' => $defaults->publish_on ? date('Y-m-d H:i:s', $defaults->publish_on - $defaults->timezone) : '',
+          '#description' => t('Format: %time. Leave blank to publish on the time of form submission.', array('%time' => date('Y-m-d H:i:s'))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
         
@@ -76,8 +79,11 @@ function scheduler_form_alter($form_id, &$form) {
           '#type' => 'textfield', 
           '#title' => t('Unpublish on'), 
           '#maxlength' => 25, 
-          '#default_value' => $defaults->unpublish_on ? date('Y-m-d H:i:s', $defaults->unpublish_on) : '',
-          '#description' => t('Format: 2006-11-24 15:24:07. Leave blank to not unpublish this node.'),
+          //we subtract the time zone to show the user the correct time they entered
+          //and below that we show the timezone to adjust this time by
+          //we store the adjusted timezone value in the database for cron
+          '#default_value' => $defaults->unpublish_on ? date('Y-m-d H:i:s', $defaults->unpublish_on - $defaults->timezone) : '',
+          '#description' => t('Format: %time. Leave blank to not unpublish this node.', array('%time' => date('Y-m-d H:i:s'))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
         
@@ -87,7 +93,7 @@ function scheduler_form_alter($form_id, &$form) {
         $form['scheduler_settings']['timezone'] = array(
           '#type' => 'select', 
           '#title' => t('Time zone'), 
-          '#default_value' => $defaults->timezone ? $defaults_timezone : (strlen($user->timezone) ? $user->timezone : variable_get('date_default_timezone', 0)),
+          '#default_value' => $defaults->timezone ? $defaults->timezone : (strlen($user->timezone) ? $user->timezone : variable_get('date_default_timezone', 0)),
           '#options' => $zones, 
           '#description' => t('Select the time zone to (un)publish in.')
         );
@@ -125,18 +131,22 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         break;
 
       case 'update':
-        //only update database if we need to (un)publish this node at some date
-        if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
-          $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
+        $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
           
-          //if this node has already been scheduled, update its record
-          if ($exists) {
+        //if this node has already been scheduled, update its record
+        if ($exists) {
+          //only update database if we need to (un)publish this node at some date
+          //otherwise the user probably cleared out the (un)publish dates so we should remove the record
+          if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
             db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d, timezone = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->timezone, $node->nid);
           }
-          //node doesn't exist, create a record
           else {
-            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
+            db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
           }
+        }
+        //node doesn't exist, create a record only if the (un)publish fields are blank
+        else if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
+          db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
         }
         break;
   
