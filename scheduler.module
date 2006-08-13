@@ -165,7 +165,7 @@ function scheduler_cron() {
   $clear_cache = FALSE;
   
   //if the time now is greater than the time to publish a node, publish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d', time());
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d + s.timezone', time());
   
   while ($node = db_fetch_object($nodes)) {
     db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->publish_on, $node->publish_on, $node->nid);
@@ -187,7 +187,7 @@ function scheduler_cron() {
   }
   
   //if the time is greater than the time to unpublish a node, unpublish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d', time());
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d + s.timezone', time());
   
   while ($node = db_fetch_object($nodes)) {
     //if this node is to be unpublished, we can update the node and remove the record since it can't be republished
