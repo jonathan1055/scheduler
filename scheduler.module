@@ -171,7 +171,7 @@ function scheduler_cron() {
     db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->publish_on, $node->publish_on, $node->nid);
     
     //if this node is not to be unpublished, then we can delete the record
-    if ($nodes->unpublish_on == 0) {
+    if ($node->unpublish_on == 0) {
       db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
     }
     //we need to unpublish this node at some time so clear the publish on since it's been published
