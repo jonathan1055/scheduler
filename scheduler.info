@@ -1,0 +1,2 @@
+name = Scheduler
+description = This module allows nodes to be published and unpublished on specified dates.
