@@ -24,23 +24,25 @@ function scheduler_perm() {
  */
 function scheduler_form_alter($form_id, &$form) {
   //allow scheduling on a per-node-type basis
-  if (isset($form['type']) && $form['type']['#value'] .'_node_settings' == $form_id) {
-    $form['workflow']['scheduler_'. $form['type']['#value']] = array(
+
+  if ('node_type_form' == $form_id) {
+    $form['workflow']['scheduler'] = array(
       '#type' => 'checkbox', 
       '#title' => t('Enable scheduled (un)publishing'), 
-      '#default_value' => variable_get('scheduler_'. $form['type']['#value'], 0),
+      '#default_value' => variable_get('scheduler_'. $form['identity']['type']['#default_value'], 0),
       '#description' => t('Check this box to enable scheduled (un)publishing for this node type.')
     );
   }
- 
-  else if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
+
+  // is this a node form?
+  else if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id) {
     if (user_access('schedule (un)publishing of nodes')) {
       // if scheduling has been enabled for this node type
       if (variable_get('scheduler_'. $form['type']['#value'], 0) == 1) {
-        
+
         //use JScalendar picker for dates if the module exists and is enabled
         $jscalendar = FALSE;
-        if (module_exist('jscalendar')) {
+        if (module_exists('jscalendar')) {
           $jscalendar = TRUE;
           // Show 24-hour clock for JScalendar
           $form['#jscalendar_timeFormat'] = '24';
@@ -52,6 +54,11 @@ function scheduler_form_alter($form_id, &$form) {
         if ($node->nid > 0) {
           $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on, timezone FROM {scheduler} WHERE nid = %d', $node->nid));
         }
+	else {
+          // init standard values
+          $defaults = new StdClass;
+          $defaults->publish_on = $defaults->unpublish_on = NULL;
+	}
         
         //note don't use format_date() because drupal automatically formats the date to the user's timezone
         //this will show the wrong time because scheduler can set nodes to be published in different timezones
@@ -182,7 +189,7 @@ function scheduler_cron() {
     //invoke scheduler API
     _scheduler_scheduler_api($node, 'publish');
     
-    watchdog('content', t('%type: scheduled publishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
+    watchdog('content', t('@type: scheduled publishing of %title.', array('@type' => $node->type, '%title' => $node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
     $clear_cache = TRUE;
   }
   
@@ -197,7 +204,7 @@ function scheduler_cron() {
     //invoke scheduler API
     _scheduler_scheduler_api($node, 'unpublish');
     
-    watchdog('content', t('%type: scheduled unpublishing of %title.', array('%type' => theme('placeholder', t($node->type)), '%title' => theme('placeholder', $node->title))), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
+    watchdog('content', t('@type: scheduled unpublishing of %title.', array('@type' => $node->type, '%title' => $node->title)), WATCHDOG_NOTICE, l(t('view'), 'node/'. $node->nid));
     $clear_cache = TRUE;
   }
   
