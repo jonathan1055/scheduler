@@ -191,7 +191,7 @@ function scheduler_cron() {
   
   while ($node = db_fetch_object($nodes)) {
     //if this node is to be unpublished, we can update the node and remove the record since it can't be republished
-    db_query('UPDATE {node} SET status = 0 AND changed = %d WHERE nid = %d', $node->unpublish_on, $node->nid);
+    db_query('UPDATE {node} SET status = 0, changed = %d WHERE nid = %d', $node->unpublish_on, $node->nid);
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
     
     //invoke scheduler API
