@@ -168,7 +168,7 @@ function scheduler_cron() {
   $nodes = db_query('SELECT *, (publish_on - timezone) AS utc_publish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d + s.timezone', time());
   
   while ($node = db_fetch_object($nodes)) {
-    db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->utc_publish_on, $utc_node->publish_on, $node->nid);
+    db_query('UPDATE {node} SET created = %d, changed = %d, status = 1 WHERE nid = %d', $node->utc_publish_on, $node->utc_publish_on, $node->nid);
     
     //if this node is not to be unpublished, then we can delete the record
     if ($node->unpublish_on == 0) {
