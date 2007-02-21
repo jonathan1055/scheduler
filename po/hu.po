@@ -1,103 +1,83 @@
-# Hungarian translation of Drupal scheduler.module
-# Copyright Weblabor Team <info [at] weblabor.hu>
+# translation of scheduler-module.po to Hungarian
+# Hungarian translation of Drupal (scheduler.module)
+# Copyright Drupal.hu Fordítói Csapat <forditas [at] drupal.hu>
+# Generated from file: scheduler.module,v 1.30 2005/01/21 22:55:20 goba
 #
+# FEHÉR János <feher.janos _at- mindworks.hu>, 2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: 2.21\n"
-"POT-Creation-Date: 2004-03-15 14:39+0100\n"
-"PO-Revision-Date: 2004-03-15 14:50+0100\n"
-"Last-Translator: Weblabor Team <info [at] weblabor.hu>\n"
-"Language-Team: hu\n"
+"Project-Id-Version: scheduler-module\n"
+"POT-Creation-Date: 2007-02-20 10:26+0100\n"
+"PO-Revision-Date: 2007-02-20 12:51+0100\n"
+"Last-Translator: FEHÉR János <feher.janos _at- mindworks.hu>\n"
+"Language-Team: Hungarian <Drupal.hu Fordítási Csapat <forditas [at] drupal.hu>>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: KBabel 1.11.4\n"
 
-#: scheduler.module:6
-msgid "A module to schedule node (un)publishing."
-msgstr "Tartalmak megjelenésének és eltűnésének időzítése."
+#: scheduler.module:9
+msgid "A module to schedule when nodes are (un)published."
+msgstr "Tartalmak közzétételének és eltűnésének időzítése."
 
-#: scheduler.module:12
-msgid "schedule"
-msgstr "időzítés"
+#: scheduler.module:31
+msgid "Enable scheduled (un)publishing"
+msgstr "Tartalmak közzétételének és eltűnésének időzítése."
 
-#: scheduler.module:64 ;79
-msgid "Invalid date set, automatically adjusted"
-msgstr "Érvénytelen dátum beállítás, automatikusan javítva"
-
-#: scheduler.module:68 ;83
-msgid "Date in the past"
-msgstr "Dátum a múltban"
-
-#: scheduler.module:114
-msgid "Automatically post document"
-msgstr "Tartalom automatikus publikálása egy későbbi időpontban"
-
-#: scheduler.module:114
-msgid ""
-"The date at which your document will be automatically posted.  Do not check "
-"the enabling checkbox, if you don't want to schedule this document."
+#: scheduler.module:33
+msgid "Check this box to enable scheduled (un)publishing for this node type."
 msgstr ""
-"A dokumentum későbbi automatikus megjelenésének dátuma. Ha nem szeretnéd ezt "
-"a szolgáltatást haszálni, ne engedélyezd."
+"Bekapcsolva ezen a tartalomtípuson a megjelenítés és az elrejtés "
+"időzíthetővé válik."
 
-#: scheduler.module:115
-msgid "Automatically hide document"
+#: scheduler.module:67
+msgid "Scheduling options"
+msgstr "Időzítési beállítások"
+
+#: scheduler.module:75
+msgid "Publish on"
+msgstr "Közzététel bekapcsolása"
+
+#: scheduler.module:81
+msgid "Format: %time. Leave blank to publish on the time of form submission."
 msgstr ""
-"Tartalom publikálásának automatikus megszüntetése egy későbbi időpontban"
+"A formátum: %time . Üresen hagyva a tartalom a beküldéskor "
+"közzétetté válik."
 
-#: scheduler.module:115
-msgid ""
-"The date at which your document will be automatically hidden.  Do not check "
-"the enabling checkbox, if you don't want to schedule this document."
-msgstr ""
-"A dokumentum későbbi automatikus elrejtésének dátuma. Ha nem szeretnéd ezt a "
-"szolgáltatást haszálni, ne engedélyezd."
+#: scheduler.module:87
+msgid "Unpublish on"
+msgstr "Elrejtés bekapcsolása"
 
-#: scheduler.module:146
-# msgid "Enabled"
-# msgstr ""
+#: scheduler.module:93
+msgid "Format: %time. Leave blank to not unpublish this node."
+msgstr "A formátum: %time. Üresen hagyva a tartalom nem lesz rejtett."
 
-#: scheduler.module:153
-msgid "Scheduling"
-msgstr "Időzítés"
+#: scheduler.module:102
+msgid "Time zone"
+msgstr "Időzóna"
 
-#: scheduler.module:174
-msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
-msgstr "Az időzítő postázott %numpost nodeot, és elrejtett %numhide nodeot."
+#: scheduler.module:105
+msgid "Select the time zone to (un)publish in."
+msgstr "Tartalmak közzétételének és elrejtése időzítése."
 
-#: scheduler.module:182
-# msgid "title"
-# msgstr ""
+#: scheduler.module:192
+msgid "@type: scheduled publishing of %title."
+msgstr "@type: %title időzített közzététele"
 
-#: scheduler.module:183
-# msgid "author"
-# msgstr ""
+#: scheduler.module:192;207
+msgid "view"
+msgstr "megtekint"
 
-#: scheduler.module:184 ;191
-msgid "post"
-msgstr "megjelenítés"
+#: scheduler.module:207
+msgid "@type: scheduled unpublishing of %title."
+msgstr "@type: %title elrejtésének időzítése."
 
-#: scheduler.module:185
-msgid "hide"
-msgstr "elrejtés"
-
-#: scheduler.module:186
-# msgid "operations"
-# msgstr ""
-
-#: scheduler.module:204
-msgid "edit node"
-msgstr "szerkesztés"
-
-#: scheduler.module:205
-msgid "delete node"
-msgstr "törlés"
-
-# scheduler.module:217
-msgid "There are no scheduled nodes."
-msgstr "Nincs egyetlen időzített node sem."
+#: scheduler.module:192;207
+msgid "content"
+msgstr "tartalom"
 
 #: scheduler.module:0
 msgid "scheduler"
 msgstr "időzítő"
+
