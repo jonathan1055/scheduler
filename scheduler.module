@@ -29,7 +29,7 @@ function scheduler_form_alter($form_id, &$form) {
     $form['workflow']['scheduler'] = array(
       '#type' => 'checkbox', 
       '#title' => t('Enable scheduled (un)publishing'), 
-      '#default_value' => variable_get('scheduler_'. $form['identity']['type']['#default_value'], 0),
+      '#default_value' => variable_get('scheduler_'. $form['#node_type']->type, 0),
       '#description' => t('Check this box to enable scheduled (un)publishing for this node type.')
     );
   }
