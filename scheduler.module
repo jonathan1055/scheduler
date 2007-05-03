@@ -18,6 +18,21 @@ function scheduler_perm() {
   return array('schedule (un)publishing of nodes');
 }
 
+/**
+ * Implementation of hook_menu().
+ */
+function scheduler_menu($may_cache) {
+  $items = array();
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'scheduler/cron',
+      'type' => MENU_CALLBACK,
+      'callback' => '_scheduler_run_cron',
+      'access' => TRUE,
+    );
+  }
+  return $items;
+}
 
 /**
  * Implementation of hook_form_alter().
@@ -214,6 +229,13 @@ function scheduler_cron() {
   }
 }
 
+function _scheduler_run_cron() {
+  scheduler_cron();
+  if (ob_get_level() > 0) {
+    ob_clean();
+  }
+  exit();
+}
 
 /**
  * Scheduler API to perform actions when nodes are (un)published
