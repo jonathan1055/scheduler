@@ -1,0 +1,206 @@
+# LANGUAGE translation of Drupal (scheduler.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: scheduler.module,v 1.33 2005/04/29 22:09:20 tdobes
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Scheduler\n"
+"POT-Creation-Date: 2005-10-04 08:48+0200\n"
+"PO-Revision-Date: 2007-01-14 18:26+0100\n"
+"Last-Translator: Kristen Thorsen <kristen@netsirk.no>\n"
+"Language-Team: Norwegian <kristen@netsirk.no>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=1;\n"
+"X-Poedit-Language: Norwegian Bokmal\n"
+"X-Poedit-Country: NORWAY\n"
+
+#: scheduler.module:9
+msgid "A module to schedule node (un)publishing."
+msgstr "En modul for å planlegge node (av)publisering."
+
+#: scheduler.module:21
+msgid "schedule"
+msgstr "planlagte oppgaver"
+
+#: scheduler.module:30
+msgid "Form display mode"
+msgstr "Skjema visningsmodus"
+
+#: scheduler.module:30
+msgid "Allow post and hide scheduling"
+msgstr "Tillat post og gjem planlegging"
+
+#: scheduler.module:30
+msgid "Only allow post scheduling"
+msgstr "Bare tillat post planlegging"
+
+#: scheduler.module:30
+msgid "Only allow hide scheduling"
+msgstr "Bare tillat skjul planlegging"
+
+#: scheduler.module:30
+msgid "What options should the scheduler form offer?"
+msgstr "Hvilke opsjoner skal planlagte oppgaver skjema tilby?"
+
+#: scheduler.module:94
+msgid "Invalid scheduled post date set; automatically adjusted"
+msgstr "Ugyldig planlagt post dato angitt, automatisk justert"
+
+#: scheduler.module:95;113
+msgid "Invalid date set, automatically adjusted"
+msgstr "Ugyldig dato angitt, automatisk justert"
+
+#: scheduler.module:100
+msgid "Scheduled post date in the past"
+msgstr "Planlagt post dato i fortid"
+
+#: scheduler.module:101;119
+msgid "Date in the past"
+msgstr "Dato i fortid"
+
+#: scheduler.module:112
+msgid "Invalid scheduled hide date set; automatically adjusted"
+msgstr "Ugyldig planlagt skjul dato angitt,  automatisk justert."
+
+#: scheduler.module:118
+msgid "Scheduled hide date in the past"
+msgstr "Planlagt skjul dato i fortiden."
+
+#: scheduler.module:138
+msgid "January"
+msgstr "Januar"
+
+#: scheduler.module:138
+msgid "February"
+msgstr "Februar"
+
+#: scheduler.module:138
+msgid "March"
+msgstr "Mars"
+
+#: scheduler.module:138
+msgid "April"
+msgstr "April"
+
+#: scheduler.module:138
+msgid "May"
+msgstr "Mai"
+
+#: scheduler.module:138
+msgid "June"
+msgstr "Juni"
+
+#: scheduler.module:138
+msgid "July"
+msgstr "Juli"
+
+#: scheduler.module:138
+msgid "August"
+msgstr "August"
+
+#: scheduler.module:138
+msgid "September"
+msgstr "September"
+
+#: scheduler.module:138
+msgid "October"
+msgstr "Oktober"
+
+#: scheduler.module:138
+msgid "November"
+msgstr "November"
+
+#: scheduler.module:138
+msgid "December"
+msgstr "Desember"
+
+#: scheduler.module:149
+msgid "Automatically post document"
+msgstr "Automatisk poste dokument"
+
+#: scheduler.module:149
+msgid "The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document."
+msgstr "Datoen som du ønsker at dokumentet ditt skal automatisk postet<br />Ikke kryss av aktivering merket med mindre du vil planlegge dette dokumentet."
+
+#: scheduler.module:150
+msgid "Automatically hide document"
+msgstr "Automatisk skjule dokument"
+
+#: scheduler.module:150
+msgid "The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document."
+msgstr "Datoen som du ønsker at dokumentet ditt skal automatisk skjules <br />Ikke kryss av aktivering merket med mindre du vil planlegge dette dokumentet."
+
+#: scheduler.module:197
+msgid "Enabled"
+msgstr "Aktivert"
+
+#: scheduler.module:210
+msgid "Scheduling"
+msgstr "Planlegging"
+
+#: scheduler.module:224
+msgid "12 am"
+msgstr "12 am"
+
+#: scheduler.module:227
+msgid "12 pm"
+msgstr "12 pm"
+
+#: scheduler.module:231
+msgid "%hour pm"
+msgstr "%hour pm"
+
+#: scheduler.module:234
+msgid "%hour am"
+msgstr "%hour am"
+
+#: scheduler.module:265
+msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
+msgstr "Planlagte oppgaver postet %numpost noder og skjulte %numhide noder."
+
+#: scheduler.module:274
+msgid "Title"
+msgstr "Tittel"
+
+#: scheduler.module:275
+msgid "Author"
+msgstr "Forfatter"
+
+#: scheduler.module:276;283
+msgid "Post"
+msgstr "Post"
+
+#: scheduler.module:277
+msgid "Hide"
+msgstr "Skjul"
+
+#: scheduler.module:278
+msgid "Operations"
+msgstr "Handlinger"
+
+#: scheduler.module:296
+msgid "edit"
+msgstr "endre"
+
+#: scheduler.module:297
+msgid "delete"
+msgstr "slett"
+
+#: scheduler.module:309
+msgid "There are no scheduled nodes."
+msgstr "Det er ingen planlagte noder."
+
+#: scheduler.module:265
+msgid "special"
+msgstr "spesiell"
+
+#: scheduler.module:219
+msgid "schedule nodes"
+msgstr "planlagte noder"
+
+#: scheduler.module:0
+msgid "scheduler"
+msgstr "planlagte oppgaver"
+
