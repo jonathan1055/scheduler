@@ -1,0 +1,81 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Scheduler 5.x-1.4\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2007-05-15 12:46+0100\n"
+"Last-Translator: kecinzer <kecinzer@gmail.com>\n"
+"Language-Team: Petr Řezníček <kecinzer@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Poedit-Language: Czech\n"
+"X-Poedit-Country: CZECH REPUBLIC\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: scheduler.module:9
+msgid "A module to schedule when nodes are (un)published."
+msgstr "Modul k plánování, kdy mají být uzly vydány nebo stáhnuty."
+
+#: scheduler.module:46
+msgid "Enable scheduled (un)publishing"
+msgstr "Povolit plánované (ne)vydání"
+
+#: scheduler.module:48
+msgid "Check this box to enable scheduled (un)publishing for this node type."
+msgstr "Povolit plánované (ne)vydýní pro tento typ uzlu."
+
+#: scheduler.module:82
+msgid "Scheduling options"
+msgstr "Možnosti plánování"
+
+#: scheduler.module:90
+msgid "Publish on"
+msgstr "Vydat dne"
+
+#: scheduler.module:96
+msgid "Format: %time. Leave blank to publish on the time of form submission."
+msgstr "Format: %time. Nechte prázne pro vydání ve standarním čase dle formuláře."
+
+#: scheduler.module:102
+msgid "Unpublish on"
+msgstr "Stáhnout dne"
+
+#: scheduler.module:108
+msgid "Format: %time. Leave blank to not unpublish this node."
+msgstr "Format: %time. Nechte prázdné pokud nechcete stahovat."
+
+#: scheduler.module:117
+msgid "Time zone"
+msgstr "Časová zóna"
+
+#: scheduler.module:120
+msgid "Select the time zone to (un)publish in."
+msgstr "Vyberte časovou zónu pro (ne)vydání."
+
+#: scheduler.module:222
+msgid "@type: scheduled publishing of %title."
+msgstr "@type: plánované vydání %title."
+
+#: scheduler.module:222
+#: ;241
+msgid "view"
+msgstr "zobrazit"
+
+#: scheduler.module:241
+msgid "@type: scheduled unpublishing of %title."
+msgstr "@type: plánované stažení %title."
+
+#: scheduler.module:222
+#: ;241
+msgid "content"
+msgstr "obsah"
+
+#: scheduler.module:18
+msgid "schedule (un)publishing of nodes"
+msgstr "plánovat (ne)vydání uzlů"
+
+#: scheduler.module:0
+msgid "scheduler"
+msgstr "plánovač"
+
