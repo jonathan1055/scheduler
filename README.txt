@@ -55,3 +55,13 @@ INSTALLATION
    check the box "enable scheduled (un)publishing" for this node type
    
 5. Repeat for all node types that you want scheduled publishing for
+
+The scheduler will run with Drupal's cron.php, and will (un)publish nodes
+timed on or before the time at which cron runs.  If you'd like finer
+granularity to scheduler, but don't want to run Drupal's cron more often (due
+to its taking too many cycles to run every minute, for example), you can set
+up another cron job for the scheduler to run independently.  Scheduler's cron
+is at /scheduler/cron; a sample crontab entry to run scheduler every minute
+would look like:
+
+* * * * * /usr/bin/wget -O - -q "http://example.com/scheduler/cron"
