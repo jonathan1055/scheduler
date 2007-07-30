@@ -30,6 +30,12 @@ function scheduler_menu($may_cache) {
       'callback' => '_scheduler_run_cron',
       'access' => TRUE,
     );
+    $items[] = array(
+      'path' => 'scheduler/timecheck',
+      'type' => MENU_CALLBACK,
+      'callback' => '_scheduler_timecheck',
+      'access' => user_access('schedule (un)publishing of nodes'),
+    );
   }
   return $items;
 }
@@ -270,3 +276,20 @@ function _scheduler_scheduler_api($node, $action) {
     $function($node, $action); 
   }
 }
+
+function _scheduler_timecheck() {
+  $now = time();
+  return theme('scheduler_timecheck', $now);
+}
+
+function theme_scheduler_timecheck($now) {
+
+  drupal_set_title(t('Scheduler OS time check'));
+
+  return
+    t('Your server reports the time as %time and if all is well this time should be <a target="_blank" href="http://wwp.greenwichmeantime.com/">UTC London Time</a>', 
+       array('%time' => date("Y-m-d H:i:s", $now))
+    );
+}
+
+
