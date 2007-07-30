@@ -286,10 +286,21 @@ function theme_scheduler_timecheck($now) {
 
   drupal_set_title(t('Scheduler OS time check'));
 
+  $t = localtime($now, TRUE);
+
+  $lt = ($t['tm_year']+1900) .'-'. ($t['tm_mon']+1) .'-'. $t['tm_mday'] .' '. $t['tm_hour'] .':'. $t['tm_min'] .':'. $t['tm_sec'];
+
+  $t_options = array(
+    '%time' => date("Y-m-d H:i:s", $now), 
+    '%lt' => $lt,
+  );
+
   return
-    t('Your server reports the time as %time and if all is well this time should be <a target="_blank" href="http://wwp.greenwichmeantime.com/">UTC London Time</a>', 
-       array('%time' => date("Y-m-d H:i:s", $now))
-    );
+    t('Your server reports the UTC time as %time and "localtime" as %lt.', $t_options) . 
+   '<p />'.
+    t('If all is well with your server\'s time configuration UTC should match <a target="_blank" href="http://wwp.greenwichmeantime.com/">UTC London Time</a> and the localtime should be the time where you are.') .
+    '<p />'.
+    t('If this is not the case please have your Unix System Administrator fix your servers time/date configuration.');
 }
 
 
