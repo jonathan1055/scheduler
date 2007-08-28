@@ -303,4 +303,36 @@ function theme_scheduler_timecheck($now) {
     t('If this is not the case please have your Unix System Administrator fix your servers time/date configuration.');
 }
 
+/**
+ * Implementation of "contrib module views" hook_views_tables()
+ */
+function scheduler_views_tables() {
+  $tables['scheduler'] = array(
+    'name' => 'scheduler',
+    'join' => array(
+      'left' => array(
+        'table' => 'node',
+        'field' => 'nid',
+      ),
+      'right' => array(
+        'field' => 'nid',
+      ),
+    ),
+    'fields' => array(
+      'publish_on' => array(
+        'name' => t('Scheduler: publish on'),
+        'help' => t('Date/time on which the article will be automatically published'),
+        'sortable' => TRUE,
+        'handler' => views_handler_field_dates(),
+      ),
+      'unpublish_on' => array(
+        'name' => t('Scheduler: unpublish on'),
+        'help' => t('Date/time on which the article will be automatically un-published'),
+        'sortable' => TRUE,
+        'handler' => views_handler_field_dates(),
+      ),
+    ),
+  );
+  return $tables;
+}
 
