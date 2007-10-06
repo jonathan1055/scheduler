@@ -143,6 +143,12 @@ function scheduler_form_alter($form_id, &$form) {
 function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if (user_access('schedule (un)publishing of nodes')) {
     switch ($op) {
+      case 'view':
+        if ($page) {
+          $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
+          drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
+        }
+        break;
       case 'load':
         if ($node->nid) {
           $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
