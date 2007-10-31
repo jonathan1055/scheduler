@@ -152,7 +152,7 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if (user_access('schedule (un)publishing of nodes')) {
     switch ($op) {
       case 'view':
-        if ($page) {
+        if ($page && $node->unpublish_on) {
           $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
           drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
         }
