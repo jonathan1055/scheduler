@@ -1,12 +1,14 @@
-# LANGUAGE translation of Drupal (scheduler.module)
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
-# Generated from file: scheduler.module,v 1.33 2005/04/29 22:09:20 tdobes
+# Generated from file: scheduler.module,v 1.46.4.13 2007/10/31 17:08:33 karpuz
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2005-10-04 08:48+0200\n"
+"POT-Creation-Date: 2007-12-16 19:20+0100\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -16,190 +18,114 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: scheduler.module:9
-msgid "A module to schedule node (un)publishing."
+msgid "A module to schedule when nodes are (un)published."
 msgstr ""
 
-#: scheduler.module:21
-msgid "schedule"
+#: scheduler.module:52
+msgid "Enable scheduled (un)publishing"
 msgstr ""
 
-#: scheduler.module:30
-msgid "Form display mode"
+#: scheduler.module:54
+msgid "Check this box to enable scheduled (un)publishing for this node type."
 msgstr ""
 
-#: scheduler.module:30
-msgid "Allow post and hide scheduling"
+#: scheduler.module:58
+msgid "Alter published on time"
 msgstr ""
 
-#: scheduler.module:30
-msgid "Only allow post scheduling"
-msgstr ""
-
-#: scheduler.module:30
-msgid "Only allow hide scheduling"
-msgstr ""
-
-#: scheduler.module:30
-msgid "What options should the scheduler form offer?"
+#: scheduler.module:60
+msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
 msgstr ""
 
 #: scheduler.module:94
-msgid "Invalid scheduled post date set; automatically adjusted"
+msgid "Scheduling options"
 msgstr ""
 
-#: scheduler.module:95;113
-msgid "Invalid date set, automatically adjusted"
+#: scheduler.module:102
+msgid "Publish on"
 msgstr ""
 
-#: scheduler.module:100
-msgid "Scheduled post date in the past"
+#: scheduler.module:108
+msgid "Format: %time. Leave blank to publish on the time of form submission."
 msgstr ""
 
-#: scheduler.module:101;119
-msgid "Date in the past"
+#: scheduler.module:114
+msgid "Unpublish on"
 msgstr ""
 
-#: scheduler.module:112
-msgid "Invalid scheduled hide date set; automatically adjusted"
+#: scheduler.module:120
+msgid "Format: %time. Leave blank to not unpublish this node."
 msgstr ""
 
-#: scheduler.module:118
-msgid "Scheduled hide date in the past"
+#: scheduler.module:130
+msgid "Time zone"
 msgstr ""
 
-#: scheduler.module:138
-msgid "January"
+#: scheduler.module:133
+msgid "Select the time zone to (un)publish in."
 msgstr ""
 
-#: scheduler.module:138
-msgid "February"
+#: scheduler.module:251
+msgid "@type: scheduled publishing of %title."
 msgstr ""
 
-#: scheduler.module:138
-msgid "March"
+#: scheduler.module:251;270
+msgid "view"
 msgstr ""
 
-#: scheduler.module:138
-msgid "April"
+#: scheduler.module:270
+msgid "@type: scheduled unpublishing of %title."
 msgstr ""
 
-#: scheduler.module:138
-msgid "May"
+#: scheduler.module:310
+msgid "Scheduler OS time check"
 msgstr ""
 
-#: scheduler.module:138
-msgid "June"
+#: scheduler.module:322
+msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
 msgstr ""
 
-#: scheduler.module:138
-msgid "July"
+#: scheduler.module:324
+msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
 msgstr ""
 
-#: scheduler.module:138
-msgid "August"
+#: scheduler.module:326
+msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
 msgstr ""
 
-#: scheduler.module:138
-msgid "September"
+#: scheduler.module:346
+msgid "Scheduler: publish on"
 msgstr ""
 
-#: scheduler.module:138
-msgid "October"
+#: scheduler.module:347
+msgid "Date/time on which the article will be automatically published"
 msgstr ""
 
-#: scheduler.module:138
-msgid "November"
+#: scheduler.module:352
+msgid "Scheduler: unpublish on"
 msgstr ""
 
-#: scheduler.module:138
-msgid "December"
+#: scheduler.module:353
+msgid "Date/time on which the article will be automatically un-published"
 msgstr ""
 
-#: scheduler.module:149
-msgid "Automatically post document"
+#: scheduler.module:251;270
+msgid "content"
 msgstr ""
 
-#: scheduler.module:149
-msgid "The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr ""
-
-#: scheduler.module:150
-msgid "Automatically hide document"
-msgstr ""
-
-#: scheduler.module:150
-msgid "The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr ""
-
-#: scheduler.module:197
-msgid "Enabled"
-msgstr ""
-
-#: scheduler.module:210
-msgid "Scheduling"
-msgstr ""
-
-#: scheduler.module:224
-msgid "12 am"
-msgstr ""
-
-#: scheduler.module:227
-msgid "12 pm"
-msgstr ""
-
-#: scheduler.module:231
-msgid "%hour pm"
-msgstr ""
-
-#: scheduler.module:234
-msgid "%hour am"
-msgstr ""
-
-#: scheduler.module:265
-msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
-msgstr ""
-
-#: scheduler.module:274
-msgid "Title"
-msgstr ""
-
-#: scheduler.module:275
-msgid "Author"
-msgstr ""
-
-#: scheduler.module:276;283
-msgid "Post"
-msgstr ""
-
-#: scheduler.module:277
-msgid "Hide"
-msgstr ""
-
-#: scheduler.module:278
-msgid "Operations"
-msgstr ""
-
-#: scheduler.module:296
-msgid "edit"
-msgstr ""
-
-#: scheduler.module:297
-msgid "delete"
-msgstr ""
-
-#: scheduler.module:309
-msgid "There are no scheduled nodes."
-msgstr ""
-
-#: scheduler.module:265
-msgid "special"
-msgstr ""
-
-#: scheduler.module:219
-msgid "schedule nodes"
+#: scheduler.module:18
+msgid "schedule (un)publishing of nodes"
 msgstr ""
 
 #: scheduler.module:0
 msgid "scheduler"
+msgstr ""
+
+#: scheduler.info:0
+msgid "Scheduler"
+msgstr ""
+
+#: scheduler.info:0
+msgid "This module allows nodes to be published and unpublished on specified dates."
 msgstr ""
 

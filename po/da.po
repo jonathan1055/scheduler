@@ -1,12 +1,12 @@
 # Danish translation of Drupal (scheduler.module)
-# Copyright 2005 Morten Wulff <wulff@tem.dtu.dk>
+# Copyright 2005-2007 Morten Wulff <wulff@ratatosk.net>
 msgid ""
 msgstr ""
 "Project-Id-Version: Danish translation of Drupal (scheduler.module) $Id$\n"
 "POT-Creation-Date: 2005-07-06 14:44+0200\n"
-"PO-Revision-Date: 2006-04-07 12:18+0100\n"
-"Last-Translator: Morten Wulff <wulff@psyke.org>\n"
-"Language-Team: Danish <danish@psyke.org>\n"
+"PO-Revision-Date: 2007-12-16 19:30+0100\n"
+"Last-Translator: Morten Wulff <wulff@ratatosk.net>\n"
+"Language-Team: Danish <l10n@drupaldanmark.dk>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,193 +15,116 @@ msgstr ""
 "X-Poedit-Country: DENMARK\n"
 
 #: scheduler.module:9
-msgid "A module to schedule node (un)publishing."
+msgid "A module to schedule when nodes are (un)published."
 msgstr "Planlæg udgivelse af indholdselementer."
 
-#: scheduler.module:21
-msgid "schedule"
-msgstr "planlæg"
+#: scheduler.module:52
+msgid "Enable scheduled (un)publishing"
+msgstr "Aktiver planlagt udgivelse"
 
-#: scheduler.module:30
-msgid "Form display mode"
-msgstr "Formularvisning"
+#: scheduler.module:54
+msgid "Check this box to enable scheduled (un)publishing for this node type."
+msgstr "Aktiver planlagt udgivelse af denne indholdstype."
 
-#: scheduler.module:30
-msgid "Allow post and hide scheduling"
-msgstr "Tillad planlægning af offentliggørelse og nedtagning"
+#: scheduler.module:58
+msgid "Alter published on time"
+msgstr "Skift udgivelsestidspunkt"
 
-#: scheduler.module:30
-msgid "Only allow post scheduling"
-msgstr "Tillad kun planlægning af offentliggørelse"
-
-#: scheduler.module:30
-msgid "Only allow hide scheduling"
-msgstr "Tillad kun planlægning af nedtagning"
-
-#: scheduler.module:30
-msgid "What options should the scheduler form offer?"
-msgstr "Hvilke valgmuligheder skal planægningsformularen tilbyde?"
+#: scheduler.module:60
+msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
+msgstr "Skift oprettelsestidspunktet så det svarer til udgivelsestidspunktet."
 
 #: scheduler.module:94
-msgid "Invalid scheduled post date set; automatically adjusted"
-msgstr "Ugyldig udgivelsesdato; justeret automatisk"
-
-#: scheduler.module:95
-#: ;113
-msgid "Invalid date set, automatically adjusted"
-msgstr "Ugyldig dato; justeret automatisk"
-
-#: scheduler.module:100
-msgid "Scheduled post date in the past"
-msgstr "Udgivelsesdato passeret"
-
-#: scheduler.module:101
-#: ;119
-msgid "Date in the past"
-msgstr "Dato passeret"
-
-#: scheduler.module:112
-msgid "Invalid scheduled hide date set; automatically adjusted"
-msgstr "Udgyldig dato for nedtagning; justeret automatisk"
-
-#: scheduler.module:118
-msgid "Scheduled hide date in the past"
-msgstr "Nedtagningsdato passeret"
-
-#: scheduler.module:138
-msgid "January"
-msgstr "Januar"
-
-#: scheduler.module:138
-msgid "February"
-msgstr "Februar"
-
-#: scheduler.module:138
-msgid "March"
-msgstr "Marts"
-
-#: scheduler.module:138
-msgid "April"
-msgstr "April"
-
-#: scheduler.module:138
-msgid "May"
-msgstr "Maj"
-
-#: scheduler.module:138
-msgid "June"
-msgstr "Juni"
-
-#: scheduler.module:138
-msgid "July"
-msgstr "Juli"
-
-#: scheduler.module:138
-msgid "August"
-msgstr "August"
-
-#: scheduler.module:138
-msgid "September"
-msgstr "September"
-
-#: scheduler.module:138
-msgid "October"
-msgstr "Oktober"
-
-#: scheduler.module:138
-msgid "November"
-msgstr "November"
-
-#: scheduler.module:138
-msgid "December"
-msgstr "December"
-
-#: scheduler.module:149
-msgid "Automatically post document"
-msgstr "Udgiv indholdselement automatisk"
-
-#: scheduler.module:149
-msgid "The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr "Datoen hvor du ønsker indholdselement skal udgives.<br />Du skal kun markere afkrydsningsfeltet hvis du ønsker at planlægge udgivelsen af indholdselementet."
-
-#: scheduler.module:150
-msgid "Automatically hide document"
-msgstr "Nedtag indholdselement automatisk"
-
-#: scheduler.module:150
-msgid "The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr "Datoen hvor du ønsker indholdselement skal nedtages.<br />Du skal kun markere afkrydsningsfeltet hvis du ønsker at planlægge udgivelsen af indholdselementet."
-
-#: scheduler.module:197
-msgid "Enabled"
-msgstr "Aktiveret"
-
-#: scheduler.module:210
-msgid "Scheduling"
+msgid "Scheduling options"
 msgstr "Planlægning"
 
-#: scheduler.module:224
-msgid "12 am"
-msgstr "12 am"
+#: scheduler.module:102
+msgid "Publish on"
+msgstr "Udgiv"
 
-#: scheduler.module:227
-msgid "12 pm"
-msgstr "12 pm"
+#: scheduler.module:108
+msgid "Format: %time. Leave blank to publish on the time of form submission."
+msgstr "Format: %time. Lad feltet stå tomt for at udgive når indholdselementet gemmes."
 
-#: scheduler.module:231
-msgid "%hour pm"
-msgstr "%hour pm"
+#: scheduler.module:114
+msgid "Unpublish on"
+msgstr "Fjern"
 
-#: scheduler.module:234
-msgid "%hour am"
-msgstr "%hour am"
+#: scheduler.module:120
+msgid "Format: %time. Leave blank to not unpublish this node."
+msgstr "Format: %time. Lad feltet stå tomt for at fjerne indholdselementet."
 
-#: scheduler.module:265
-msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
-msgstr "Planlægning har udgivet %numpost indholdselementer og nedtaget %numhide indholdselementer."
+#: scheduler.module:130
+msgid "Time zone"
+msgstr "Tidszone"
 
-#: scheduler.module:274
-msgid "Title"
-msgstr "Titel"
+#: scheduler.module:133
+msgid "Select the time zone to (un)publish in."
+msgstr "Vælg hvilken tidszone der udgives i."
 
-#: scheduler.module:275
-msgid "Author"
-msgstr "Forfatter"
+#: scheduler.module:251
+msgid "@type: scheduled publishing of %title."
+msgstr "@type: Planlagt udgivelse af %title"
 
-#: scheduler.module:276
-#: ;283
-msgid "Post"
-msgstr "Offentliggør"
+#: scheduler.module:251
+#: ;270
+msgid "view"
+msgstr "vis"
 
-#: scheduler.module:277
-msgid "Hide"
-msgstr "Skjul"
+#: scheduler.module:270
+msgid "@type: scheduled unpublishing of %title."
+msgstr "@type: Planlagt fjernelse af %title."
 
-#: scheduler.module:278
-msgid "Operations"
-msgstr "Handlinger"
+#: scheduler.module:310
+msgid "Scheduler OS time check"
+msgstr "Tjek operativsystem-tid."
 
-#: scheduler.module:296
-msgid "edit"
-msgstr "rediger"
+#: scheduler.module:322
+msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
+msgstr "Din server angiver UTC-tid som %time og \"localtime\" som %lt."
 
-#: scheduler.module:297
-msgid "delete"
-msgstr "slet"
+#: scheduler.module:324
+msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
+msgstr "Hvis serverens tidsindstilling er korrekt skal UTC svare til <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London</a> og \"localtime\" skal svare til tiden hvor du befinder dig."
 
-#: scheduler.module:309
-msgid "There are no scheduled nodes."
-msgstr "Der er ingen planlagte indholdselementer."
+#: scheduler.module:326
+msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
+msgstr "Hvis det ikke er tilfældet skal du bede din systemadministrator om at ændre serverens tidsindstilling."
 
-#: scheduler.module:265
-msgid "special"
-msgstr "speciel"
+#: scheduler.module:346
+msgid "Scheduler: publish on"
+msgstr "Planlægning: Udgiv den"
 
-#: scheduler.module:219
-msgid "schedule nodes"
-msgstr "planlæg indholdselementer"
+#: scheduler.module:347
+msgid "Date/time on which the article will be automatically published"
+msgstr "Tidspunktet hvor indholdet automatisk udgives"
+
+#: scheduler.module:352
+msgid "Scheduler: unpublish on"
+msgstr "Planlægning: Fjern den"
+
+#: scheduler.module:353
+msgid "Date/time on which the article will be automatically un-published"
+msgstr "Tidspunktet hvor indholdet automatisk fjernes"
+
+#: scheduler.module:251
+#: ;270
+msgid "content"
+msgstr "indhold"
+
+#: scheduler.module:18
+msgid "schedule (un)publishing of nodes"
+msgstr "Planlæg udgivelse af indholdselementer."
 
 #: scheduler.module:0
 msgid "scheduler"
 msgstr "planlægning"
+
+#: scheduler.info:0
+msgid "Scheduler"
+msgstr "Planlægning"
+
+#: scheduler.info:0
+msgid "This module allows nodes to be published and unpublished on specified dates."
+msgstr "Udgiv og fjerne indholdselementer på bestemte datoer."
 
