@@ -232,6 +232,7 @@ function scheduler_cron() {
     if (variable_get('scheduler_touch_'. $n->type, 0) == 1) {
       $n->created = $node->utc_publish_on;
     }
+    node_submit($n);
     node_save($n);
     
     //if this node is not to be unpublished, then we can delete the record
@@ -258,6 +259,7 @@ function scheduler_cron() {
     $n = node_load($node->nid);
     $n->changed = $node->utc_publish_on;
     $n->status = 0;
+    node_submit($n);
     node_save($n);
 
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
