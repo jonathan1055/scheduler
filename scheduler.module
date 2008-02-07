@@ -233,7 +233,7 @@ function scheduler_cron() {
     }
     $n = node_submit($n);
     $n->status = 1;
-    node_save(node_submit($n));
+    node_save($n);
     
     //if this node is not to be unpublished, then we can delete the record
     if ($n->unpublish_on == 0) {
