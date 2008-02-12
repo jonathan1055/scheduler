@@ -2,28 +2,49 @@
 // $Id$
 
 function scheduler_install() {
-  switch ($GLOBALS['db_type']) {
-    case 'mysql':
-    case 'mysqli':
-      db_query("CREATE TABLE {scheduler} (
-                  nid int(10) unsigned NOT NULL,
-                  publish_on int(11) NOT NULL default '0',
-                  unpublish_on int(11) NOT NULL default '0',
-                  timezone int(6) NOT NULL default '0',
-                  PRIMARY KEY (nid)
-                ) /*!40100 DEFAULT CHARACTER SET utf8 */;"
-              );
-      break;
-    case 'pgsql':
-      db_query("CREATE TABLE {scheduler} (
-                  nid integer NOT NULL default '0',
-                  publish_on integer NOT NULL default '0',
-                  unpublish_on integer NOT NULL default '0',
-                  timezone integer NOT NULL default '0',
-                  PRIMARY KEY (nid));"
-              );
-      break;
-  }
+  drupal_install_schema('scheduler');
+}
+
+function scheduler_schema() {
+  return array(
+    'scheduler' => array(
+      'description' => t('The main table to hold the scheduler data.'),
+      'fields' => array(
+        'nid' => array(
+          'description' => t('The foreign key to node.nid'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'publish_on' => array(
+          'description' => t('The UNIX UTC timestamp when to publish'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => '0',
+        ),
+        'unpublish_on' => array(
+          'description' => t('The UNIX UTC timestamp when to unpublish'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => '0',
+        ),
+        'timezone' => array(
+          'description' => t('The offset in seconds due to the timezone'),
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => '0',
+        ),
+      ),
+      'indexes' => array(
+        'scheduler_publish_on' => array('publish_on'),
+        'scheduler_unpublish_on' => array('unpublish_on'),
+      ),
+      'primary key' => array('nid'),
+    ),
+  );
 }
 
 function scheduler_update_1() {
@@ -45,5 +66,11 @@ function scheduler_update_2() {
       break;
   }
 
+  return $ret;
+}
+
+function scheduler_update_3() {
+  $ret[] = update_sql("CREATE INDEX scheduler_publish_on ON {scheduler} (publish_on)");
+  $ret[] = update_sql("CREATE INDEX scheduler_unpublish_on ON {scheduler} (unpublish_on)");
   return $ret;
 }
