@@ -249,6 +249,12 @@ function scheduler_cron() {
       $n->created = $node->utc_publish_on;
     }
 
+    // Use the actions system to publish the node.
+    watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
+    $actions = array('node_publish_action', 'node_save_action');
+    $context['node'] = $n;
+    actions_do($actions, $n, $context, NULL, NULL);
+
     // if this node is not to be unpublished, then we can delete the record
     if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
       db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
@@ -261,7 +267,6 @@ function scheduler_cron() {
     // invoke scheduler API
     _scheduler_scheduler_api($n, 'publish');
 
-    watchdog('content', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
     $clear_cache = TRUE;
   }
 
@@ -272,16 +277,17 @@ function scheduler_cron() {
     // if this node is to be unpublished, we can update the node and remove the record since it can't be republished
     $n = node_load($node->nid);
     $n->changed = $node->utc_publish_on;
-    $n = node_submit($n);
-    $n->status = 0;
-    node_save($n);
 
+    // Use the actions system to unpublish the node.
+    watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
+    $actions = array('node_unpublish_action', 'node_save_action');
+    $context['node'] = $n;
+    actions_do($actions, $n, $context, NULL, NULL);
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
 
     // invoke scheduler API
     _scheduler_scheduler_api($n, 'unpublish');
 
-    watchdog('content', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
     $clear_cache = TRUE;
   }
 
