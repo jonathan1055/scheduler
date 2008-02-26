@@ -147,29 +147,29 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
  * Implementation of hook_nodeapi().
  */
 function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
-  if (user_access('schedule (un)publishing of nodes')) {
+
+  // Run $op == load for any user.
+  if ($op == 'load' && isset($node->nid) && $node->nid) {
+    $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
+    if ($result) {
+      $row = db_fetch_array($result);
+      if (isset($row['nid'])) {
+        unset($row['nid']);
+        $node->publish_on = $row['publish_on'];
+        $node->unpublish_on = $row['unpublish_on'];
+        $node->timezone = $row['timezone'];
+        $row['published'] = $row['publish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['publish_on']) : NULL;
+        $row['unpublished'] = $row['unpublish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['unpublish_on']) : NULL;
+        $node->scheduler = $row;
+      }
+    }
+  }
+  elseif (user_access('schedule (un)publishing of nodes')) {
     switch ($op) {
       case 'view':
         if ($page && isset($node->unpublish_on) && $node->unpublish_on) {
           $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
           drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
-        }
-        break;
-      case 'load':
-        if (isset($node->nid) && $node->nid) {
-          $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
-          if ($result) {
-            $row = db_fetch_array($result);
-            if (isset($row['nid'])) {
-            unset($row['nid']);
-              $node->publish_on = $row['publish_on'];
-              $node->unpublish_on = $row['unpublish_on'];
-              $node->timezone = $row['timezone'];
-              $row['published'] = $row['publish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['publish_on']) : NULL;
-              $row['unpublished'] = $row['unpublish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['unpublish_on']) : NULL;
-              $node->scheduler = $row;
-            }
-          }
         }
         break;
       case 'presave':
