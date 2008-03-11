@@ -379,12 +379,14 @@ function scheduler_views_tables() {
         'help' => t('Date/time on which the article will be automatically published'),
         'sortable' => TRUE,
         'handler' => views_handler_field_dates(),
+        'option' => 'string',
       ),
       'unpublish_on' => array(
         'name' => t('Scheduler: unpublish on'),
         'help' => t('Date/time on which the article will be automatically un-published'),
         'sortable' => TRUE,
         'handler' => views_handler_field_dates(),
+        'option' => 'string',
       ),
     ),
   );
