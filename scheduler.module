@@ -182,7 +182,7 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // right before we save the node, we need to check if a "publish on" value has been set
         // if it has been set, we want to make sure the node is unpublished
         // since it will be published at a later date (but only if the value is in the future.
-        if ($node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
+        if ($node->publish_on != '' && is_numeric($node->publish_on) && ($node->publish_on - $node->timezone) > time()) {
           $node->status = 0;
         }
         break;
