@@ -1,208 +1,132 @@
-# LANGUAGE translation of Drupal (scheduler.module)
-# Copyright 2005 NAME <EMAIL@ADDRESS>
-# Generated from file: scheduler.module,v 1.32 2005/03/03 19:44:27 tdobes
-#
+# $Id$
+# 
+# German translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+# scheduler.module,v 1.46.4.18 2008/02/07 17:42:27 karpuz
+# scheduler.info: n/a
+# 
+#, fuzzy
 msgid ""
-msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2005-08-09 21:54+0200\n"
-"PO-Revision-Date: 2005-08-09 22:17+0100\n"
+""
+msgstr "Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2008-04-21 14:20+0200\n"
+"PO-Revision-Date: 2008-04-21 14:20+0200\n"
 "Last-Translator: Gabriel Birke <birke@d-scribe.de>\n"
-"Language-Team: German\n"
+"Language-Team: German <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
 #: scheduler.module:9
-msgid "A module to schedule node (un)publishing."
-msgstr "Ein Modul zum Veröffentlichen und Verbergen."
+msgid "A module to schedule when nodes are (un)published."
+msgstr "Ein Modul um Termine für das Veröffentlichen von Inhalten festzulegen."
 
-#: scheduler.module:21
-msgid "schedule"
-msgstr "Zeitplan"
+#: scheduler.module:51
+msgid "Enable scheduled (un)publishing"
+msgstr "Terminplan verwenden"
 
-#: scheduler.module:30
-msgid "Form display mode"
-msgstr "Anzeigemodus des Formulars"
+#: scheduler.module:53
+msgid "Check this box to enable scheduled (un)publishing for this node type."
+msgstr "Dieses Feld ankreuzen, um beim Bearbeiten dieses  Inhaltstyps einen Termin zum Veröffentlichen festlegen zu können "
 
-#: scheduler.module:30
-msgid "Allow post and hide scheduling"
-msgstr "Veröffentlichen und Verbergen erlauben"
+#: scheduler.module:57
+msgid "Alter published on time"
+msgstr "Erstellungsdatum ändern"
 
-#: scheduler.module:30
-msgid "Only allow post scheduling"
-msgstr "Nur Veröffentlichungsdatum erlauben"
+#: scheduler.module:59
+msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
+msgstr "Dieses Feld ankreuzen um beim Veröffentlichen das Erstellungsdatum des Eintrags auf das Veröffentlichungsdatum zu setzen"
 
-#: scheduler.module:30
-msgid "Only allow hide scheduling"
-msgstr "Nur Verbergen erlauben"
-
-#: scheduler.module:30
-msgid "What options should the scheduler form offer?"
-msgstr "Welche Optionen soll das Zeitplan-Formular bieten?"
-
-#: scheduler.module:94
-msgid "Invalid scheduled post date set; automatically adjusted"
-msgstr "Ungültiges "
-
-#: scheduler.module:95
-#: ;113
-msgid "Invalid date set, automatically adjusted"
-msgstr "Ungültiges Datum gesetzt; das Datum wurde automatisch angepasst"
-
-#: scheduler.module:100
-msgid "Scheduled post date in the past"
-msgstr "Datum zum Veröffentlichen in der Vergangenheit"
+#: scheduler.module:93
+msgid "Scheduling options"
+msgstr "Veröffentlichungsoptionen"
 
 #: scheduler.module:101
-#: ;119
-msgid "Date in the past"
-msgstr "Datum in der Vergangenheit"
+msgid "Publish on"
+msgstr "Veröffentlichen am"
 
-#: scheduler.module:112
-msgid "Invalid scheduled hide date set; automatically adjusted"
-msgstr "Ungültiges Datum fürs Verbergen gesetzt; das Datum wurde automatisch angepasst"
+#: scheduler.module:107
+msgid "Format: %time. Leave blank to publish on the time of form submission."
+msgstr "Format: %time. Frei lassen, um sofort zu veröffentlichen"
 
-#: scheduler.module:118
-msgid "Scheduled hide date in the past"
-msgstr "Datum zum Verbergen in der Vergangenheit"
+#: scheduler.module:113
+msgid "Unpublish on"
+msgstr "Veröffentlichung zurückziehen am"
 
-#: scheduler.module:138
-msgid "January"
-msgstr "Januar"
+#: scheduler.module:119
+msgid "Format: %time. Leave blank to not unpublish this node."
+msgstr "Format: %time. Frei lassen, um die Veröffentlichung für unbestimmte Zeit bestehen zu lassen"
 
-#: scheduler.module:138
-msgid "February"
-msgstr "Februar"
+#: scheduler.module:129
+msgid "Time zone"
+msgstr "Zeitzone"
 
-#: scheduler.module:138
-msgid "March"
-msgstr "März"
+#: scheduler.module:132
+msgid "Select the time zone to (un)publish in."
+msgstr "Zeitzone für den Veröffentlichungstermin auswählen"
 
-#: scheduler.module:138
-msgid "April"
-msgstr "April"
+#: scheduler.module:250
+msgid "@type: scheduled publishing of %title."
+msgstr "@type: Termin für die Veröffentlichung von %title"
 
-#: scheduler.module:138
-msgid "May"
-msgstr "Mai"
+#: scheduler.module:250
+msgid "view"
+msgstr "Anzeigen"
 
-#: scheduler.module:138
-msgid "June"
-msgstr "Juni"
+#: scheduler.module:270
+msgid "@type: scheduled unpublishing of %title."
+msgstr "@type: Termin für die das zurückziehen der Veröffentlichung von %title"
 
-#: scheduler.module:138
-msgid "July"
-msgstr "Juli"
+#: scheduler.module:310
+msgid "Scheduler OS time check"
+msgstr "Prüfen der Betriebssystemzeit"
 
-#: scheduler.module:138
-msgid "August"
-msgstr "August"
+#: scheduler.module:322
+msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
+msgstr "Der Server lieferte als UTC-Zeit %time und als lokalisierte Zeit %lt"
 
-#: scheduler.module:138
-msgid "September"
-msgstr "September"
+#: scheduler.module:324
+msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
+msgstr "Wenn der Server korrekt konfiguriert ist, sollte die UTC-Zeit mit der <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> übereinstimmen und die lokalisierte Zeit mit der Zeit in Ihrer Zeitzone."
 
-#: scheduler.module:138
-msgid "October"
-msgstr "Oktober"
+#: scheduler.module:326
+msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
+msgstr "Falls das nicht der Fall ist, bitten Sie Ihren Server-Administrator die Zeiteinstellungen des Servers zu korrigieren"
 
-#: scheduler.module:138
-msgid "November"
-msgstr "November"
+#: scheduler.module:346
+msgid "Scheduler: publish on"
+msgstr "Veröffentlichungsmodul: Veröffentlichen am"
 
-#: scheduler.module:138
-msgid "December"
-msgstr "Dezember"
+#: scheduler.module:347
+msgid "Date/time on which the article will be automatically published"
+msgstr "Datum/Zeit an dem der Inhalt automatisch veröffentlicht wird"
 
-#: scheduler.module:149
-msgid "Automatically post document"
-msgstr "Automatisch veröffentlichen"
+#: scheduler.module:352
+msgid "Scheduler: unpublish on"
+msgstr "Veröffentlichungsmodul: Veröffentlichung zurückziehen am"
 
-#: scheduler.module:149
-msgid "The date at which your document will be automatically posted.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr "Das Datum, an dem das Dokument automatisch veröffentlicht wird.<br />Kreuzen Sie die Checkbox nicht an, wenn Sie nicht wollen, dass das Dokument zu einem bestimmten Zeitpunkt veröffentlicht wird."
+#: scheduler.module:353
+msgid "Date/time on which the article will be automatically un-published"
+msgstr "Datum/Zeit an dem die Veröffentlichung des Inhalts automatisch zurückgezogen wird"
 
-#: scheduler.module:150
-msgid "Automatically hide document"
-msgstr "Automatisch verbergen"
+#: scheduler.module:250
+msgid "content"
+msgstr "Inhalt"
 
-#: scheduler.module:150
-msgid "The date at which your document will be automatically hidden.<br />Do not check the enabling checkbox unless you want to schedule this document."
-msgstr "Das Datum, an dem das Dokument automatisch verborgen wird.<br />Kreuzen Sie die Checkbox nicht an, wenn Sie nicht wollen, dass das Dokument zu einem bestimmten Zeitpunkt verborgen wird."
-
-#: scheduler.module:197
-msgid "Enabled"
-msgstr "Aktiviert"
-
-#: scheduler.module:210
-msgid "Scheduling"
-msgstr "Zeitplan"
-
-#: scheduler.module:224
-msgid "12 am"
-msgstr "12 am"
-
-#: scheduler.module:227
-msgid "12 pm"
-msgstr "12 pm"
-
-#: scheduler.module:231
-msgid "%hour pm"
-msgstr "%hour pm"
-
-#: scheduler.module:234
-msgid "%hour am"
-msgstr "%hour am"
-
-#: scheduler.module:265
-msgid "Scheduler posted %numpost nodes and hid %numhide nodes."
-msgstr "Zeitplaner hat %numpost Knoten veröffentlicht und %numhide Knoten verborgen. "
-
-#: scheduler.module:274
-msgid "Title"
-msgstr "Überschrift"
-
-#: scheduler.module:275
-msgid "Author"
-msgstr "Autor"
-
-#: scheduler.module:276
-#: ;283
-msgid "Post"
-msgstr "Veröffentlichen"
-
-#: scheduler.module:277
-msgid "Hide"
-msgstr "Verbergen"
-
-#: scheduler.module:278
-msgid "Operations"
-msgstr "Aktionen"
-
-#: scheduler.module:296
-msgid "edit"
-msgstr "bearbeiten"
-
-#: scheduler.module:297
-msgid "delete"
-msgstr "löschen"
-
-#: scheduler.module:309
-msgid "There are no scheduled nodes."
-msgstr "Es gibt keine Knoten mit Zeitplan."
-
-#: scheduler.module:265
-msgid "special"
-msgstr "speziell"
-
-#: scheduler.module:219
-msgid "schedule nodes"
-msgstr "Zeitplan für Knoten erstellen"
+#: scheduler.module:17
+msgid "schedule (un)publishing of nodes"
+msgstr "veröffentlichungstermin von inhalten festlegen"
 
 #: scheduler.module:0
 msgid "scheduler"
 msgstr "Zeitplan"
 
+#: scheduler.info:0
+msgid "Scheduler"
+msgstr "Veröffentlichungsmodul"
 
+#: scheduler.info:0
+msgid "This module allows nodes to be published and unpublished on specified dates."
+msgstr "Ein Modul um Termine für das Veröffentlichen von Inhalten festzulegen."
