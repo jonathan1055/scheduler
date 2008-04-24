@@ -361,6 +361,16 @@ function scheduler_views_tables() {
         'option' => 'string',
       ),
     ),
+    'sorts' => array(
+      'publish_on' => array(
+        'name' => t('Scheduler: publish on'),
+        'help' => t('Sort by the date the article will be automatically published.'),
+      ),
+      'unpublish_on' => array(
+        'name' => t('Scheduler: unpublish on'),
+        'help' => t('Sort by the date/time on which the article will be automatically un-published.'),
+      ),
+    ),
   );
   return $tables;
 }
