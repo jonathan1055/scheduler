@@ -149,8 +149,8 @@ function scheduler_form_alter($form_id, &$form) {
 function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
   // Run $op == load for any user.
-  if (isset($node->nid) && $node->nid) {
-    if ($op == 'load') {
+  if ($op == 'load') {
+    if (isset($node->nid) && $node->nid) {
       $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
       if ($result) {
         $row = db_fetch_array($result);
@@ -165,33 +165,35 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         }
       }
     }
-    elseif (user_access('schedule (un)publishing of nodes')) {
-      switch ($op) {
-        case 'view':
-          if ($page && $node->unpublish_on) {
-            $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
-            drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
-          }
-          break;
-        case 'submit':
-          //adjust the entered times for timezone consideration
-          $node->publish_on = $node->publish_on ? strtotime($node->publish_on) + $node->timezone : NULL;
-          $node->unpublish_on = $node->unpublish_on ? strtotime($node->unpublish_on) + $node->timezone : NULL;
+  }
+  elseif (user_access('schedule (un)publishing of nodes')) {
+    switch ($op) {
+      case 'view':
+        if ($page && $node->unpublish_on) {
+          $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
+          drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
+        }
+        break;
+      case 'submit':
+        //adjust the entered times for timezone consideration
+        $node->publish_on = $node->publish_on ? strtotime($node->publish_on) + $node->timezone : NULL;
+        $node->unpublish_on = $node->unpublish_on ? strtotime($node->unpublish_on) + $node->timezone : NULL;
 
-          // right before we save the node, we need to check if a "publish on" value has been set
-          // if it has been set, we want to make sure the node is unpublished
-          // since it will be published at a later date (but only if the value is in the future.
-          if ($node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
-            $node->status = 0;
-          }
-          break;
-       case 'insert':
-          //only insert into database if we need to (un)publish this node at some date
-          if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
-            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
-          }
-          break;
-        case 'update':
+        // right before we save the node, we need to check if a "publish on" value has been set
+        // if it has been set, we want to make sure the node is unpublished
+        // since it will be published at a later date (but only if the value is in the future.
+        if ($node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
+          $node->status = 0;
+        }
+        break;
+      case 'insert':
+        //only insert into database if we need to (un)publish this node at some date
+        if (isset($node->nid) && $node->nid && $node->publish_on != NULL || $node->unpublish_on != NULL) {
+          db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
+        }
+        break;
+      case 'update':
+        if (isset($node->nid) && $node->nid) {
           $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
           
           // if this node has already been scheduled, update its record
@@ -209,11 +211,13 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           else if ($node->publish_on != NULL || $node->unpublish_on != NULL) {
             db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
           }
-          break;
-        case 'delete':
+        }
+        break;
+      case 'delete':
+        if (isset($node->nid) && $node->nid) {
           db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
-          break;
-      }
+        }
+        break;
     }
   }
 }
