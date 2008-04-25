@@ -150,7 +150,7 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
   // Run $op == load for any user.
   if ($op == 'load') {
-    if (isset($node->nid) && $node->nid) {
+    if (isset($node->nid) && $node->nid && variable_get('scheduler_'. $node->type, 0) == 1) {
       $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
       if ($result) {
         $row = db_fetch_array($result);
