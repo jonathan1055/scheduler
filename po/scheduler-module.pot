@@ -2,13 +2,15 @@
 #
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
-# Generated from file: scheduler.module,v 1.46.4.13 2007/10/31 17:08:33 karpuz
+# Generated from files:
+#  scheduler.module,v 1.46.4.27 2008/04/28 09:59:22 skiminki
+#  scheduler.info: n/a
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2007-12-16 19:20+0100\n"
+"POT-Creation-Date: 2008-04-28 13:59+0300\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -21,99 +23,115 @@ msgstr ""
 msgid "A module to schedule when nodes are (un)published."
 msgstr ""
 
-#: scheduler.module:52
+#: scheduler.module:51
 msgid "Enable scheduled (un)publishing"
 msgstr ""
 
-#: scheduler.module:54
+#: scheduler.module:53
 msgid "Check this box to enable scheduled (un)publishing for this node type."
 msgstr ""
 
-#: scheduler.module:58
+#: scheduler.module:57
 msgid "Alter published on time"
 msgstr ""
 
-#: scheduler.module:60
+#: scheduler.module:59
 msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
 msgstr ""
 
-#: scheduler.module:94
+#: scheduler.module:93
 msgid "Scheduling options"
 msgstr ""
 
-#: scheduler.module:102
+#: scheduler.module:101
 msgid "Publish on"
 msgstr ""
 
-#: scheduler.module:108
-msgid "Format: %time. Leave blank to publish on the time of form submission."
+#: scheduler.module:107
+msgid "Format: %time. Leave blank to disable scheduled publishing."
 msgstr ""
 
-#: scheduler.module:114
+#: scheduler.module:113
 msgid "Unpublish on"
 msgstr ""
 
-#: scheduler.module:120
-msgid "Format: %time. Leave blank to not unpublish this node."
+#: scheduler.module:119
+msgid "Format: %time. Leave blank to disable scheduled unpublishing."
 msgstr ""
 
-#: scheduler.module:130
+#: scheduler.module:129
 msgid "Time zone"
 msgstr ""
 
-#: scheduler.module:133
+#: scheduler.module:132
 msgid "Select the time zone to (un)publish in."
 msgstr ""
 
-#: scheduler.module:251
+#: scheduler.module:255
 msgid "@type: scheduled publishing of %title."
 msgstr ""
 
-#: scheduler.module:251;270
+#: scheduler.module:255;274
 msgid "view"
 msgstr ""
 
-#: scheduler.module:270
+#: scheduler.module:274
 msgid "@type: scheduled unpublishing of %title."
 msgstr ""
 
-#: scheduler.module:310
+#: scheduler.module:314
 msgid "Scheduler OS time check"
 msgstr ""
 
-#: scheduler.module:322
+#: scheduler.module:326
 msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
 msgstr ""
 
-#: scheduler.module:324
+#: scheduler.module:328
 msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
 msgstr ""
 
-#: scheduler.module:326
+#: scheduler.module:330
 msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
 msgstr ""
 
-#: scheduler.module:346
+#: scheduler.module:350;366;376
 msgid "Scheduler: publish on"
 msgstr ""
 
-#: scheduler.module:347
+#: scheduler.module:351
 msgid "Date/time on which the article will be automatically published"
 msgstr ""
 
-#: scheduler.module:352
+#: scheduler.module:357;370;385
 msgid "Scheduler: unpublish on"
 msgstr ""
 
-#: scheduler.module:353
+#: scheduler.module:358
 msgid "Date/time on which the article will be automatically un-published"
 msgstr ""
 
-#: scheduler.module:251;270
+#: scheduler.module:367
+msgid "Sort by the date the article will be automatically published."
+msgstr ""
+
+#: scheduler.module:371
+msgid "Sort by the date/time on which the article will be automatically un-published."
+msgstr ""
+
+#: scheduler.module:377
+msgid "This filter allows nodes to be filtered by the date they will be automatically published."
+msgstr ""
+
+#: scheduler.module:386
+msgid "This filter allows nodes to be filtered by the date they will be automatically un-published."
+msgstr ""
+
+#: scheduler.module:255;274
 msgid "content"
 msgstr ""
 
-#: scheduler.module:18
+#: scheduler.module:17
 msgid "schedule (un)publishing of nodes"
 msgstr ""
 

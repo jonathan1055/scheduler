@@ -104,7 +104,7 @@ function scheduler_form_alter($form_id, &$form) {
           //and below that we show the timezone to adjust this time by
           //we store the adjusted timezone value in the database for cron
           '#default_value' => $defaults->publish_on ? date('Y-m-d H:i:s', $defaults->publish_on - $defaults->timezone) : '',
-          '#description' => t('Format: %time. Leave blank to publish on the time of form submission.', array('%time' => date('Y-m-d H:i:s'))),
+          '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => date('Y-m-d H:i:s'))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
         
@@ -116,7 +116,7 @@ function scheduler_form_alter($form_id, &$form) {
           //and below that we show the timezone to adjust this time by
           //we store the adjusted timezone value in the database for cron
           '#default_value' => $defaults->unpublish_on ? date('Y-m-d H:i:s', $defaults->unpublish_on - $defaults->timezone) : '',
-          '#description' => t('Format: %time. Leave blank to not unpublish this node.', array('%time' => date('Y-m-d H:i:s'))),
+          '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => date('Y-m-d H:i:s'))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
         
