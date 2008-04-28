@@ -371,6 +371,26 @@ function scheduler_views_tables() {
         'help' => t('Sort by the date/time on which the article will be automatically un-published.'),
       ),
     ),
+    'filters' => array(
+      'publish_on' => array(
+        'name' => t('Scheduler: publish on'),
+        'help' => t('This filter allows nodes to be filtered by the date they will be automatically published.')
+          .' '. views_t_strings('filter date'),
+        'operator' => 'views_handler_operator_gtlt',
+        'value' => views_handler_filter_date_value_form(),
+        'handler' => 'views_handler_filter_timestamp',
+        'option' => 'string',
+      ),
+      'unpublish_on' => array(
+        'name' => t('Scheduler: unpublish on'),
+        'help' => t('This filter allows nodes to be filtered by the date they will be automatically un-published.')
+          .' '. views_t_strings('filter date'),
+        'operator' => 'views_handler_operator_gtlt',
+        'value' => views_handler_filter_date_value_form(),
+        'handler' => 'views_handler_filter_timestamp',
+        'option' => 'string',
+      ),
+    ),
   );
   return $tables;
 }
