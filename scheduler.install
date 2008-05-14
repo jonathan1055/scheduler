@@ -9,7 +9,6 @@ function scheduler_install() {
                   nid int(10) unsigned NOT NULL,
                   publish_on int(11) NOT NULL default '0',
                   unpublish_on int(11) NOT NULL default '0',
-                  timezone int(6) NOT NULL default '0',
                   PRIMARY KEY (nid)
                 ) /*!40100 DEFAULT CHARACTER SET utf8 */;"
               );
@@ -19,7 +18,6 @@ function scheduler_install() {
                   nid integer NOT NULL default '0',
                   publish_on integer NOT NULL default '0',
                   unpublish_on integer NOT NULL default '0',
-                  timezone integer NOT NULL default '0',
                   PRIMARY KEY (nid));"
               );
       break;
@@ -45,5 +43,18 @@ function scheduler_update_2() {
       break;
   }
 
+  return $ret;
+}
+
+function scheduler_update_3() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+    case 'pgsql':
+      $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
+      $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
+      $ret[] = update_sql("ALTER TABLE {scheduler} DROP COLUMN timezone");
+      break;
+  }
   return $ret;
 }
