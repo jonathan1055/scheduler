@@ -38,7 +38,28 @@ function scheduler_menu($may_cache) {
       'access' => user_access('schedule (un)publishing of nodes'),
     );
   }
-  return $items;
+  $items[] = array(
+    'path' => 'admin/settings/scheduler',
+    'title' => t('Scheduler module settings'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => 'scheduler_admin',
+    'access' => user_access('administer content'),
+    'type' => MENU_NORMAL_ITEM,
+   );
+return $items;
+}
+
+function scheduler_admin() {
+  $form['scheduler_date_format'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date format'),
+    '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
+    '#size' => 20,
+    '#maxlength' => 100,
+    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),
+  );
+  
+  return system_settings_form($form);
 }
 
 /**
@@ -75,8 +96,6 @@ function scheduler_form_alter($form_id, &$form) {
         $jscalendar = FALSE;
         if (module_exists('jscalendar')) {
           $jscalendar = TRUE;
-          // Show 24-hour clock for JScalendar
-          $form['#jscalendar_timeFormat'] = '24';
         }
         
         $node = $form['#node'];
@@ -98,27 +117,45 @@ function scheduler_form_alter($form_id, &$form) {
           '#collapsed' => ($defaults->publish_on != 0 || $defaults->unpublish_on != 0) ? FALSE: TRUE,
           '#weight' => 35
         );
-        
+
+        $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
         $form['scheduler_settings']['publish_on'] = array(
           '#type' => 'textfield', 
           '#title' => t('Publish on'), 
           '#maxlength' => 25,
-          '#default_value' => $defaults->publish_on ? format_date($defaults->publish_on, 'custom', SCHEDULER_DATE_FORMAT) : '',
-          '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', SCHEDULER_DATE_FORMAT))),
-          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
+          '#default_value' => $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
+          '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', $date_format))),
+          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array(),
+          '#jscalendar_timeFormat' => _scheduler_get_jscalendar_time_format(),
+          '#jscalendar_ifFormat' => _scheduler_date_format_in_strftime_syntax(),
         );
         
         $form['scheduler_settings']['unpublish_on'] = array(
           '#type' => 'textfield', 
           '#title' => t('Unpublish on'), 
           '#maxlength' => 25, 
-          '#default_value' => $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', SCHEDULER_DATE_FORMAT) : '',
-          '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', SCHEDULER_DATE_FORMAT))),
-          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
+          '#default_value' => $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
+          '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
+          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array(),
+          '#jscalendar_timeFormat' => _scheduler_get_jscalendar_time_format(),
+          '#jscalendar_ifFormat' => _scheduler_date_format_in_strftime_syntax(),
         );
       }
     }
   }
+}
+
+function _scheduler_date_format_in_strftime_syntax() {
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y');
+  $strftime_replacements = array('%d', '%H', '%I', '%m', '%M', '%p', '%p', '%S', '%y', '%Y'); 
+  return str_replace($date_entities, $strftime_replacements, $date_format);
+}
+
+function _scheduler_get_jscalendar_time_format() {
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+  $result = stripos($date_format, "a");
+  return ($result !== FALSE) ? '12' : '24';
 }
 
 /**
@@ -127,15 +164,10 @@ function scheduler_form_alter($form_id, &$form) {
  * @return the time in unix timestamp representation (utc);
  * NULL, if $str is NULL, FALSE, empty, or contains only white spaces;
  * FALSE, if $str is malformed
- * @todo we need to extend this to support user configurable date formats
- */
-/*
- * Why: The user might be in a different timezone than the server.
- * How: We trick strtotime() into believing that the string is a UTC-time and shift it by the time zone offset.
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "" ) {
-    $time=strtotime(trim($str)." UTC");
+    $time=_scheduler_strptime(trim($str), variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT));
     if ($time!==FALSE) {
       // success
       $time -= _scheduler_get_user_timezone();
@@ -144,6 +176,68 @@ function _scheduler_strtotime($str) {
     // $str is empty
     $time = NULL;
   }
+  return $time;
+}
+
+/**
+ * Parse a time/date as UTC time
+ *
+ * @param string $date The string to parse
+ * @param string $format The format used in $date. See date() (http://www.php.net/manual/en/function.date.php) 
+ * specification for format options. Right now only dHhmiaAsyY are supported. 
+ * @return the parsed time as a UTC timestamp
+ * @see date()
+ */
+function _scheduler_strptime($date, $format) {
+  # we need to build a regex pattern for the date format
+  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y');
+  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})'); 
+  $custom_pattern = str_replace($date_entities, $date_regex_replacements, $format);
+  if (!preg_match("#$custom_pattern#", $date, $value_matches)) {
+    return FALSE;
+  }
+  
+  if (!preg_match_all("/(\w)/", $format, $entity_matches)) {
+    return FALSE;
+  }
+
+  $results = array('day' => 0, 'hour' => 0, 'month' => 0, 'minute' => 0, 'meridiem' => NULL, 'second' => 0, 'year' => 0);
+  $index = 1;
+  foreach ($entity_matches[1] as $entity) {
+    $value = intval($value_matches[$index]);
+    switch ($entity) {
+      case 'd':
+        $results['day'] = $value;
+        break;
+      case 'H':
+      case 'h':
+        $results['hour'] = $value; 
+        break;
+      case 'm':
+        $results['month'] = $value; 
+        break;
+      case 'i':
+        $results['minute'] = $value; 
+        break;
+      case 'a':
+      case 'A':
+        $results['meridiem'] = $value_matches[$index]; 
+        break;
+      case 's':
+        $results['second'] = $value; 
+        break;
+      case 'y':
+      case 'Y':
+        $results['year'] = $value; 
+        break;
+    }    
+    $index++;
+  }
+  if ((strncasecmp($results['meridiem'], "pm", 2) == 0) && ($results['hour'] <= 12)) {
+    $results['hour'] += 12;
+  }
+
+  $time = gmmktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
   return $time;
 }
 
