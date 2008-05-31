@@ -154,7 +154,7 @@ function _scheduler_date_format_in_strftime_syntax() {
 
 function _scheduler_get_jscalendar_time_format() {
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-  $result = stripos($date_format, "a");
+  $result = strpos($date_format, stristr($date_format, "a"));
   return ($result !== FALSE) ? '12' : '24';
 }
 
