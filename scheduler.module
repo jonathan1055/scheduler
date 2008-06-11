@@ -1,6 +1,8 @@
 <?php
 // $Id$
 
+define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
+
 /**
  * Implementation of hook_help().
  */
@@ -24,19 +26,39 @@ function scheduler_menu() {
   $items = array();
   $items['scheduler/cron'] = array(
     'title' => t('Light weight cron handler'),
-    'description' => t('A light weight cron handler to allow more frequent runs of Scheduler\'s internal cron system'),
+    'description' => t('A light weight cron handler to allow more frequent runs of Schedulers internal cron system'),
     'page callback' => '_scheduler_run_cron',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
   $items['scheduler/timecheck'] = array(
     'title' => t('Test your servers UTC clock'),
-    'description' => t('Allow\'s site admin to check their server\'s internal clock'),
+    'description' => t('Allows site admin to check their servers internal clock'),
     'page callback' => '_scheduler_timecheck',
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/settings/scheduler'] = array(
+  	'title' => t('Scheduler module settings'),
+    'description' => t('Allows site admins to configure scheduler.'),
+  	'page callback' => 'drupal_get_form',
+  	'page arguments' => array('scheduler_admin'),
+  	'access arguments' => array('administer content'),
+  	'type' => MENU_NORMAL_ITEM,
+  );
   return $items;
+}
+
+function scheduler_admin() {
+  $form['scheduler_date_format'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date format'),
+    '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),	
+	);
+	return system_settings_form($form);
 }
 
 /**
@@ -66,28 +88,35 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
       // if scheduling has been enabled for this node type
       if (variable_get('scheduler_'. $form['type']['#value'], 0) == 1) {
 
+        // We add the additional validation function this way to preserve any existing validation function
+        $form['#validate']['_scheduler_form_validate' ] = array();
+      
         //use JScalendar picker for dates if the module exists and is enabled
         $jscalendar = FALSE;
         if (module_exists('jscalendar')) {
           $jscalendar = TRUE;
-          // Show 24-hour clock for JScalendar
-          $form['#jscalendar_timeFormat'] = '24';
         }
 
         $node = $form['#node'];
 
+        $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+        
         //only load the values if we are viewing an existing node
         if (isset($node->nid) && $node->nid > 0) {
-          $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on, timezone FROM {scheduler} WHERE nid = %d', $node->nid));
+          $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = %d', $node->nid));
         }
 	      else {
           // init standard values
           $defaults = new StdClass;
           $defaults->publish_on = $defaults->unpublish_on = NULL;
-	      }
+          if (isset($node->publish_on) && $node->publish_on) {
+            $defaults->publish_on = $node->publish_on;
+          }
+          if (isset($node->unpublish_on) && $node->unpublish_on) {
+            $defaults->unpublish_on = $node->unpublish_on;
+          }
+      }
 
-        //note don't use format_date() because drupal automatically formats the date to the user's timezone
-        //this will show the wrong time because scheduler can set nodes to be published in different timezones
         $form['scheduler_settings'] = array(
           '#type' => 'fieldset',
           '#title' => t('Scheduling options'),
@@ -100,11 +129,8 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#type' => 'textfield',
           '#title' => t('Publish on'),
           '#maxlength' => 25,
-          //we subtract the time zone to show the user the correct time they entered
-          //and below that we show the timezone to adjust this time by
-          //we store the adjusted timezone value in the database for cron
-          '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? date('Y-m-d H:i:s', $defaults->publish_on - $defaults->timezone) : '',
-          '#description' => t('Format: %time. Leave blank to publish on the time of form submission.', array('%time' => date('Y-m-d H:i:s'))),
+          '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
+          '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', $date_format))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
 
@@ -112,34 +138,137 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#type' => 'textfield',
           '#title' => t('Unpublish on'),
           '#maxlength' => 25,
-          //we subtract the time zone to show the user the correct time they entered
-          //and below that we show the timezone to adjust this time by
-          //we store the adjusted timezone value in the database for cron
-          '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? date('Y-m-d H:i:s', $defaults->unpublish_on - $defaults->timezone) : '',
-          '#description' => t('Format: %time. Leave blank to not unpublish this node.', array('%time' => date('Y-m-d H:i:s'))),
+          '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
+          '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
           '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
-
-        //default to user timezone, if not specified, default to system wide timezone
-        if (variable_get('configurable_timezones', 1) == 1) {
-          global $user;
-          $zones = _system_zonelist();
-          $form['scheduler_settings']['timezone'] = array(
-            '#type' => 'select',
-            '#title' => t('Time zone'),
-            '#default_value' => isset($defaults->timezone) ? $defaults->timezone : (strlen($user->timezone) ? $user->timezone : variable_get('date_default_timezone', 0)),
-            '#options' => $zones,
-            '#description' => t('Select the time zone to (un)publish in.')
-          );
-        }
-        else {
-          $form['scheduler_settings']['timezone'] = array(
-            '#type' => 'value',
-            '#value' => $defaults->timezone ? $defaults->timezone : (strlen($user->timezone) ? $user->timezone : variable_get('date_default_timezone', 0)),
-          );
-        }
       }
     }
+  }
+}
+
+/**
+ * Converts an english time string ('Y-m-d H:i:s') from the users timezone into an unix timestamp
+ * @param string $str the time string ('Y-m-d H:i:s')
+ * @return the time in unix timestamp representation (utc);
+ * NULL, if $str is NULL, FALSE, empty, or contains only white spaces;
+ * FALSE, if $str is malformed
+ */
+function _scheduler_strtotime($str) {
+  if ($str && trim($str) != "" ) {
+    $time=_scheduler_strptime(trim($str), variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT));
+    if ($time!==FALSE) {
+      // success
+      $time -= _scheduler_get_user_timezone();
+    }
+  } else {
+    // $str is empty
+    $time = NULL;
+  }
+  return $time;
+}
+
+/**
+ * Parse a time/date as UTC time
+ *
+ * @param string $date The string to parse
+ * @param string $format The format used in $date. See date() (http://www.php.net/manual/en/function.date.php) 
+ * specification for format options. Right now only dHhmiaAsyY are supported. 
+ * @return the parsed time as a UTC timestamp
+ * @see date()
+ */
+function _scheduler_strptime($date, $format) {
+  # we need to build a regex pattern for the date format
+  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y');
+  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})'); 
+  $custom_pattern = str_replace($date_entities, $date_regex_replacements, $format);
+  if (!preg_match("#$custom_pattern#", $date, $value_matches)) {
+    return FALSE;
+  }
+  
+  if (!preg_match_all("/(\w)/", $format, $entity_matches)) {
+    return FALSE;
+  }
+
+  $results = array('day' => 0, 'hour' => 0, 'month' => 0, 'minute' => 0, 'meridiem' => NULL, 'second' => 0, 'year' => 0);
+  $index = 1;
+  foreach ($entity_matches[1] as $entity) {
+    $value = intval($value_matches[$index]);
+    switch ($entity) {
+      case 'd':
+        $results['day'] = $value;
+        break;
+      case 'H':
+      case 'h':
+        $results['hour'] = $value; 
+        break;
+      case 'm':
+        $results['month'] = $value; 
+        break;
+      case 'i':
+        $results['minute'] = $value; 
+        break;
+      case 'a':
+      case 'A':
+        $results['meridiem'] = $value_matches[$index]; 
+        break;
+      case 's':
+        $results['second'] = $value; 
+        break;
+      case 'y':
+      case 'Y':
+        $results['year'] = $value; 
+        break;
+    }    
+    $index++;
+  }
+  if ((strncasecmp($results['meridiem'], "pm", 2) == 0) && ($results['hour'] <= 12)) {
+    $results['hour'] += 12;
+  }
+
+  $time = gmmktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
+  return $time;
+}
+
+/**
+ * Gets the users timezone if configurable timezones are enabled or otherwise the default timezone of the site
+ *
+ * @return the offset of the users timezone in seconds
+ */
+function _scheduler_get_user_timezone() {
+  global $user;
+  $timezone = variable_get('date_default_timezone', 0);
+  if ((variable_get('configurable_timezones', 1) == 1) && (strlen($user->timezone))) {
+    $timezone = $user->timezone;
+  }
+  return $timezone;
+}
+
+/**
+ * Implementation of hook_form_validate()
+ * Validate the input of the publish and unpublish date fields
+ */
+function _scheduler_form_validate($form_id, $form) {
+
+  $publishtime = NULL;
+  $unpublishtime = NULL;
+
+  if (isset($form['publish_on'])) {
+    $publishtime=_scheduler_strtotime($form['publish_on']);
+    if ($publishtime === FALSE) {
+      form_set_error('publish_on', t('The entered publication date is invalid.'));
+    }
+  }
+
+  if (isset($form['unpublish_on'])) {
+    $unpublishtime = _scheduler_strtotime($form['unpublish_on']);
+    if ($unpublishtime === FALSE) {
+      form_set_error('unpublish_on', t('The entered expiration date is invalid.'));
+    }
+  }
+
+  if (is_integer($publishtime) && is_integer($unpublishtime) && $unpublishtime < $publishtime) {
+    form_set_error('unpublish_on', t("The expiration date is before publication date."));
   }
 }
 
@@ -148,9 +277,9 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
  */
 function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
-  if (isset($node->nid) && $node->nid) {
-    // Run $op == load for any user.
-    if ($op == 'load') {
+  // Run $op == load for any user.
+  if ($op == 'load') {
+    if (isset($node->nid) && $node->nid && variable_get('scheduler_'.$node->type, 0) == 1) {
       $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
       if ($result) {
         $row = db_fetch_array($result);
@@ -158,60 +287,61 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           unset($row['nid']);
           $node->publish_on = $row['publish_on'];
           $node->unpublish_on = $row['unpublish_on'];
-          $node->timezone = $row['timezone'];
           $row['published'] = $row['publish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['publish_on']) : NULL;
           $row['unpublished'] = $row['unpublish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['unpublish_on']) : NULL;
           $node->scheduler = $row;
         }
       }
     }
-    elseif (user_access('schedule (un)publishing of nodes')) {
-      switch ($op) {
-        case 'view':
-          if ($page && isset($node->unpublish_on) && $node->unpublish_on) {
-            $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
-            drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
-          }
-          break;
-        case 'presave':
-          // adjust the entered times for timezone consideration.
-          // Note, we must check to see if the value is numeric,
-          // if it is, assume we have already done the strtotime
-          // conversation. This prevents us running strtotime on
-          // a value we have already converted. This is needed
-          // because DRUPAL6 removed 'submit' and added 'presave'
-          // and all this happens at different times.
+  }
+  elseif (user_access('schedule (un)publishing of nodes')) {
+    switch ($op) {
+      case 'view':
+        if ($page && isset($node->unpublish_on) && $node->unpublish_on) {
+          $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
+          drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
+        }
+        break;
+      case 'presave':
+        // adjust the entered times for timezone consideration.
+        // Note, we must check to see if the value is numeric,
+        // if it is, assume we have already done the strtotime
+        // conversation. This prevents us running strtotime on
+        // a value we have already converted. This is needed
+        // because DRUPAL6 removed 'submit' and added 'presave'
+        // and all this happens at different times.
 
-          if (isset($node->publish_on) && !is_numeric($node->publish_on)) {
-            $node->publish_on = strtotime($node->publish_on) + $node->timezone;
-          }
+        if (isset($node->publish_on) && !is_numeric($node->publish_on)) {
+          $node->publish_on = _scheduler_strtotime($node->publish_on);
+        }
 
-          if (isset($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
-            $node->unpublish_on = strtotime($node->unpublish_on) + $node->timezone;
-          }
+        if (isset($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
+          $node->unpublish_on = _scheduler_strtotime($node->unpublish_on);
+        }
 
-          // right before we save the node, we need to check if a "publish on" value has been set
-          // if it has been set, we want to make sure the node is unpublished
-          // since it will be published at a later date (but only if the value is in the future.
-          if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
-            $node->status = 0;
-          }
-          break;
-        case 'insert':
-          // only insert into database if we need to (un)publish this node at some date
-          if ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
-            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
-          }
-          break;
-        case 'update':
+        // right before we save the node, we need to check if a "publish on" value has been set
+        // if it has been set, we want to make sure the node is unpublished
+        // since it will be published at a later date (but only if the value is in the future.
+        if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
+          $node->status = 0;
+        }
+        break;
+      case 'insert':
+        // only insert into database if we need to (un)publish this node at some date
+        if (isset($node->nid) && $node->nid && (isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
+          db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
+        }
+        break;
+      case 'update':
+        if (isset($node->nid) && $node->nid) {
           $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
-
+  
           // if this node has already been scheduled, update its record
           if ($exists) {
             // only update database if we need to (un)publish this node at some date
             // otherwise the user probably cleared out the (un)publish dates so we should remove the record
             if ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
-              db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d, timezone = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->timezone, $node->nid);
+              db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
             }
             else {
               db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
@@ -219,13 +349,15 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           }
           // node doesn't exist, create a record only if the (un)publish fields are blank
           else if ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
-            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on, timezone) VALUES (%d, %d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on, $node->timezone);
+            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
           }
-          break;
-        case 'delete':
+        }
+        break;
+      case 'delete':
+        if (isset($node->nid) && $node->nid) {
           db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
-          break;
-      }
+        }
+        break;
     }
   }
 }
@@ -237,13 +369,13 @@ function scheduler_cron() {
   $clear_cache = FALSE;
 
   // if the time now is greater than the time to publish a node, publish it
-  $nodes = db_query('SELECT *, (publish_on - timezone) AS utc_publish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d + s.timezone', time());
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d ', time());
 
   while ($node = db_fetch_object($nodes)) {
     $n = node_load($node->nid);
-    $n->changed = $node->utc_publish_on;
+    $n->changed = $node->publish_on;
     if (variable_get('scheduler_touch_'. $n->type, 0) == 1) {
-      $n->created = $node->utc_publish_on;
+      $n->created = $node->publish_on;
     }
 
     // Use the actions system to publish the node.
@@ -268,12 +400,12 @@ function scheduler_cron() {
   }
 
   // if the time is greater than the time to unpublish a node, unpublish it
-  $nodes = db_query('SELECT *, (unpublish_on - timezone) AS utc_unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d + s.timezone', time());
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d', time());
 
   while ($node = db_fetch_object($nodes)) {
     // if this node is to be unpublished, we can update the node and remove the record since it can't be republished
     $n = node_load($node->nid);
-    $n->changed = $node->utc_publish_on;
+    $n->changed = $node->unpublish_on;
 
     // Use the actions system to unpublish the node.
     watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
@@ -386,6 +518,36 @@ function scheduler_views_tables() {
         'help' => t('Date/time on which the article will be automatically un-published'),
         'sortable' => TRUE,
         'handler' => views_handler_field_dates(),
+        'option' => 'string',
+      ),
+    ),
+    'sorts' => array(
+      'publish_on' => array(
+        'name' => t('Scheduler: publish on'),
+        'help' => t('Sort by the date the article will be automatically published.'),
+      ),
+      'unpublish_on' => array(
+        'name' => t('Scheduler: unpublish on'),
+        'help' => t('Sort by the date/time on which the article will be automatically un-published.'),
+      ),
+    ),
+    'filters' => array(
+      'publish_on' => array(
+        'name' => t('Scheduler: publish on'),
+        'help' => t('This filter allows nodes to be filtered by the date they will be automatically published.')
+          .' '. views_t_strings('filter date'),
+        'operator' => 'views_handler_operator_gtlt',
+        'value' => views_handler_filter_date_value_form(),
+        'handler' => 'views_handler_filter_timestamp',
+        'option' => 'string',
+      ),
+      'unpublish_on' => array(
+        'name' => t('Scheduler: unpublish on'),
+        'help' => t('This filter allows nodes to be filtered by the date they will be automatically un-published.')
+          .' '. views_t_strings('filter date'),
+        'operator' => 'views_handler_operator_gtlt',
+        'value' => views_handler_filter_date_value_form(),
+        'handler' => 'views_handler_filter_timestamp',
         'option' => 'string',
       ),
     ),
