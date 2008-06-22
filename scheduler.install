@@ -74,3 +74,10 @@ function scheduler_update_3() {
   $ret[] = update_sql("CREATE INDEX scheduler_unpublish_on ON {scheduler} (unpublish_on)");
   return $ret;
 }
+
+function scheduler_update_6100() {
+  $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
+  $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
+  $ret[] = update_sql("ALTER TABLE {scheduler} DROP COLUMN timezone");
+  return $ret; 
+}
