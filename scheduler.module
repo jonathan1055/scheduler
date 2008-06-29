@@ -43,7 +43,7 @@ function scheduler_menu($may_cache) {
     'title' => t('Scheduler module settings'),
     'callback' => 'drupal_get_form',
     'callback arguments' => 'scheduler_admin',
-    'access' => user_access('administer content'),
+    'access' => user_access('administer nodes'),
     'type' => MENU_NORMAL_ITEM,
    );
 return $items;
