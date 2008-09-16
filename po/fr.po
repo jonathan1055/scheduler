@@ -1,0 +1,141 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: drupal scheduler module translation\n"
+"POT-Creation-Date: 2008-04-28 13:59+0300\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"Language-Team: Sylvain Moreau <sylvain.moreau@ows.fr>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: French\n"
+"X-Poedit-Country: FRANCE\n"
+
+#: scheduler.module:9
+msgid "A module to schedule when nodes are (un)published."
+msgstr "Un module pour planifier la (dé)publication des noeuds."
+
+#: scheduler.module:51
+msgid "Enable scheduled (un)publishing"
+msgstr "Activer la (dé)publication planifiée"
+
+#: scheduler.module:53
+msgid "Check this box to enable scheduled (un)publishing for this node type."
+msgstr "Cochez cette case pour activer la (dé)publication planifiée pour ce type de noeud."
+
+#: scheduler.module:57
+msgid "Alter published on time"
+msgstr "Altérer l'heure de publication"
+
+#: scheduler.module:59
+msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
+msgstr "Cochez cette case pour altérer l'heure de publication pour correspondre à l'heure planifiée (\"fonctionnalité touch\")."
+
+#: scheduler.module:93
+msgid "Scheduling options"
+msgstr "Options de planification"
+
+#: scheduler.module:101
+msgid "Publish on"
+msgstr "Publier le"
+
+#: scheduler.module:107
+msgid "Format: %time. Leave blank to disable scheduled publishing."
+msgstr "Format : %time. Laissez vide pour désactiver la publication planifiée."
+
+#: scheduler.module:113
+msgid "Unpublish on"
+msgstr "Dépublier le"
+
+#: scheduler.module:119
+msgid "Format: %time. Leave blank to disable scheduled unpublishing."
+msgstr "Format : %time. Laissez vide pour désactiver la dépublication planifiée."
+
+#: scheduler.module:129
+msgid "Time zone"
+msgstr "Fuseau horaire"
+
+#: scheduler.module:132
+msgid "Select the time zone to (un)publish in."
+msgstr "Sélectionnez le fuseau horaire dans lequel (dé)publier."
+
+#: scheduler.module:255
+msgid "@type: scheduled publishing of %title."
+msgstr "@type : publication planifiée de %title."
+
+#: scheduler.module:255;274
+msgid "view"
+msgstr ""
+
+#: scheduler.module:274
+msgid "@type: scheduled unpublishing of %title."
+msgstr "@type : dépublication planifiée de %title."
+
+#: scheduler.module:314
+msgid "Scheduler OS time check"
+msgstr "Vérification de l'heure du planificateur de tâches du Système d'Exploitation"
+
+#: scheduler.module:326
+msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
+msgstr "Votre serveur rapporte que l'heure UTC est %time, et que \"l'heure locale\" est %lt."
+
+#: scheduler.module:328
+msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
+msgstr "Si la configuration de l'heure de votre serveur est correcte, l'heure UTC doit correspondre à <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">Heure UTC de Londes</a> et l'heure locale à l'heure de l'endroit où vous vous trouvez."
+
+#: scheduler.module:330
+msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
+msgstr "Si ce n'est pas le cas veuillez contacter votre Administrateur Système Unix et lui demander de réparer la configuration date/heure de vos serveurs."
+
+#: scheduler.module:350;366;376
+msgid "Scheduler: publish on"
+msgstr "Planificateur : publier le"
+
+#: scheduler.module:351
+msgid "Date/time on which the article will be automatically published"
+msgstr "Date/heure à laquelle l'article sera automatiquement publié"
+
+#: scheduler.module:357;370;385
+msgid "Scheduler: unpublish on"
+msgstr "Planificateur : dépublier le"
+
+#: scheduler.module:358
+msgid "Date/time on which the article will be automatically un-published"
+msgstr "Date/heure à laquelle l'article sera automatiquement dépublié"
+
+#: scheduler.module:367
+msgid "Sort by the date the article will be automatically published."
+msgstr "Filtrer par la date/heure à laquelle l'article sera automatiquement publié."
+
+#: scheduler.module:371
+msgid "Sort by the date/time on which the article will be automatically un-published."
+msgstr "Filtrer par la date/heure à laquelle l'article sera automatiquement dépublié."
+
+#: scheduler.module:377
+msgid "This filter allows nodes to be filtered by the date they will be automatically published."
+msgstr "Ce filtre autorise les noeuds à être filtrés par la date à laquelle ils seront automatiquement publiés."
+
+#: scheduler.module:386
+msgid "This filter allows nodes to be filtered by the date they will be automatically un-published."
+msgstr "Ce filtre autorise les noeuds à être filtrés par la date à laquelle ils seront automatiquement dépubliés."
+
+#: scheduler.module:255;274
+msgid "content"
+msgstr "contenu"
+
+#: scheduler.module:17
+msgid "schedule (un)publishing of nodes"
+msgstr "planifier la (dé)publication de noeuds"
+
+#: scheduler.module:0
+msgid "scheduler"
+msgstr ""
+
+#: scheduler.info:0
+msgid "Scheduler"
+msgstr "Planificateur"
+
+#: scheduler.info:0
+msgid "This module allows nodes to be published and unpublished on specified dates."
+msgstr "Ce module permet aux noeuds d'être publiés et dépubliés à des dates spécifiques."
+
