@@ -36,7 +36,7 @@ function scheduler_views_data() {
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_date',
-      'label' => t('Unüublish on'),
+      'label' => t('Unpublish on'),
     ),
     'sort' => array(
       'handler' => 'views_handler_sort_date',
