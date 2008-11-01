@@ -30,13 +30,6 @@ function scheduler_schema() {
           'not null' => TRUE,
           'default' => 0,
         ),
-        'timezone' => array(
-          'description' => t('The offset in seconds due to the timezone'),
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
       ),
       'indexes' => array(
         'scheduler_publish_on' => array('publish_on'),
@@ -76,8 +69,11 @@ function scheduler_update_3() {
 }
 
 function scheduler_update_6100() {
-  $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
-  $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
-  $ret[] = update_sql("ALTER TABLE {scheduler} DROP COLUMN timezone");
+  $ret = array();
+  if (db_column_exists('scheduler', 'timezone')) {
+    $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
+    $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
+    $ret[] = update_sql("ALTER TABLE {scheduler} DROP COLUMN timezone");
+  }
   return $ret; 
 }
