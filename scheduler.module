@@ -493,65 +493,10 @@ function theme_scheduler_timecheck($now) {
 /**
  * Implementation of "contrib module views" hook_views_tables()
  */
-function scheduler_views_tables() {
-  $tables['scheduler'] = array(
-    'name' => 'scheduler',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'nid',
-      ),
-      'right' => array(
-        'field' => 'nid',
-      ),
-    ),
-    'fields' => array(
-      'publish_on' => array(
-        'name' => t('Scheduler: publish on'),
-        'help' => t('Date/time on which the article will be automatically published'),
-        'sortable' => TRUE,
-        'handler' => views_handler_field_dates(),
-        'option' => 'string',
-      ),
-      'unpublish_on' => array(
-        'name' => t('Scheduler: unpublish on'),
-        'help' => t('Date/time on which the article will be automatically un-published'),
-        'sortable' => TRUE,
-        'handler' => views_handler_field_dates(),
-        'option' => 'string',
-      ),
-    ),
-    'sorts' => array(
-      'publish_on' => array(
-        'name' => t('Scheduler: publish on'),
-        'help' => t('Sort by the date the article will be automatically published.'),
-      ),
-      'unpublish_on' => array(
-        'name' => t('Scheduler: unpublish on'),
-        'help' => t('Sort by the date/time on which the article will be automatically un-published.'),
-      ),
-    ),
-    'filters' => array(
-      'publish_on' => array(
-        'name' => t('Scheduler: publish on'),
-        'help' => t('This filter allows nodes to be filtered by the date they will be automatically published.')
-          .' '. views_t_strings('filter date'),
-        'operator' => 'views_handler_operator_gtlt',
-        'value' => views_handler_filter_date_value_form(),
-        'handler' => 'views_handler_filter_timestamp',
-        'option' => 'string',
-      ),
-      'unpublish_on' => array(
-        'name' => t('Scheduler: unpublish on'),
-        'help' => t('This filter allows nodes to be filtered by the date they will be automatically un-published.')
-          .' '. views_t_strings('filter date'),
-        'operator' => 'views_handler_operator_gtlt',
-        'value' => views_handler_filter_date_value_form(),
-        'handler' => 'views_handler_filter_timestamp',
-        'option' => 'string',
-      ),
-    ),
-  );
-  return $tables;
+function scheduler_views_api() {
+  $info['api'] = 2;
+  return $info;
 }
+
+
 
