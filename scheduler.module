@@ -88,9 +88,6 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
       // if scheduling has been enabled for this node type
       if (variable_get('scheduler_'. $form['type']['#value'], 0) == 1) {
 
-        // We add the additional validation function this way to preserve any existing validation function
-        $form['#validate'][] = '_scheduler_form_validate';
-
         //use JScalendar picker for dates if the module exists and is enabled
         $jscalendar = FALSE;
         if (module_exists('jscalendar')) {
