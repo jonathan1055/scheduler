@@ -105,17 +105,27 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         if (isset($node->nid) && $node->nid > 0) {
           $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = %d', $node->nid));
         }
-	      else {
+	    else {
           // init standard values
           $defaults = new StdClass;
           $defaults->publish_on = $defaults->unpublish_on = NULL;
           if (isset($node->publish_on) && $node->publish_on) {
-            $defaults->publish_on = $node->publish_on;
+          	if (is_numeric($node->publish_on)) {
+              $defaults->publish_on = $node->publish_on;
+          	}
+          	else {
+          	  $defaults->publish_on = _scheduler_strtotime($node->publish_on);
+          	}
           }
           if (isset($node->unpublish_on) && $node->unpublish_on) {
-            $defaults->unpublish_on = $node->unpublish_on;
+          	if (is_numeric($node->unpublish_on)) {
+              $defaults->unpublish_on = $node->unpublish_on;
+          	}
+          	else {
+          	  $defaults->unpublish_on = _scheduler_strtotime($node->unpublish_on);
+          	}
           }
-      }
+        }
 
         $form['scheduler_settings'] = array(
           '#type' => 'fieldset',
@@ -245,38 +255,10 @@ function _scheduler_get_user_timezone() {
 }
 
 /**
- * Implementation of hook_form_validate()
- * Validate the input of the publish and unpublish date fields
- */
-function _scheduler_form_validate($form_id, $form) {
-
-  $publishtime = NULL;
-  $unpublishtime = NULL;
-
-  if (isset($form['publish_on'])) {
-    $publishtime=_scheduler_strtotime($form['publish_on']);
-    if ($publishtime === FALSE) {
-      form_set_error('publish_on', t('The entered publication date is invalid.'));
-    }
-  }
-
-  if (isset($form['unpublish_on'])) {
-    $unpublishtime = _scheduler_strtotime($form['unpublish_on']);
-    if ($unpublishtime === FALSE) {
-      form_set_error('unpublish_on', t('The entered expiration date is invalid.'));
-    }
-  }
-
-  if (is_integer($publishtime) && is_integer($unpublishtime) && $unpublishtime < $publishtime) {
-    form_set_error('unpublish_on', t("The expiration date is before publication date."));
-  }
-}
-
-/**
  * Implementation of hook_nodeapi().
  */
-function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
-
+//function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // Run $op == load for any user.
   if ($op == 'load') {
     if (isset($node->nid) && $node->nid && variable_get('scheduler_'.$node->type, 0) == 1) {
@@ -302,6 +284,7 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
         }
         break;
+      case 'validate':
       case 'presave':
         // adjust the entered times for timezone consideration.
         // Note, we must check to see if the value is numeric,
@@ -310,15 +293,29 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
         // a value we have already converted. This is needed
         // because DRUPAL6 removed 'submit' and added 'presave'
         // and all this happens at different times.
-
         if (isset($node->publish_on) && !is_numeric($node->publish_on)) {
-          $node->publish_on = _scheduler_strtotime($node->publish_on);
+          $publishtime = _scheduler_strtotime($node->publish_on);
+          if ($publishtime === FALSE) {
+            form_set_error('publish_on', t('The entered publication date is invalid.'));
+          }
+          else {
+            $node->publish_on = $publishtime;
+          }
         }
-
+        
         if (isset($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
-          $node->unpublish_on = _scheduler_strtotime($node->unpublish_on);
+          $unpublishtime = _scheduler_strtotime($node->unpublish_on);
+          if ($unpublishtime === FALSE) {
+            form_set_error('unpublish_on', t('The entered expiration date is invalid.'));
+          }
+          else {
+            $node->unpublish_on = $unpublishtime;
+          }
         }
-
+        if (is_integer($publishtime) && is_integer($unpublishtime) && $unpublishtime < $publishtime) {
+          form_set_error('unpublish_on', t("The expiration date is before publication date."));
+        }
+        
         // right before we save the node, we need to check if a "publish on" value has been set
         // if it has been set, we want to make sure the node is unpublished
         // since it will be published at a later date (but only if the value is in the future.
@@ -497,6 +494,3 @@ function scheduler_views_api() {
   $info['api'] = 2;
   return $info;
 }
-
-
-
