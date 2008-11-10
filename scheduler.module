@@ -298,8 +298,9 @@ function scheduler_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
           unset($row['nid']);
           $node->publish_on = $row['publish_on'];
           $node->unpublish_on = $row['unpublish_on'];
-          $row['published'] = $row['publish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['publish_on']) : NULL;
-          $row['unpublished'] = $row['unpublish_on'] ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $row['unpublish_on']) : NULL;
+          $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+          $row['published'] = $row['publish_on'] ? format_date($row['publish_on'], 'custom', $date_format) : NULL;
+          $row['unpublished'] = $row['unpublish_on'] ? format_date($row['unpublish_on'], 'custom', $date_format) : NULL;
           $node->scheduler = $row;
         }
       }
