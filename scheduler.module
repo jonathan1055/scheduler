@@ -277,7 +277,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   elseif (user_access('schedule (un)publishing of nodes')) {
     switch ($op) {
       case 'view':
-        if ($page && isset($node->unpublish_on) && $node->unpublish_on) {
+        if (isset($a4) && $a4 && isset($node->unpublish_on) && $node->unpublish_on) {
           $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
           drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
         }
@@ -310,7 +310,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $node->unpublish_on = $unpublishtime;
           }
         }
-        if (is_integer($publishtime) && is_integer($unpublishtime) && $unpublishtime < $publishtime) {
+        if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {
           form_set_error('unpublish_on', t("The expiration date is before publication date."));
         }
         
