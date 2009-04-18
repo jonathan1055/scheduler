@@ -25,22 +25,22 @@ function scheduler_perm() {
 function scheduler_menu() {
   $items = array();
   $items['scheduler/cron'] = array(
-    'title' => t('Light weight cron handler'),
-    'description' => t('A light weight cron handler to allow more frequent runs of Schedulers internal cron system'),
+    'title' => 'Light weight cron handler',
+    'description' => 'A light weight cron handler to allow more frequent runs of Schedulers internal cron system',
     'page callback' => '_scheduler_run_cron',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
   $items['scheduler/timecheck'] = array(
-    'title' => t('Test your servers UTC clock'),
-    'description' => t('Allows site admin to check their servers internal clock'),
+    'title' => 'Test your servers UTC clock',
+    'description' => 'Allows site admin to check their servers internal clock',
     'page callback' => '_scheduler_timecheck',
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/settings/scheduler'] = array(
-  	'title' => t('Scheduler module settings'),
-    'description' => t('Allows site admins to configure scheduler.'),
+  	'title' => 'Scheduler module settings',
+    'description' => 'Allows site admins to configure scheduler.',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('scheduler_admin'),
   	'access arguments' => array('access administration pages'),
