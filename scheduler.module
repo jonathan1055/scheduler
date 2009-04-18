@@ -46,7 +46,21 @@ function scheduler_menu() {
   	'access arguments' => array('access administration pages'),
   	'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/content/node/scheduler'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Scheduled',
+    'page callback' => 'scheduler_list',
+    'access callback' => 'scheduler_list_access_callback',
+    'description' => t('Display a list of scheduled nodes'),
+  );
   return $items;
+}
+
+/**
+ * Return the users access to the scheduler list page. Separate function required because of the two access values to be checked.
+ */
+function scheduler_list_access_callback() {
+  return user_access('administer nodes') && user_access('schedule (un)publishing of nodes');
 }
 
 function scheduler_admin() {
@@ -153,6 +167,50 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         );
       }
     }
+  }
+}
+
+/*
+ * Displays a list of nodes that are scheduled for (un)publication. This will
+ * appear as a tab on the content admin page ('admin/content/node').
+ */
+function scheduler_list() {
+  $header = array(
+    array('data' => t('Title'), 'field' => 'n.title'),
+    array('data' => t('Author'), 'field' => 'u.name'),
+    array('data' => t('Post'), 'field' => 's.publish_on'),
+    array('data' => t('Hide'), 'field' => 's.unpublish_on'),
+    array('data' => t('Operations'))
+  );
+
+  // Default ordering
+  if (!isset($_GET['order']) && !isset($_GET['sort'])) {
+    $_GET['order'] = t('Post');
+    $_GET['sort'] = 'desc';
+  }
+
+  $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.publish_on, s.unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid' . tablesort_sql($header);
+  $result = pager_query($sql, 50);
+
+  while ($node = db_fetch_object($result)) {
+    $rows[] = array(
+      ($node->status ? l($node->title, "node/$node->nid") : $node->title),
+      theme('username', $node),
+      ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
+      ($node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;'),
+      l(t('edit'), 'node/'. $node->nid .'/edit', array(), 'destination=admin/content/node/scheduler'),
+    );
+  }
+
+  if (count($rows)) {
+    if ($pager = theme('pager', NULL, 50, 0)) {
+      $rows[] = array(array('data' => $pager, 'colspan' => 6));
+    }
+
+    print theme('page', theme('table', $header, $rows));
+  }
+  else {
+    print theme('page', t('There are no scheduled nodes.'));
   }
 }
 
