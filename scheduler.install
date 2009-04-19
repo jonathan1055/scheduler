@@ -24,6 +24,11 @@ function scheduler_install() {
   }
 }
 
+function scheduler_uninstall() {
+  db_query('DROP TABLE {scheduler}');
+  db_query("DELETE FROM {variable} WHERE name LIKE '%s_%%'", 'scheduler');
+}
+
 function scheduler_update_1() {
   return _system_update_utf8(array('scheduler'));
 }
