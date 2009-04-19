@@ -5,6 +5,11 @@ function scheduler_install() {
   drupal_install_schema('scheduler');
 }
 
+function scheduler_uninstall() {
+  drupal_uninstall_schema('scheduler');
+  db_query("DELETE FROM {variable} WHERE name LIKE '%s_%%'", 'scheduler');
+}
+
 function scheduler_schema() {
   return array(
     'scheduler' => array(
