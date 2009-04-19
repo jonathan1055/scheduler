@@ -178,8 +178,8 @@ function scheduler_list() {
   $header = array(
     array('data' => t('Title'), 'field' => 'n.title'),
     array('data' => t('Author'), 'field' => 'u.name'),
-    array('data' => t('Post'), 'field' => 's.publish_on'),
-    array('data' => t('Hide'), 'field' => 's.unpublish_on'),
+    array('data' => t('Publish on'), 'field' => 's.publish_on'),
+    array('data' => t('Unpublish on'), 'field' => 's.unpublish_on'),
     array('data' => t('Operations'))
   );
 
