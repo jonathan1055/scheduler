@@ -168,8 +168,8 @@ function scheduler_list() {
 
   // Default ordering
   if (!isset($_GET['order']) && !isset($_GET['sort'])) {
-    $_GET['order'] = t('Post');
-    $_GET['sort'] = 'desc';
+    $_GET['order'] = t('Publish on');
+    $_GET['sort'] = 'ASC';
   }
 
   $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.publish_on, s.unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid' . tablesort_sql($header);
