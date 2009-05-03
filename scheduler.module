@@ -43,7 +43,7 @@ function scheduler_menu() {
     'description' => 'Allows site admins to configure scheduler.',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('scheduler_admin'),
-  	'access arguments' => array('access administration pages'),
+  	'access arguments' => array('administer scheduler'),
   	'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/content/node/scheduler'] = array(
