@@ -39,12 +39,12 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/settings/scheduler'] = array(
-  	'title' => 'Scheduler module settings',
+    'title' => 'Scheduler module settings',
     'description' => 'Allows site admins to configure scheduler.',
-  	'page callback' => 'drupal_get_form',
-  	'page arguments' => array('scheduler_admin'),
-  	'access arguments' => array('administer scheduler'),
-  	'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('scheduler_admin'),
+    'access arguments' => array('administer scheduler'),
+    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/content/node/scheduler'] = array(
     'type' => MENU_LOCAL_TASK,
@@ -71,8 +71,8 @@ function scheduler_admin() {
     '#size' => 20,
     '#maxlength' => 20,
     '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),	
-	);
-	return system_settings_form($form);
+  );
+  return system_settings_form($form);
 }
 
 /**
@@ -341,37 +341,46 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         // adjust the entered times for timezone consideration.
         // Note, we must check to see if the value is numeric,
         // if it is, assume we have already done the strtotime
-        // conversation. This prevents us running strtotime on
+        // conversion. This prevents us running strtotime on
         // a value we have already converted. This is needed
         // because DRUPAL6 removed 'submit' and added 'presave'
         // and all this happens at different times.
-        if (isset($node->publish_on) && !is_numeric($node->publish_on)) {
+        
+        $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+        
+        if (isset($node->publish_on) && $node->publish_on && !is_numeric($node->publish_on)) {
           $publishtime = _scheduler_strtotime($node->publish_on);
           if ($publishtime === FALSE) {
-            form_set_error('publish_on', t('The entered publication date is invalid.'));
+            form_set_error('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(time(), 'custom', $date_format))));
+          }
+          elseif ($publishtime && $publishtime < time()) {
+            form_set_error('publish_on', t("The 'publish on' date must be in the future"));
           }
           else {
             $node->publish_on = $publishtime;
           }
         }
         
-        if (isset($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
+        if (isset($node->unpublish_on) && $node->unpublish_on && !is_numeric($node->unpublish_on)) {
           $unpublishtime = _scheduler_strtotime($node->unpublish_on);
           if ($unpublishtime === FALSE) {
-            form_set_error('unpublish_on', t('The entered expiration date is invalid.'));
+            form_set_error('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => format_date(time(), 'custom', $date_format))));
+          }
+          elseif ($unpublishtime && $unpublishtime < time()) {
+            form_set_error('unpublish_on', t("The 'unpublish on' date must be in the future"));
           }
           else {
             $node->unpublish_on = $unpublishtime;
           }
         }
+
         if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {
-          form_set_error('unpublish_on', t("The expiration date is before publication date."));
+          form_set_error('unpublish_on', t("The 'unpublish on' date must be later than the 'publish on' date."));
         }
         
-        // right before we save the node, we need to check if a "publish on" value has been set
-        // if it has been set, we want to make sure the node is unpublished
-        // since it will be published at a later date (but only if the value is in the future.
-        if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
+        // Right before we save the node, we need to check if a "publish on" value has been set.
+        // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
+        if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) ) {
           $node->status = 0;
         }
         break;
@@ -397,7 +406,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             }
           }
           // node doesn't exist, create a record only if the (un)publish fields are blank
-          else if ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
+          elseif ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
             db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
           }
         }
