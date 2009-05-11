@@ -16,7 +16,7 @@ function scheduler_help($section) {
  * Implementation of hook_perm().
  */
 function scheduler_perm() {
-  return array('schedule (un)publishing of nodes');
+  return array('schedule (un)publishing of nodes', 'administer scheduler')
 }
 
 /**
