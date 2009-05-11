@@ -97,7 +97,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
   }
 
   // is this a node form?
-  else if (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id) {
+  elseif (isset($form['type']['#value']) && $form['type']['#value'] .'_node_form' == $form_id) {
     if (user_access('schedule (un)publishing of nodes')) {
       // if scheduling has been enabled for this node type
       if (variable_get('scheduler_'. $form['type']['#value'], 0) == 1) {
@@ -112,33 +112,29 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
 
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
         
-        //only load the values if we are viewing an existing node
-        if (isset($node->nid) && $node->nid > 0) {
+        // if this is a preview then get the values from the form, not the db
+        if ($form_state['values']['op']=='Preview') {
+          $defaults = new StdClass;
+          $defaults->publish_on = $form_state['values']['publish_on'];
+          $defaults->unpublish_on = $form_state['values']['unpublish_on'];
+        }
+        elseif (isset($node->nid) && $node->nid > 0) {
+          // load the values if we are viewing an existing node
           $defaults = db_fetch_object(db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = %d', $node->nid));
         }
-	    else {
+        else {
           // init standard values
           $defaults = new StdClass;
           $defaults->publish_on = $defaults->unpublish_on = NULL;
-	    }
-	    
-        if (isset($node->publish_on) && $node->publish_on) {
-          if (is_numeric($node->publish_on)) {
-              $defaults->publish_on = $node->publish_on;
-          }
-          else {
-            $defaults->publish_on = _scheduler_strtotime($node->publish_on);
-          }
-          }
-          if (isset($node->unpublish_on) && $node->unpublish_on) {
-          if (is_numeric($node->unpublish_on)) {
-              $defaults->unpublish_on = $node->unpublish_on;
-          }
-          else {
-            $defaults->unpublish_on = _scheduler_strtotime($node->unpublish_on);
-          }
         }
-        
+
+        // if there is a text value then convert it to a unix timestamp
+        if (isset($defaults->publish_on) && $defaults->publish_on && !is_numeric($defaults->publish_on)) {
+          $defaults->publish_on = _scheduler_strtotime($defaults->publish_on);
+        }
+        if (isset($defaults->unpublish_on) && $defaults->unpublish_on && !is_numeric($defaults->unpublish_on)) {
+          $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
+        }
 
         $form['scheduler_settings'] = array(
           '#type' => 'fieldset',
