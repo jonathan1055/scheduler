@@ -10,7 +10,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Scheduler Ukrainian Translation\n"
+"Project-Id-Version: Scheduler uk Ukrainian Translation\n"
 "POT-Creation-Date: 2009-05-14 13:48+0300\n"
 "PO-Revision-Date: 2009-05-14 14:20+0200\n"
 "Last-Translator: podarok <podarok@ua.fm>\n"
