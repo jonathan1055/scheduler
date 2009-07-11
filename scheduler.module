@@ -398,7 +398,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
           if ($exists) {
             // only update database if we need to (un)publish this node at some date
             // otherwise the user probably cleared out the (un)publish dates so we should remove the record
-            if ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
+            if (($node->status == 0 && isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
               db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
             }
             else {
