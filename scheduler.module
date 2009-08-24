@@ -561,3 +561,16 @@ function scheduler_views_api() {
   $info['api'] = 2;
   return $info;
 }
+
+/**
+ * Implementation of hook_content_extra_fields().
+ */
+function scheduler_content_extra_fields($type_name) {
+  $fields['scheduler_settings'] = array(
+    'label' => t('Scheduler'),
+    'description' => t('Scheduler module form.'),
+    'weight' => 10,
+  );
+
+  return $fields;
+}
