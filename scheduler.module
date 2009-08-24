@@ -102,12 +102,6 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
       // if scheduling has been enabled for this node type
       if (variable_get('scheduler_'. $form['type']['#value'], 0) == 1) {
 
-        //use JScalendar picker for dates if the module exists and is enabled
-        $jscalendar = FALSE;
-        if (module_exists('jscalendar')) {
-          $jscalendar = TRUE;
-        }
-
         $node = $form['#node'];
 
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
@@ -150,7 +144,6 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#maxlength' => 25,
           '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
           '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', $date_format))),
-          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
 
         $form['scheduler_settings']['unpublish_on'] = array(
@@ -159,8 +152,21 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#maxlength' => 25,
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
           '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
-          '#attributes' => $jscalendar ? array('class' => 'jscalendar') : array()
         );
+        
+        if (module_exists('date_popup')) {
+          // Make this a popup calendar widget if Date Popup module is enabled.
+          $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
+          $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
+          $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
+          $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
+          unset($form['scheduler_settings']['publish_on']['#maxlength']);
+          $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
+          $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
+          $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
+          $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
+          unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
+        }
       }
     }
   }
