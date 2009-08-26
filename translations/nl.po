@@ -43,10 +43,6 @@ msgstr "Depubliceer op"
 msgid "Date/time on which the article will be automatically unpublished"
 msgstr "Datum en tijd waarop het artikel automatisch zal worden gedepubliceerd"
 
-#: scheduler.module:11
-msgid "A module to schedule when nodes are (un)published."
-msgstr "Een module om te plannen waneer nodes worden ge(de)publiceerd."
-
 #: scheduler.module:28
 msgid "Light weight cron handler"
 msgstr "Lichtgewicht cron handler"

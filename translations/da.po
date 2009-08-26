@@ -14,10 +14,6 @@ msgstr ""
 "X-Poedit-Language: Danish\n"
 "X-Poedit-Country: DENMARK\n"
 
-#: scheduler.module:9
-msgid "A module to schedule node (un)publishing."
-msgstr "Planlæg udgivelse af indholdselementer."
-
 #: scheduler.module:21
 msgid "schedule"
 msgstr "planlæg"

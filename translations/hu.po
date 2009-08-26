@@ -13,10 +13,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: scheduler.module:6
-msgid "A module to schedule node (un)publishing."
-msgstr "Tartalmak megjelenésének és eltűnésének időzítése."
-
 #: scheduler.module:12
 msgid "schedule"
 msgstr "időzítés"

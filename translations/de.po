@@ -22,10 +22,6 @@ msgstr ""
 "X-Poedit-Country: GERMANY\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: scheduler.module:11
-msgid "A module to schedule when nodes are (un)published."
-msgstr "Ein Modul, um zu planen, wann Beiträge veröffentlicht oder verborgen werden."
-
 #: scheduler.module:28
 msgid "Light weight cron handler"
 msgstr "Einfaches Cron-Steuerungsprogramm"

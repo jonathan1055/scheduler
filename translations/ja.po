@@ -28,64 +28,60 @@ msgstr "スケジューラ"
 #: scheduler.views.inc:15;23
 #: scheduler.module:139
 msgid "Publish on"
-msgstr "掲載する日時:"
+msgstr "掲載�?�る日時:"
 
 #: scheduler.views.inc:16
 msgid "Date/time on which the article will be automatically published"
-msgstr "記事を自動的に掲載する日付と時間。"
+msgstr "記事を自動的�?�掲載�?�る日付�?�時間。"
 
 #: scheduler.views.inc:31;39
 #: scheduler.module:148
 msgid "Unpublish on"
-msgstr "非掲載にする日時:"
+msgstr "�?�掲載�?��?�る日時:"
 
 #: scheduler.views.inc:32
 msgid "Date/time on which the article will be automatically unpublished"
-msgstr "記事を自動的に非掲載にする日付と時間。"
-
-#: scheduler.module:11
-msgid "A module to schedule when nodes are (un)published."
-msgstr "ノードを掲載する (または非掲載にする) スケジュールを立てるモジュール。"
+msgstr "記事を自動的�?��?�掲載�?��?�る日付�?�時間。"
 
 #: scheduler.module:28
 msgid "Light weight cron handler"
-msgstr "軽量なcronハンドラ"
+msgstr "軽�?�?�cron�?ンドラ"
 
 #: scheduler.module:29
 msgid "A light weight cron handler to allow more frequent runs of Schedulers internal cron system"
-msgstr "スケジューラ内部のcronシステムをより頻繁に実行できるようになる、軽量なcronハンドラ"
+msgstr "スケジューラ内部�?�cronシステムをより頻�?�?�実行�?��??るよ�?��?��?�る�?軽�?�?�cron�?ンドラ"
 
 #: scheduler.module:35
 msgid "Test your servers UTC clock"
-msgstr "サーバのUTC時計をテスト"
+msgstr "サー�?�?�UTC時計をテスト"
 
 #: scheduler.module:36
 msgid "Allows site admin to check their servers internal clock"
-msgstr "サイト管理者がサーバの内部時計を確認できます"
+msgstr "サイト管�?�者�?�サー�?�?�内部時計を確�?�?��??�?��?�"
 
 #: scheduler.module:42
 msgid "Scheduler module settings"
-msgstr "スケジューラモジュールの設定"
+msgstr "スケジューラモジュール�?�設定"
 
 #: scheduler.module:43
 msgid "Allows site admins to configure scheduler."
-msgstr "サイト管理者はスケジューラを設定することができます。"
+msgstr "サイト管�?�者�?�スケジューラを設定�?�る�?��?��?��?��??�?��?�。"
 
 #: scheduler.module:55
 msgid "Date format"
-msgstr "日付の書式"
+msgstr "日付�?�書�?"
 
 #: scheduler.module:59
 msgid "The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php"
-msgstr "スケジュールの時間や日付を入力するための書式。書式のオプションについてはdate()関数を参照してください: http://www.php.net/manual/en/function.date.php"
+msgstr "スケジュール�?�時間や日付を入力�?�る�?��?�?�書�?。書�?�?�オプション�?��?��?��?��?�date()関数を�?�照�?��?��??�?��?��?�: http://www.php.net/manual/en/function.date.php"
 
 #: scheduler.module:73
 msgid "Enable scheduled (un)publishing"
-msgstr "掲載する (または非掲載にする) スケジュールを立てられるようにする"
+msgstr "掲載�?�る (�?��?��?��?�掲載�?��?�る) スケジュールを立�?�られるよ�?��?��?�る"
 
 #: scheduler.module:75
 msgid "Check this box to enable scheduled (un)publishing for this node type."
-msgstr "このボックスにチェックを入れると、このコンテンツタイプのノードを掲載する (または非掲載にする) スケジュールを立てられるようになります。"
+msgstr "�?��?�ボックス�?��?ェックを入れる�?��?�?��?�コンテンツタイプ�?�ノードを掲載�?�る (�?��?��?��?�掲載�?��?�る) スケジュールを立�?�られるよ�?��?��?�り�?��?�。"
 
 #: scheduler.module:79
 msgid "Alter published on time"
@@ -93,31 +89,31 @@ msgstr "投稿日時を変更"
 
 #: scheduler.module:81
 msgid "Check this box to alter the published on time to match the scheduled time (\"touch feature\")."
-msgstr "このボックスにチェックがあれば、ノードの投稿日時をスケジュールの時間に変更します (「タッチ機能」)。"
+msgstr "�?��?�ボックス�?��?ェック�?��?�れ�?��?ノード�?�投稿日時をスケジュール�?�時間�?�変更�?��?��?� (「タッ�?機能�?)。"
 
 #: scheduler.module:131
 msgid "Scheduling options"
-msgstr "スケジュールのオプション"
+msgstr "スケジュール�?�オプション"
 
 #: scheduler.module:142
 msgid "Format: %time. Leave blank to disable scheduled publishing."
-msgstr "書式: %time。空欄にすると、掲載するスケジュールが無効となります。"
+msgstr "書�?: %time。空欄�?��?�る�?��?掲載�?�るスケジュール�?�無効�?��?�り�?��?�。"
 
 #: scheduler.module:151
 msgid "Format: %time. Leave blank to disable scheduled unpublishing."
-msgstr "書式: %time。空欄にすると、非掲載にするスケジュールが無効となります。"
+msgstr "書�?: %time。空欄�?��?�る�?��?�?�掲載�?��?�るスケジュール�?�無効�?��?�り�?��?�。"
 
 #: scheduler.module:297
 msgid "The entered publication date is invalid."
-msgstr "入力された掲載日時が適切ではありません。"
+msgstr "入力�?�れ�?�掲載日時�?��?�切�?��?��?�り�?��?�ん。"
 
 #: scheduler.module:307
 msgid "The entered expiration date is invalid."
-msgstr "入力された非掲載日時が適切ではありません。"
+msgstr "入力�?�れ�?��?�掲載日時�?��?�切�?��?��?�り�?��?�ん。"
 
 #: scheduler.module:314
 msgid "The expiration date is before publication date."
-msgstr "非掲載にする日時が掲載する日時より以前となっています。"
+msgstr "�?�掲載�?��?�る日時�?�掲載�?�る日時より以�?�?��?��?��?��?��?��?�。"
 
 #: scheduler.module:377;406
 msgid "view"
@@ -125,19 +121,19 @@ msgstr "表示"
 
 #: scheduler.module:469
 msgid "Scheduler OS time check"
-msgstr "システムの時刻設定の確認"
+msgstr "システム�?�時刻設定�?�確�?"
 
 #: scheduler.module:481
 msgid "Your server reports the UTC time as %time and \"localtime\" as %lt."
-msgstr "サーバの回答では、UTCタイムは %time で「ローカルタイム」は %lt です。"
+msgstr "サー�?�?�回答�?��?��?UTCタイム�?� %time �?�「ローカルタイム�?�?� %lt �?��?�。"
 
 #: scheduler.module:483
 msgid "If all is well with your server's time configuration UTC should match <a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC London Time</a> and the localtime should be the time where you are."
-msgstr "サーバの時刻設定が正しく設定されていれば、UTCは<a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTCのロンドン時間</a>に一致しており、ローカルタイムはあなたが現在いる場所の時間に一致していなければなりません。"
+msgstr "サー�?�?�時刻設定�?�正�?��??設定�?�れ�?��?�れ�?��?UTC�?�<a target=\"_blank\" href=\"http://wwp.greenwichmeantime.com/\">UTC�?�ロンドン時間</a>�?�一致�?��?��?�り�?ローカルタイム�?��?��?��?��?��?�在�?�る場所�?�時間�?�一致�?��?��?��?��?�れ�?��?�り�?��?�ん。"
 
 #: scheduler.module:485
 msgid "If this is not the case please have your Unix System Administrator fix your servers time/date configuration."
-msgstr "もしもずれが生じていれば、UNIXのシステム管理者に日時の構成を修復させてください。"
+msgstr "も�?�も�?�れ�?�生�?��?��?�れ�?��?UNIX�?�システム管�?�者�?�日時�?�構�?を修復�?��?��?��??�?��?��?�。"
 
 #: scheduler.module:377;406;436;0
 msgid "scheduler"
@@ -145,37 +141,37 @@ msgstr "スケジューラ"
 
 #: scheduler.module:377
 msgid "@type: scheduled publishing of %title."
-msgstr "@type: スケジュールにしたがって%titleを掲載しました。"
+msgstr "@type: スケジュール�?��?��?��?��?��?�%titleを掲載�?��?��?��?�。"
 
 #: scheduler.module:406
 msgid "@type: scheduled unpublishing of %title."
-msgstr "@type: スケジュールにしたがって%titleを非掲載にしました。"
+msgstr "@type: スケジュール�?��?��?��?��?��?�%titleを�?�掲載�?��?��?��?��?�。"
 
 #: scheduler.module:436
 msgid "Internal scheduler run activated"
-msgstr "内部スケジューラが起動しました"
+msgstr "内部スケジューラ�?�起動�?��?��?��?�"
 
 #: scheduler.module:19
 msgid "schedule (un)publishing of nodes"
-msgstr "ノードを掲載する (非掲載にする) スケジュールを立てる"
+msgstr "ノードを掲載�?�る (�?�掲載�?��?�る) スケジュールを立�?�る"
 
 #: scheduler.install:11
 msgid "The main table to hold the scheduler data."
-msgstr "スケジューラのデータを格納する主テーブル。"
+msgstr "スケジューラ�?�データを格�?�?�る主テーブル。"
 
 #: scheduler.install:14
 msgid "The foreign key to node.nid"
-msgstr "node.nidに結び付く外部キー"
+msgstr "node.nid�?��?�?�付�??外部キー"
 
 #: scheduler.install:20
 msgid "The UNIX UTC timestamp when to publish"
-msgstr "掲載する日時の UNIX UTC タイムスタンプ"
+msgstr "掲載�?�る日時�?� UNIX UTC タイムスタンプ"
 
 #: scheduler.install:27
 msgid "The UNIX UTC timestamp when to unpublish"
-msgstr "非掲載にする日時の UNIX UTC タイムスタンプ"
+msgstr "�?�掲載�?��?�る日時�?� UNIX UTC タイムスタンプ"
 
 #: scheduler.info:0
 msgid "This module allows nodes to be published and unpublished on specified dates."
-msgstr "このモジュールによって、指定した日時にノードを掲載したり非掲載にしたりできるようになります。"
+msgstr "�?��?�モジュール�?�よ�?��?��?指定�?��?�日時�?�ノードを掲載�?��?�り�?�掲載�?��?��?�り�?��??るよ�?��?��?�り�?��?�。"
 

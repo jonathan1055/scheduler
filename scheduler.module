@@ -4,15 +4,6 @@
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
 
 /**
- * Implementation of hook_help().
- */
-function scheduler_help($section) {
-  if ($section == 'admin/modules#description') {
-    return t('A module to schedule when nodes are (un)published.');
-  }
-}
-
-/**
  * Implementation of hook_perm().
  */
 function scheduler_perm() {
@@ -51,7 +42,7 @@ function scheduler_menu() {
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
     'access callback' => 'scheduler_list_access_callback',
-    'description' => t('Display a list of scheduled nodes'),
+    'description' => 'Display a list of scheduled nodes',
   );
   return $items;
 }
@@ -70,7 +61,7 @@ function scheduler_admin() {
     '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
     '#size' => 20,
     '#maxlength' => 20,
-    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),	
+    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),
   );
   return system_settings_form($form);
 }
@@ -105,7 +96,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         $node = $form['#node'];
 
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-        
+
         // if this is a preview then get the values from the form, not the db
         if ($form_state['values']['op']=='Preview') {
           $defaults = new StdClass;
@@ -153,7 +144,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
           '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
         );
-        
+
         if (module_exists('date_popup')) {
           // Make this a popup calendar widget if Date Popup module is enabled.
           $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
@@ -230,7 +221,8 @@ function _scheduler_strtotime($str) {
       // success
       $time -= _scheduler_get_user_timezone();
     }
-  } else {
+  }
+  else {
     // $str is empty
     $time = NULL;
   }
@@ -241,20 +233,20 @@ function _scheduler_strtotime($str) {
  * Parse a time/date as UTC time
  *
  * @param string $date The string to parse
- * @param string $format The format used in $date. See date() (http://www.php.net/manual/en/function.date.php) 
- * specification for format options. Right now only dHhmiaAsyY are supported. 
+ * @param string $format The format used in $date. See date() (http://www.php.net/manual/en/function.date.php)
+ * specification for format options. Right now only dHhmiaAsyY are supported.
  * @return the parsed time as a UTC timestamp
  * @see date()
  */
 function _scheduler_strptime($date, $format) {
   # we need to build a regex pattern for the date format
   $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y');
-  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})'); 
+  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})');
   $custom_pattern = str_replace($date_entities, $date_regex_replacements, $format);
   if (!preg_match("#$custom_pattern#", $date, $value_matches)) {
     return FALSE;
   }
-  
+
   if (!preg_match_all("/(\w)/", $format, $entity_matches)) {
     return FALSE;
   }
@@ -269,26 +261,26 @@ function _scheduler_strptime($date, $format) {
         break;
       case 'H':
       case 'h':
-        $results['hour'] = $value; 
+        $results['hour'] = $value;
         break;
       case 'm':
-        $results['month'] = $value; 
+        $results['month'] = $value;
         break;
       case 'i':
-        $results['minute'] = $value; 
+        $results['minute'] = $value;
         break;
       case 'a':
       case 'A':
-        $results['meridiem'] = $value_matches[$index]; 
+        $results['meridiem'] = $value_matches[$index];
         break;
       case 's':
-        $results['second'] = $value; 
+        $results['second'] = $value;
         break;
       case 'y':
       case 'Y':
-        $results['year'] = $value; 
+        $results['year'] = $value;
         break;
-    }    
+    }
     $index++;
   }
   if ((strncasecmp($results['meridiem'], "pm", 2) == 0) && ($results['hour'] <= 12)) {
@@ -319,7 +311,7 @@ function _scheduler_get_user_timezone() {
 function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   // Run $op == load for any user.
   if ($op == 'load') {
-    if (isset($node->nid) && $node->nid && variable_get('scheduler_'.$node->type, 0) == 1) {
+    if (isset($node->nid) && $node->nid && variable_get('scheduler_'. $node->type, 0) == 1) {
       $result = db_query('SELECT * FROM {scheduler} WHERE nid = %d', $node->nid);
       if ($result) {
         $row = db_fetch_array($result);
@@ -338,8 +330,8 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     switch ($op) {
       case 'view':
         if (isset($a4) && $a4 && isset($node->unpublish_on) && $node->unpublish_on) {
-          $unavailable_after = date ("d-M-Y H:i:s e", $node->unpublish_on);
-          drupal_set_html_head('<META NAME="GOOGLEBOT" CONTENT="unavailable_after: '. $unavailable_after .'">');
+          $unavailable_after = date("d-M-Y H:i:s e", $node->unpublish_on);
+          drupal_set_html_head('<meta name="GOOGLEBOT" content="unavailable_after: '. $unavailable_after .'" />');
         }
         break;
       case 'validate':
@@ -351,9 +343,9 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         // a value we have already converted. This is needed
         // because DRUPAL6 removed 'submit' and added 'presave'
         // and all this happens at different times.
-        
+
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-        
+
         if (isset($node->publish_on) && $node->publish_on && !is_numeric($node->publish_on)) {
           $publishtime = _scheduler_strtotime($node->publish_on);
           if ($publishtime === FALSE) {
@@ -366,7 +358,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
             $node->publish_on = $publishtime;
           }
         }
-        
+
         if (isset($node->unpublish_on) && $node->unpublish_on && !is_numeric($node->unpublish_on)) {
           $unpublishtime = _scheduler_strtotime($node->unpublish_on);
           if ($unpublishtime === FALSE) {
@@ -383,7 +375,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {
           form_set_error('unpublish_on', t("The 'unpublish on' date must be later than the 'publish on' date."));
         }
-        
+
         // Right before we save the node, we need to check if a "publish on" value has been set.
         // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
         if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
@@ -399,7 +391,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'update':
         if (isset($node->nid) && $node->nid) {
           $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
-  
+
           // if this node has already been scheduled, update its record
           if ($exists) {
             // only update database if we need to (un)publish this node at some date
@@ -491,7 +483,7 @@ function scheduler_cron() {
 }
 
 /**
- * Implementation of hook_theme()
+ * Implementation of hook_theme().
  */
 function scheduler_theme() {
   return array(
