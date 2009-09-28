@@ -96,6 +96,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         $node = $form['#node'];
 
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+        $internal_date_format = module_exists('date_popup') ? SCHEDULER_DATE_FORMAT : $date_format;
 
         // if this is a preview then get the values from the form, not the db
         if ($form_state['values']['op']=='Preview') {
@@ -133,7 +134,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#type' => 'textfield',
           '#title' => t('Publish on'),
           '#maxlength' => 25,
-          '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
+          '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
           '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', $date_format))),
         );
 
@@ -141,7 +142,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#type' => 'textfield',
           '#title' => t('Unpublish on'),
           '#maxlength' => 25,
-          '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
+          '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
           '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
         );
 
@@ -216,7 +217,11 @@ function scheduler_list() {
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "" ) {
-    $time=_scheduler_strptime(trim($str), variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT));
+  	$date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+  	if (module_exists('date_popup')) {
+  		$date_format = SCHEDULER_DATE_FORMAT;
+  	}
+    $time=_scheduler_strptime(trim($str), $date_format);
     if ($time!==FALSE) {
       // success
       $time -= _scheduler_get_user_timezone();
