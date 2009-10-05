@@ -61,7 +61,7 @@ function scheduler_admin() {
     '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
     '#size' => 20,
     '#maxlength' => 20,
-    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php'),
+    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported: djmnyYhHgGisaA)'),
   );
   return system_settings_form($form);
 }
@@ -245,8 +245,8 @@ function _scheduler_strtotime($str) {
  */
 function _scheduler_strptime($date, $format) {
   # we need to build a regex pattern for the date format
-  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y');
-  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})');
+  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y', 'n', 'j', 'g', 'G');
+  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})', '(\d{1,2})', '(\d{1,2})', '(\d{1,2})', '(\d{1,2})');
   $custom_pattern = str_replace($date_entities, $date_regex_replacements, $format);
   if (!preg_match("#$custom_pattern#", $date, $value_matches)) {
     return FALSE;
@@ -262,13 +262,17 @@ function _scheduler_strptime($date, $format) {
     $value = intval($value_matches[$index]);
     switch ($entity) {
       case 'd':
+      case 'j':
         $results['day'] = $value;
         break;
       case 'H':
       case 'h':
+      case 'g':
+      case 'G':
         $results['hour'] = $value;
         break;
       case 'm':
+      case 'n':
         $results['month'] = $value;
         break;
       case 'i':
