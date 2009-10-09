@@ -340,7 +340,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'view':
         if (isset($a4) && $a4 && isset($node->unpublish_on) && $node->unpublish_on) {
           $unavailable_after = date("d-M-Y H:i:s T", $node->unpublish_on);
-          drupal_set_html_head('<meta name="GOOGLEBOT" content="unavailable_after: '. $unavailable_after .'" />');
+          drupal_set_html_head('<meta name="googlebot" content="unavailable_after: '. $unavailable_after .'" />');
         }
         break;
       case 'validate':
