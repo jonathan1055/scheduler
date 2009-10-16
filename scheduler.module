@@ -61,7 +61,7 @@ function scheduler_admin() {
     '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
     '#size' => 20,
     '#maxlength' => 20,
-    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported: djmnyYhHgGisaA)'),
+    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported (don\'t use \'G\' with Date Popup): djmnyYhHgGisaA)'),
   );
   return system_settings_form($form);
 }
