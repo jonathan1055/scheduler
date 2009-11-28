@@ -567,11 +567,14 @@ function scheduler_views_api() {
  * Implementation of hook_content_extra_fields().
  */
 function scheduler_content_extra_fields($type_name) {
-  $fields['scheduler_settings'] = array(
-    'label' => t('Scheduler'),
-    'description' => t('Scheduler module form.'),
-    'weight' => 10,
-  );
+  $fields = array();
+  if (variable_get('scheduler_'. $type_name, 0) == 1) {
+    $fields['scheduler_settings'] = array(
+      'label' => t('Scheduler'),
+      'description' => t('Scheduler module form.'),
+      'weight' => 10,
+    );
+  }
 
   return $fields;
 }
