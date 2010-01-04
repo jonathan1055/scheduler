@@ -127,7 +127,13 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#title' => t('Scheduling options'),
           '#collapsible' => TRUE,
           '#collapsed' => ((isset($defaults->publish_on) && $defaults->publish_on != 0) || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)) ? FALSE: TRUE,
-          '#weight' => 35
+          '#weight' => 35,
+          '#group' => 'additional_settings',
+          '#attached' => array(
+            'js' => array(
+              'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
+            ),
+          )
         );
 
         $form['scheduler_settings']['publish_on'] = array(
