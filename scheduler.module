@@ -99,7 +99,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         $internal_date_format = module_exists('date_popup') ? SCHEDULER_DATE_FORMAT : $date_format;
 
         // if this is a preview then get the values from the form, not the db
-        if ($form_state['values']['op']=='Preview') {
+        if (isset($form_state['values']['op']) && $form_state['values']['op'] == 'Preview') {
           $defaults = new StdClass;
           $defaults->publish_on = $form_state['values']['publish_on'];
           $defaults->unpublish_on = $form_state['values']['unpublish_on'];
@@ -223,10 +223,10 @@ function scheduler_list() {
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "" ) {
-  	$date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-  	if (module_exists('date_popup')) {
-  		$date_format = SCHEDULER_DATE_FORMAT;
-  	}
+    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+    if (module_exists('date_popup')) {
+      $date_format = SCHEDULER_DATE_FORMAT;
+    }
     $time=_scheduler_strptime(trim($str), $date_format);
     if ($time!==FALSE) {
       // success
