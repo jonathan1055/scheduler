@@ -177,7 +177,7 @@ function scheduler_list() {
 
   while ($node = db_fetch_object($result)) {
     $rows[] = array(
-      ($node->status ? l($node->title, "node/$node->nid") : $node->title),
+      l($node->title, "node/$node->nid"),
       theme('username', $node),
       ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
       ($node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;'),
