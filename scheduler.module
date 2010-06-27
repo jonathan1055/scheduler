@@ -63,7 +63,47 @@ function scheduler_admin() {
     '#maxlength' => 20,
     '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported (don\'t use \'G\', \'a\' or \'A\' with Date Popup): djmnyYhHgGisaA)'),
   );
+
+  $form['scheduler_field_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Field type'),
+    '#default_value' => variable_get('scheduler_field_type', 'date_popup'),
+    '#options' => array(
+      'textfield' => t('Standard text field'),
+      'date_popup' => t('Date Popup field'),
+    ),
+    '#description' => t("If the Date module's Date Popup module is enabled you may use the popup calendar for your field type."),
+  );
+
+  if (!module_exists('date_popup')) {
+    $form['scheduler_field_type']['#default_value'] = 'textfield';
+    $form['scheduler_field_type']['#disabled'] = TRUE;
+  }
+  else {
+    $acceptable = implode(date_popup_time_formats(), ', ');
+    $form['scheduler_date_format']['#description'] .= t('If you are using Date Popup, the following time formats are supported: !formats', array('!formats' => $acceptable));
+  }
+
   return system_settings_form($form);
+}
+
+function scheduler_admin_validate($form, &$form_state) {
+  if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
+    $format = $form_state['values']['scheduler_date_format'];
+    $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
+    $acceptable = date_popup_time_formats();
+
+    if (!in_array($time_format, $acceptable)) {
+      form_set_error('scheduler_date_format', t('The Date Popup module only accepts the following formats: !formats', array('!formats' => implode($acceptable, ', '))));
+    }
+  }
+}
+
+/**
+ * Do we use the date_popup for date/time selection?
+ */
+function _scheduler_use_date_popup() {
+  return module_exists('date_popup') && variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
 }
 
 /**
@@ -96,8 +136,10 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
         $node = $form['#node'];
 
         $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-        $internal_date_format = module_exists('date_popup') ? SCHEDULER_DATE_FORMAT : $date_format;
+        $use_date_popup = _scheduler_use_date_popup();
 
+        $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
+        
         // if this is a preview then get the values from the form, not the db
         if (isset($form_state['values']['op']) && $form_state['values']['op'] == 'Preview') {
           $defaults = new StdClass;
@@ -152,7 +194,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
         );
 
-        if (module_exists('date_popup')) {
+        if ($use_date_popup) {
           // Make this a popup calendar widget if Date Popup module is enabled.
           $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
@@ -224,8 +266,9 @@ function scheduler_list() {
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "" ) {
     $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-    if (module_exists('date_popup')) {
-      $date_format = SCHEDULER_DATE_FORMAT;
+
+    if (_scheduler_use_date_popup()) {
+          $date_format = SCHEDULER_DATE_FORMAT;
     }
     $time=_scheduler_strptime(trim($str), $date_format);
     if ($time!==FALSE) {
