@@ -587,13 +587,9 @@ function theme_scheduler_timecheck($now) {
 
   drupal_set_title(t('Scheduler OS time check'));
 
-  $t = localtime($now, TRUE);
-
-  $lt = ($t['tm_year']+1900) .'-'. ($t['tm_mon']+1) .'-'. $t['tm_mday'] .' '. $t['tm_hour'] .':'. $t['tm_min'] .':'. $t['tm_sec'];
-
   $t_options = array(
-    '%time' => date("Y-m-d H:i:s", $now),
-    '%lt' => $lt,
+    '%time' => gmdate("Y-m-d H:i:s", $now), 
+    '%lt' => date("Y-m-d H:i:s P", $now),
   );
 
   return
