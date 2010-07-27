@@ -438,6 +438,7 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
         if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > time()) {
           $node->status = 0;
+          drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => date($date_format, $node->publish_on))), 'status', FALSE);
         }
         break;
       case 'insert':
