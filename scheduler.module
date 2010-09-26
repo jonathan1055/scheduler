@@ -515,18 +515,21 @@ function scheduler_cron() {
   }
 
   // if the time is greater than the time to unpublish a node, unpublish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 1 AND s.unpublish_on > 0 AND s.unpublish_on < %d', time());
+  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE s.unpublish_on > 0 AND s.unpublish_on < %d', time());
 
   while ($node = db_fetch_object($nodes)) {
     // if this node is to be unpublished, we can update the node and remove the record since it can't be republished
     $n = node_load($node->nid);
     $n->changed = $node->unpublish_on;
 
-    // Use the actions system to unpublish the node.
-    watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
-    $actions = array('node_unpublish_action', 'node_save_action');
-    $context['node'] = $n;
-    actions_do($actions, $n, $context, NULL, NULL);
+    if ($n->status == 1) {
+      // Use the actions system to unpublish the node.
+      watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
+      $actions = array('node_unpublish_action', 'node_save_action');
+      $context['node'] = $n;
+      actions_do($actions, $n, $context, NULL, NULL);
+    }
+
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
 
     // invoke scheduler API
