@@ -642,3 +642,46 @@ function scheduler_preprocess_node(&$variables, $hook) {
     $variables['unpublish_on'] = format_date($node->unpublish_on, 'custom', $date_format);
   }
 }
+
+/**
+* Implementation of hook_feeds_node_processor_targets_alter().
+* advertises publish_on and unpublish_on as mappable values to the feeds module
+*/
+function scheduler_feeds_node_processor_targets_alter(&$targets, $content_type) {
+  $target = array();
+
+  if (variable_get('scheduler_'. $content_type, FALSE)) {
+    $targets['publish_on'] = array(
+      'name' => t('Scheduler: publish on'),
+      'description' => t('The date, when scheduler module should publish node.'),
+      'callback' => 'scheduler_set_target'
+    );
+
+    $targets['unpublish_on'] = array(
+      'name' => t('Scheduler: unpublish on'),
+      'description' => t('The date, when scheduler module should unpublish node.'),
+      'callback' => 'scheduler_set_target'
+    );
+  }
+
+  return $targets;
+}
+
+/**
+* Mapping callback for feeds module.
+*
+* This callback converts input from parser and converts it
+* to timestamp form. After that it sets value of correct field of node.
+*/
+function scheduler_set_target($node, $target, $value) {
+  if (!is_array($value)) {
+
+    $timestamp = strtotime($value);
+
+    // if strtotime returned correct timestamp, we proceed with
+    // processing. Otherwise do nothing..
+    if (($timestamp !== FALSE) && ($timestamp != -1)) {
+      $node->$target = $timestamp;
+    }
+  }
+}
