@@ -83,3 +83,21 @@ function scheduler_update_6100() {
   }
   return $ret;
 }
+
+function scheduler_update_6101() {
+  $ret = array();
+  $types = node_get_types('types');
+  foreach ($types as $type) {
+    $type_name = $type->type;
+  	$publish_enable = variable_get('scheduler_'. $type_name, 0);
+  	$publish_touch = variable_get('scheduler_touch_'. $type_name, 0);
+
+  	variable_set('scheduler_publish_enable_'. $type_name, $publish_enable);
+  	variable_set('scheduler_unpublish_enable_'. $type_name, $publish_enable);
+   	variable_set('scheduler_publish_touch_'. $type_name, $publish_touch);
+
+  	variable_del('scheduler_touch_'. $type_name);
+  	variable_del('scheduler_'. $type_name);
+  }
+  return $ret;
+}
