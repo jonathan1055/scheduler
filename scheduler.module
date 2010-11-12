@@ -84,6 +84,13 @@ function scheduler_admin() {
     $form['scheduler_date_format']['#description'] .= t('If you are using Date Popup, the following time formats are supported: !formats', array('!formats' => $acceptable));
   }
 
+  $form['scheduler_extra_info'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Extra Info'),
+    '#default_value' => variable_get('scheduler_extra_info', ''),
+    '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
+  );
+
   return system_settings_form($form);
 }
 
@@ -213,6 +220,14 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
             ),
           )
         );
+
+        $extra_info = variable_get('scheduler_extra_info', '');
+        if ($extra_info && $extra_info != '') {
+          $form['scheduler_settings']['extra_info'] = array(
+            '#type' => 'item',
+            '#value' => $extra_info,
+          );
+        }
 
         if ($publishing_enabled) {
           $form['scheduler_settings']['publish_on'] = array(
