@@ -151,6 +151,13 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
       '#description' => t('Check this box to alter the published on time to match the scheduled time ("touch feature").')
     );
 
+    $form['scheduler']['publish']['scheduler_publish_revision'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create a new revision on publishing'),
+      '#default_value' => variable_get('scheduler_publish_revision_'. $form['#node_type']->type, 0),
+      '#description' => t('Check this box if you want a new revision created when publishing.')
+    );
+
     $form['scheduler']['unpublish'] = array(
       '#type' => 'fieldset',
       '#title' => 'Unpublishing settings',
@@ -165,6 +172,14 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
       '#default_value' => variable_get('scheduler_unpublish_enable_'. $form['#node_type']->type, 0),
       '#description' => t('Check this box to enable scheduled unpublishing for this node type.')
     );
+
+    $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Create a new revision on unpublishing'),
+      '#default_value' => variable_get('scheduler_unpublish_revision_'. $form['#node_type']->type, 0),
+      '#description' => t('Check this box if you want a new revision created when unpublishing.')
+    );
+
   }
 
   // is this a node form?
@@ -546,12 +561,20 @@ function scheduler_cron() {
 
   // if the time now is greater than the time to publish a node, publish it
   $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d ', time());
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   while ($node = db_fetch_object($nodes)) {
     $n = node_load($node->nid);
     $n->changed = $node->publish_on;
+    $old_creation_date = $n->created;
     if (variable_get('scheduler_publish_touch_'. $n->type, 0) == 1) {
       $n->created = $node->publish_on;
+    }
+
+    $create_publishing_revision = variable_get('scheduler_publish_revision_'. $n->type, 0) == 1;
+    if ($create_publishing_revision) {
+      $n->revision = TRUE;
+      $n->log = "Node published by scheduler module. Original creation date was ".  format_date($old_creation_date, 'custom', $date_format) .".";
     }
 
     // Use the actions system to publish the node.
@@ -581,9 +604,16 @@ function scheduler_cron() {
   while ($node = db_fetch_object($nodes)) {
     // if this node is to be unpublished, we can update the node and remove the record since it can't be republished
     $n = node_load($node->nid);
+    $old_change_date = $n->changed;
     $n->changed = $node->unpublish_on;
 
     if ($n->status == 1) {
+      $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_'. $n->type, 0) == 1;
+      if ($create_unpublishing_revision) {
+        $n->revision = TRUE;
+        $n->log = "Node unpublished by scheduler module. Original change date was ".  format_date($old_change_date, 'custom', $date_format) .".";
+      }
+
       // Use the actions system to unpublish the node.
       watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
       $actions = array('node_unpublish_action', 'node_save_action');
