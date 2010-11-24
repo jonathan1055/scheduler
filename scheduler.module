@@ -44,6 +44,14 @@ function scheduler_menu() {
     'access callback' => 'scheduler_list_access_callback',
     'description' => 'Display a list of scheduled nodes',
   );
+  $items['admin/settings/scheduler/cron'] = array(
+    'title' => 'Manual scheduler cron run',
+    'description' => 'Allows site admins to run schedulers cron function manually.',
+    'page callback' => '_scheduler_manual_cron_run',
+    'access callback' => TRUE,
+    'access arguments' => array('administer scheduler'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -55,6 +63,13 @@ function scheduler_list_access_callback() {
 }
 
 function scheduler_admin() {
+  $cron_link =  l(t('Run scheduler cron function manually'), 'admin/settings/scheduler/cron', array() );
+
+  $form['scheduler_cron_link'] = array(
+    '#type' => 'item',
+    '#value' => $cron_link,
+  );
+
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
@@ -669,7 +684,7 @@ function scheduler_theme() {
 }
 
 function _scheduler_run_cron() {
-  watchdog('scheduler', 'Internal scheduler run activated', array(), WATCHDOG_NOTICE);
+  watchdog('scheduler', 'Internal scheduler cron run activated', array(), WATCHDOG_NOTICE);
   scheduler_cron();
   if (ob_get_level() > 0) {
     $handlers = ob_list_handlers();
@@ -678,6 +693,13 @@ function _scheduler_run_cron() {
     }
   }
   exit();
+}
+
+function _scheduler_manual_cron_run() {
+  watchdog('scheduler', 'Internal scheduler cron run manually activated', array(), WATCHDOG_NOTICE);
+  scheduler_cron();
+  drupal_set_message(t('Attempted to run schedulers internal cron function.'));
+  drupal_goto('admin/settings/scheduler');
 }
 
 /**
