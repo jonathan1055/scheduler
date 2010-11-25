@@ -43,6 +43,7 @@ function scheduler_menu() {
     'page callback' => 'scheduler_list',
     'access callback' => 'scheduler_list_access_callback',
     'description' => 'Display a list of scheduled nodes',
+    'file' => NULL,
   );
   $items['admin/settings/scheduler/cron'] = array(
     'title' => 'Manual scheduler cron run',
