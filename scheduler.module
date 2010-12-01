@@ -826,3 +826,34 @@ function scheduler_set_target($node, $target, $value) {
     }
   }
 }
+
+/**
+ * Implementation of hook_token_values().
+ */
+function scheduler_token_values($type, $object = NULL, $options = array()) {
+  if ($type == 'node') {
+    $tokens = array();
+    $node = $object;
+    if (isset($node->publish_on)) {
+      $tokens += token_get_date_token_values($node->publish_on, 'scheduler-publish-');
+    }
+
+    if (isset($node->unpublish_on)) {
+      $tokens += token_get_date_token_values($node->unpublish_on, 'scheduler-unpublish-');
+    }
+    return $tokens;
+  }
+}
+
+/**
+ * Implementation of hook_token_list().
+ */
+function scheduler_token_list($type = 'all') {
+  $tokens = array();
+  $tokens['node'] = array();
+  if ($type == 'node' || $type == 'all') {
+    $tokens['node'] += token_get_date_token_info(t('Publish on'), 'scheduler-publish-');
+    $tokens['node'] += token_get_date_token_info(t('Unpublish on'), 'scheduler-unpublish-');
+  }
+  return $tokens;
+}
