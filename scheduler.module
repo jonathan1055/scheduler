@@ -280,25 +280,35 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
           );
         }
 
+        $description_format = t('Format: %time.', array('%time' => format_date(time(), 'custom', $date_format)));
         if ($publishing_enabled) {
+          $description_blank = '';
+          if (!$publishing_required) {
+            $description_blank .= ' '.t('Leave blank to disable scheduled publishing.');
+          }
+
           $form['scheduler_settings']['publish_on'] = array(
             '#type' => 'textfield',
             '#title' => t('Publish on'),
             '#maxlength' => 25,
             '#required' => $publishing_required,
             '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
-            '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(time(), 'custom', $date_format))),
+            '#description' => $description_format.$description_blank,
           );
         }
 
         if ($unpublishing_enabled) {
+          $description_blank = '';
+          if (!$unpublishing_required) {
+            $description_blank .= ' '.t('Leave blank to disable scheduled unpublishing.');
+          }
           $form['scheduler_settings']['unpublish_on'] = array(
             '#type' => 'textfield',
             '#title' => t('Unpublish on'),
             '#maxlength' => 25,
             '#required' => $unpublishing_required,
             '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
-            '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(time(), 'custom', $date_format))),
+            '#description' => $description_format.$description_blank,
           );
         }
 
@@ -308,14 +318,14 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
             $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
             $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
             $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
-            $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
+            if (!$publishing_required) $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
             unset($form['scheduler_settings']['publish_on']['#maxlength']);
           }
           if ($unpublishing_enabled) {
             $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
             $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
             $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
-            $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
+            if (!$unpublishing_required) $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
             unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
           }
         }
