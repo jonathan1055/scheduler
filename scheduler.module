@@ -606,17 +606,38 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  */
 function scheduler_cron() {
   $clear_cache = FALSE;
+  $clear_cache |= _scheduler_publish();
+  $clear_cache |= _scheduler_unpublish();
 
-  // if the time now is greater than the time to publish a node, publish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d ', time());
+  if ($clear_cache) {
+    // Clear the cache so an anonymous poster can see any changes to nodes
+    cache_clear_all();
+  }
+}
+
+/**
+ * Publish scheduled nodes.
+ *
+ * @return
+ *   TRUE if any node has been published, FALSE otherwise.
+ */
+function _scheduler_publish() {
+  $result = FALSE;
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
-  while ($node = db_fetch_object($nodes)) {
-    $n = node_load($node->nid);
-    $n->changed = $node->publish_on;
+  // If the time now is greater than the time to publish a node, publish it.
+  $query_result = db_query('SELECT s.nid AS nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d ', time());
+  $nids = array();
+  while ($node = db_fetch_object($query_result)) {
+    $nids[] = $node->nid;
+  }
+
+  foreach ($nids as $nid) {
+    $n = node_load($nid);
+    $n->changed = $n->publish_on;
     $old_creation_date = $n->created;
     if (variable_get('scheduler_publish_touch_'. $n->type, 0) == 1) {
-      $n->created = $node->publish_on;
+      $n->created = $n->publish_on;
     }
 
     $create_publishing_revision = variable_get('scheduler_publish_revision_'. $n->type, 0) == 1;
@@ -631,29 +652,48 @@ function scheduler_cron() {
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
 
-    // if this node is not to be unpublished, then we can delete the record
+    // If this node is not to be unpublished, then we can delete the record.
     if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
       db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
     }
-    // we need to unpublish this node at some time so clear the publish on since it's been published
+    // We need to unpublish this node at some time so clear the publish on since
+    // it has been published.
     else {
       db_query('UPDATE {scheduler} SET publish_on = 0 WHERE nid = %d', $n->nid);
     }
 
-    // invoke scheduler API
+    // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'publish');
 
-    $clear_cache = TRUE;
+    $result = TRUE;
   }
 
-  // if the time is greater than the time to unpublish a node, unpublish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE s.unpublish_on > 0 AND s.unpublish_on < %d', time());
+  return $result;
+}
 
-  while ($node = db_fetch_object($nodes)) {
-    // if this node is to be unpublished, we can update the node and remove the record since it can't be republished
-    $n = node_load($node->nid);
+/**
+ * Unpublish scheduled nodes.
+ *
+ * @return
+ *   TRUE is any node has been unpublished, FALSE otherwise.
+ */
+function _scheduler_unpublish() {
+  $result = FALSE;
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+
+  // If the time is greater than the time to unpublish a node, unpublish it.
+  $query_result = db_query('SELECT s.nid AS nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE s.unpublish_on > 0 AND s.unpublish_on < %d', time());
+  $nids = array();
+  while ($node = db_fetch_object($query_result)) {
+    $nids[] = $node->nid;
+  }
+
+  foreach ($nids as $nid) {
+    // If this node is to be unpublished, we can update the node and remove the
+    // record since it cannot be republished.
+    $n = node_load($nid);
     $old_change_date = $n->changed;
-    $n->changed = $node->unpublish_on;
+    $n->changed = $n->unpublish_on;
 
     if ($n->status == 1) {
       $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_'. $n->type, 0) == 1;
@@ -671,16 +711,13 @@ function scheduler_cron() {
 
     db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
 
-    // invoke scheduler API
+    // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'unpublish');
 
-    $clear_cache = TRUE;
+    $result = TRUE;
   }
 
-  if ($clear_cache) {
-    // clear the cache so an anonymous poster can see the node being published or unpublished
-    cache_clear_all();
-  }
+  return $result;
 }
 
 /**
