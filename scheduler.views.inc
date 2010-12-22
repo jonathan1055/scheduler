@@ -48,5 +48,38 @@ function scheduler_views_data() {
     ),
   );
 
+  $tables['scheduler']['publish_countdown'] = array(
+    'title' => t('Publish countdown'),
+    'help' => t('Time until the article will be automatically published'),
+    'field' => array(
+  	  'handler' => 'scheduler_handler_field_scheduler_countdown',
+      'click sortable' => FALSE,
+      'timestamp_field' => 'publish_on',
+    ),
+  );
+
+  $tables['scheduler']['unpublish_countdown'] = array(
+    'title' => t('Unpublish countdown'),
+    'help' => t('Time until the article will be automatically unpublished'),
+    'field' => array(
+  	  'handler' => 'scheduler_handler_field_scheduler_countdown',
+      'click sortable' => FALSE,
+      'timestamp_field' => 'unpublish_on',
+    ),
+  );
+
   return $tables;
+}
+
+/**
+ * Implementation of hook_views_handlers()
+ */
+function scheduler_views_handlers() {
+  return array(
+    'handlers' => array(
+      'scheduler_handler_field_scheduler_countdown' => array(
+        'parent' => 'views_handler_field',
+      )
+    )
+  );
 }
