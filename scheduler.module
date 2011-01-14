@@ -37,6 +37,11 @@ function scheduler_menu() {
     'access arguments' => array('administer scheduler'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/settings/scheduler/default'] = array(
+   'title' => 'Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 5,
+  );
   $items['admin/content/node/scheduler'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Scheduled',
@@ -46,12 +51,22 @@ function scheduler_menu() {
     'file' => NULL,
   );
   $items['admin/settings/scheduler/cron'] = array(
-    'title' => 'Manual scheduler cron run',
-    'description' => 'Allows site admins to run schedulers cron function manually.',
-    'page callback' => '_scheduler_manual_cron_run',
+    'title' => 'Lightweight Cron',
+    'description' => 'A lightweight cron handler to allow more frequent runs of Schedulers internal cron system.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_scheduler_lightweight_cron'),
     'access callback' => TRUE,
     'access arguments' => array('administer scheduler'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+);
+  $items['admin/settings/scheduler/timecheck'] = array(
+    'title' => 'Time Check',
+    'description' => 'Allows site admin to check their servers internal clock',
+    'page callback' => '_scheduler_timecheck',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 15,
   );
   return $items;
 }
@@ -64,12 +79,6 @@ function scheduler_list_access_callback() {
 }
 
 function scheduler_admin() {
-  $cron_link =  l(t('Run scheduler cron function manually'), 'admin/settings/scheduler/cron', array() );
-
-  $form['scheduler_cron_link'] = array(
-    '#type' => 'item',
-    '#value' => $cron_link,
-  );
 
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
@@ -764,14 +773,43 @@ function _scheduler_run_cron() {
       ob_clean();
     }
   }
+  watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/settings/scheduler'));
+
+  // This message is only seen when the lightweight cron is tested interactively.
+  drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
+
+  // Must return something so that an output page is created if testing the lightweight cron interactively.
+  return ' ';
   exit();
 }
 
-function _scheduler_manual_cron_run() {
-  watchdog('scheduler', 'Internal scheduler cron run manually activated', array(), WATCHDOG_NOTICE);
-  scheduler_cron();
-  drupal_set_message(t('Attempted to run schedulers internal cron function.'));
-  drupal_goto('admin/settings/scheduler');
+/**
+ * Return the lightweight cron form to allow a manual run.
+ */
+function _scheduler_lightweight_cron() {
+  $form = array();
+
+  $cron_description = "<p>When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. ";
+  $cron_description .= "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. ";
+  $cron_description .= "This is an independend cron job which only runs the scheduler process and does not execute any other cron tasks defined by Drupal core or any other modules.</p>";
+  $cron_description .= "<p>Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:</p>";
+  $cron_description .= "<p><pre>* * * * * * /usr/bin/wget -O - -q \"http://example.com/scheduler/cron\"</pre></p>";
+  $cron_description .= "<p>or</p>";
+  $cron_description .= "<p><pre>* * * * * * /usr/bin/curl \"http://example.com/scheduler/cron\" &gt; /dev/null 2&gt;&amp;1</pre></p>";
+
+  $form['scheduler_cron_description'] = array(
+    '#type' => 'item',
+    '#value' => t($cron_description),
+  );
+
+  $form['scheduler_cron'] = array(
+    '#type' => 'submit',
+    '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>' ,
+    '#value' => t("Run Scheduler's cron now"),
+    '#submit' => array('_scheduler_run_cron'),
+    '#suffix' => "</div>\n",
+  );
+  return $form;
 }
 
 /**
