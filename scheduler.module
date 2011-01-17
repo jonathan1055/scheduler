@@ -78,6 +78,35 @@ function scheduler_list_access_callback() {
   return user_access('administer nodes') && user_access('schedule (un)publishing of nodes');
 }
 
+/**
+ * Implementation of hook_help().
+ */
+function scheduler_help($section) {
+  $output = '';
+  switch ($section) {
+    case 'admin/settings/scheduler':
+      $output = '<p>' . t('Adjust the settings for the scheduler module.') . '</p>';
+      break;
+    case 'admin/settings/scheduler/cron':
+      $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. "
+        . "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the "
+        . "lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not "
+        . "execute any cron tasks defined by Drupal core or any other modules.") . '</p>'
+        . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>'
+        . '<code>* * * * * /usr/bin/wget -O - -q "http://example.com/scheduler/cron"</code>'
+        . '<p>or</p>'
+        . '<code>* * * * * curl "http://example.com/scheduler/cron" > /dev/null 2>&1</code>';
+      break;
+    case 'admin/modules#description':
+    case 'admin/help#scheduler':
+      // This is shown at the top of admin/help/scheduler.
+      $output = '<p>' . t('The Scheduler module is used to automate the publishing and unpublishing of nodes.') . '</p>';
+      break;
+    default:
+  }
+  return $output;
+}
+
 function scheduler_admin() {
 
   $form['scheduler_date_format'] = array(
@@ -788,20 +817,6 @@ function _scheduler_run_cron() {
  */
 function _scheduler_lightweight_cron() {
   $form = array();
-
-  $cron_description = "<p>When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. ";
-  $cron_description .= "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. ";
-  $cron_description .= "This is an independend cron job which only runs the scheduler process and does not execute any other cron tasks defined by Drupal core or any other modules.</p>";
-  $cron_description .= "<p>Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:</p>";
-  $cron_description .= "<p><pre>* * * * * * /usr/bin/wget -O - -q \"http://example.com/scheduler/cron\"</pre></p>";
-  $cron_description .= "<p>or</p>";
-  $cron_description .= "<p><pre>* * * * * * /usr/bin/curl \"http://example.com/scheduler/cron\" &gt; /dev/null 2&gt;&amp;1</pre></p>";
-
-  $form['scheduler_cron_description'] = array(
-    '#type' => 'item',
-    '#value' => t($cron_description),
-  );
-
   $form['scheduler_cron'] = array(
     '#type' => 'submit',
     '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>' ,
