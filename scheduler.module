@@ -955,6 +955,10 @@ function scheduler_set_target($node, $target, $value) {
  * Implementation of hook_token_values().
  */
 function scheduler_token_values($type, $object = NULL, $options = array()) {
+  if (!function_exists("token_get_date_token_values") || !function_exists("token_get_date_token_info")) {
+    return array();
+  }
+
   if ($type == 'node') {
     $tokens = array();
     $node = $object;
@@ -973,6 +977,10 @@ function scheduler_token_values($type, $object = NULL, $options = array()) {
  * Implementation of hook_token_list().
  */
 function scheduler_token_list($type = 'all') {
+  if (!function_exists("token_get_date_token_values") || !function_exists("token_get_date_token_info")) {
+    return array();
+  }
+
   $tokens = array();
   $tokens['node'] = array();
   if ($type == 'node' || $type == 'all') {
