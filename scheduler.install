@@ -1,0 +1,59 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Installation file for Scheduler module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function scheduler_schema() {
+  return array(
+    'scheduler' => array(
+      'description' => 'The main table to hold the scheduler data.',
+      'fields' => array(
+        'nid' => array(
+          'description' => 'The foreign key to node.nid',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'publish_on' => array(
+          'description' => 'The UNIX UTC timestamp when to publish',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'unpublish_on' => array(
+          'description' => 'The UNIX UTC timestamp when to unpublish',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+      ),
+      'indexes' => array(
+        'scheduler_publish_on' => array('publish_on'),
+        'scheduler_unpublish_on' => array('unpublish_on'),
+      ),
+      'primary key' => array('nid'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function scheduler_install() {
+  drupal_install_schema('scheduler');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function scheduler_uninstall() {
+  drupal_uninstall_schema('scheduler');
+}
