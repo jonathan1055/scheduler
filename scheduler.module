@@ -46,6 +46,29 @@ function scheduler_menu() {
     'access arguments' => array('administer scheduler'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/config/content/scheduler/default'] = array(
+    'title' => 'Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 5,
+  );
+  $items['admin/config/content/scheduler/cron'] = array(
+    'title' => 'Lightweight Cron',
+    'description' => 'A lightweight cron handler to allow more frequent runs of Schedulers internal cron system.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_scheduler_lightweight_cron'),
+    'access callback' => TRUE,
+    'access arguments' => array('administer scheduler'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+  $items['admin/config/content/scheduler/timecheck'] = array(
+    'title' => 'Time Check',
+    'description' => 'Allows site admin to check their servers internal clock',
+    'page callback' => '_scheduler_timecheck',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 15,
+  );
   $items['admin/content/scheduler'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Scheduled',
@@ -53,14 +76,6 @@ function scheduler_menu() {
     'access callback' => 'scheduler_list_access_callback',
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
-  );
-  $items['admin/settings/scheduler/cron'] = array(
-    'title' => 'Manual scheduler cron run',
-    'description' => 'Allows site admins to run schedulers cron function manually.',
-    'page callback' => '_scheduler_manual_cron_run',
-    'access callback' => TRUE,
-    'access arguments' => array('administer scheduler'),
-    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -761,14 +776,29 @@ function _scheduler_run_cron() {
       ob_clean();
     }
   }
+  watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/settings/scheduler'));
+  
+  // This message is only seen when the lightweight cron is tested interactively.
+  drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
+  
+  // Must return something so that an output page is created if testing the lightweight cron interactively.
+  return ' ';
   exit();
 }
 
-function _scheduler_manual_cron_run() {
-  watchdog('scheduler', 'Internal scheduler cron run manually activated', array(), WATCHDOG_NOTICE);
-  scheduler_cron();
-  drupal_set_message(t('Attempted to run schedulers internal cron function.'));
-  drupal_goto('admin/settings/scheduler');
+/**
+ * Return the lightweight cron form to allow a manual run.
+ */
+function _scheduler_lightweight_cron() {
+  $form = array();
+  $form['scheduler_cron'] = array(
+    '#type' => 'submit',
+    '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>' ,
+    '#value' => t("Run Scheduler's cron now"),
+    '#submit' => array('_scheduler_run_cron'),
+    '#suffix' => "</div>\n",
+  );
+  return $form;
 }
 
 /**
