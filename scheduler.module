@@ -150,7 +150,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
       '#type' => 'fieldset',
       '#title' => 'Publishing settings',
       '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#collapsed' => TRUE,
       '#weight' => 1,
       '#group' => 'scheduler',
   );
@@ -182,7 +182,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
       '#type' => 'fieldset',
       '#title' => 'Unpublishing settings',
       '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
+      '#collapsed' => TRUE,
       '#weight' => 2,
       '#group' => 'scheduler',
   );
