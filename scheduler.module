@@ -596,34 +596,12 @@ function scheduler_node_delete($node) {
  */
 function scheduler_cron() {
   $clear_cache = FALSE;
+  $clear_cache |= _scheduler_publish();
+  $clear_cache |= _scheduler_unpublish();
 
-   // if the time now is greater than the time to publish a node, publish it
-  $nodes = db_query('SELECT * FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < :now', array(':now' => REQUEST_TIME));
-
-  foreach ($nodes as $node) {
-     $n = node_load($node->nid);
-     $n->changed = $node->publish_on;
-    if (variable_get('scheduler_touch_' . $n->type, 0) == 1) {
-       $n->created = $node->publish_on;
-     }
-
-     // Use the actions system to publish the node.
-    watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid));
-     $actions = array('node_publish_action', 'node_save_action');
-     $context['node'] = $n;
-     actions_do($actions, $n, $context, NULL, NULL);
-
-     // if this node is not to be unpublished, then we can delete the record
-     if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
-      scheduler_node_delete($n);
-     }
-     // we need to unpublish this node at some time so clear the publish on since it's been published
-     else {
-      db_update('scheduler')
-        ->fields(array('publish_on' => 0))
-        ->condition('nid', $n->nid)
-        ->execute();
-    }
+  if ($clear_cache) {
+    // Clear the cache so an anonymous poster can see any changes to nodes
+    cache_clear_all();
   }
 }
 
@@ -638,9 +616,15 @@ function _scheduler_publish() {
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time now is greater than the time to publish a node, publish it.
-  $query_result = db_query('SELECT s.nid AS nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < %d ', REQUEST_TIME);
+  $query = db_select('scheduler', 's');
+  $query->addField('s', 'nid');
+  $query->addJoin('LEFT ', 'node', 'n', 's.nid = n.nid');
+  $query->condition('s.publish_on', 0, '>');
+  $query->condition('s.publish_on', REQUEST_TIME, '<');
+  //  $query_result = db_query('SELECT s.nid AS nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE n.status = 0 AND s.publish_on > 0 AND s.publish_on < :now ', array(':now' => REQUEST_TIME));
+  $queryResult = $query->execute();
   $nids = array();
-  while ($node = db_fetch_object($query_result)) {
+  while ($node = $queryResult->fetchObject()) {
     $nids[] = $node->nid;
   }
 
@@ -668,12 +652,17 @@ function _scheduler_publish() {
 
     // If this node is not to be unpublished, then we can delete the record.
     if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
-      db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
+      db_delete('scheduler')
+        ->condition('nid', $n->nid)
+        ->execute();
     }
     // We need to unpublish this node at some time so clear the publish on since
     // it has been published.
     else {
-      db_query('UPDATE {scheduler} SET publish_on = 0 WHERE nid = %d', $n->nid);
+      db_update('scheduler')
+        ->fields(array('publish_on' => 0))
+        ->condition('nid', $n->nid)
+        ->execute();
     }
 
     // Invoke scheduler API.
@@ -696,9 +685,14 @@ function _scheduler_unpublish() {
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time is greater than the time to unpublish a node, unpublish it.
-  $query_result = db_query('SELECT s.nid AS nid FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid WHERE s.unpublish_on > 0 AND s.unpublish_on < %d', REQUEST_TIME);
+  $query = db_select('scheduler', 's');
+  $query->addField('s', 'nid');
+  $query->addJoin('LEFT', 'node', 'n', 's.nid = n.nid');
+  $query->condition('s.unpublish_on', 0, '>');
+  $query->condition('s.unpublish_on', REQUEST_TIME, '<');
+  $queryResult = $query->execute();
   $nids = array();
-  while ($node = db_fetch_object($query_result)) {
+  while ($node = $queryResult->fetchObject()) {
     $nids[] = $node->nid;
   }
 
@@ -725,7 +719,9 @@ function _scheduler_unpublish() {
       actions_do($actions, $n, $context, NULL, NULL);
     }
 
-    db_query('DELETE FROM {scheduler} WHERE nid = %d', $n->nid);
+    db_delete('scheduler')
+      ->condition('nid', $n->nid)
+      ->execute();
 
     // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'unpublish');
@@ -777,10 +773,10 @@ function _scheduler_run_cron() {
     }
   }
   watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/settings/scheduler'));
-  
+
   // This message is only seen when the lightweight cron is tested interactively.
   drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
-  
+
   // Must return something so that an output page is created if testing the lightweight cron interactively.
   return ' ';
   exit();
@@ -958,4 +954,3 @@ function scheduler_token_list($type = 'all') {
   }
   return $tokens;
 }
-
