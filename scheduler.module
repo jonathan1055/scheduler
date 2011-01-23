@@ -901,10 +901,10 @@ function scheduler_content_extra_fields($type_name) {
 function scheduler_preprocess_node(&$variables, $hook) {
   $node = $variables['node'];
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-  if (!empty($node->publish_on)) {
+  if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {
     $variables['publish_on'] = format_date($node->publish_on, 'custom', $date_format);
   }
-  if (!empty($node->unpublish_on)) {
+  if (!empty($node->unpublish_on) && $node->unpublish_on && is_numeric($node->unpublish_on)) {
     $variables['unpublish_on'] = format_date($node->unpublish_on, 'custom', $date_format);
   }
 }
