@@ -542,8 +542,6 @@ function scheduler_node_view($node, $view_mode = 'full') {
 }
 
 function scheduler_node_validate($node, $form) {
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-
   // adjust the entered times for timezone consideration.
   // Note, we must check to see if the value is numeric,
   // if it is, assume we have already done the strtotime
@@ -551,6 +549,9 @@ function scheduler_node_validate($node, $form) {
   // a value we have already converted. This is needed
   // because DRUPAL6 removed 'submit' and added 'presave'
   // and all this happens at different times.
+
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+
   if (!empty($node->publish_on) && !is_numeric($node->publish_on)) {
     $publishtime = _scheduler_strtotime($node->publish_on);
     if ($publishtime === FALSE) {
@@ -560,8 +561,15 @@ function scheduler_node_validate($node, $form) {
       form_set_error('publish_on', t("The 'publish on' date must be in the future"));
     }
   }
+
   if (!empty($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
     $unpublishtime = _scheduler_strtotime($node->unpublish_on);
+    if ($unpublishtime === FALSE) {
+      form_set_error('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
+    }
+    elseif ($unpublishtime && $unpublishtime < REQUEST_TIME) {
+      form_set_error('unpublish_on', t("The 'unpublish on' date must be in the future"));
+    }
   }
   if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {
     form_set_error('unpublish_on', t("The 'unpublish on' date must be later than the 'publish on' date."));
