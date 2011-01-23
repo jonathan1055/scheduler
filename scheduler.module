@@ -582,6 +582,8 @@ function scheduler_node_presave($node) {
   // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
   if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > REQUEST_TIME) {
     $node->status = 0;
+    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+    drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
   }
 }
 
