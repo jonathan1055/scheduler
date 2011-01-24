@@ -252,89 +252,130 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   );
 }
 
-
 /**
  * Implementation of hook_form_alter().
  */
 function scheduler_form_alter(&$form, $form_state) {
   // Is this a node form and scheduling has been enabled for this node type
-  if (!empty($form['#node_edit_form']) && user_access('schedule (un)publishing of nodes') && variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0)) {
-    $node = $form['#node'];
+  if (!empty($form['#node_edit_form']) && user_access('schedule (un)publishing of nodes')) {
+    $publishing_enabled = variable_get('scheduler_publish_enable_'. $form['type']['#value'], 0) == 1;
+    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $form['type']['#value'], 0) == 1;
 
-    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-    $internal_date_format = module_exists('date_popup') ? SCHEDULER_DATE_FORMAT : $date_format;
+    // if scheduling has been enabled for this node type
+    if ($publishing_enabled || $unpublishing_enabled) {
 
-    // if this is a preview then get the values from the form, not the db
-    if (isset($form_state['values']['op']) && $form_state['values']['op'] == t('Preview')) {
-      $defaults = new StdClass;
-      $defaults->publish_on = $form_state['values']['publish_on'];
-      $defaults->unpublish_on = $form_state['values']['unpublish_on'];
-    }
-    elseif (isset($node->nid) && $node->nid > 0) {
-      // load the values if we are viewing an existing node
-      $defaults = db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = :nid', array(':nid' => $node->nid))->fetchObject();
-    }
-    else {
-      // init standard values
-      $defaults = new StdClass;
-      $defaults->publish_on = $defaults->unpublish_on = NULL;
-    }
+      $node = $form['#node'];
 
-    // if there is a text value then convert it to a unix timestamp
-    if (isset($defaults->publish_on) && $defaults->publish_on && !is_numeric($defaults->publish_on)) {
-      $defaults->publish_on = _scheduler_strtotime($defaults->publish_on);
-    }
-    if (isset($defaults->unpublish_on) && $defaults->unpublish_on && !is_numeric($defaults->unpublish_on)) {
-      $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
-    }
+      $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+      $use_date_popup = _scheduler_use_date_popup();
 
-    $form['scheduler_settings'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Scheduling options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => ((isset($defaults->publish_on) && $defaults->publish_on != 0) || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)) ? FALSE: TRUE,
-      '#weight' => 35,
-      '#group' => 'additional_settings',
-      '#attached' => array(
-        'js' => array(
-          'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
-        ),
-      )
-    );
-    $form['scheduler_settings']['publish_on'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Publish on'),
-      '#maxlength' => 25,
-      '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
-      '#description' => t('Format: %time. Leave blank to disable scheduled publishing.', array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))),
-    );
+      $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
 
-    $form['scheduler_settings']['unpublish_on'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Unpublish on'),
-      '#maxlength' => 25,
-      '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
-      '#description' => t('Format: %time. Leave blank to disable scheduled unpublishing.', array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))),
-    );
+      // if this is a preview then get the values from the form, not the db
+      if (isset($form_state['values']['op']) && $form_state['values']['op'] == t('Preview')) {
+        $defaults = new StdClass;
+        $defaults->publish_on = $form_state['values']['publish_on'];
+        $defaults->unpublish_on = $form_state['values']['unpublish_on'];
+      }
+      elseif (isset($node->nid) && $node->nid > 0) {
+        // load the values if we are viewing an existing node
+        $defaults = db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = :nid', array(':nid' => $node->nid))->fetchObject();
+      }
+      else {
+        // init standard values
+        $defaults = new StdClass;
+        $defaults->publish_on = $defaults->unpublish_on = NULL;
+      }
 
-    if (module_exists('date_popup')) {
-      // Make this a popup calendar widget if Date Popup module is enabled.
-      $form['scheduler_settings']['publish_on'] = array(
-        '#type' => 'date_popup',
-        '#date_format' => $date_format,
-        '#date_year_range' => '0:+10',
-        '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
-        '#description' => t('Leave blank to disable scheduled publishing.'),
+      // if there is a text value then convert it to a unix timestamp
+      if (isset($defaults->publish_on) && $defaults->publish_on && !is_numeric($defaults->publish_on)) {
+        $defaults->publish_on = _scheduler_strtotime($defaults->publish_on);
+      }
+      if (isset($defaults->unpublish_on) && $defaults->unpublish_on && !is_numeric($defaults->unpublish_on)) {
+        $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
+      }
+
+      $publishing_required = variable_get('scheduler_publish_required_'. $form['type']['#value'], 0) == 1;
+      $unpublishing_required = variable_get('scheduler_unpublish_required_'. $form['type']['#value'], 0) == 1;
+
+      $fieldset_extended = (
+        (isset($defaults->publish_on) && $defaults->publish_on != 0)
+        || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
+        || $publishing_required
+        || $unpublishing_required
       );
-      unset($form['scheduler_settings']['publish_on']['#maxlength']);
-      $form['scheduler_settings']['unpublish_on'] = array(
-        '#type' => 'date_popup',
-        '#date_format' => $date_format,
-        '#date_year_range' => '0:+10',
-        '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
-        '#description' => t('Leave blank to disable scheduled unpublishing.'),
+
+      $form['scheduler_settings'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Scheduling options'),
+        '#collapsible' => TRUE,
+        '#collapsed' => !$fieldset_extended,
+        '#weight' => 35,
+        '#group' => 'additional_settings',
+        '#attached' => array(
+          'js' => array(
+            'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
+          ),
+        )
       );
-      unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
+
+      $extra_info = variable_get('scheduler_extra_info', '');
+      if ($extra_info && $extra_info != '') {
+        $form['scheduler_settings']['extra_info'] = array(
+          '#type' => 'item',
+          '#markup' => $extra_info,
+        );
+      }
+
+      $description_format = t('Format: %time.', array('%time' => format_date(time(), 'custom', $date_format)));
+      if ($publishing_enabled) {
+        $description_blank = '';
+        if (!$publishing_required) {
+          $description_blank .= ' '.t('Leave blank to disable scheduled publishing.');
+        }
+
+        $form['scheduler_settings']['publish_on'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Publish on'),
+          '#maxlength' => 25,
+          '#required' => $publishing_required,
+          '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
+          '#description' => $description_format.$description_blank,
+        );
+      }
+
+      if ($unpublishing_enabled) {
+        $description_blank = '';
+        if (!$unpublishing_required) {
+          $description_blank .= ' '.t('Leave blank to disable scheduled unpublishing.');
+        }
+        $form['scheduler_settings']['unpublish_on'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Unpublish on'),
+          '#maxlength' => 25,
+          '#required' => $unpublishing_required,
+          '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
+          '#description' => $description_format.$description_blank,
+        );
+      }
+
+      if ($use_date_popup) {
+        // Make this a popup calendar widget if Date Popup module is enabled.
+        if ($publishing_enabled) {
+          $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
+          $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
+          $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
+          if (!$publishing_required) $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
+          unset($form['scheduler_settings']['publish_on']['#maxlength']);
+        }
+        if ($unpublishing_enabled) {
+          $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
+          $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
+          $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
+          if (!$unpublishing_required) $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
+          unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
+        }
+      }
     }
   }
 }
