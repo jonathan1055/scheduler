@@ -278,8 +278,11 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults->unpublish_on = $form_state['values']['unpublish_on'];
       }
       elseif (isset($node->nid) && $node->nid > 0) {
-        // load the values if we are viewing an existing node
-        $defaults = db_query('SELECT publish_on, unpublish_on FROM {scheduler} WHERE nid = :nid', array(':nid' => $node->nid))->fetchObject();
+        // Load the values from the db if we are viewing an existing node.
+        $query = db_select('scheduler', 's');
+        $query->fields('s', array('publish_on', 'unpublish_on'));
+        $query->condition('s.nid', $node->nid, '=');
+        $defaults = $query->execute()->fetchObject();
       }
       else {
         // init standard values
