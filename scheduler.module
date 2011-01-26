@@ -385,7 +385,7 @@ function scheduler_form_alter(&$form, $form_state) {
 
 /*
  * Displays a list of nodes that are scheduled for (un)publication. This will
- * appear as a tab on the content admin page ('admin/content/node').
+ * appear as a tab on the content admin page ('admin/content').
  */
 function scheduler_list() {
   $header = array(
@@ -416,8 +416,19 @@ function scheduler_list() {
     $_GET['sort'] = 'ASC';
   }
 
-  $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.publish_on, s.unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid';// . tablesort_sql($header);
-  $result = db_query($sql);
+  $query = db_select('scheduler', 's')->extend('PagerDefault');
+  $query->limit(50);
+  $query->addJoin('LEFT ', 'node', 'n', 's.nid = n.nid');
+  $query->addJoin('LEFT ', 'users', 'u', 'u.uid = n.uid');
+  $query->fields('s', array('publish_on', 'unpublish_on'));
+  $query->fields('n', array('nid', 'uid', 'status', 'title'));
+  $query->addField('u', 'name');
+  $query = $query
+    ->extend('TableSort')
+    ->orderByHeader($header);
+  $result = $query->execute();
+
+  $rows = array();
 
   foreach ($result as $node) {
     $rows[] = array(
@@ -428,8 +439,7 @@ function scheduler_list() {
       l(t('edit'), 'node/' . $node->nid . '/edit', array(), 'destination=admin/content/node/scheduler'),
     );
   }
-  /*
-  if (count($rows) && ($pager = theme('pager', NULL, 50, 0))) {
+  if (count($rows) && ($pager = theme('pager'))) {
     $rows[] = array(
       array(
         'data' => $pager,
@@ -437,7 +447,6 @@ function scheduler_list() {
       ),
     );
   }
-  */
   $build['scheduler_list'] = array(
     '#theme' => 'table',
     '#header' => $header,
