@@ -119,13 +119,6 @@ function scheduler_help($section) {
 }
 
 function scheduler_admin() {
-  $cron_link =  l(t('Run scheduler cron function manually'), 'admin/settings/scheduler/cron', array() );
-
-  $form['scheduler_cron_link'] = array(
-    '#type' => 'item',
-    '#value' => $cron_link,
-  );
-
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
