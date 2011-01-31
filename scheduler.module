@@ -563,14 +563,10 @@ function _scheduler_get_user_timezone() {
  * Implementation of hook_node_load().
  */
 function scheduler_node_load($nodes, $types) {
-  $nids = array();
-  foreach ($nodes as $node) {
-    $nids[] = $node->nid;
-  }
+  $nids = array_keys($nodes);
   $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids)', array(':nids' => $nids));
   foreach ($result as $record) {
     $nid = $record->nid;
-    unset($record->nid);
     $nodes[$nid]->publish_on = $record->publish_on;
     $nodes[$nid]->unpublish_on = $record->unpublish_on;
     $row = array();
