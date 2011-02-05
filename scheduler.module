@@ -560,7 +560,7 @@ function _scheduler_get_user_timezone() {
 }
 
 /**
- * Implementation of hook_node_load().
+ * Implements hook_node_load().
  */
 function scheduler_node_load($nodes, $types) {
   $nids = array_keys($nodes);
@@ -572,7 +572,9 @@ function scheduler_node_load($nodes, $types) {
     $row = array();
     $row['published'] = $record->publish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->publish_on) : NULL;
     $row['unpublished'] = $record->unpublish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->unpublish_on) : NULL;
-    $node->scheduler = $row;
+    $row['publish_on'] = $record->publish_on;
+    $row['unpublish_on'] = $record->unpublish_on;
+    $nodes[$nid]->scheduler = $row;
   }
 }
 
