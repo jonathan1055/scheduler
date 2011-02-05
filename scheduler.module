@@ -8,13 +8,12 @@ define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
   */
 function scheduler_permission() {
   return array(
-    'schedule (un)publishing of nodes' => array(
-      'title' => t('schedule (un)publishing of nodes'),
-      'description' => t('TODO Add a description for schedule (un)publishing of nodes'),
-    ),
     'administer scheduler' => array(
-      'title' => t('administer scheduler'),
-      'description' => t('TODO Add a description for administer scheduler'),
+      'title' => t('Administer scheduler'),
+    ),
+    'schedule (un)publishing of nodes' => array(
+      'title' => t('Schedule content publication'),
+      'description' => t('Allows users to set a start and end time for content publication'),
     ),
   );
 }
