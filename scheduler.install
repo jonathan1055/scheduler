@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function scheduler_schema() {
   return array(
@@ -45,15 +45,28 @@ function scheduler_schema() {
 }
 
 /**
- * Implementation of hook_install().
- */
-function scheduler_install() {
-  drupal_install_schema('scheduler');
-}
-
-/**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function scheduler_uninstall() {
-  drupal_uninstall_schema('scheduler');
+  $variables = array(
+    'scheduler_date_format',
+    'scheduler_field_type',
+    'scheduler_extra_info',
+  );
+
+  $types = node_type_get_types();
+  foreach ($types as $type) {
+    $type_name = $type->type;
+    $variables[] = "scheduler_publish_enable_" . $type_name;
+    $variables[] = "scheduler_publish_touch_" . $type_name;
+    $variables[] = "scheduler_publish_required_" . $type_name;
+    $variables[] = "scheduler_publish_revision_" . $type_name;
+    $variables[] = "scheduler_unpublish_enable_" . $type_name;
+    $variables[] = "scheduler_unpublish_required_" . $type_name;
+    $variables[] = "scheduler_unpublish_revision_" . $type_name;
+  }
+
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
 }
