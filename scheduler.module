@@ -465,15 +465,13 @@ function _scheduler_strtotime($str) {
     $time = _scheduler_strptime(trim($str), $date_format);
     if ($time !== FALSE) {
       // success
-    // $time -= _scheduler_get_user_timezone();
+      $time -= _scheduler_get_user_timezone();
     }
   }
   else {
     // $str is empty
     $time = NULL;
   }
-
-  $time = strtotime($str);
 
   return $time;
 }
