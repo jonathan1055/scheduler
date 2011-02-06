@@ -175,14 +175,22 @@ function _scheduler_use_date_popup() {
   return module_exists('date_popup') && variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
 }
 
+/**
+ * Implements hook_form_node_type_form_alter().
+ */
 function scheduler_form_node_type_form_alter(&$form, $form_state) {
   drupal_add_css(drupal_get_path('module', 'scheduler') .'/scheduler.css');
   $form['scheduler'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Scheduler settings',
-      '#weight' => 35,
-      '#group' => 'additional_settings',
-   );
+    '#type' => 'fieldset',
+    '#title' => 'Scheduler settings',
+    '#weight' => 35,
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(
+        'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
+      ),
+    ),
+  );
 
   $form['scheduler']['publish'] = array(
       '#type' => 'fieldset',
