@@ -654,7 +654,7 @@ function scheduler_node_insert($node) {
 function scheduler_node_update($node) {
   // only update database if we need to (un)publish this node at some date
   // otherwise the user probably cleared out the (un)publish dates so we should remove the record
-  if ((!$node->status && !empty($node->publish_on)) || ($node->status && !empty($node->unpublish_on))) {
+  if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
     db_merge('scheduler')
       ->key(array('nid' => $node->nid))
       ->fields(array(
