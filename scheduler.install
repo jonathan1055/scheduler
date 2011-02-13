@@ -70,3 +70,31 @@ function scheduler_uninstall() {
     variable_del($variable);
   }
 }
+
+function scheduler_update_6100() {
+  $ret = array();
+  if (db_column_exists('scheduler', 'timezone')) {
+    $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
+    $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
+    db_drop_field($ret, 'scheduler', 'timezone');
+  }
+  return $ret;
+}
+
+function scheduler_update_6101() {
+  $ret = array();
+  $types = node_get_types('types');
+  foreach ($types as $type) {
+    $type_name = $type->type;
+  	$publish_enable = variable_get('scheduler_'. $type_name, 0);
+  	$publish_touch = variable_get('scheduler_touch_'. $type_name, 0);
+
+  	variable_set('scheduler_publish_enable_'. $type_name, $publish_enable);
+  	variable_set('scheduler_unpublish_enable_'. $type_name, $publish_enable);
+   	variable_set('scheduler_publish_touch_'. $type_name, $publish_touch);
+
+  	variable_del('scheduler_touch_'. $type_name);
+  	variable_del('scheduler_'. $type_name);
+  }
+  return $ret;
+}
