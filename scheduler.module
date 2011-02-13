@@ -975,11 +975,11 @@ function scheduler_preprocess_node(&$variables, $hook) {
 * Implementation of hook_feeds_node_processor_targets_alter().
 * advertises publish_on and unpublish_on as mappable values to the feeds module
 */
-function scheduler_feeds_node_processor_targets_alter(&$targets, $content_type) {
-  $target = array();
+function scheduler_feeds_processor_targets_alter(&$targets, $processor, $content_type) {
 
-  $publishing_enabled = variable_get('scheduler_publish_enable_'. $content_type, 0) == 1;
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $content_type, 0) == 1;
+  $publishing_enabled = variable_get('scheduler_publish_enable_'. $content_type, 0);
+  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $content_type, 0);
+
   if ($publishing_enabled) {
     $targets['publish_on'] = array(
       'name' => t('Scheduler: publish on'),
@@ -994,8 +994,6 @@ function scheduler_feeds_node_processor_targets_alter(&$targets, $content_type) 
       'callback' => 'scheduler_set_target'
     );
   }
-
-  return $targets;
 }
 
 /**
@@ -1004,11 +1002,14 @@ function scheduler_feeds_node_processor_targets_alter(&$targets, $content_type) 
 * This callback converts input from parser and converts it
 * to timestamp form. After that it sets value of correct field of node.
 */
-function scheduler_set_target($node, $target, $value) {
+function scheduler_set_target($source, $node, $target, $value) {
   if (!is_array($value)) {
-
-    $timestamp = strtotime($value);
-
+    if (!is_numeric($value)) {
+      $timestamp = strtotime($value);
+    }
+    else {
+      $timestamp = $value;
+    }
     // if strtotime returned correct timestamp, we proceed with
     // processing. Otherwise do nothing..
     if (($timestamp !== FALSE) && ($timestamp != -1)) {
