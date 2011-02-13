@@ -274,8 +274,8 @@ function scheduler_form_alter(&$form, $form_state) {
       // if this is a preview then get the values from the form, not the db
       if (isset($form_state['values']['op']) && $form_state['values']['op'] == t('Preview')) {
         $defaults = new StdClass;
-        $defaults->publish_on = $form_state['values']['publish_on'];
-        $defaults->unpublish_on = $form_state['values']['unpublish_on'];
+        $defaults->publish_on = $publishing_enabled ? $form_state['values']['publish_on'] : NULL;
+        $defaults->unpublish_on = $unpublishing_enabled ? $form_state['values']['unpublish_on'] : NULL;
       }
       elseif (isset($node->nid) && $node->nid > 0) {
         // Load the values from the db if we are viewing an existing node.
