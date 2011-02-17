@@ -471,10 +471,6 @@ function _scheduler_strtotime($str) {
       $date_format = SCHEDULER_DATE_FORMAT;
     }
     $time = _scheduler_strptime(trim($str), $date_format);
-    if ($time !== FALSE) {
-      // success
-      $time -= _scheduler_get_user_timezone();
-    }
   }
   else {
     // $str is empty
@@ -546,22 +542,8 @@ function _scheduler_strptime($date, $format) {
     $results['hour'] += 12;
   }
 
-  $time = gmmktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
+  $time = mktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
   return $time;
-}
-
-/**
- * Gets the users timezone if configurable timezones are enabled or otherwise the default timezone of the site
- *
- * @return the offset of the users timezone in seconds
- */
-function _scheduler_get_user_timezone() {
-  global $user;
-  $timezone = variable_get('date_default_timezone', 0);
-  if ((variable_get('configurable_timezones', 1) == 1) && (strlen($user->timezone))) {
-    $timezone = $user->timezone;
-  }
-  return $timezone;
 }
 
 /**
