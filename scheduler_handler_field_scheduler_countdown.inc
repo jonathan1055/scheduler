@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Implementation of scheduler_handler_scheduler_countdown field handler
