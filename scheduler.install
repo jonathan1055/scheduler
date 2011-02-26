@@ -71,18 +71,32 @@ function scheduler_uninstall() {
 }
 
 function scheduler_update_6100() {
-  $ret = array();
-  if (db_column_exists('scheduler', 'timezone')) {
-    $ret[] = update_sql("UPDATE {scheduler} SET publish_on=publish_on-timezone WHERE publish_on<>0");
-    $ret[] = update_sql("UPDATE {scheduler} SET unpublish_on=unpublish_on-timezone WHERE unpublish_on<>0");
-    db_drop_field($ret, 'scheduler', 'timezone');
+  if (db_field_exists('scheduler', 'timezone')) {
+    $entries = db_select('scheduler', 's')
+      ->fields('s', array('nid', 'publish_on', 'unpublish_on', 'timezone'))
+      ->execute();
+
+    foreach ($entries as $entry) {
+      if ($entry->publish_on != 0) {
+        db_merge('scheduler')
+          ->key(array('nid' => $entry->nid))
+          ->fields(array('publish_on' => $entry->publish_on - $entry->timezone))
+          ->execute();
+      }
+      if ($entry->unpublish_on != 0) {
+        db_merge('scheduler')
+          ->key(array('nid' => $entry->nid))
+          ->fields(array('unpublish_on' => $entry->unpublish_on - $entry->timezone))
+          ->execute();
+      }
+    }
+    db_drop_field('scheduler', 'timezone');
   }
-  return $ret;
 }
 
 function scheduler_update_6101() {
   $ret = array();
-  $types = node_get_types('types');
+  $types = node_type_get_types();
   foreach ($types as $type) {
     $type_name = $type->type;
   	$publish_enable = variable_get('scheduler_'. $type_name, 0);
