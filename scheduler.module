@@ -500,8 +500,11 @@ function _scheduler_strptime($date, $format) {
     }
     $index++;
   }
-  if ((strncasecmp($results['meridiem'], "pm", 2) == 0) && ($results['hour'] <= 12)) {
+  if ((strncasecmp($results['meridiem'], "pm", 2) == 0) && ($results['hour'] < 12)) {
     $results['hour'] += 12;
+  }
+  if ((strncasecmp($results['meridiem'], "am", 2) == 0) && ($results['hour'] == 12)) {
+    $results['hour'] = 0;
   }
 
   $time = gmmktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
