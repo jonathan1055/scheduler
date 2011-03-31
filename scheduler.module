@@ -49,6 +49,16 @@ function scheduler_menu() {
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
+  $items['user/%/scheduler'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Scheduled',
+    'page callback' => 'scheduler_list',
+    'page arguments' => array('user_only', 1), // This will pass the uid of the user account being viewed.
+    'access callback' => 'scheduler_list_access_callback',
+    'access arguments' => array('user_only', 1),
+    'description' => 'Display a list of scheduled nodes',
+    'file' => NULL,
+  );
   $items['admin/settings/scheduler/cron'] = array(
     'title' => 'Lightweight Cron',
     'description' => 'A lightweight cron handler to allow more frequent runs of Schedulers internal cron system.',
@@ -74,7 +84,11 @@ function scheduler_menu() {
  * Return the users access to the scheduler list page. Separate function required because of the two access values to be checked.
  */
 function scheduler_list_access_callback() {
-  return user_access('administer nodes') && user_access('schedule (un)publishing of nodes');
+  $args = func_get_args();
+  global $user;
+  // If this is called from the user account page then allow the tab to be shown if you are
+  // viewing your own account as an alternative to having 'administer nodes' permission.
+  return (user_access('administer nodes') || ($args[0] == 'user_only' && $args[1] == $user->uid)) && user_access('schedule (un)publishing of nodes');
 }
 
 /**
@@ -390,7 +404,15 @@ function scheduler_list() {
     $_GET['sort'] = 'ASC';
   }
 
-  $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.publish_on, s.unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid' . tablesort_sql($header);
+  $sql = 'SELECT n.nid, n.uid, n.status, u.name, n.title, s.publish_on, s.unpublish_on FROM {scheduler} s LEFT JOIN {node} n ON s.nid = n.nid LEFT JOIN {users} u ON n.uid = u.uid ';
+  // If this function is being called from a user account page then only select the nodes owned by
+  // that user. If the current user is viewing another users profile and they do not have
+  // 'administer nodes' permission then it won't even get this far, as the tab will not be accessible.
+  $args = func_get_args();
+  if ($args[0] == 'user_only') {
+    $sql .= ' WHERE n.uid = ' . $args[1];
+  }
+  $sql .= tablesort_sql($header);
   $result = pager_query($sql, 50);
 
   while ($node = db_fetch_object($result)) {
