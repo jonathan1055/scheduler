@@ -75,6 +75,16 @@ function scheduler_menu() {
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
+  $items['user/%/scheduler'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Scheduled',
+    'page callback' => 'scheduler_list',
+    'page arguments' => array('user_only', 1), // This will pass the uid of the user account being viewed.
+    'access callback' => 'scheduler_list_access_callback',
+    'access arguments' => array('user_only', 1),
+    'description' => 'Display a list of scheduled nodes',
+    'file' => NULL,
+  );
   return $items;
 }
 
@@ -82,7 +92,11 @@ function scheduler_menu() {
  * Return the users access to the scheduler list page. Separate function required because of the two access values to be checked.
  */
 function scheduler_list_access_callback() {
-  return user_access('administer nodes') && user_access('schedule (un)publishing of nodes');
+  $args = func_get_args();
+  global $user;
+  // If this is called from the user account page then allow the tab to be shown if you are
+  // viewing your own account as an alternative to having 'administer nodes' permission.
+  return (user_access('administer nodes') || ($args[0] == 'user_only' && $args[1] == $user->uid)) && user_access('schedule (un)publishing of nodes');
 }
 
 /**
@@ -422,6 +436,15 @@ function scheduler_list() {
   $query->fields('s', array('publish_on', 'unpublish_on'));
   $query->fields('n', array('nid', 'uid', 'status', 'title'));
   $query->addField('u', 'name');
+
+  // If this function is being called from a user account page then only select the nodes owned by
+  // that user. If the current user is viewing another users profile and they do not have
+  // 'administer nodes' permission then it won't even get this far, as the tab will not be accessible.
+  $args = func_get_args();
+  if ($args[0] == 'user_only') {
+    $query->condition('n.uid', $args[1], '=');
+  }
+
   $query = $query
     ->extend('TableSort')
     ->orderByHeader($header);
