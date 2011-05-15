@@ -71,7 +71,9 @@ function scheduler_menu() {
     'type' => MENU_LOCAL_TASK,
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
+    'page arguments' => array(NULL, NULL),
     'access callback' => 'scheduler_list_access_callback',
+    'access arguments' => array(NULL, NULL),
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
