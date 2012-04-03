@@ -196,7 +196,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   drupal_add_css(drupal_get_path('module', 'scheduler') .'/scheduler.css');
   $form['scheduler'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Scheduler settings',
+    '#title' => 'Scheduler',
     '#weight' => 35,
     '#group' => 'additional_settings',
     '#attached' => array(
@@ -208,61 +208,52 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
 
   $form['scheduler']['publish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Publishing settings',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#title' => 'Publishing',
+      '#collapsible' => FALSE,
       '#weight' => 1,
       '#group' => 'scheduler',
   );
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable scheduled publishing'),
+      '#title' => t('Enable scheduled publishing for this content type'),
       '#default_value' => variable_get('scheduler_publish_enable_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box to enable scheduled publishing for this node type.')
   );
   $form['scheduler']['publish']['scheduler_publish_touch'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Alter published on time'),
+      '#title' => t('Change content creation time to match the scheduled publish time'),
       '#default_value' => variable_get('scheduler_publish_touch_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box to alter the published on time to match the scheduled time ("touch feature").')
   );
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Publishing date/time is required.'),
+      '#title' => t('Require scheduled publishing'),
       '#default_value' => variable_get('scheduler_publish_required_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box to if scheduled publishing is required (e.g. the user must enter a date/time).')
   );
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
       '#type' => 'checkbox',
       '#title' => t('Create a new revision on publishing'),
       '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box if you want a new revision created when publishing.')
   );
   $form['scheduler']['unpublish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Unpublishing settings',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#title' => 'Unpublishing',
+      '#collapsible' => FALSE,
       '#weight' => 2,
       '#group' => 'scheduler',
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Enable scheduled unpublishing'),
+      '#title' => t('Enable scheduled unpublishing for this content type'),
       '#default_value' => variable_get('scheduler_unpublish_enable_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box to enable scheduled unpublishing for this node type.')
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Unpublishing date/time is required.'),
+      '#title' => t('Require scheduled unpublishing'),
       '#default_value' => variable_get('scheduler_unpublish_required_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box to if scheduled unpublishing is required (e.g. the user must enter a date/time).')
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
       '#type' => 'checkbox',
       '#title' => t('Create a new revision on unpublishing'),
       '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
-      '#description' => t('Check this box if you want a new revision created when unpublishing.')
   );
 }
 
