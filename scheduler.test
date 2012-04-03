@@ -17,7 +17,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
     parent::setUp('scheduler');
     $this->web_user = $this->drupalCreateUser(array('edit own page content', 'create page content', 'administer nodes', 'schedule (un)publishing of nodes'));
     // Add scheduler functionality to the page node type.
-    variable_set('scheduler_page', 1);
+    variable_set('scheduler_publish_enable_page', 1);
+    variable_set('scheduler_unpublish_enable_page', 1);
   }
 
   function testScheduler() {
