@@ -112,14 +112,15 @@ function scheduler_help($section) {
                 . '<br/>' . t('The options and settings below are common to all content types.') . '</p>';
       break;
     case 'admin/config/content/scheduler/cron':
+      $base_url = $GLOBALS['base_url'];
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. "
         . "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the "
         . "lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not "
         . "execute any cron tasks defined by Drupal core or any other modules.") . '</p>'
         . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>'
-        . '<code>* * * * * /usr/bin/wget -O - -q "http://example.com/scheduler/cron"</code>'
+        . '<code>* * * * * wget -q -O /dev/null "' . $base_url . '/scheduler/cron"</code>'
         . '<p>or</p>'
-        . '<code>* * * * * curl "http://example.com/scheduler/cron" > /dev/null 2>&1</code><br/><br/>';
+        . '<code>* * * * * curl -s -o /dev/null "' . $base_url . '/scheduler/cron"</code><br/><br/>';
       break;
     case 'admin/help#scheduler':
       // This is shown at the top of admin/help/scheduler.
