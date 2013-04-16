@@ -758,6 +758,13 @@ function _scheduler_publish() {
       $n->revision = TRUE;
       $n->log = "Node published by scheduler module. Original creation date was ".  format_date($old_creation_date, 'custom', $date_format) .".";
     }
+    // Unset publish_on so the node will not get rescheduled by subsequent calls
+    // to node_save().
+    $n->publish_on = NULL;
+
+    // Invoke scheduler API to allow modules to alter the node before it is
+    // saved.
+    _scheduler_scheduler_api($n, 'pre_publish');
 
     // Use the actions system to publish the node.
     watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
@@ -826,6 +833,13 @@ function _scheduler_unpublish() {
         $n->revision = TRUE;
         $n->log = "Node unpublished by scheduler module. Original change date was ".  format_date($old_change_date, 'custom', $date_format) .".";
       }
+      // Unset unpublish_on so the node will not get rescheduled by subsequent
+      // calls to node_save().
+      $n->unpublish_on = NULL;
+
+      // Invoke scheduler API to allow modules to alter the node before it is
+      // saved.
+      _scheduler_scheduler_api($n, 'pre_unpublish');
 
       // Use the actions system to unpublish the node.
       watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
