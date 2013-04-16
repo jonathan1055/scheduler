@@ -119,7 +119,7 @@ function scheduler_help($section) {
         . "execute any cron tasks defined by Drupal core or any other modules.") . '</p>'
         . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>'
         . '<code>* * * * * wget -q -O /dev/null "' . $base_url . '/scheduler/cron"</code>'
-        . '<p>or</p>'
+        . '<p>' . t('or') . '</p>'
         . '<code>* * * * * curl -s -o /dev/null "' . $base_url . '/scheduler/cron"</code><br/><br/>';
       break;
     case 'admin/help#scheduler':
@@ -197,7 +197,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   drupal_add_css(drupal_get_path('module', 'scheduler') .'/scheduler.css');
   $form['scheduler'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Scheduler',
+    '#title' => t('Scheduler'),
     '#weight' => 35,
     '#group' => 'additional_settings',
     '#attached' => array(
@@ -209,7 +209,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
 
   $form['scheduler']['publish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Publishing',
+      '#title' => t('Publishing'),
       '#collapsible' => FALSE,
       '#weight' => 1,
       '#group' => 'scheduler',
@@ -236,7 +236,7 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   );
   $form['scheduler']['unpublish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Unpublishing',
+      '#title' => t('Unpublishing'),
       '#collapsible' => FALSE,
       '#weight' => 2,
       '#group' => 'scheduler',
