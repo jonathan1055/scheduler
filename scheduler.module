@@ -868,7 +868,7 @@ function _scheduler_run_cron() {
       ob_clean();
     }
   }
-  watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/settings/scheduler'));
+  watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/config/content/scheduler'));
 
   // This message is only seen when the lightweight cron is tested interactively.
   drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
