@@ -165,7 +165,13 @@ function scheduler_admin() {
   return system_settings_form($form);
 }
 
+/**
+ * Validate the scheduler admin settings.
+ */
 function scheduler_admin_validate($form, &$form_state) {
+  // Replace all contiguous whitespaces (including tabs and newlines) with a single plain space.
+  $form_state['values']['scheduler_date_format'] = trim(preg_replace('/\s+/', ' ', $form_state['values']['scheduler_date_format']));
+
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
     $format      = $form_state['values']['scheduler_date_format'];
     $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
