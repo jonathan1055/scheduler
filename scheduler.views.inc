@@ -4,7 +4,6 @@
  * @file
  * Views integration file for Scheduler module.
  */
-
 function scheduler_views_data() {
   $tables['scheduler']['table']['group'] = t('Scheduler');
 
@@ -53,7 +52,7 @@ function scheduler_views_data() {
     'title' => t('Publish countdown'),
     'help' => t('Time until the article will be automatically published'),
     'field' => array(
-  	  'handler' => 'scheduler_handler_field_scheduler_countdown',
+      'handler' => 'scheduler_handler_field_scheduler_countdown',
       'click sortable' => FALSE,
       'timestamp_field' => 'publish_on',
     ),
@@ -63,7 +62,7 @@ function scheduler_views_data() {
     'title' => t('Unpublish countdown'),
     'help' => t('Time until the article will be automatically unpublished'),
     'field' => array(
-  	  'handler' => 'scheduler_handler_field_scheduler_countdown',
+      'handler' => 'scheduler_handler_field_scheduler_countdown',
       'click sortable' => FALSE,
       'timestamp_field' => 'unpublish_on',
     ),
@@ -73,14 +72,15 @@ function scheduler_views_data() {
 }
 
 /**
- * Implementation of hook_views_handlers()
+ * Implements hook_views_handlers().
  */
 function scheduler_views_handlers() {
   return array(
     'handlers' => array(
       'scheduler_handler_field_scheduler_countdown' => array(
         'parent' => 'views_handler_field',
-      )
-    )
+      ),
+    ),
   );
 }
+

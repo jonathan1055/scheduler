@@ -1,10 +1,9 @@
 <?php
-
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
 
- /**
-  * Implementation of hook_permission().
-  */
+/**
+ * Implements hook_permission().
+ */
 function scheduler_permission() {
   return array(
     'administer scheduler' => array(
@@ -18,7 +17,7 @@ function scheduler_permission() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function scheduler_menu() {
   $items = array();
@@ -37,7 +36,7 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/content/scheduler'] = array(
-      'title' => 'Scheduler module settings',
+    'title' => 'Scheduler module settings',
     'description' => 'Allows site admins to configure scheduler.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('scheduler_admin'),
@@ -80,7 +79,8 @@ function scheduler_menu() {
     'type' => MENU_LOCAL_TASK,
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
-    'page arguments' => array('user_only', 1), // This will pass the uid of the user account being viewed.
+    // This will pass the uid of the user account being viewed.
+    'page arguments' => array('user_only', 1),
     'access callback' => 'scheduler_list_access_callback',
     'access arguments' => array('user_only', 1),
     'description' => 'Display a list of scheduled nodes',
@@ -107,26 +107,20 @@ function scheduler_help($section) {
   $output = '';
   switch ($section) {
     case 'admin/config/content/scheduler':
-      $output = '<p>'
-                . t('Some scheduler actions are set for each different content type. These are accessed via the <a href="@link">admin content type</a> list.' , array('@link' => url('admin/structure/types')))
-                . '<br/>' . t('The options and settings below are common to all content types.') . '</p>';
+      $output = '<p>' . t('Some scheduler actions are set for each different content type. These are accessed via the <a href="@link">admin content type</a> list.', array('@link' => url('admin/structure/types'))) . '<br/>' . t('The options and settings below are common to all content types.') . '</p>';
       break;
+
     case 'admin/config/content/scheduler/cron':
       $base_url = $GLOBALS['base_url'];
-      $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. "
-        . "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the "
-        . "lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not "
-        . "execute any cron tasks defined by Drupal core or any other modules.") . '</p>'
-        . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>'
-        . '<code>* * * * * wget -q -O /dev/null "' . $base_url . '/scheduler/cron"</code>'
-        . '<p>' . t('or') . '</p>'
-        . '<code>* * * * * curl -s -o /dev/null "' . $base_url . '/scheduler/cron"</code><br/><br/>';
+      $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. " . "However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the " . "lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not " . "execute any cron tasks defined by Drupal core or any other modules."
+      ) . '</p>' . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>' . '<code>* * * * * wget -q -O /dev/null "' . $base_url . '/scheduler/cron"</code>' . '<p>' . t('or') . '</p>' . '<code>* * * * * curl -s -o /dev/null "' . $base_url . '/scheduler/cron"</code><br/><br/>';
       break;
+
     case 'admin/help#scheduler':
       // This is shown at the top of admin/help/scheduler.
-      $output = '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>'
-                . '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', array('@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt')) . '</p>';
+      $output = '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>' . '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', array('@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt')) . '</p>';
       break;
+
     default:
   }
   return $output;
@@ -173,9 +167,9 @@ function scheduler_admin() {
 
 function scheduler_admin_validate($form, &$form_state) {
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
-    $format = $form_state['values']['scheduler_date_format'];
+    $format      = $form_state['values']['scheduler_date_format'];
     $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
-    $acceptable = date_popup_time_formats();
+    $acceptable  = date_popup_time_formats();
 
     if (!in_array($time_format, $acceptable)) {
       form_set_error('scheduler_date_format', t('The Date Popup module only accepts the following formats: !formats', array('!formats' => implode($acceptable, ', '))));
@@ -194,7 +188,7 @@ function _scheduler_use_date_popup() {
  * Implements hook_form_node_type_form_alter().
  */
 function scheduler_form_node_type_form_alter(&$form, $form_state) {
-  drupal_add_css(drupal_get_path('module', 'scheduler') .'/scheduler.css');
+  drupal_add_css(drupal_get_path('module', 'scheduler') . '/scheduler.css');
   $form['scheduler'] = array(
     '#type' => 'fieldset',
     '#title' => t('Scheduler'),
@@ -202,70 +196,70 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#group' => 'additional_settings',
     '#attached' => array(
       'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
+        'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js",
       ),
     ),
   );
 
   $form['scheduler']['publish'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Publishing'),
-      '#collapsible' => FALSE,
-      '#weight' => 1,
-      '#group' => 'scheduler',
+    '#type' => 'fieldset',
+    '#title' => t('Publishing'),
+    '#collapsible' => FALSE,
+    '#weight' => 1,
+    '#group' => 'scheduler',
   );
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Enable scheduled publishing for this content type'),
-      '#default_value' => variable_get('scheduler_publish_enable_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Enable scheduled publishing for this content type'),
+    '#default_value' => variable_get('scheduler_publish_enable_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_touch'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Change content creation time to match the scheduled publish time'),
-      '#default_value' => variable_get('scheduler_publish_touch_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Change content creation time to match the scheduled publish time'),
+    '#default_value' => variable_get('scheduler_publish_touch_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Require scheduled publishing'),
-      '#default_value' => variable_get('scheduler_publish_required_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Require scheduled publishing'),
+    '#default_value' => variable_get('scheduler_publish_required_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Create a new revision on publishing'),
-      '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Create a new revision on publishing'),
+    '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Unpublishing'),
-      '#collapsible' => FALSE,
-      '#weight' => 2,
-      '#group' => 'scheduler',
+    '#type' => 'fieldset',
+    '#title' => t('Unpublishing'),
+    '#collapsible' => FALSE,
+    '#weight' => 2,
+    '#group' => 'scheduler',
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Enable scheduled unpublishing for this content type'),
-      '#default_value' => variable_get('scheduler_unpublish_enable_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Enable scheduled unpublishing for this content type'),
+    '#default_value' => variable_get('scheduler_unpublish_enable_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Require scheduled unpublishing'),
-      '#default_value' => variable_get('scheduler_unpublish_required_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Require scheduled unpublishing'),
+    '#default_value' => variable_get('scheduler_unpublish_required_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Create a new revision on unpublishing'),
-      '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
+    '#type' => 'checkbox',
+    '#title' => t('Create a new revision on unpublishing'),
+    '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
   );
 }
 
 /**
- * Implementation of hook_form_alter().
+ * Implements hook_form_alter().
  */
 function scheduler_form_alter(&$form, $form_state) {
   // Is this a node form and scheduling has been enabled for this node type
   if (!empty($form['#node_edit_form']) && user_access('schedule (un)publishing of nodes')) {
-    $publishing_enabled = variable_get('scheduler_publish_enable_'. $form['type']['#value'], 0) == 1;
-    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $form['type']['#value'], 0) == 1;
+    $publishing_enabled = variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0) == 1;
+    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $form['type']['#value'], 0) == 1;
 
     // if scheduling has been enabled for this node type
     if ($publishing_enabled || $unpublishing_enabled) {
@@ -304,8 +298,8 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
       }
 
-      $publishing_required = variable_get('scheduler_publish_required_'. $form['type']['#value'], 0) == 1;
-      $unpublishing_required = variable_get('scheduler_unpublish_required_'. $form['type']['#value'], 0) == 1;
+      $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1;
+      $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1;
 
       $fieldset_extended = (
         (isset($defaults->publish_on) && $defaults->publish_on != 0)
@@ -323,9 +317,9 @@ function scheduler_form_alter(&$form, $form_state) {
         '#group' => 'additional_settings',
         '#attached' => array(
           'js' => array(
-            'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js"
+            'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js",
           ),
-        )
+        ),
       );
 
       $extra_info = variable_get('scheduler_extra_info', '');
@@ -340,7 +334,7 @@ function scheduler_form_alter(&$form, $form_state) {
       if ($publishing_enabled) {
         $description_blank = '';
         if (!$publishing_required) {
-          $description_blank .= ' '.t('Leave blank to disable scheduled publishing.');
+          $description_blank .= ' ' . t('Leave blank to disable scheduled publishing.');
         }
 
         $form['scheduler_settings']['publish_on'] = array(
@@ -349,14 +343,14 @@ function scheduler_form_alter(&$form, $form_state) {
           '#maxlength' => 25,
           '#required' => $publishing_required,
           '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
-          '#description' => $description_format.$description_blank,
+          '#description' => filter_xss($description_format . $description_blank),
         );
       }
 
       if ($unpublishing_enabled) {
         $description_blank = '';
         if (!$unpublishing_required) {
-          $description_blank .= ' '.t('Leave blank to disable scheduled unpublishing.');
+          $description_blank .= ' ' . t('Leave blank to disable scheduled unpublishing.');
         }
         $form['scheduler_settings']['unpublish_on'] = array(
           '#type' => 'textfield',
@@ -364,7 +358,7 @@ function scheduler_form_alter(&$form, $form_state) {
           '#maxlength' => 25,
           '#required' => $unpublishing_required,
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
-          '#description' => $description_format.$description_blank,
+          '#description' => filter_xss($description_format . $description_blank),
         );
       }
 
@@ -374,14 +368,18 @@ function scheduler_form_alter(&$form, $form_state) {
           $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
           $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
-          if (!$publishing_required) $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
+          if (!$publishing_required) {
+            $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
+          }
           unset($form['scheduler_settings']['publish_on']['#maxlength']);
         }
         if ($unpublishing_enabled) {
           $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
           $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
-          if (!$unpublishing_required) $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
+          if (!$unpublishing_required) {
+            $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
+          }
           unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
         }
       }
@@ -438,9 +436,7 @@ function scheduler_list() {
     $query->condition('n.uid', $args[1], '=');
   }
 
-  $query = $query
-    ->extend('TableSort')
-    ->orderByHeader($header);
+  $query = $query->extend('TableSort')->orderByHeader($header);
   $result = $query->execute();
 
   $rows = array();
@@ -448,9 +444,9 @@ function scheduler_list() {
   foreach ($result as $node) {
     $rows[] = array(
       l($node->title, "node/$node->nid"),
-        theme('username', array('account' => $node)),
-        ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
-        ($node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;'),
+      theme('username', array('account' => $node)),
+      ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
+      ($node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;'),
       l(t('edit'), 'node/' . $node->nid . '/edit', array(), 'destination=admin/content/node/scheduler'),
     );
   }
@@ -473,13 +469,15 @@ function scheduler_list() {
 
 /**
  * Converts an english time string ('Y-m-d H:i:s') from the users timezone into an unix timestamp
+ *
  * @param string $str the time string ('Y-m-d H:i:s')
+ *
  * @return the time in unix timestamp representation (utc);
  * NULL, if $str is NULL, FALSE, empty, or contains only white spaces;
  * FALSE, if $str is malformed
  */
 function _scheduler_strtotime($str) {
-  if ($str && trim($str) != "" ) {
+  if ($str && trim($str) != "") {
     $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
     if (_scheduler_use_date_popup()) {
@@ -501,6 +499,7 @@ function _scheduler_strtotime($str) {
  * @param string $date The string to parse
  * @param string $format The format used in $date. See date() (http://www.php.net/manual/en/function.date.php)
  * specification for format options. Right now only dHhmiaAsyY are supported.
+ *
  * @return the parsed time as a UTC timestamp
  * @see date()
  */
@@ -526,26 +525,32 @@ function _scheduler_strptime($date, $format) {
       case 'j':
         $results['day'] = $value;
         break;
+
       case 'H':
       case 'h':
       case 'g':
       case 'G':
         $results['hour'] = $value;
         break;
+
       case 'm':
       case 'n':
         $results['month'] = $value;
         break;
+
       case 'i':
         $results['minute'] = $value;
         break;
+
       case 'a':
       case 'A':
         $results['meridiem'] = $value_matches[$index];
         break;
+
       case 's':
         $results['second'] = $value;
         break;
+
       case 'y':
       case 'Y':
         $results['year'] = $value;
@@ -560,7 +565,7 @@ function _scheduler_strptime($date, $format) {
     $results['hour'] -= 12;
   }
 
-  $time = mktime( $results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year'] );
+  $time = mktime($results['hour'], $results['minute'], $results['second'], $results['month'], $results['day'], $results['year']);
   return $time;
 }
 
@@ -595,7 +600,7 @@ function scheduler_node_view($node, $view_mode = 'full', $langcode) {
       '#tag' => 'meta',
       '#attributes' => array(
         'name' => 'googlebot',
-        'content' => 'unavailable_after: '.$unavailable_after,
+        'content' => 'unavailable_after: ' . $unavailable_after,
       ),
     );
     drupal_add_html_head($element, 'scheduler_unavailable');
@@ -640,11 +645,11 @@ function scheduler_node_validate($node, $form) {
 function scheduler_node_presave($node) {
   foreach (array('publish_on', 'unpublish_on') as $key) {
     if (empty($node->$key)) {
-    // Make sure publish_on and unpublish_on are not empty strings.
+      // Make sure publish_on and unpublish_on are not empty strings.
       $node->$key = 0;
     }
     elseif (!is_numeric($node->$key)) {
-      $node->$key= _scheduler_strtotime($node->$key);
+      $node->$key = _scheduler_strtotime($node->$key);
     }
   }
   // Right before we save the node, we need to check if a "publish on" value has been set.
@@ -659,13 +664,11 @@ function scheduler_node_presave($node) {
 function scheduler_node_insert($node) {
   // only insert into database if we need to (un)publish this node at some date
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
-    db_insert('scheduler')
-      ->fields(array(
+    db_insert('scheduler')->fields(array(
         'nid' => $node->nid,
         'publish_on' => $node->publish_on,
         'unpublish_on' => $node->unpublish_on,
-      ))
-      ->execute();
+      ))->execute();
   }
 }
 
@@ -673,13 +676,10 @@ function scheduler_node_update($node) {
   // only update database if we need to (un)publish this node at some date
   // otherwise the user probably cleared out the (un)publish dates so we should remove the record
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
-    db_merge('scheduler')
-      ->key(array('nid' => $node->nid))
-      ->fields(array(
-          'publish_on' => $node->publish_on,
-          'unpublish_on' => $node->unpublish_on,
-        ))
-      ->execute();
+    db_merge('scheduler')->key(array('nid' => $node->nid))->fields(array(
+        'publish_on' => $node->publish_on,
+        'unpublish_on' => $node->unpublish_on,
+      ))->execute();
   }
   else {
     scheduler_node_delete($node);
@@ -687,9 +687,7 @@ function scheduler_node_update($node) {
 }
 
 function scheduler_node_delete($node) {
-  db_delete('scheduler')
-    ->condition('nid', $node->nid)
-    ->execute();
+  db_delete('scheduler')->condition('nid', $node->nid)->execute();
 }
 
 /**
@@ -712,7 +710,7 @@ function scheduler_node_type_delete($info) {
 }
 
 /**
- * Implementation of hook_cron().
+ * Implements hook_cron().
  */
 function scheduler_cron() {
   $clear_cache = FALSE;
@@ -751,17 +749,17 @@ function _scheduler_publish() {
   $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list('publish')));
 
   foreach ($nids as $nid) {
-    $n = node_load($nid);
-    $n->changed = $n->publish_on;
+    $n                 = node_load($nid);
+    $n->changed        = $n->publish_on;
     $old_creation_date = $n->created;
-    if (variable_get('scheduler_publish_touch_'. $n->type, 0) == 1) {
+    if (variable_get('scheduler_publish_touch_' . $n->type, 0) == 1) {
       $n->created = $n->publish_on;
     }
 
-    $create_publishing_revision = variable_get('scheduler_publish_revision_'. $n->type, 0) == 1;
+    $create_publishing_revision = variable_get('scheduler_publish_revision_' . $n->type, 0) == 1;
     if ($create_publishing_revision) {
       $n->revision = TRUE;
-      $n->log = "Node published by scheduler module. Original creation date was ".  format_date($old_creation_date, 'custom', $date_format) .".";
+      $n->log = "Node published by scheduler module. Original creation date was " . format_date($old_creation_date, 'custom', $date_format) . ".";
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
     // to node_save().
@@ -772,24 +770,19 @@ function _scheduler_publish() {
     _scheduler_scheduler_api($n, 'pre_publish');
 
     // Use the actions system to publish the node.
-    watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
+    watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid));
     $actions = array('node_publish_action', 'node_save_action');
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
 
     // If this node is not to be unpublished, then we can delete the record.
     if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
-      db_delete('scheduler')
-        ->condition('nid', $n->nid)
-        ->execute();
+      db_delete('scheduler')->condition('nid', $n->nid)->execute();
     }
     // We need to unpublish this node at some time so clear the publish on since
     // it has been published.
     else {
-      db_update('scheduler')
-        ->fields(array('publish_on' => 0))
-        ->condition('nid', $n->nid)
-        ->execute();
+      db_update('scheduler')->fields(array('publish_on' => 0))->condition('nid', $n->nid)->execute();
     }
 
     // Invoke scheduler API.
@@ -828,15 +821,15 @@ function _scheduler_unpublish() {
   foreach ($nids as $nid) {
     // If this node is to be unpublished, we can update the node and remove the
     // record since it cannot be republished.
-    $n = node_load($nid);
+    $n               = node_load($nid);
     $old_change_date = $n->changed;
-    $n->changed = $n->unpublish_on;
+    $n->changed      = $n->unpublish_on;
 
     if ($n->status == 1) {
-      $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_'. $n->type, 0) == 1;
+      $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $n->type, 0) == 1;
       if ($create_unpublishing_revision) {
         $n->revision = TRUE;
-        $n->log = "Node unpublished by scheduler module. Original change date was ".  format_date($old_change_date, 'custom', $date_format) .".";
+        $n->log = "Node unpublished by scheduler module. Original change date was " . format_date($old_change_date, 'custom', $date_format) . ".";
       }
       // Unset unpublish_on so the node will not get rescheduled by subsequent
       // calls to node_save().
@@ -847,15 +840,13 @@ function _scheduler_unpublish() {
       _scheduler_scheduler_api($n, 'pre_unpublish');
 
       // Use the actions system to unpublish the node.
-      watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/'. $n->nid));
+      watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid));
       $actions = array('node_unpublish_action', 'node_save_action');
       $context['node'] = $n;
       actions_do($actions, $n, $context, NULL, NULL);
     }
 
-    db_delete('scheduler')
-      ->condition('nid', $n->nid)
-      ->execute();
+    db_delete('scheduler')->condition('nid', $n->nid)->execute();
 
     // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'unpublish');
@@ -879,7 +870,7 @@ function _scheduler_scheduler_nid_list($action) {
   $nids = array();
 
   foreach (module_implements('scheduler_nid_list') as $module) {
-    $function = $module .'_scheduler_nid_list';
+    $function = $module . '_scheduler_nid_list';
     $nids = array_merge($nids, $function($action));
   }
 
@@ -887,7 +878,7 @@ function _scheduler_scheduler_nid_list($action) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function scheduler_theme() {
   return array(
@@ -923,7 +914,7 @@ function _scheduler_lightweight_cron() {
   $form = array();
   $form['scheduler_cron'] = array(
     '#type' => 'submit',
-    '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>' ,
+    '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>',
     '#value' => t("Run Scheduler's cron now"),
     '#submit' => array('_scheduler_run_cron'),
     '#suffix' => "</div>\n",
@@ -960,16 +951,11 @@ function theme_scheduler_timecheck($variables) {
     '%lt' => date("Y-m-d H:i:s P", $now),
   );
 
-  return
-    t('Your server reports the UTC time as %time and "localtime" as %lt.', $t_options) .
-   '<p />'.
-    t('If all is well with your server\'s time configuration UTC should match <a target="_blank" href="http://wwp.greenwichmeantime.com/">UTC London Time</a> and the localtime should be the time where you are.') .
-    '<p />'.
-    t('If this is not the case please have your Unix System Administrator fix your servers time/date configuration.');
+  return t('Your server reports the UTC time as %time and "localtime" as %lt.', $t_options) . '<p />' . t('If all is well with your server\'s time configuration UTC should match <a target="_blank" href="http://wwp.greenwichmeantime.com/">UTC London Time</a> and the localtime should be the time where you are.') . '<p />' . t('If this is not the case please have your Unix System Administrator fix your servers time/date configuration.');
 }
 
 /**
- * Implementation of "contrib module views" hook_views_tables()
+ * Implements "contrib module views" hook_views_tables()
  */
 function scheduler_views_api() {
   $info['api'] = 2;
@@ -977,12 +963,12 @@ function scheduler_views_api() {
 }
 
 /**
- * Implementation of hook_content_extra_fields().
+ * Implements hook_content_extra_fields().
  */
 function scheduler_content_extra_fields($type_name) {
   $fields = array();
-  $publishing_enabled = variable_get('scheduler_publish_enable_'. $type_name, 0) == 1;
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $type_name, 0) == 1;
+  $publishing_enabled = variable_get('scheduler_publish_enable_' . $type_name, 0) == 1;
+  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $type_name, 0) == 1;
   if ($publishing_enabled || $unpublishing_enabled) {
     $fields['scheduler_settings'] = array(
       'label' => t('Scheduler'),
@@ -994,9 +980,9 @@ function scheduler_content_extra_fields($type_name) {
 }
 
 /**
-* Implements hook_preprocess_node();
-* Makes the publish_on and unpublish_on data available as theme variables.
-*/
+ * Implements hook_preprocess_node();
+ * Makes the publish_on and unpublish_on data available as theme variables.
+ */
 function scheduler_preprocess_node(&$variables, $hook) {
   $node = $variables['node'];
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
@@ -1009,36 +995,36 @@ function scheduler_preprocess_node(&$variables, $hook) {
 }
 
 /**
-* Implementation of hook_feeds_node_processor_targets_alter().
-* advertises publish_on and unpublish_on as mappable values to the feeds module
-*/
+ * Implements hook_feeds_node_processor_targets_alter().
+ * advertises publish_on and unpublish_on as mappable values to the feeds module
+ */
 function scheduler_feeds_processor_targets_alter(&$targets, $processor, $content_type) {
 
-  $publishing_enabled = variable_get('scheduler_publish_enable_'. $content_type, 0);
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_'. $content_type, 0);
+  $publishing_enabled = variable_get('scheduler_publish_enable_' . $content_type, 0);
+  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $content_type, 0);
 
   if ($publishing_enabled) {
     $targets['publish_on'] = array(
       'name' => t('Scheduler: publish on'),
       'description' => t('The date, when scheduler module should publish node.'),
-      'callback' => 'scheduler_set_target'
+      'callback' => 'scheduler_set_target',
     );
   }
   if ($unpublishing_enabled) {
     $targets['unpublish_on'] = array(
       'name' => t('Scheduler: unpublish on'),
       'description' => t('The date, when scheduler module should unpublish node.'),
-      'callback' => 'scheduler_set_target'
+      'callback' => 'scheduler_set_target',
     );
   }
 }
 
 /**
-* Mapping callback for feeds module.
-*
-* This callback converts input from parser and converts it
-* to timestamp form. After that it sets value of correct field of node.
-*/
+ * Mapping callback for feeds module.
+ *
+ * This callback converts input from parser and converts it
+ * to timestamp form. After that it sets value of correct field of node.
+ */
 function scheduler_set_target($source, $node, $target, $value) {
   if (!is_array($value)) {
     if (!is_numeric($value)) {
@@ -1054,3 +1040,4 @@ function scheduler_set_target($source, $node, $target, $value) {
     }
   }
 }
+

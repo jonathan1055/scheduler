@@ -1,18 +1,14 @@
 <?php
+
 /**
  * @file
- * Implementation of scheduler_handler_scheduler_countdown field handler
+ * Implements scheduler_handler_scheduler_countdown field handler
  */
 
 /**
  * Field handler to display a countdown until a scheduled action
  */
-class scheduler_handler_field_scheduler_countdown extends views_handler_field {
-  const SECOND_SCALE = 1;
-  const MINUTE_SCALE = 60;
-  const HOUR_SCALE = 3600;
-  const DAY_SCALE = 86400;
-  const WEEK_SCALE = 604800;
+class scheduler_handler_field_scheduler_countdown extends views_handler_field {CONSTSECOND_SCALE = 1;CONSTMINUTE_SCALE = 60;CONSTHOUR_SCALE = 3600;CONSTDAY_SCALE = 86400;CONSTWEEK_SCALE = 604800;
 
   private $render_params = array(
     'seconds' => array(
@@ -45,13 +41,11 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
       'plural' => 'weeks',
       'abbreviated' => 'w',
     ),
-  );
-
-  function query() {
+  ); function query() {
     $this->ensure_my_table();
-    $this->node_table = $this->query->ensure_table('node', $this->relationship);
-    $time_field = $this->definition['timestamp_field'];
-    $this->field_alias = $this->query->add_field(NULL, 'IF('.$time_field.' AND '.$time_field.' > UNIX_TIMESTAMP(), '.$time_field.' - UNIX_TIMESTAMP(), NULL)', $this->table_alias . '_' . $this->field);
+    $this->node_table  = $this->query->ensure_table('node', $this->relationship);
+    $time_field        = $this->definition['timestamp_field'];
+    $this->field_alias = $this->query->add_field(NULL, 'IF(' . $time_field . ' AND ' . $time_field . ' > UNIX_TIMESTAMP(), ' . $time_field . ' - UNIX_TIMESTAMP(), NULL)', $this->table_alias . '_' . $this->field);
   }
 
   function option_definition() {
@@ -68,7 +62,7 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
       '#type' => 'radios',
       '#options' => array(
         'smart' => t('Smart mode'),
-    	'seconds' => t('Seconds'),
+        'seconds' => t('Seconds'),
         'minutes' => t('Minutes'),
         'hours' => t('Hours'),
         'days' => t('Days'),
@@ -81,9 +75,9 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
       '#type' => 'radios',
       '#options' => array(
         'long' => t('Long (e.g. 3 days)'),
-    	'short' => t('Short (e.g. 3d)'),
-    	'none' => t('No units at all'),
-    ),
+        'short' => t('Short (e.g. 3d)'),
+        'none' => t('No units at all'),
+      ),
       '#default_value' => $this->options['units_display'],
     );
   }
@@ -96,13 +90,13 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
       if ($value > self::WEEK_SCALE) {
         $countdown_display = 'weeks';
       }
-      elseif($value > self::DAY_SCALE) {
+      elseif ($value > self::DAY_SCALE) {
         $countdown_display = 'days';
       }
-      elseif($value > self::HOUR_SCALE) {
+      elseif ($value > self::HOUR_SCALE) {
         $countdown_display = 'hours';
       }
-      elseif($value > self::MINUTE_SCALE) {
+      elseif ($value > self::MINUTE_SCALE) {
         $countdown_display = 'minutes';
       }
       else {
@@ -114,11 +108,13 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
     $scaled_value = round($value / $params['scale']);
     switch ($this->options['units_display']) {
       case 'long':
-        $rendered_value = format_plural($scaled_value, '1 '.$params['singular'], '@count '.$params['plural']);
+        $rendered_value = format_plural($scaled_value, '1 ' . $params['singular'], '@count ' . $params['plural']);
         break;
+
       case 'short':
-        $rendered_value = $scaled_value.$params['abbreviated'];
+        $rendered_value = $scaled_value . $params['abbreviated'];
         break;
+
       case 'none':
         $rendered_value = $scaled_value;
         break;
@@ -126,3 +122,4 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
     return $rendered_value;
   }
 }
+
