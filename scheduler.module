@@ -583,9 +583,14 @@ function scheduler_node_load($nodes, $types) {
   }
 }
 
+/**
+ * Implements hook_node_view().
+ */
 function scheduler_node_view($node, $view_mode = 'full', $langcode) {
-  if ($view_mode == 'full' && !empty($node->unpublish_on)) {
-    $unavailable_after = date("d-M-Y H:i:s T", $node->unpublish_on);
+  // If the node is going to be unpublished then add this information to the header for googlebot.
+  // Only do this when viewing the full node (not teaser) on its own page and not in edit mode.
+  if ($view_mode == 'full' && !empty($node->scheduler['unpublish_on']) && node_is_page($node) && arg(2) != 'edit') {
+    $unavailable_after = date("d-M-Y H:i:s T", $node->scheduler['unpublish_on']);
     $element = array(
       '#tag' => 'meta',
       '#attributes' => array(
