@@ -304,7 +304,7 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
       }
 
-      $publishing_required = variable_get('scheduler_publish_required_'. $form['type']['#value'], 0) == 1 && $node->status == 0;
+      $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 0;
       $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 1;
 
       $fieldset_extended = (
