@@ -9,11 +9,11 @@
  * Field handler to display a countdown until a scheduled action
  */
 class scheduler_handler_field_scheduler_countdown extends views_handler_field {
-  CONSTSECOND_SCALE = 1;
-  CONSTMINUTE_SCALE = 60;
-  CONSTHOUR_SCALE = 3600;
-  CONSTDAY_SCALE = 86400;
-  CONSTWEEK_SCALE = 604800;
+  CONST SECOND_SCALE = 1;
+  CONST MINUTE_SCALE = 60;
+  CONST HOUR_SCALE = 3600;
+  CONST DAY_SCALE = 86400;
+  CONST WEEK_SCALE = 604800;
 
   private $render_params = array(
     'seconds' => array(
