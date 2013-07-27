@@ -22,8 +22,8 @@ function scheduler_permission() {
 function scheduler_menu() {
   $items = array();
   $items['scheduler/cron'] = array(
-    'title' => 'Light weight cron handler',
-    'description' => 'A light weight cron handler to allow more frequent runs of Schedulers internal cron system',
+    'title' => 'Lightweight cron handler',
+    'description' => 'Run the lightweight cron process',
     'page callback' => '_scheduler_run_cron',
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
@@ -36,8 +36,8 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/config/content/scheduler'] = array(
-    'title' => 'Scheduler module settings',
-    'description' => 'Allows site admins to configure scheduler.',
+    'title' => 'Scheduler',
+    'description' => "Configure settings for scheduled publishing and unpublishing, run the lightweight cron and check your servers clock time.",
     'page callback' => 'drupal_get_form',
     'page arguments' => array('scheduler_admin'),
     'access arguments' => array('administer scheduler'),
@@ -895,7 +895,7 @@ function scheduler_theme() {
 }
 
 function _scheduler_run_cron() {
-  watchdog('scheduler', 'Internal scheduler cron run activated', array(), WATCHDOG_NOTICE);
+  watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
   scheduler_cron();
   if (ob_get_level() > 0) {
     $handlers = ob_list_handlers();
@@ -903,7 +903,7 @@ function _scheduler_run_cron() {
       ob_clean();
     }
   }
-  watchdog('scheduler', 'Internal scheduler cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/config/content/scheduler'));
+  watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/config/content/scheduler'));
 
   // This message is only seen when the lightweight cron is tested interactively.
   drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
@@ -949,8 +949,6 @@ function _scheduler_timecheck() {
 
 function theme_scheduler_timecheck($variables) {
   $now = $variables['now'];
-
-  drupal_set_title(t('Scheduler OS time check'));
 
   $t_options = array(
     '%time' => gmdate("Y-m-d H:i:s", $now),
