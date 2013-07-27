@@ -754,6 +754,10 @@ function _scheduler_publish() {
 
   $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list('publish')));
 
+  // Allow other modules to alter the list of nodes to be published.
+  $action = 'publish';
+  drupal_alter('scheduler_nid_list', $nids, $action);
+
   foreach ($nids as $nid) {
     $n                 = node_load($nid);
     $n->changed        = $n->publish_on;
@@ -823,6 +827,10 @@ function _scheduler_unpublish() {
   }
 
   $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list('unpublish')));
+
+  // Allow other modules to alter the list of nodes to be unpublished.
+  $action = 'unpublish';
+  drupal_alter('scheduler_nid_list', $nids, $action);
 
   foreach ($nids as $nid) {
     // If this node is to be unpublished, we can update the node and remove the
