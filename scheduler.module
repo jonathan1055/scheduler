@@ -109,7 +109,7 @@ function scheduler_help($section) {
         . "execute any cron tasks defined by Drupal core or any other modules.") . '</p>'
         . '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>'
         . '<code>* * * * * /usr/bin/wget -O - -q "http://example.com/scheduler/cron"</code>'
-        . '<p>or</p>'
+        . '<p>' . t('or') . '</p>'
         . '<code>* * * * * curl "http://example.com/scheduler/cron" > /dev/null 2>&1</code>';
       break;
     case 'admin/modules#description':
@@ -192,7 +192,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
 
     $form['scheduler'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Scheduler settings',
+      '#title' => t('Scheduler settings'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 35,
@@ -201,7 +201,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
 
     $form['scheduler']['publish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Publishing settings',
+      '#title' => t('Publishing settings'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 1,
@@ -234,7 +234,7 @@ function scheduler_form_alter(&$form, $form_state, $form_id) {
 
     $form['scheduler']['unpublish'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Unpublishing settings',
+      '#title' => t('Unpublishing settings'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#weight' => 2,
