@@ -665,6 +665,27 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
+ * Implementation of hook_node_type().
+ */
+function scheduler_node_type($op, $info) {
+  switch ($op) {
+    case 'delete':
+      $variables = array();
+      $variables[] = "scheduler_publish_enable_" . $info->type;
+      $variables[] = "scheduler_publish_touch_" . $info->type;
+      $variables[] = "scheduler_publish_required_" . $info->type;
+      $variables[] = "scheduler_publish_revision_" . $info->type;
+      $variables[] = "scheduler_unpublish_enable_" . $info->type;
+      $variables[] = "scheduler_unpublish_required_" . $info->type;
+      $variables[] = "scheduler_unpublish_revision_" . $info->type;
+      foreach ($variables as $variable) {
+        variable_del($variable);
+      }
+      break;
+  }
+}
+
+/**
  * Implementation of hook_cron().
  */
 function scheduler_cron() {
