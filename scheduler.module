@@ -416,6 +416,8 @@ function scheduler_list() {
   $sql .= tablesort_sql($header);
   $result = pager_query($sql, 50);
 
+  $rows = array();
+
   while ($node = db_fetch_object($result)) {
     $rows[] = array(
       l($node->title, "node/$node->nid"),
