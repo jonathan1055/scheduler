@@ -291,9 +291,11 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults = $query->execute()->fetchObject();
       }
       else {
-        // init standard values
+        // Initialise standard values.
         $defaults = new StdClass;
-        $defaults->publish_on = $defaults->unpublish_on = NULL;
+        // Respect presets added by functions like scheduler_field_attach_prepare_translation_alter().
+        $defaults->publish_on = isset($node->publish_on) ? $node->publish_on : NULL;
+        $defaults->unpublish_on = isset($node->unpublish_on) ? $node->unpublish_on : NULL;
       }
 
       // if there is a text value then convert it to a unix timestamp
@@ -1073,3 +1075,35 @@ function scheduler_set_target($source, $node, $target, $value) {
   }
 }
 
+/**
+ * Implements hook_i18n_sync_options().
+ */
+function scheduler_i18n_sync_options($entity_type, $bundle_name) {
+  if ($entity_type == 'node') {
+    return array(
+      'publish_on' => array(
+        'title' => t('Publish on'),
+        'description' => t('Scheduler Publish date and time'),
+      ),
+      'unpublish_on' => array(
+        'title' => t('Unpublish on'),
+        'description' => t('Scheduler Unpublish date and time'),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements drupal_alter('field_attach_prepare_translation', $entity, $context).
+ * Prefill the node translation form with values from the translation source node.
+ */
+function scheduler_field_attach_prepare_translation_alter($entity, $context) {
+  $source_entity = $context['source_entity'];
+
+  if (isset($source_entity->scheduler['publish_on'])) {
+    $entity->publish_on = $source_entity->scheduler['publish_on'];
+  }
+  if (isset($source_entity->scheduler['unpublish_on'])) {
+    $entity->unpublish_on = $source_entity->scheduler['unpublish_on'];
+  }
+}
