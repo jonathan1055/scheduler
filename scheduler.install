@@ -51,6 +51,7 @@ function scheduler_uninstall() {
     'scheduler_date_format',
     'scheduler_field_type',
     'scheduler_extra_info',
+    'scheduler_lightweight_log',
   );
 
   $types = node_type_get_types();

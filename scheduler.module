@@ -906,7 +906,10 @@ function scheduler_theme() {
 }
 
 function _scheduler_run_cron() {
-  watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
+  $log = variable_get('scheduler_lightweight_log', 1);
+  if ($log) {
+    watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
+  }
   scheduler_cron();
   if (ob_get_level() > 0) {
     $handlers = ob_list_handlers();
@@ -914,7 +917,9 @@ function _scheduler_run_cron() {
       ob_clean();
     }
   }
-  watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/config/content/scheduler'));
+  if ($log) {
+    watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l('settings', 'admin/config/content/scheduler'));
+  }
 
   // This message is only seen when the lightweight cron is tested interactively.
   drupal_set_message(t("Scheduler's lightweight cron completed. See !log for details.", array('!log' => l('admin/reports/dblog', 'admin/reports/dblog'))));
@@ -936,7 +941,18 @@ function _scheduler_lightweight_cron() {
     '#submit' => array('_scheduler_run_cron'),
     '#suffix' => "</div>\n",
   );
-  return $form;
+  $form['scheduler_cron_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Lightweight cron settings'),
+  );
+  $form['scheduler_cron_settings']['scheduler_lightweight_log'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Log every activation and completion message.'),
+    '#default_value' => variable_get('scheduler_lightweight_log', 1),
+    '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
+  );
+
+  return system_settings_form($form);
 }
 
 /**
