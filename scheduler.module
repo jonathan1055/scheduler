@@ -489,7 +489,8 @@ function _scheduler_strtotime($str) {
     if (_scheduler_use_date_popup()) {
       $date_format = SCHEDULER_DATE_FORMAT;
     }
-    $time = _scheduler_strptime(trim($str), $date_format);
+    $str = trim(preg_replace('/\s+/', ' ', $str));
+    $time = _scheduler_strptime($str, $date_format);
   }
   else {
     // $str is empty
