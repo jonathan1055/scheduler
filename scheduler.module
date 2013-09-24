@@ -126,6 +126,15 @@ function scheduler_help($section) {
   return $output;
 }
 
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function scheduler_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
 function scheduler_admin() {
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
