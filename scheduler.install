@@ -44,30 +44,20 @@ function scheduler_schema() {
 }
 
 /**
- * Implements hook_uninstall().
+ * Implements hook_install().
  */
-function scheduler_uninstall() {
-  $variables = array(
-    'scheduler_date_format',
-    'scheduler_field_type',
-    'scheduler_extra_info',
-    'scheduler_lightweight_log',
-  );
-
-  $types = node_type_get_types();
-  foreach ($types as $type) {
-    $type_name   = $type->type;
-    $variables[] = "scheduler_publish_enable_" . $type_name;
-    $variables[] = "scheduler_publish_touch_" . $type_name;
-    $variables[] = "scheduler_publish_required_" . $type_name;
-    $variables[] = "scheduler_publish_revision_" . $type_name;
-    $variables[] = "scheduler_unpublish_enable_" . $type_name;
-    $variables[] = "scheduler_unpublish_required_" . $type_name;
-    $variables[] = "scheduler_unpublish_revision_" . $type_name;
-  }
-
-  foreach ($variables as $variable) {
-    variable_del($variable);
+function scheduler_install() {
+  // Set up default configuration for each node type.
+  foreach (node_type_get_types() as $type) {
+    \Drupal::config('scheduler.type.' . $type->type)
+      ->set('publish_enable', 0)
+      ->set('publish_required', 0)
+      ->set('publish_revision',0)
+      ->set('publish_touch',0)
+      ->set('unpublish_enable',0)
+      ->set('unpublish_required',0)
+      ->set('unpublish_revision',0)
+      ->save();
   }
 }
 

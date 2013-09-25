@@ -1,0 +1,5 @@
+date_format: 'Y-m-d H:i:s'
+date_format_long: 'l, F j, Y - H:i'
+extra_info: ''
+field_type: date_popup
+lightweight_log: 1
