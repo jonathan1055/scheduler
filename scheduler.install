@@ -95,3 +95,28 @@ function scheduler_update_6101() {
   return $ret;
 }
 
+/**
+ * Convert variables to config.
+ */
+function scheduler_update_8000() {
+  update_variables_to_config('scheduler.settings', array(
+    'scheduler_date_format' => 'date_format',
+    'scheduler_date_format_long' => 'date_format_long',
+    'scheduler_extra_info' => 'extra_info',
+    'scheduler_field_type' => 'field_type',
+    'scheduler_lightweight_log' => 'lightweight_log',
+  ));
+
+  $types = db_query('SELECT type FROM {node_type}')->fetchCol();
+  foreach ($types as $type) {
+    update_variables_to_config('scheduler.type.' . $type, array(
+      'scheduler_publish_enable_' . $type => 'publish_enable',
+      'scheduler_publish_required_' . $type => 'publish_required',
+      'scheduler_publish_revision_' . $type => 'publish_revision',
+      'scheduler_publish_touch_' . $type => 'publish_touch',
+      'scheduler_unpublish_enable_' . $type => 'unpublish_enable',
+      'scheduler_unpublish_required_' . $type => 'unpublish_required',
+      'scheduler_unpublish_revision_' . $type => 'unpublish_revision',
+    ));
+  }
+}
