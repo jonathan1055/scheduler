@@ -4,16 +4,20 @@
  * @file
  * Views integration file for Scheduler module.
  */
+
+/**
+ * Implements hook_views_data().
+ */
 function scheduler_views_data() {
   $tables['scheduler']['table']['group'] = t('Scheduler');
 
-  // how is the scheduler table linked to the nodes
+  // Define how the scheduler table is linked to the node table.
   $tables['scheduler']['table']['join']['node'] = array(
     'left_field' => 'nid',
     'field' => 'nid',
   );
 
-  // description of the fields (table columns)
+  // Describe the two fields in the scheduler db table.
   $tables['scheduler']['publish_on'] = array(
     'title' => t('Publish on'),
     'help' => t('Date/time on which the article will be automatically published'),
@@ -48,6 +52,7 @@ function scheduler_views_data() {
     ),
   );
 
+  // Describe the two extra derived fields provided for views.
   $tables['scheduler']['publish_countdown'] = array(
     'title' => t('Publish countdown'),
     'help' => t('Time until the article will be automatically published'),
