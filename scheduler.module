@@ -162,7 +162,14 @@ function scheduler_admin() {
   return system_settings_form($form);
 }
 
+/**
+ * Validate the scheduler admin settings.
+ */
 function scheduler_admin_validate($form, &$form_state) {
+  // Replace all contiguous whitespaces (including tabs and newlines) with a
+  // single space.
+  $form_state['values']['scheduler_date_format'] = trim(preg_replace('/\s+/', ' ', $form_state['values']['scheduler_date_format']));
+
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
     $format = $form_state['values']['scheduler_date_format'];
     $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
@@ -481,7 +488,8 @@ function _scheduler_strtotime($str) {
     if (_scheduler_use_date_popup()) {
           $date_format = SCHEDULER_DATE_FORMAT;
     }
-    $time=_scheduler_strptime(trim($str), $date_format);
+    $str = trim(preg_replace('/\s+/', ' ', $str));
+    $time = _scheduler_strptime($str, $date_format);
     if ($time!==FALSE) {
       // success
       $time -= _scheduler_get_user_timezone();
