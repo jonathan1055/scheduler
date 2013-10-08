@@ -182,6 +182,33 @@ function _scheduler_use_date_popup() {
 }
 
 /**
+ * Implementation of hook_date_api_fields().
+ */
+function scheduler_date_api_fields($field) {
+  $values = array(
+    // The type of date: DATE_UNIX, DATE_ISO, DATE_DATETIME.
+    'sql_type' => DATE_UNIX,
+    // Timezone handling options: 'none', 'site', 'date', 'utc'.
+    'tz_handling' => 'site',
+    // Needed only for dates that use 'date' tz_handling.
+    'timezone_field' => '',
+    // Needed only for dates that use 'date' tz_handling.
+    'offset_field' => '',
+    // Array of "table.field" values for related fields that should be loaded
+    // automatically in the Views SQL.
+    'related_fields' => array(),
+    // Granularity of this date field's db data.
+    'granularity' => array('year', 'month', 'day', 'hour', 'minute', 'second'),
+  );
+
+  switch ($field) {
+    case 'scheduler.publish_on':
+    case 'scheduler.unpublish_on':
+      return $values;
+  }
+}
+
+/**
  * Implementation of hook_form_alter().
  */
 function scheduler_form_alter(&$form, $form_state, $form_id) {
