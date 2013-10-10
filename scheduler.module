@@ -674,21 +674,24 @@ function scheduler_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       case 'update':
         if (isset($node->nid) && $node->nid) {
           $exists = db_result(db_query('SELECT nid FROM {scheduler} WHERE nid = %d', $node->nid));
+          $publish_on = isset($node->publish_on) ? $node->publish_on : NULL;
+          $unpublish_on = isset($node->unpublish_on) ? $node->unpublish_on : NULL;
 
           // if this node has already been scheduled, update its record
           if ($exists) {
             // only update database if we need to (un)publish this node at some date
             // otherwise the user probably cleared out the (un)publish dates so we should remove the record
-            if (($node->status == 0 && isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
-              db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $node->publish_on, $node->unpublish_on, $node->nid);
+            if (($node->status == 0 && $publish_on) || $unpublish_on) {
+              db_query('UPDATE {scheduler} SET publish_on = %d, unpublish_on = %d WHERE nid = %d', $publish_on, $unpublish_on, $node->nid);
             }
             else {
               db_query('DELETE FROM {scheduler} WHERE nid = %d', $node->nid);
             }
           }
-          // node doesn't exist, create a record only if the (un)publish fields are blank
-          elseif ((isset($node->publish_on) && $node->publish_on != NULL) || (isset($node->unpublish_on) && $node->unpublish_on != NULL)) {
-            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $node->publish_on, $node->unpublish_on);
+          // Node doesn't exist, create a record only if the (un)publish fields
+          // are not blank.
+          elseif ($publish_on || $unpublish_on) {
+            db_query('INSERT INTO {scheduler} (nid, publish_on, unpublish_on) VALUES (%d, %d, %d)', $node->nid, $publish_on, $unpublish_on);
           }
         }
         break;
