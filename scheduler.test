@@ -5,6 +5,14 @@
  * Scheduler module test case file.
  */
 class SchedulerTestCase extends DrupalWebTestCase {
+
+  /**
+   * The profile to install as a basis for testing.
+   *
+   * @var string
+   */
+  protected $profile = 'testing';
+
   public static function getInfo() {
     return array(
       'name' => 'Scheduler functionality',
@@ -15,7 +23,13 @@ class SchedulerTestCase extends DrupalWebTestCase {
 
   function setUp() {
     parent::setUp('scheduler');
+
+    // Create a 'Basic Page' content type.
+    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
+
+    // Create an administrator user.
     $this->web_user = $this->drupalCreateUser(array('edit own page content', 'create page content', 'administer nodes', 'schedule (un)publishing of nodes'));
+
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
     variable_set('scheduler_unpublish_enable_page', 1);
