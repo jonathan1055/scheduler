@@ -7,3 +7,4 @@ files[] = scheduler.module
 files[] = scheduler.views.inc
 files[] = scheduler.test
 files[] = scheduler_handler_field_scheduler_countdown.inc
+test_dependencies[] = date
