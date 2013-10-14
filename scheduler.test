@@ -13,6 +13,13 @@ class SchedulerTestCase extends DrupalWebTestCase {
    */
   protected $profile = 'testing';
 
+  /**
+   * A user with administration rights.
+   *
+   * @var object
+   */
+  protected $admin_user;
+
   public static function getInfo() {
     return array(
       'name' => 'Scheduler functionality',
@@ -28,7 +35,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->web_user = $this->drupalCreateUser(array('edit own page content', 'create page content', 'administer nodes', 'schedule (un)publishing of nodes'));
+    $this->admin_user = $this->drupalCreateUser(array('edit own page content', 'create page content', 'administer nodes', 'schedule (un)publishing of nodes'));
 
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
@@ -53,7 +60,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $langcode = LANGUAGE_NONE;
     $body = $this->randomName();
     $edit["body[$langcode][0][value]"] = $body;
-    $this->drupalLogin($this->web_user);
+    $this->drupalLogin($this->admin_user);
     $this->drupalPost('node/add/page', $edit, t('Save'));
     $this->drupalLogout();
     $this->drupalGet('node');
