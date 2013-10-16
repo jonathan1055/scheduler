@@ -512,13 +512,19 @@ function scheduler_list() {
 }
 
 /**
- * Converts an english time string ('Y-m-d H:i:s') from the users timezone into an unix timestamp
+ * Converts a time string from the user's timezone into a Unix timestamp.
  *
- * @param string $str the time string ('Y-m-d H:i:s')
+ * This expects the time string to be in format 'Y-m-d H:i:s'.
  *
- * @return the time in unix timestamp representation (utc);
- * NULL, if $str is NULL, FALSE, empty, or contains only white spaces;
- * FALSE, if $str is malformed
+ * @see date()
+ *
+ * @param string $str
+ *   A string containing a time in format 'Y-m-d H:i:s'.
+ *
+ * @return int
+ *   The time in Unix timestamp representation (UTC). NULL if the given time
+ *   string is empty (NULL, FALSE, an empty string or only containing
+ *   whitespace). FALSE if the given time string is malformed.
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "") {
