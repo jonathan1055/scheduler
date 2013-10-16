@@ -42,6 +42,9 @@ class SchedulerTestCase extends DrupalWebTestCase {
     variable_set('scheduler_unpublish_enable_page', 1);
   }
 
+  /**
+   * Tests basic scheduling of content.
+   */
   function testScheduler() {
     // Create node to edit.
     $edit = array(
@@ -56,6 +59,9 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->helpTestScheduler($edit);
   }
 
+  /**
+   * Helper function for testScheduler(). Schedules content and asserts status.
+   */
   function helpTestScheduler($edit) {
     $langcode = LANGUAGE_NONE;
     $body = $this->randomName();

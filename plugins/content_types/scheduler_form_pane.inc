@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Scheduling options for node forms. This contains the publish and unpublish
- * date fields.
+ * Scheduling options for node forms.
+ *
+ * This content type contains the publish and unpublish scheduling date fields.
  */
 
 $plugin = array(

@@ -81,7 +81,7 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   }
 
   /**
-   * Define the form for the user to select the display options.
+   * Defines the form for the user to select the display options.
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -111,7 +111,7 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   }
 
   /**
-   * Render the countdown value in the units required.
+   * Renders the countdown value in the units required.
    */
   function render($values) {
     $countdown_display = $this->options['countdown_display'];
