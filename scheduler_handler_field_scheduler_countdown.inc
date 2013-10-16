@@ -152,4 +152,5 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
     }
     return $rendered_value;
   }
+
 }

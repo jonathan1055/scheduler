@@ -44,7 +44,6 @@ Drupal.behaviors.scheduler_settings = {
       }
       return vals.join('<br/>');
     });
-
   }
 };
 

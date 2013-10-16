@@ -88,4 +88,3 @@ function scheduler_views_handlers() {
     ),
   );
 }
-
