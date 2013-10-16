@@ -249,6 +249,27 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#title' => t('Create a new revision on publishing'),
     '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
   );
+  $form['scheduler']['publish']['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['scheduler']['publish']['advanced']['scheduler_publish_past_date'] = array(
+    '#type' => 'radios',
+    '#title' => t('Action to be taken for publication dates in the past'),
+    '#default_value' => variable_get('scheduler_publish_past_date_' . $form['#node_type']->type, 'error'),
+    '#options' => array(
+      'error' => t('Display an error message - do not allow dates in the past'),
+      'publish' => t('Publish the content immediately after saving'),
+      'schedule' => t('Schedule the content for publication on the next cron run'),
+    ),
+  );
   $form['scheduler']['unpublish'] = array(
     '#type' => 'fieldset',
     '#title' => t('Unpublishing'),
@@ -653,7 +674,7 @@ function scheduler_node_validate($node, $form) {
     if ($publishtime === FALSE) {
       form_set_error('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
-    elseif ($publishtime && $publishtime < REQUEST_TIME) {
+    elseif ($publishtime && variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'error' && $publishtime < REQUEST_TIME) {
       form_set_error('publish_on', t("The 'publish on' date must be in the future"));
     }
   }
@@ -682,12 +703,22 @@ function scheduler_node_presave($node) {
       $node->$key = 0;
     }
     elseif (!is_numeric($node->$key)) {
-      $node->$key = _scheduler_strtotime($node->$key);
+      // Convert to unix timestamp, but ensure any failure is converted to zero.
+      $node->$key = _scheduler_strtotime($node->$key) + 0;
     }
   }
-  // Right before we save the node, we need to check if a "publish on" value has been set.
-  // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
-  if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > REQUEST_TIME) {
+  // Publish the node immediately if the publication date is in the past.
+  if (variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish' && !empty($node->publish_on) && $node->publish_on <= REQUEST_TIME) {
+    // If required, set the created date to match published date.
+    if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
+      $node->created = $node->publish_on;
+    }
+    $node->publish_on = 0;
+    $node->status = 1;
+  }
+  // Otherwise, if a publishing date has been set, make sure the node is
+  // unpublished since it will be published by cron later.
+  elseif ($node->publish_on > 0) {
     $node->status = 0;
     $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
     drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
@@ -742,6 +773,7 @@ function scheduler_node_type_delete($info) {
   $variables[] = "scheduler_publish_touch_" . $info->type;
   $variables[] = "scheduler_publish_required_" . $info->type;
   $variables[] = "scheduler_publish_revision_" . $info->type;
+  $variables[] = "scheduler_publish_past_date_" . $info->type;
   $variables[] = "scheduler_unpublish_enable_" . $info->type;
   $variables[] = "scheduler_unpublish_required_" . $info->type;
   $variables[] = "scheduler_unpublish_revision_" . $info->type;

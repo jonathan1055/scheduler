@@ -61,6 +61,7 @@ function scheduler_uninstall() {
     $variables[] = "scheduler_publish_touch_" . $type_name;
     $variables[] = "scheduler_publish_required_" . $type_name;
     $variables[] = "scheduler_publish_revision_" . $type_name;
+    $variables[] = "scheduler_publish_past_date_" . $type_name;
     $variables[] = "scheduler_unpublish_enable_" . $type_name;
     $variables[] = "scheduler_unpublish_required_" . $type_name;
     $variables[] = "scheduler_unpublish_revision_" . $type_name;

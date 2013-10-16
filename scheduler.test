@@ -84,4 +84,53 @@ class SchedulerTestCase extends DrupalWebTestCase {
       $this->assertNoText($body, t('Node is unpublished'));
     }
   }
+
+  /**
+   * Test the different options for past publication dates.
+   */
+  public function testSchedulerPastDates() {
+    // Log in.
+    $this->drupalLogin($this->admin_user);
+
+    // Create an unpublished page node.
+    $node = $this->drupalCreateNode(array('type' => 'page', 'status' => FALSE));
+
+    // Test the default behavior: an error message should be shown when the user
+    // enters a publication date that is in the past.
+    $edit = array(
+      'title' => $this->randomName(),
+      'publish_on' => format_date(strtotime('-1 day'), 'custom', 'Y-m-d H:i:s'),
+    );
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
+
+    // Test the 'publish' behavior: the node should be published immediately.
+    variable_set('scheduler_publish_past_date_page', 'publish');
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
+    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => check_plain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
+
+    // Reload the changed node and check that it is published.
+    $node = node_load($node->nid, NULL, TRUE);
+    $this->assertTrue($node->status, 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
+
+    // Test the 'schedule' behavior: the node should be unpublished and become
+    // published on the next cron run.
+    variable_set('scheduler_publish_past_date_page', 'schedule');
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => check_plain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => $edit['publish_on'])), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
+
+    // Reload the node and check that it is unpublished but scheduled correctly.
+    $node = node_load($node->nid, NULL, TRUE);
+    $this->assertFalse($node->status, 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertEqual(format_date($node->publish_on, 'custom', 'Y-m-d H:i:s'), $edit['publish_on'], 'The node is scheduled for the required date');
+
+    // Simulate a cron run and check that the node is published.
+    scheduler_cron();
+    $node = node_load($node->nid, NULL, TRUE);
+    $this->assertTrue($node->status, 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
+  }
+
 }
