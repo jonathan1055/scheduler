@@ -133,4 +133,119 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->assertTrue($node->status, 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
   }
 
+  /**
+   * Tests the creation of new revisions on scheduling.
+   */
+  public function testRevisioning() {
+    // Create a scheduled node that is not automatically revisioned.
+    $created = strtotime('-2 day');
+    $settings = array(
+      'revision' => 0,
+      'created' => $created,
+    );
+    $node = $this->drupalCreateNode($settings);
+
+    // First test scheduled publication with revisioning disabled.
+    $node = $this->schedule($node);
+    $this->assertRevisionCount($node->nid, 1, 'No new revision was created when a node was published with revisioning disabled.');
+
+    // Test scheduled unpublication.
+    $node = $this->schedule($node, 'unpublish');
+    $this->assertRevisionCount($node->nid, 1, 'No new revision was created when a node was unpublished with revisioning disabled.');
+
+    // Enable revisioning.
+    variable_set('scheduler_publish_revision_page', 1);
+    variable_set('scheduler_unpublish_revision_page', 1);
+
+    // Test scheduled publication with revisioning enabled.
+    $node = $this->schedule($node);
+    $this->assertRevisionCount($node->nid, 2, 'A new revision was created when revisioning is enabled.');
+    $expected_message = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
+      '@now' => format_date(REQUEST_TIME, 'short'),
+      '@date' => format_date($created, 'short'),
+    ));
+    $this->assertRevisionLogMessage($node->nid, $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
+
+    // Test scheduled unpublication with revisioning enabled.
+    $node = $this->schedule($node, 'unpublish');
+    $this->assertRevisionCount($node->nid, 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
+    $expected_message = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
+      '@now' => format_date(REQUEST_TIME, 'short'),
+      '@date' => format_date(REQUEST_TIME, 'short'),
+    ));
+    $this->assertRevisionLogMessage($node->nid, $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
+  }
+
+  /**
+   * Simulates the scheduled (un)publication of a node.
+   *
+   * @param object $node
+   *   The node to schedule.
+   * @param string $action
+   *   The action to perform: either 'publish' or 'unpublish'. Defaults to
+   *   'publish'.
+   *
+   * @return object
+   *   The updated node, after scheduled (un)publication.
+   */
+  function schedule($node, $action = 'publish') {
+    // Simulate scheduling by setting the (un)publication date in the past and
+    // running cron.
+    $node->{$action . '_on'} = strtotime('-1 day');
+    node_save($node);
+    scheduler_cron();
+    return node_load($node->nid, NULL, TRUE);
+  }
+
+  /**
+   * Check if the latest revision log message of a node matches a given string.
+   *
+   * @param int $nid
+   *   The node id of the node to check.
+   * @param string $value
+   *   The value with which the log message will be compared.
+   * @param string $message
+   *   The message to display along with the assertion.
+   * @param string $group
+   *   The type of assertion - examples are "Browser", "PHP".
+   *
+   * @return
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
+    $log_message = db_select('node_revision', 'r')
+      ->fields('r', array('log'))
+      ->condition('nid', $nid)
+      ->orderBy('vid', 'DESC')
+      ->range(0, 1)
+      ->execute()
+      ->fetchColumn();
+    return $this->assertEqual($log_message, $value, $message, $group);
+  }
+
+  /**
+   * Check if the number of revisions for a node matches a given value.
+   *
+   * @param int $nid
+   *   The node id of the node to check.
+   * @param string $value
+   *   The value with which the number of revisions will be compared.
+   * @param string $message
+   *   The message to display along with the assertion.
+   * @param string $group
+   *   The type of assertion - examples are "Browser", "PHP".
+   *
+   * @return
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
+    $count = db_select('node_revision', 'r')
+      ->fields('r', array('vid'))
+      ->condition('nid', $nid)
+      ->countQuery()
+      ->execute()
+      ->fetchColumn();
+    return $this->assertEqual($count, $value, $message, $group);
+  }
+
 }
