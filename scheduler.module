@@ -811,7 +811,6 @@ function scheduler_cron() {
  */
 function _scheduler_publish() {
   $result = FALSE;
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time now is greater than the time to publish a node, publish it.
   $query = db_select('scheduler', 's');
@@ -843,7 +842,11 @@ function _scheduler_publish() {
     $create_publishing_revision = variable_get('scheduler_publish_revision_' . $n->type, 0) == 1;
     if ($create_publishing_revision) {
       $n->revision = TRUE;
-      $n->log = "Node published by scheduler module. Original creation date was " . format_date($old_creation_date, 'custom', $date_format) . ".";
+      // Use a core date format to guarantee a time is included.
+      $n->log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
+        '@now' => format_date(REQUEST_TIME, 'short'),
+        '@date' => format_date($old_creation_date, 'short'),
+      ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
     // to node_save().
@@ -886,7 +889,6 @@ function _scheduler_publish() {
  */
 function _scheduler_unpublish() {
   $result = FALSE;
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time is greater than the time to unpublish a node, unpublish it.
   $query = db_select('scheduler', 's');
@@ -917,7 +919,11 @@ function _scheduler_unpublish() {
       $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $n->type, 0) == 1;
       if ($create_unpublishing_revision) {
         $n->revision = TRUE;
-        $n->log = "Node unpublished by scheduler module. Original change date was " . format_date($old_change_date, 'custom', $date_format) . ".";
+        // Use a core date format to guarantee a time is included.
+        $n->log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
+          '@now' => format_date(REQUEST_TIME, 'short'),
+          '@date' => format_date($old_change_date, 'short'),
+        ));
       }
       // Unset unpublish_on so the node will not get rescheduled by subsequent
       // calls to node_save().
