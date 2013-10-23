@@ -87,11 +87,13 @@ class SchedulerTestCase extends DrupalWebTestCase {
       $key = 'unpublish_on';
       $this->assertText($body, t('Node is published'));
     }
+    // Verify that the scheduler table is not empty.
+    $this->assertTrue(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is not empty');
     // Modify the scheduler row to a time in the past, then run cron.
     db_update('scheduler')->fields(array($key => time() - 1))->execute();
-    $this->assertTrue(db_query('SELECT COUNT(*) FROM {scheduler}')->fetchField(), 'Scheduler table is not empty');
     $this->cronRun();
-    $this->assertFalse(db_query('SELECT COUNT(*) FROM {scheduler}')->fetchField(), 'Scheduler table is empty');
+    // Verify that the scheduler table is empty.
+    $this->assertFalse(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is empty');
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalGet('node');
