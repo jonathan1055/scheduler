@@ -35,17 +35,18 @@ class SchedulerTestCase extends DrupalWebTestCase {
    * {@inheritdoc}
    */
   function setUp() {
-    parent::setUp('scheduler');
+    parent::setUp('date', 'date_popup', 'scheduler');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array('edit own page content', 'create page content', 'administer nodes', 'schedule (un)publishing of nodes'));
+    $this->admin_user = $this->drupalCreateUser(array('access content', 'create page content', 'edit own page content', 'view own unpublished content', 'administer nodes', 'schedule (un)publishing of nodes'));
 
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
     variable_set('scheduler_unpublish_enable_page', 1);
+    variable_set('scheduler_field_type', 'textfield');
   }
 
   /**
@@ -266,6 +267,76 @@ class SchedulerTestCase extends DrupalWebTestCase {
       ->execute()
       ->fetchColumn();
     return $this->assertEqual($count, $value, $message, $group);
+  }
+
+  /**
+   * Test the default time functionality.
+   */
+  public function testDefaultTime() {
+    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+    $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
+
+    // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
+    variable_set('scheduler_default_time', '06:30:00');
+
+    $this->drupalLogin($this->admin_user);
+
+    // First test the regular date entry, without popup.
+    debug('Testing date entry using a textfield');
+    $this->assertDefaultTime();
+
+    // Enable date popup and repeat the test.
+    debug('Testing date entry using a date popup');
+    variable_set('scheduler_field_type', 'date_popup');
+    $this->assertDefaultTime();
+  }
+
+  /**
+   * Asserts that the default time works as expected.
+   */
+  protected function assertDefaultTime() {
+    // Define the form fields and date formats we will test according to whether
+    // date popups have been enabled or not.
+    $using_popup = variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
+    $publish_date_field = $using_popup ? 'publish_on[date]' : 'publish_on';
+    $unpublish_date_field = $using_popup ? 'unpublish_on[date]' : 'unpublish_on';
+    $publish_time_field = $using_popup ? 'publish_on[time]' : 'publish_on';
+    $unpublish_time_field = $using_popup ? 'unpublish_on[time]' : 'unpublish_on';
+    $time_format = $using_popup ? 'H:i:s' : 'Y-m-d H:i:s';
+
+    // We cannot easily test the exact validation messages as they contain the
+    // REQUEST_TIME of the POST request, which can be one or more seconds in the
+    // past. Best we can do is check the fixed part of the message as it is when
+    // passed to t(). This will only work in English.
+    $publish_validation_message = $using_popup ? t('The value input for field %field is invalid:', array('%field' => 'Publish on')) : "The 'publish on' value does not match the expected format of";
+    $unpublish_validation_message = $using_popup ? t('The value input for field %field is invalid:', array('%field' => 'Unpublish on')) : "The 'unpublish on' value does not match the expected format of";
+
+    // First test with the "date only" functionality disabled.
+    variable_set('scheduler_allow_date_only', FALSE);
+
+    // Test if entering a time is required.
+    $edit = array(
+      'title' => $this->randomName(),
+      $publish_date_field => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
+      $unpublish_date_field => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
+    );
+    $this->drupalPost('node/add/page', $edit, t('Save'));
+
+    $this->assertRaw($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
+    $this->assertRaw($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
+
+    // Allow the user to enter only the date and repeat the test.
+    variable_set('scheduler_allow_date_only', TRUE);
+
+    $this->drupalPost('node/add/page', $edit, t('Save'));
+    $this->assertNoRaw("The 'publish on' value does not match the expected format of", 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
+    $this->assertNoRaw("The 'unpublish on' value does not match the expected format of", 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
+    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => date('Y-m-d H:i:s', strtotime('tomorrow', REQUEST_TIME) + 23400))), 'The user is informed that the content will be published on the requested date, on the default time.');
+
+    // Check that the default time has been added to the scheduler form fields.
+    $this->clickLink(t('Edit'));
+    $this->assertFieldByName($publish_time_field, date($time_format, strtotime('tomorrow', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for publication.');
+    $this->assertFieldByName($unpublish_time_field, date($time_format, strtotime('tomorrow +1 day', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for unpublication.');
   }
 
 }

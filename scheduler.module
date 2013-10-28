@@ -5,7 +5,16 @@
  * Scheduler publishes and unpublishes nodes on dates specified by the user.
  */
 
+// The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
+
+// The default date and time formats to use when only a date has been entered.
+// These should match the date and time parts of SCHEDULER_DATE_FORMAT above.
+define('SCHEDULER_DATE_ONLY_FORMAT', 'Y-m-d');
+define('SCHEDULER_TIME_ONLY_FORMAT', 'H:i:s');
+
+// The default time that will be used, until Admin sets a different value.
+define('SCHEDULER_DEFAULT_TIME', '00:00:00');
 
 /**
  * Implements hook_permission().
@@ -151,6 +160,7 @@ function scheduler_admin() {
     '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
     '#size' => 20,
     '#maxlength' => 20,
+    '#required' => TRUE,
     '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported (don\'t use \'G\', \'a\' or \'A\' with Date Popup): djmnyYhHgGisaA)'),
   );
 
@@ -174,12 +184,42 @@ function scheduler_admin() {
     $form['scheduler_date_format']['#description'] .= t('If you are using Date Popup, the following time formats are supported: !formats', array('!formats' => $acceptable));
   }
 
+  // Options for setting date-only with default time.
+  $form['scheduler_date_only_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date only'),
+    '#collapsible' => FALSE,
+  );
+  $form['scheduler_date_only_fieldset']['scheduler_allow_date_only'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow users to enter only a date and provide a default time.'),
+    '#default_value' => variable_get('scheduler_allow_date_only', FALSE),
+    '#description' => t('When only a date is entered the time will default to a specified value, but the user can change this if required.'),
+  );
+  $form['scheduler_date_only_fieldset']['scheduler_default_time'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default time'),
+    '#default_value' => variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME),
+    '#size' => 20,
+    '#maxlength' => 20,
+    '#description' => t('This is the time that will be used if the user does not enter a value. Format: HH:MM:SS.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_allow_date_only"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
   $form['scheduler_extra_info'] = array(
     '#type' => 'textarea',
     '#title' => t('Extra Info'),
     '#default_value' => variable_get('scheduler_extra_info', ''),
     '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
   );
+
+  // Add a submit handler function.
+  $form['#submit'][] = 'scheduler_admin_submit';
+
   return system_settings_form($form);
 }
 
@@ -196,10 +236,55 @@ function scheduler_admin_validate($form, &$form_state) {
     $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
     $acceptable = date_popup_time_formats();
 
-    if (!in_array($time_format, $acceptable)) {
+    if ($time_format && !in_array($time_format, $acceptable)) {
       form_set_error('scheduler_date_format', t('The Date Popup module only accepts the following formats: !formats', array('!formats' => implode($acceptable, ', '))));
     }
+    if ($time_format == '' && !$form_state['values']['scheduler_allow_date_only']) {
+      // When using date popup check that either the main format has a time
+      // part or the date-only option is turned on.
+      form_set_error('scheduler_date_format', t('When using Date Popup you must either include a time within the date format or enable the date-only option'));
+    }
   }
+
+  // If date-only is enabled then check if a valid default time was entered.
+  // Allow leading zeros to be omitted, eg. 6:30:00 is considered valid.
+  if ($form_state['values']['scheduler_allow_date_only']) {
+    $default_time = strptime($form_state['values']['scheduler_default_time'], '%H:%M:%S');
+    if (!$default_time) {
+      form_set_error('scheduler_default_time', t('The default time should be in the format HH:MM:SS'));
+    }
+    else {
+      // Insert any possibly omitted leading zeroes.
+      $unix_time = mktime($default_time['tm_hour'], $default_time['tm_min'], $default_time['tm_sec']);
+      $form_state['values']['scheduler_default_time'] = format_date($unix_time, 'custom', 'H:i:s');
+    }
+  }
+}
+
+/**
+ * Submit handler for scheduler admin settings.
+ */
+function scheduler_admin_submit($form, &$form_state) {
+  // Extract the date part and time part of the full format, for use with the
+  // default time functionality. Assume the date and time time parts begin and
+  // end with a letter, but any punctuation between these will be retained.
+  $format = $form_state['values']['scheduler_date_format'];
+  $time_letters = 'gGhHisaA';
+  $time_start = strcspn($format, $time_letters);
+  $time_length = strlen($format) - strcspn(strrev($format), $time_letters) - $time_start;
+  $time_only_format = substr($format, $time_start, $time_length);
+  variable_set('scheduler_time_only_format', $time_only_format);
+
+  $date_letters = 'djFmMnyY';
+  $date_start = strcspn($format, $date_letters);
+  $date_length = strlen($format) - strcspn(strrev($format), $date_letters) - $date_start;
+  $date_only_format = substr($format, $date_start, $date_length);
+  variable_set('scheduler_date_only_format', $date_only_format);
+
+  drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part', array(
+    '%date_part' => $date_only_format,
+    '%time_part' => $time_only_format,
+  )));
 }
 
 /**
@@ -316,6 +401,9 @@ function scheduler_form_alter(&$form, $form_state) {
       $node = $form['#node'];
 
       $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+      $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
+      $time_only_format = variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT);
+      $date_only_allowed = variable_get('scheduler_allow_date_only', FALSE);
       $use_date_popup = _scheduler_use_date_popup();
 
       $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
@@ -383,11 +471,31 @@ function scheduler_form_alter(&$form, $form_state) {
         );
       }
 
-      $description_format = t('Format: %time.', array('%time' => format_date(time(), 'custom', $date_format)));
+      // Define the descriptions depending on whether the time can be skipped.
+      $descriptions = array();
+      if ($date_only_allowed && ($date_only_format != $date_format)) {
+        $descriptions['format'] = t('Format: %date_only_format or %standard_format.', array(
+          '%date_only_format' => format_date(time(), 'custom', $date_only_format),
+          '%standard_format' => format_date(time(), 'custom', $date_format),
+        ));
+      }
+      else {
+        $descriptions['format'] = t('Format: %standard_format.', array(
+          '%standard_format' => format_date(time(), 'custom', $date_format),
+        ));
+      }
+      // Show the default time so users know what they will get if they do not
+      // enter a time.
+      if ($date_only_allowed) {
+        $default_time = strtotime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+        $descriptions['default'] = t('The default time is @default_time.', array(
+          '@default_time' => format_date($default_time, 'custom', $time_only_format ? $time_only_format : SCHEDULER_TIME_ONLY_FORMAT),
+        ));
+      }
+
       if ($publishing_enabled) {
-        $description_blank = '';
         if (!$publishing_required) {
-          $description_blank .= ' ' . t('Leave blank to disable scheduled publishing.');
+          $descriptions['blank'] = t('Leave the date blank for no scheduled publishing.');
         }
 
         $form['scheduler_settings']['publish_on'] = array(
@@ -396,14 +504,25 @@ function scheduler_form_alter(&$form, $form_state) {
           '#maxlength' => 25,
           '#required' => $publishing_required,
           '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
-          '#description' => filter_xss($description_format . $description_blank),
+          '#description' => filter_xss(implode(' ', $descriptions)),
         );
+        if ($use_date_popup) {
+          // Make this a popup calendar widget.
+          $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
+          $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
+          $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
+          unset($descriptions['format']);
+          $form['scheduler_settings']['publish_on']['#description'] = filter_xss(implode(' ', $descriptions));
+          unset($form['scheduler_settings']['publish_on']['#maxlength']);
+        }
       }
 
       if ($unpublishing_enabled) {
-        $description_blank = '';
         if (!$unpublishing_required) {
-          $description_blank .= ' ' . t('Leave blank to disable scheduled unpublishing.');
+          $descriptions['blank'] = t('Leave the date blank for no scheduled unpublishing.');
+        }
+        else {
+          unset($descriptions['blank']);
         }
         $form['scheduler_settings']['unpublish_on'] = array(
           '#type' => 'textfield',
@@ -411,28 +530,16 @@ function scheduler_form_alter(&$form, $form_state) {
           '#maxlength' => 25,
           '#required' => $unpublishing_required,
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
-          '#description' => filter_xss($description_format . $description_blank),
+          '#description' => filter_xss(implode(' ', $descriptions)),
         );
-      }
 
-      if ($use_date_popup) {
-        // Make this a popup calendar widget if Date Popup module is enabled.
-        if ($publishing_enabled) {
-          $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
-          $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
-          $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
-          if (!$publishing_required) {
-            $form['scheduler_settings']['publish_on']['#description'] = t('Leave blank to disable scheduled publishing.');
-          }
-          unset($form['scheduler_settings']['publish_on']['#maxlength']);
-        }
-        if ($unpublishing_enabled) {
+        if ($use_date_popup) {
+          // Make this a popup calendar widget.
           $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
           $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
-          if (!$unpublishing_required) {
-            $form['scheduler_settings']['unpublish_on']['#description'] = t('Leave blank to disable scheduled unpublishing.');
-          }
+          unset($descriptions['format']);
+          $form['scheduler_settings']['unpublish_on']['#description'] = filter_xss(implode(' ', $descriptions));
           unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
         }
       }
@@ -544,6 +651,29 @@ function _scheduler_strtotime($str) {
     }
     $str = trim(preg_replace('/\s+/', ' ', $str));
     $time = _scheduler_strptime($str, $date_format);
+
+    // If the time failed using the full $date_format or no time entry is
+    // allowed, but date-only with a default time is enabled, check if the input
+    // matches the "date only" date format.
+    $time_only_format = variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT);
+    if ((!$time || $time_only_format == '') && variable_get('scheduler_allow_date_only', FALSE)) {
+      $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
+      if ($time = _scheduler_strptime($str, $date_only_format)) {
+        // A time has been calculated, but also check that there was only a
+        // date entered and no extra mal-formed time elements.
+        if ($str == date($date_only_format, $time)) {
+          // Parse the default time string into elements, then add the total
+          // offset in seconds to the timestamp.
+          $default_time = strptime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME), '%H:%M:%S');
+          $time_offset = ($default_time['tm_hour'] * 3600) + ($default_time['tm_min'] * 60) + $default_time['tm_sec'];
+          $time += $time_offset;
+        }
+        else {
+          // The date was not the only text entered, so reject it.
+          $time = FALSE;
+        }
+      }
+    }
   }
   else {
     // $str is empty.
@@ -1222,5 +1352,18 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
   }
   if (isset($source_entity->scheduler['unpublish_on'])) {
     $entity->unpublish_on = $source_entity->scheduler['unpublish_on'];
+  }
+}
+
+/**
+ * Implements hook_date_popup_pre_validate_alter().
+ */
+function scheduler_date_popup_pre_validate_alter($element, $form_state, &$input) {
+  // Provide a default time if this is enabled and the time field is empty.
+  if (variable_get('scheduler_allow_date_only', FALSE) && $element['#array_parents'][0] == 'scheduler_settings' && $input['date'] != '' && $input['time'] == '') {
+    // Get the default time as a timestamp number.
+    $default_time = strtotime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+    // Set the time in the required format just as if the user had typed it.
+    $input['time'] = format_date($default_time, 'custom', variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT));
   }
 }

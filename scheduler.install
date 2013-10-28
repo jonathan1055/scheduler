@@ -47,11 +47,16 @@ function scheduler_schema() {
  * Implements hook_uninstall().
  */
 function scheduler_uninstall() {
+  // Keep variables in alphabetic order for easier maintenance and patching.
   $variables = array(
+    'scheduler_allow_date_only',
     'scheduler_date_format',
-    'scheduler_field_type',
+    'scheduler_date_only_format',
+    'scheduler_default_time',
     'scheduler_extra_info',
+    'scheduler_field_type',
     'scheduler_lightweight_log',
+    'scheduler_time_only_format',
   );
 
   $types = node_type_get_types();
