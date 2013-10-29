@@ -776,6 +776,11 @@ function scheduler_node_load($nodes, $types) {
     $row = array();
     $row['published'] = $record->publish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->publish_on) : NULL;
     $row['unpublished'] = $record->unpublish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->unpublish_on) : NULL;
+    // Add duplicates of the scheduling properties on $node->scheduler for
+    // backwards compatibility with the D5 and D6 versions of Scheduler. Please
+    // do not rely on these properties in new code, access them directly on
+    // $node->publish_on and $node->unpublish_on instead.
+    // @todo Remove this for the D8 version.
     $row['publish_on'] = $record->publish_on;
     $row['unpublish_on'] = $record->unpublish_on;
     $nodes[$nid]->scheduler = $row;
@@ -789,6 +794,7 @@ function scheduler_node_view($node, $view_mode = 'full', $langcode) {
   // If the node is going to be unpublished then add this information to the
   // header for googlebot. Only do this when viewing the full node (not teaser)
   // on its own page and not in edit mode.
+  // @todo Replace $node->scheduler with $node->unpublish_on.
   if ($view_mode == 'full' && !empty($node->scheduler['unpublish_on']) && node_is_page($node) && arg(2) != 'edit') {
     $unavailable_after = date("d-M-Y H:i:s T", $node->scheduler['unpublish_on']);
     $element = array(
@@ -1347,6 +1353,7 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
   // node.
   $source_entity = $context['source_entity'];
 
+  // @todo Replace $entity->scheduler with $entity->publish_on.
   if (isset($source_entity->scheduler['publish_on'])) {
     $entity->publish_on = $source_entity->scheduler['publish_on'];
   }
