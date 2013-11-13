@@ -384,6 +384,39 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#title' => t('Create a new revision on unpublishing'),
     '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
   );
+  // The 'node_edit_layout' fieldset contains options to alter the layout of
+  // node edit pages.
+  $form['scheduler']['node_edit_layout'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Node edit page layout'),
+    '#collapsible' => FALSE,
+    '#weight' => 3,
+    '#group' => 'scheduler',
+  );
+  $form['scheduler']['node_edit_layout']['scheduler_use_vertical_tabs'] = array(
+    '#type' => 'radios',
+    '#title' => t('Display scheduling options as'),
+    '#default_value' => variable_get('scheduler_use_vertical_tabs_' . $form['#node_type']->type, 1),
+    '#options' => array(
+      '1' => t('Vertical tab'),
+      '0' => t('Separate fieldset'),
+    ),
+    '#description' => t('Use this option to specify how the scheduling options will be displayed when editing a node.'),
+  );
+  $form['scheduler']['node_edit_layout']['scheduler_expand_fieldset'] = array(
+    '#type' => 'radios',
+    '#title' => t('Expand fieldset'),
+    '#default_value' => variable_get('scheduler_expand_fieldset_' . $form['#node_type']->type, 0),
+    '#options' => array(
+      '0' => t('Expand only when a scheduled date exists or when a date is required'),
+      '1' => t('Always open the fieldset, even if no dates exist'),
+    ),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_use_vertical_tabs"]' => array('value' => '0'),
+      ),
+    ),
+  );
 }
 
 /**
@@ -441,12 +474,14 @@ function scheduler_form_alter(&$form, $form_state) {
 
       $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 0;
       $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 1;
+      $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $form['type']['#value'], 1);
 
       $fieldset_extended = (
         (isset($defaults->publish_on) && $defaults->publish_on != 0)
         || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
         || $publishing_required
         || $unpublishing_required
+        || variable_get('scheduler_expand_fieldset_' . $form['type']['#value'], 0)
       );
 
       $form['scheduler_settings'] = array(
@@ -455,13 +490,12 @@ function scheduler_form_alter(&$form, $form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => !$fieldset_extended,
         '#weight' => 35,
-        '#group' => 'additional_settings',
-        '#attached' => array(
-          'js' => array(
-            'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js",
-          ),
-        ),
+        '#group' => $use_vertical_tabs ? 'additional_settings' : FALSE,
       );
+      // Attach the javascript for the vertical tabs.
+      if ($use_vertical_tabs) {
+        $form['scheduler_settings']['#attached']['js'][] = drupal_get_path('module', 'scheduler') . '/scheduler_vertical_tabs.js';
+      }
 
       $extra_info = variable_get('scheduler_extra_info', '');
       if ($extra_info && $extra_info != '') {
@@ -1241,18 +1275,23 @@ function scheduler_views_api() {
 }
 
 /**
- * Implements hook_content_extra_fields().
+ * Implements hook_field_extra_fields().
  */
-function scheduler_content_extra_fields($type_name) {
+function scheduler_field_extra_fields() {
   $fields = array();
-  $publishing_enabled = variable_get('scheduler_publish_enable_' . $type_name, 0) == 1;
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $type_name, 0) == 1;
-  if ($publishing_enabled || $unpublishing_enabled) {
-    $fields['scheduler_settings'] = array(
-      'label' => t('Scheduler'),
-      'description' => t('Scheduler module form.'),
-      'weight' => 10,
-    );
+
+  foreach (node_type_get_types() as $type) {
+    $publishing_enabled = variable_get('scheduler_publish_enable_' . $type->type, 0);
+    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $type->type, 0);
+    $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $type->type, 1);
+
+    if (($publishing_enabled || $unpublishing_enabled) && !$use_vertical_tabs) {
+      $fields['node'][$type->type]['form']['scheduler_settings'] = array(
+        'label' => t('Scheduler'),
+        'description' => t('Fieldset containing scheduling settings'),
+        'weight' => 0,
+      );
+    }
   }
   return $fields;
 }

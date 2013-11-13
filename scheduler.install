@@ -62,6 +62,7 @@ function scheduler_uninstall() {
   $types = node_type_get_types();
   foreach ($types as $type) {
     $type_name = $type->type;
+    $variables[] = "scheduler_expand_fieldset_" . $type_name;
     $variables[] = "scheduler_publish_enable_" . $type_name;
     $variables[] = "scheduler_publish_touch_" . $type_name;
     $variables[] = "scheduler_publish_required_" . $type_name;
@@ -70,6 +71,7 @@ function scheduler_uninstall() {
     $variables[] = "scheduler_unpublish_enable_" . $type_name;
     $variables[] = "scheduler_unpublish_required_" . $type_name;
     $variables[] = "scheduler_unpublish_revision_" . $type_name;
+    $variables[] = "scheduler_use_vertical_tabs_" . $type_name;
   }
 
   foreach ($variables as $variable) {
