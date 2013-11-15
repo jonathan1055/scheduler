@@ -1174,6 +1174,10 @@ function scheduler_theme() {
  * The Scheduler part of the processing performed here is the same as in the
  * normal Drupal cron run. The difference is that only scheduler_cron() is
  * executed, no other modules hook_cron() functions are called.
+ *
+ * This function is called from the external crontab job via url /scheduler/cron
+ * or it can be run interactively from the Scheduler configuration page at
+ * /admin/config/content/scheduler/cron.
  */
 function _scheduler_run_cron() {
   $log = variable_get('scheduler_lightweight_log', 1);
@@ -1191,13 +1195,14 @@ function _scheduler_run_cron() {
     watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l(t('settings'), 'admin/config/content/scheduler/cron'));
   }
 
-  // This message is only seen when the lightweight cron is tested
-  // interactively.
-  drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => url('admin/reports/dblog'))));
-
-  // Must return something so that an output page is created if testing the
-  // lightweight cron interactively.
-  return ' ';
+  $menu_item = menu_get_item();
+  if ($menu_item['path'] == 'admin/config/content/scheduler/cron') {
+    // This cron run has been initiated manually from the configuration form.
+    // Give a message and return something so that an output page is created.
+    // No output should be returned if running from a crontab job.
+    drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => url('admin/reports/dblog'))));
+    return ' ';
+  }
   exit();
 }
 
