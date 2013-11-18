@@ -472,10 +472,18 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
       }
 
-      $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 0;
-      $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 1;
-      $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $form['type']['#value'], 1);
+      // A publish_on date is required if the content type option is set and the
+      // node is being created or it currently has a scheduled publishing date.
+      $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1
+        && (empty($node->nid) || ($node->status == 0 && !empty($node->publish_on)));
 
+      // An unpublish_on date is required if the content type option is set and
+      // the node is being created or the current status is published or the
+      // node is scheduled to be published.
+      $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1
+        && (empty($node->nid) || $node->status == 1 || !empty($node->publish_on));
+
+      $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $form['type']['#value'], 1);
       $fieldset_extended = (
         (isset($defaults->publish_on) && $defaults->publish_on != 0)
         || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
