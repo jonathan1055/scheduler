@@ -154,6 +154,7 @@ function scheduler_help($section) {
  * Returns the main admin form for configuring Scheduler.
  */
 function scheduler_admin() {
+  $now = t('Example: %date', array('%date' => format_date(REQUEST_TIME, 'custom', variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT))));
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
@@ -161,7 +162,8 @@ function scheduler_admin() {
     '#size' => 20,
     '#maxlength' => 20,
     '#required' => TRUE,
-    '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported (don\'t use \'G\', \'a\' or \'A\' with Date Popup): djmnyYhHgGisaA)'),
+    '#field_suffix' => ' <small>' . $now . '</small>',
+    '#description' => t('The format for entering scheduled dates and times. For the date use the letters djmnyY and for the time use hHgGisaA. See !url for more details.', array('!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php'))),
   );
 
   $form['scheduler_field_type'] = array(
@@ -170,18 +172,15 @@ function scheduler_admin() {
     '#default_value' => variable_get('scheduler_field_type', 'date_popup'),
     '#options' => array(
       'textfield' => t('Standard text field'),
-      'date_popup' => t('Date Popup field'),
+      'date_popup' => t('Date Popup calendar'),
     ),
-    '#description' => t("If the Date module's Date Popup module is enabled you may use the popup calendar for your field type."),
+    '#description' => t('Date Popup is enabled. See the !date_popup_config for details.', array('!date_popup_config' => l(t('configuration page'), 'admin/config/date/date_popup'))),
   );
 
   if (!module_exists('date_popup')) {
     $form['scheduler_field_type']['#default_value'] = 'textfield';
     $form['scheduler_field_type']['#disabled'] = TRUE;
-  }
-  else {
-    $acceptable = implode(date_popup_time_formats(), ', ');
-    $form['scheduler_date_format']['#description'] .= t('If you are using Date Popup, the following time formats are supported: !formats', array('!formats' => $acceptable));
+    $form['scheduler_field_type']['#description'] = t('To use the calendar you need to enable Date, Date API and Date Popup. Download the module from the !url.', array('!url' => l(t('Date project page'), 'http://drupal.org/project/date')));
   }
 
   // Options for setting date-only with default time.
