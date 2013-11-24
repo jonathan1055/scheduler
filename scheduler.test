@@ -296,9 +296,6 @@ class SchedulerTestCase extends DrupalWebTestCase {
    * Test the default time functionality.
    */
   public function testDefaultTime() {
-    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-    $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
-
     // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
     variable_set('scheduler_default_time', '06:30:00');
 
