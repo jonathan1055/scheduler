@@ -1066,16 +1066,6 @@ function _scheduler_publish() {
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
 
-    // If this node is not to be unpublished, then we can delete the record.
-    if (isset($n->unpublish_on) && $n->unpublish_on == 0) {
-      db_delete('scheduler')->condition('nid', $n->nid)->execute();
-    }
-    // We need to unpublish this node at some time so clear the publish on since
-    // it has been published.
-    else {
-      db_update('scheduler')->fields(array('publish_on' => 0))->condition('nid', $n->nid)->execute();
-    }
-
     // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'publish');
 
@@ -1143,8 +1133,6 @@ function _scheduler_unpublish() {
       $context['node'] = $n;
       actions_do($actions, $n, $context, NULL, NULL);
     }
-
-    db_delete('scheduler')->condition('nid', $n->nid)->execute();
 
     // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'unpublish');
