@@ -41,7 +41,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array('access content', 'create page content', 'edit own page content', 'view own unpublished content', 'administer nodes', 'schedule (un)publishing of nodes'));
+    $this->admin_user = $this->drupalCreateUser(array('access content', 'administer scheduler', 'create page content', 'edit own page content', 'view own unpublished content', 'administer nodes', 'schedule (un)publishing of nodes'));
 
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
@@ -549,4 +549,50 @@ class SchedulerTestCase extends DrupalWebTestCase {
       }
     }
   }
+
+  /**
+   * Tests configuration of different date formats with the Date Popup field.
+   */
+  public function testDatePopupFormats() {
+    $this->drupalLogin($this->admin_user);
+
+    // Define some date formats to test.
+    $test_cases = array(
+      // By default we are not using the 'date only' option, so passing only a
+      // date should fail.
+      'Y-m-d' => FALSE,
+      'd-m-Y' => FALSE,
+      'm-d-Y' => FALSE,
+      'n-j-y' => FALSE,
+
+      // Test a number of supported date formats.
+      'Y-m-d H:i' => TRUE,
+      'd-m-Y h:ia' => TRUE,
+      'm-d-Y h:iA' => TRUE,
+      'n-j-y H:i:s' => TRUE,
+      'y-m-d h:i:sA' => TRUE,
+      'd-m-y h:i:sa' => TRUE,
+
+      // Test a number of date formats with invalid time specifications.
+      'y-m-d G:i' => FALSE,
+      'y-j-n G:i:sa' => FALSE,
+      'Y-m-d g:i:sa' => FALSE,
+      'y-m-d g:i:s' => FALSE,
+      'n-j-y h:i' => FALSE,
+      'd-m-y h:i:s' => FALSE,
+      'd-m-Y H:i:sA' => FALSE,
+      'Y-m-d H:ia' => FALSE,
+    );
+    foreach ($test_cases as $date_format => $expected_result) {
+      $edit = array(
+        'scheduler_date_format' => $date_format,
+        'scheduler_field_type' => 'date_popup',
+      );
+      $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
+      $message = format_string('When using date popups the date format %format is @expected', array('%format' => $date_format, '@expected' => $expected_result ? 'allowed' : 'not allowed.'));
+      $assert = $expected_result ? 'assertNoRaw' : 'assertRaw';
+      $this->$assert('Error message', $message);
+    }
+  }
+
 }

@@ -233,10 +233,14 @@ function scheduler_admin_validate($form, &$form_state) {
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
     $format = $form_state['values']['scheduler_date_format'];
     $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
-    $acceptable = date_popup_time_formats();
+    // The Date Popup function date_popup_time_formats() only returns the values
+    // 'H:i:s' and 'h:i:sA' but Scheduler can accept more variations than just
+    // these. Firstly, we add the lowercase 'a' alternative. Secondly timepicker
+    // always requires hours and minutes, but seconds are optional.
+    $acceptable = array('H:i:s', 'h:i:sA', 'h:i:sa', 'H:i', 'h:iA', 'h:ia');
 
     if ($time_format && !in_array($time_format, $acceptable)) {
-      form_set_error('scheduler_date_format', t('The Date Popup module only accepts the following formats: !formats', array('!formats' => implode($acceptable, ', '))));
+      form_set_error('scheduler_date_format', t('When using the Date Popup module, the allowed time formats are: !formats', array('!formats' => implode(', ', $acceptable))));
     }
     if ($time_format == '' && !$form_state['values']['scheduler_allow_date_only']) {
       // When using date popup check that either the main format has a time
@@ -686,9 +690,17 @@ function scheduler_list() {
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "") {
     $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+    $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
 
     if (_scheduler_use_date_popup()) {
-      $date_format = SCHEDULER_DATE_FORMAT;
+      // Date Popup currently returns the value into the $node using its default
+      // format DATE_FORMAT_DATETIME but reduced to the same granularity as the
+      // requested format. Until date issue http://drupal.org/node/1855810 is
+      // resolved we can use the date_popup functions date_format_order() and
+      // date_limit_format() to derive the format of the returned string value.
+      $granularity = date_format_order($date_format);
+      $date_format = date_limit_format(DATE_FORMAT_DATETIME, $granularity);
+      $date_only_format = date_limit_format(DATE_FORMAT_DATETIME, array('day', 'month', 'year'));
     }
     $str = trim(preg_replace('/\s+/', ' ', $str));
     $time = _scheduler_strptime($str, $date_format);
@@ -698,7 +710,6 @@ function _scheduler_strtotime($str) {
     // matches the "date only" date format.
     $time_only_format = variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT);
     if ((!$time || $time_only_format == '') && variable_get('scheduler_allow_date_only', FALSE)) {
-      $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
       if ($time = _scheduler_strptime($str, $date_only_format)) {
         // A time has been calculated, but also check that there was only a
         // date entered and no extra mal-formed time elements.
