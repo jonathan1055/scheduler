@@ -942,10 +942,10 @@ function scheduler_node_insert($node) {
   // Only insert into database if we need to (un)publish this node at some date.
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
     db_insert('scheduler')->fields(array(
-        'nid' => $node->nid,
-        'publish_on' => $node->publish_on,
-        'unpublish_on' => $node->unpublish_on,
-      ))->execute();
+      'nid' => $node->nid,
+      'publish_on' => $node->publish_on,
+      'unpublish_on' => $node->unpublish_on,
+    ))->execute();
   }
 }
 
@@ -958,9 +958,9 @@ function scheduler_node_update($node) {
   // remove the record.
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
     db_merge('scheduler')->key(array('nid' => $node->nid))->fields(array(
-        'publish_on' => $node->publish_on,
-        'unpublish_on' => $node->unpublish_on,
-      ))->execute();
+      'publish_on' => $node->publish_on,
+      'unpublish_on' => $node->unpublish_on,
+    ))->execute();
   }
   else {
     scheduler_node_delete($node);
