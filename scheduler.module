@@ -998,14 +998,8 @@ function scheduler_node_type_delete($info) {
  * Implements hook_cron().
  */
 function scheduler_cron() {
-  $clear_cache = FALSE;
-  $clear_cache |= _scheduler_publish();
-  $clear_cache |= _scheduler_unpublish();
-
-  if ($clear_cache) {
-    // Clear the cache so an anonymous poster can see any changes to nodes.
-    cache_clear_all();
-  }
+  _scheduler_publish();
+  _scheduler_unpublish();
 }
 
 /**
