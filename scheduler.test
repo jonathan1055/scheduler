@@ -41,7 +41,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array('access content', 'administer scheduler', 'create page content', 'edit own page content', 'view own unpublished content', 'administer nodes', 'schedule (un)publishing of nodes'));
+    $this->admin_user = $this->drupalCreateUser(array('access content', 'administer scheduler', 'create page content', 'edit own page content', 'delete own page content', 'view own unpublished content', 'administer nodes', 'schedule (un)publishing of nodes'));
 
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
@@ -593,6 +593,33 @@ class SchedulerTestCase extends DrupalWebTestCase {
       $assert = $expected_result ? 'assertNoRaw' : 'assertRaw';
       $this->$assert('Error message', $message);
     }
+  }
+
+  /**
+   * Tests the deletion of a scheduled node.
+   *
+   * This tests if it is possible to delete a node that does not have a
+   * publication date set, when scheduled publishing is required.
+   * @see https://drupal.org/node/1614880
+   */
+  public function testScheduledNodeDelete() {
+    // Log in.
+    $this->drupalLogin($this->admin_user);
+
+    // Create a published and an unpublished node, both without scheduling.
+    $unpublished_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 0));
+    $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1));
+
+    // Make scheduled publishing and unpublishing required.
+    variable_set('scheduler_publish_required_page', TRUE);
+    variable_set('scheduler_unpublish_required_page', TRUE);
+
+    // Check that deleting the nodes does not throw form validation errors.
+    $this->drupalPost('node/' . $published_node->nid . '/edit', array(), t('Delete'));
+    $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete a published node with no scheduling information.');
+
+    $this->drupalPost('node/' . $unpublished_node->nid . '/edit', array(), t('Delete'));
+    $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
   }
 
 }

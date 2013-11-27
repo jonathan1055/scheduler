@@ -550,6 +550,7 @@ function scheduler_form_alter(&$form, $form_state) {
           '#required' => $publishing_required,
           '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
           '#description' => filter_xss(implode(' ', $descriptions)),
+          '#value_callback' => 'scheduler_date_value_callback',
         );
         if ($use_date_popup) {
           // Make this a popup calendar widget.
@@ -576,6 +577,7 @@ function scheduler_form_alter(&$form, $form_state) {
           '#required' => $unpublishing_required,
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
           '#description' => filter_xss(implode(' ', $descriptions)),
+          '#value_callback' => 'scheduler_date_value_callback',
         );
 
         if ($use_date_popup) {
@@ -589,6 +591,25 @@ function scheduler_form_alter(&$form, $form_state) {
         }
       }
     }
+  }
+}
+
+/**
+ * Callback function for the Scheduler date entry elements.
+ */
+function scheduler_date_value_callback(&$element, $input = FALSE, &$form_state) {
+  // When processing a delete operation the user should not be forced to enter a
+  // date. Hence set the scheduler date element's #required attribute to FALSE.
+  // Test the input operation against $form_state['values']['delete'] as this
+  // will match the value of the Delete button even if translated.
+  if (isset($form_state['input']['op']) && isset($form_state['values']['delete']) && $form_state['input']['op'] == $form_state['values']['delete']) {
+    $element['#required'] = FALSE;
+  }
+  // If using date popup then process the callback that would have been done had
+  // Scheduler not replaced this with its own one. If using plain text entry
+  // then no return value is needed.
+  if (_scheduler_use_date_popup()) {
+    return date_popup_element_value_callback($element, $input, $form_state);
   }
 }
 
