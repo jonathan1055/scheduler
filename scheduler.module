@@ -696,6 +696,39 @@ function scheduler_list() {
 }
 
 /**
+ * Checks whether a scheduled action on a node is allowed.
+ *
+ * This provides a way for other modules to prevent scheduled publishing or
+ * unpublishing, by implementing hook_scheduler_allow_publishing() or
+ * hook_scheduler_allow_unpublishing().
+ *
+ * @see hook_scheduler_allow_publishing()
+ * @see hook_scheduler_allow_unpublishing()
+ *
+ * @param stdClass $node
+ *   The node object on which the action is to be performed.
+ * @param string $action
+ *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
+ *
+ * @return bool
+ *   TRUE if the action is allowed, FALSE if not.
+ */
+function _scheduler_allow($node, $action) {
+  // Check if the requested action has been scheduled for the given node.
+  $key = $action . '_on';
+  $result = !empty($node->$key);
+
+  // Check that other modules also allow the action.
+  $hook = 'scheduler_allow_' . $action . 'ing';
+  foreach (module_implements($hook) as $module) {
+    $function = $module . '_' . $hook;
+    $result &= $function($node);
+  }
+
+  return $result;
+}
+
+/**
  * Converts a time string from the user's timezone into a Unix timestamp.
  *
  * This expects the time string to be in the date format configured by the user.
@@ -938,8 +971,13 @@ function scheduler_node_presave($node) {
       $node->$key = _scheduler_strtotime($node->$key) + 0;
     }
   }
+
+  // Check that other modules allow the action on this node.
+  $publication_allowed = _scheduler_allow($node, 'publish');
+
   // Publish the node immediately if the publication date is in the past.
-  if (variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish' && !empty($node->publish_on) && $node->publish_on <= REQUEST_TIME) {
+  $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish';
+  if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
     // If required, set the created date to match published date.
     if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
       $node->created = $node->publish_on;
@@ -951,8 +989,13 @@ function scheduler_node_presave($node) {
   // unpublished since it will be published by cron later.
   elseif ($node->publish_on > 0) {
     $node->status = 0;
-    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-    drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
+    // Only inform the user that the node is scheduled if publication has not
+    // been prevented by other modules. Those modules have to display a message
+    // themselves explaining why publication is denied.
+    if ($publication_allowed) {
+      $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+      drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
+    }
   }
 }
 
@@ -1054,6 +1097,13 @@ function _scheduler_publish() {
 
   foreach ($nids as $nid) {
     $n = node_load($nid);
+
+    // Check that other modules allow the action on this node.
+    if (!_scheduler_allow($n, $action)) {
+      continue;
+    }
+
+    // Update timestamps.
     $n->changed = $n->publish_on;
     $old_creation_date = $n->created;
     if (variable_get('scheduler_publish_touch_' . $n->type, 0) == 1) {
@@ -1125,6 +1175,13 @@ function _scheduler_unpublish() {
     // If this node is to be unpublished, we can update the node and remove the
     // record since it cannot be republished.
     $n = node_load($nid);
+
+    // Check that other modules allow the action on this node.
+    if (!_scheduler_allow($n, $action)) {
+      continue;
+    }
+
+    // Update timestamps.
     $old_change_date = $n->changed;
     $n->changed = $n->unpublish_on;
 
