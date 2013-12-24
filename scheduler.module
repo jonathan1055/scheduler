@@ -1010,6 +1010,16 @@ function scheduler_node_insert($node) {
       'publish_on' => $node->publish_on,
       'unpublish_on' => $node->unpublish_on,
     ))->execute();
+
+    // Invoke the events to indicate that a new node has been scheduled.
+    if (module_exists('rules')) {
+      if (!empty($node->publish_on)) {
+        rules_invoke_event('scheduler_new_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
+      }
+      if (!empty($node->unpublish_on)) {
+        rules_invoke_event('scheduler_new_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on, $node->unpublish_on);
+      }
+    }
   }
 }
 
@@ -1025,6 +1035,16 @@ function scheduler_node_update($node) {
       'publish_on' => $node->publish_on,
       'unpublish_on' => $node->unpublish_on,
     ))->execute();
+
+    // Invoke the events to indicate that an existing node has been scheduled.
+    if (module_exists('rules')) {
+      if (!empty($node->publish_on)) {
+        rules_invoke_event('scheduler_existing_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
+      }
+      if (!empty($node->unpublish_on)) {
+        rules_invoke_event('scheduler_existing_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on, $node->unpublish_on);
+      }
+    }
   }
   else {
     scheduler_node_delete($node);
@@ -1120,7 +1140,8 @@ function _scheduler_publish() {
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
-    // to node_save().
+    // to node_save(). Save the value for use when calling Rules.
+    $publish_on = $n->publish_on;
     $n->publish_on = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
@@ -1132,6 +1153,11 @@ function _scheduler_publish() {
     $actions = array('node_publish_action', 'node_save_action');
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
+
+    // Invoke the event to tell Rules that Scheduler has published this node.
+    if (module_exists('rules')) {
+      rules_invoke_event('scheduler_node_has_been_published_event', $n, $publish_on, $n->unpublish_on);
+    }
 
     // Invoke scheduler API.
     _scheduler_scheduler_api($n, 'publish');
@@ -1196,7 +1222,8 @@ function _scheduler_unpublish() {
         ));
       }
       // Unset unpublish_on so the node will not get rescheduled by subsequent
-      // calls to node_save().
+      // calls to node_save(). Save the value for use when calling Rules.
+      $unpublish_on = $n->unpublish_on;
       $n->unpublish_on = NULL;
 
       // Invoke scheduler API to allow modules to alter the node before it is
@@ -1208,6 +1235,11 @@ function _scheduler_unpublish() {
       $actions = array('node_unpublish_action', 'node_save_action');
       $context['node'] = $n;
       actions_do($actions, $n, $context, NULL, NULL);
+
+      // Invoke event to tell Rules that Scheduler has unpublished this node.
+      if (module_exists('rules')) {
+        rules_invoke_event('scheduler_node_has_been_unpublished_event', $n, $n->publish_on, $unpublish_on);
+      }
     }
 
     // Invoke scheduler API.
