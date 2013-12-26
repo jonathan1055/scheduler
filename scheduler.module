@@ -1570,16 +1570,21 @@ function scheduler_i18n_sync_options($entity_type, $bundle_name) {
   // Keep the scheduler dates synchronised between separate nodes which have
   // been defined as translations of each other.
   if ($entity_type == 'node') {
-    return array(
-      'publish_on' => array(
+    $options = array();
+    // $bundle_name holds the content_type.
+    if (variable_get('scheduler_publish_enable_' . $bundle_name, 0)) {
+      $options['publish_on'] = array(
         'title' => t('Publish on'),
         'description' => t('Scheduler Publish date and time'),
-      ),
-      'unpublish_on' => array(
+      );
+    }
+    if (variable_get('scheduler_unpublish_enable_' . $bundle_name, 0)) {
+      $options['unpublish_on'] = array(
         'title' => t('Unpublish on'),
         'description' => t('Scheduler Unpublish date and time'),
-      ),
-    );
+      );
+    }
+    return $options;
   }
 }
 
