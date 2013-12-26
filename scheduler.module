@@ -1596,12 +1596,11 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
   // node.
   $source_entity = $context['source_entity'];
 
-  // @todo Replace $entity->scheduler with $entity->publish_on.
-  if (isset($source_entity->scheduler['publish_on'])) {
-    $entity->publish_on = $source_entity->scheduler['publish_on'];
+  if (isset($source_entity->publish_on)) {
+    $entity->publish_on = $source_entity->publish_on;
   }
-  if (isset($source_entity->scheduler['unpublish_on'])) {
-    $entity->unpublish_on = $source_entity->scheduler['unpublish_on'];
+  if (isset($source_entity->unpublish_on)) {
+    $entity->unpublish_on = $source_entity->unpublish_on;
   }
 }
 
