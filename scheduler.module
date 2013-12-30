@@ -194,6 +194,26 @@ function scheduler_admin() {
     $form['scheduler_field_type']['#description'] = t('To use the calendar you need to enable Date, Date API and Date Popup. Download the module from the !url.', array('!url' => l(t('Date project page'), 'http://drupal.org/project/date')));
   }
 
+  // Variable 'date_popup_timepicker' holds the type of timepicker selected.
+  $timepicker_enabled = (variable_get('date_popup_timepicker', '') != 'none');
+  $description = $timepicker_enabled ? 'The timepicker type can be selected via !link.' : 'The timepicker is not enabled - turn it on via !link.';
+  $form['scheduler_date_popup_minute_increment'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Date Popup minute increment'),
+    '#description' => t('Restrict the time entry to specific minute increments.') . ' ' . t($description, array('!link' => l(t('Date Popup configuration'), 'admin/config/date/date_popup'))),
+    '#field_suffix' => t('minutes'),
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#disabled' => !$timepicker_enabled,
+    '#default_value' => variable_get('scheduler_date_popup_minute_increment', 1),
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_field_type"]' => array('value' => 'date_popup'),
+      ),
+    ),
+  );
+
   // Options for setting date-only with default time.
   $form['scheduler_date_only_fieldset'] = array(
     '#type' => 'fieldset',
@@ -568,6 +588,7 @@ function scheduler_form_alter(&$form, $form_state) {
           $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
           $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
+          $form['scheduler_settings']['publish_on']['#date_increment'] = variable_get('scheduler_date_popup_minute_increment', 1);
           unset($descriptions['format']);
           $form['scheduler_settings']['publish_on']['#description'] = filter_xss(implode(' ', $descriptions));
           unset($form['scheduler_settings']['publish_on']['#maxlength']);
@@ -596,6 +617,7 @@ function scheduler_form_alter(&$form, $form_state) {
           $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
           $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
           $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
+          $form['scheduler_settings']['unpublish_on']['#date_increment'] = variable_get('scheduler_date_popup_minute_increment', 1);
           unset($descriptions['format']);
           $form['scheduler_settings']['unpublish_on']['#description'] = filter_xss(implode(' ', $descriptions));
           unset($form['scheduler_settings']['unpublish_on']['#maxlength']);

@@ -54,6 +54,7 @@ function scheduler_uninstall() {
     'scheduler_date_only_format',
     'scheduler_default_time',
     'scheduler_extra_info',
+    'scheduler_date_popup_minute_increment',
     'scheduler_field_type',
     'scheduler_lightweight_log',
     'scheduler_time_only_format',
