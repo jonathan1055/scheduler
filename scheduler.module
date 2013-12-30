@@ -364,16 +364,31 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#type' => 'checkbox',
     '#title' => t('Change content creation time to match the scheduled publish time'),
     '#default_value' => variable_get('scheduler_publish_touch_' . $form['#node_type']->type, 0),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled publishing'),
     '#default_value' => variable_get('scheduler_publish_required_' . $form['#node_type']->type, 0),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on publishing'),
     '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['scheduler']['publish']['advanced'] = array(
     '#type' => 'fieldset',
@@ -412,11 +427,21 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#type' => 'checkbox',
     '#title' => t('Require scheduled unpublishing'),
     '#default_value' => variable_get('scheduler_unpublish_required_' . $form['#node_type']->type, 0),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on unpublishing'),
     '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   // The 'node_edit_layout' fieldset contains options to alter the layout of
   // node edit pages.
@@ -426,6 +451,15 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
     '#collapsible' => FALSE,
     '#weight' => 3,
     '#group' => 'scheduler',
+    // The #states processing only caters for AND and does not do OR. So to set
+    // the state to visible if either of the boxes are ticked we use the fact
+    // that logical 'X = A or B' is equivalent to 'not X = not A and not B'.
+    '#states' => array(
+      '!visible' => array(
+        ':input[name="scheduler_publish_enable"]' => array('!checked' => TRUE),
+        ':input[name="scheduler_unpublish_enable"]' => array('!checked' => TRUE),
+      ),
+    ),
   );
   $form['scheduler']['node_edit_layout']['scheduler_use_vertical_tabs'] = array(
     '#type' => 'radios',
