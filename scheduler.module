@@ -790,11 +790,9 @@ function _scheduler_delete_row_confirm_submit($form, &$form_state) {
  *   TRUE if the action is allowed, FALSE if not.
  */
 function _scheduler_allow($node, $action) {
-  // Check if the requested action has been scheduled for the given node.
-  $key = $action . '_on';
-  $result = !empty($node->$key);
-
-  // Check that other modules also allow the action.
+  // Default to TRUE.
+  $result = TRUE;
+  // Check that other modules allow the action.
   $hook = 'scheduler_allow_' . $action . 'ing';
   foreach (module_implements($hook) as $module) {
     $function = $module . '_' . $hook;
@@ -1053,7 +1051,7 @@ function scheduler_node_presave($node) {
 
   // Publish the node immediately if the publication date is in the past.
   $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish';
-  if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
+  if ($node->publish_on > 0 && $publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
     // If required, set the created date to match published date.
     if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
       $node->created = $node->publish_on;
