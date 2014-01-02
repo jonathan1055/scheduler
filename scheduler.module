@@ -1221,8 +1221,24 @@ function scheduler_node_type_delete($info) {
  * Implements hook_cron().
  */
 function scheduler_cron() {
+  // During cron runs we do not want i18n_sync to make any changes to the
+  // translation nodes, as this affects processing later in the same cron job.
+  // Hence we save the i18n_sync state here, turn it off for the duration of
+  // Scheduler cron processing, then restore the setting afterwards.
+  // @todo Replace this workaround with a hook implementation when issue
+  //   #2136557 lands.
+  // @see https://drupal.org/node/1182450
+  // @see https://drupal.org/node/2136557
+  if (module_exists('i18n_sync')) {
+    $i18n_sync_saved_state = i18n_sync();
+    i18n_sync(FALSE);
+  }
+
   _scheduler_publish();
   _scheduler_unpublish();
+
+  // Restore the i18n_sync state.
+  module_exists('i18n_sync') ? i18n_sync($i18n_sync_saved_state) : NULL;
 }
 
 /**
