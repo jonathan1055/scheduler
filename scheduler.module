@@ -302,6 +302,12 @@ function scheduler_admin_validate($form, &$form_state) {
  * Submit handler for scheduler admin settings.
  */
 function scheduler_admin_submit($form, &$form_state) {
+  // For the minute increment, change a blank value to 1. Date popup does not
+  // support blank values.
+  if (empty($form_state['values']['scheduler_date_popup_minute_increment'])) {
+    $form_state['values']['scheduler_date_popup_minute_increment'] = 1;
+  }
+
   // Extract the date part and time part of the full format, for use with the
   // default time functionality. Assume the date and time time parts begin and
   // end with a letter, but any punctuation between these will be retained.
