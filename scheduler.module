@@ -40,7 +40,8 @@ function scheduler_menu() {
     'title' => 'Lightweight cron handler',
     'description' => 'Run the lightweight cron process',
     'page callback' => '_scheduler_run_cron',
-    'access callback' => TRUE,
+    'access callback' => '_scheduler_cron_access',
+    'access arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
   $items['scheduler/timecheck'] = array(
@@ -142,11 +143,13 @@ function scheduler_help($section) {
 
     case 'admin/config/content/scheduler/cron':
       $base_url = $GLOBALS['base_url'];
+      $access_key = variable_get('scheduler_lightweight_access_key', '');
+      $cron_url = $base_url . '/scheduler/cron' . ($access_key ? '/' . $access_key : '');
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not execute any cron tasks defined by Drupal core or any other modules.") . '</p>';
       $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>';
-      $output .= '<code>* * * * * wget -q -O /dev/null "' . $base_url . '/scheduler/cron"</code>';
+      $output .= '<code>* * * * * wget -q -O /dev/null "' . $cron_url . '"</code>';
       $output .= '<p>' . t('or') . '</p>';
-      $output .= '<code>* * * * * curl -s -o /dev/null "' . $base_url . '/scheduler/cron"</code><br/><br/>';
+      $output .= '<code>* * * * * curl -s -o /dev/null "' . $cron_url . '"</code><br/><br/>';
       break;
 
     case 'admin/help#scheduler':
@@ -1453,11 +1456,11 @@ function _scheduler_run_cron() {
 /**
  * Return the lightweight cron form to allow a manual run.
  */
-function _scheduler_lightweight_cron() {
+function _scheduler_lightweight_cron($form, &$form_state) {
   $form = array();
   $form['scheduler_cron'] = array(
     '#type' => 'submit',
-    '#prefix' => t("You can test Scheduler's lightweight cron process interactively") . ':<div>',
+    '#prefix' => '<div class="container-inline">' . t("You can test Scheduler's lightweight cron process interactively") . ': ',
     '#value' => t("Run Scheduler's lightweight cron now"),
     '#submit' => array('_scheduler_run_cron'),
     '#suffix' => "</div>\n",
@@ -1472,8 +1475,48 @@ function _scheduler_lightweight_cron() {
     '#default_value' => variable_get('scheduler_lightweight_log', 1),
     '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
   );
-
+  $form['scheduler_cron_settings']['scheduler_lightweight_access_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Lightweight cron access key'),
+    '#size' => 100,
+    '#default_value' => variable_get('scheduler_lightweight_access_key', ''),
+    '#description' => t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/&lt;this key&gt;. To disable security for lightweight cron leave this field blank."),
+  );
+  if (isset($form_state['scheduler_generate_new_key'])) {
+    $new_access_key = substr(md5(rand()), 0, 20);
+    $form_state['input']['scheduler_lightweight_access_key'] = $new_access_key;
+    drupal_set_message(t('A new random key has been generated but not saved. If you wish to use this, first "Save Configuration" to store the value, then modify your crontab job.'), 'warning');
+  }
+  $form['scheduler_cron_settings']['create_key'] = array(
+    '#type' => 'submit',
+    '#value' => t('Generate new random key'),
+    '#submit' => array('_scheduler_generate_key'),
+  );
   return system_settings_form($form);
+}
+
+/**
+ * Submit handler for 'Generate a new key'.
+ */
+function _scheduler_generate_key($form, &$form_state) {
+  // Everything in $form_state is persistent, so we can use a direct attribute.
+  $form_state['scheduler_generate_new_key'] = TRUE;
+  // Setting $form_state['rebuild'] = TRUE causes the form to be rebuilt again.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Access callback for the lightweight cron url /scheduler/cron/key.
+ *
+ * @param string $cron_key
+ *   The cron key that was passed as a URL argument.
+ *
+ * @return bool
+ *   TRUE if the cron url key is correct. FALSE otherwise.
+ */
+function _scheduler_cron_access($cron_key) {
+  $valid_cron_key = variable_get('scheduler_lightweight_access_key', '');
+  return $valid_cron_key == $cron_key;
 }
 
 /**
