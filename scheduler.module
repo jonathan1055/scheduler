@@ -1234,11 +1234,33 @@ function scheduler_cron() {
     i18n_sync(FALSE);
   }
 
+  // Use drupal_static so that any function can find out if we are running
+  // Scheduler cron. Set the default value to FALSE, then turn on the flag.
+  // @see scheduler_cron_is_running()
+  $scheduler_cron = &drupal_static(__FUNCTION__, FALSE);
+  $scheduler_cron = TRUE;
+
   _scheduler_publish();
   _scheduler_unpublish();
 
+  // Reset the static scheduler_cron flag.
+  drupal_static_reset(__FUNCTION__);
+
   // Restore the i18n_sync state.
   module_exists('i18n_sync') ? i18n_sync($i18n_sync_saved_state) : NULL;
+}
+
+/**
+ * Return whether Scheduler cron is running.
+ *
+ * This function can be called from any Scheduler function, from any contrib
+ * module or from custom PHP in a view or rule.
+ *
+ * @return bool
+ *   TRUE if scheduler_cron is currently running. FALSE if not.
+ */
+function scheduler_cron_is_running() {
+  return drupal_static('scheduler_cron');
 }
 
 /**
