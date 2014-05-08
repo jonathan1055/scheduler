@@ -1101,7 +1101,7 @@ function scheduler_node_validate($node, $form) {
  */
 function scheduler_node_presave($node) {
   foreach (array('publish_on', 'unpublish_on') as $key) {
-    if (empty($node->$key)) {
+    if (empty($node->$key) || is_array($node->$key)) {
       // Make sure publish_on and unpublish_on are not empty strings.
       $node->$key = 0;
     }
