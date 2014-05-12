@@ -1123,6 +1123,8 @@ function scheduler_node_presave($node) {
     }
     $node->publish_on = 0;
     $node->status = 1;
+    // Allow modules to react to immediate publishing.
+    _scheduler_scheduler_api($node, 'publish_immediately');
   }
   // Otherwise, if a publishing date has been set, make sure the node is
   // unpublished since it will be published by cron later.
@@ -1572,7 +1574,7 @@ function _scheduler_cron_access($cron_key) {
  *   The node object.
  * @param string $action
  *   The action being performed, either 'pre_publish', 'publish',
- *   'pre_unpublish' or 'unpublish'
+ *   'publish_immediately', 'pre_unpublish' or 'unpublish'.
  */
 function _scheduler_scheduler_api($node, $action) {
   foreach (module_implements('scheduler_api') as $module) {
