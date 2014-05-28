@@ -91,6 +91,12 @@ function scheduler_menu() {
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
+  // Reuse the above definition in the scheduler admin page.
+  $items['admin/config/content/scheduler/list'] = array(
+    'title' => 'Scheduled Content',
+    'weight' => 20,
+  ) + $items['admin/content/scheduler'];
+
   // Menu callback for confirmation before manually deleting obsolete rows from
   // the Scheduler table. Cannot use normal node delete link because these rows
   // no longer exist in the {node} table.
