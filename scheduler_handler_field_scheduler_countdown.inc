@@ -55,16 +55,17 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   );
 
   /**
-   * Add the new timestamp_field into the SQL query.
+   * Add the timestamp_field into the SQL query.
    *
-   * It will be calculated as publish_on - unix_timestamp() so the result is
-   * the number of seconds from now until the event.
+   * It is calculated as publish_on - REQUEST_TIME so the result is the number
+   * of seconds from now until publishing. If publish_on is in the past then
+   * NULL is returned.
    */
   function query() {
     $this->ensure_my_table();
     $this->node_table = $this->query->ensure_table('node', $this->relationship);
     $time_field = $this->definition['timestamp_field'];
-    $this->field_alias = $this->query->add_field(NULL, 'IF(' . $time_field . ' AND ' . $time_field . ' > UNIX_TIMESTAMP(), ' . $time_field . ' - UNIX_TIMESTAMP(), NULL)', $this->table_alias . '_' . $this->field);
+    $this->field_alias = $this->query->add_field(NULL, 'CASE WHEN (' . $time_field . ' > ' . REQUEST_TIME . ') THEN (' . $time_field . ' - ' . REQUEST_TIME . ') ELSE NULL END', $this->table_alias . '_' . $this->field);
   }
 
   /**
