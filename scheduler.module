@@ -16,6 +16,10 @@ define('SCHEDULER_TIME_ONLY_FORMAT', 'H:i:s');
 // The default time that will be used, until Admin sets a different value.
 define('SCHEDULER_DEFAULT_TIME', '00:00:00');
 
+// The full set of date and time letters allowed in the scheduler date format.
+define('SCHEDULER_DATE_LETTERS', 'djmnyY');
+define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
+
 /**
  * Implements hook_permission().
  */
@@ -183,7 +187,11 @@ function scheduler_admin() {
     '#maxlength' => 20,
     '#required' => TRUE,
     '#field_suffix' => ' <small>' . $now . '</small>',
-    '#description' => t('The format for entering scheduled dates and times. For the date use the letters djmnyY and for the time use hHgGisaA. See !url for more details.', array('!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php'))),
+    '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', array(
+      '!date_letters' => SCHEDULER_DATE_LETTERS,
+      '!time_letters' => SCHEDULER_TIME_LETTERS,
+      '!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php')
+    )),
   );
 
   $form['scheduler_field_type'] = array(
@@ -270,9 +278,20 @@ function scheduler_admin_validate($form, &$form_state) {
   // single plain space.
   $form_state['values']['scheduler_date_format'] = trim(preg_replace('/\s+/', ' ', $form_state['values']['scheduler_date_format']));
 
+  // Validate the letters used in the scheduler date format. All punctuation is
+  // accepted, so remove everything except word characters then check that there
+  // is nothing else which is not in the list of acceptable date/time letters.
+  $no_punctuation = preg_replace('/[^\w+]/', '', $form_state['values']['scheduler_date_format']);
+  if (preg_match_all('/[^' . SCHEDULER_DATE_LETTERS . SCHEDULER_TIME_LETTERS . ']/', $no_punctuation, $extra)) {
+    form_set_error('scheduler_date_format', t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', array(
+      '$date_letters' => SCHEDULER_DATE_LETTERS,
+      '$time_letters' => SCHEDULER_TIME_LETTERS,
+      '$extra' => implode(' ', $extra[0]),
+    )));
+  };
+
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
-    $format = $form_state['values']['scheduler_date_format'];
-    $time_format = date_limit_format($format, array('hour', 'minute', 'second'));
+    $time_format = date_limit_format($form_state['values']['scheduler_date_format'], array('hour', 'minute', 'second'));
     // The Date Popup function date_popup_time_formats() only returns the values
     // 'H:i:s' and 'h:i:sA' but Scheduler can accept more variations than just
     // these. Firstly, we add the lowercase 'a' alternative. Secondly timepicker
@@ -318,15 +337,13 @@ function scheduler_admin_submit($form, &$form_state) {
   // default time functionality. Assume the date and time time parts begin and
   // end with a letter, but any punctuation between these will be retained.
   $format = $form_state['values']['scheduler_date_format'];
-  $time_letters = 'gGhHisaA';
-  $time_start = strcspn($format, $time_letters);
-  $time_length = strlen($format) - strcspn(strrev($format), $time_letters) - $time_start;
+  $time_start = strcspn($format, SCHEDULER_TIME_LETTERS);
+  $time_length = strlen($format) - strcspn(strrev($format), SCHEDULER_TIME_LETTERS) - $time_start;
   $time_only_format = substr($format, $time_start, $time_length);
   variable_set('scheduler_time_only_format', $time_only_format);
 
-  $date_letters = 'djFmMnyY';
-  $date_start = strcspn($format, $date_letters);
-  $date_length = strlen($format) - strcspn(strrev($format), $date_letters) - $date_start;
+  $date_start = strcspn($format, SCHEDULER_DATE_LETTERS);
+  $date_length = strlen($format) - strcspn(strrev($format), SCHEDULER_DATE_LETTERS) - $date_start;
   $date_only_format = substr($format, $date_start, $date_length);
   variable_set('scheduler_date_only_format', $date_only_format);
 
@@ -937,27 +954,51 @@ function _scheduler_strtotime($str) {
 /**
  * Parse a time/date as UTC time.
  *
- * @see date()
+ * The php function strptime() has a limited life, due to it returning varying
+ * results on different operating systems. It is not supported on Windows
+ * platforms at all. The replacement function date_parse_from_format() is not
+ * as flexible as strptime(), for example it forces two-digit minutes and
+ * seconds. _scheduler_strptime() gives us more control over the entities that
+ * are parsed and how the matching is achieved.
  *
  * @param string $date
  *   The string to parse.
  * @param string $format
- *  The date format used in $date. For details on the date format options, see
- *  the PHP date() function. Right now only dHhmiaAsyY are supported.
+ *   The date format used in $date. For details on the date format options, see
+ *   the PHP date() function.
  *
  * @return int
- *  The parsed time as a UTC timestamp.
+ *   The parsed time converted to a UTC timestamp using mktime().
  */
 function _scheduler_strptime($date, $format) {
-  // Build a regex pattern for the date format.
-  $date_entities = array('d', 'H', 'h', 'm', 'i', 'a', 'A', 's', 'y', 'Y', 'n', 'j', 'g', 'G');
-  $date_regex_replacements = array('(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '(\d{2})', '([ap]m)', '([AP]M)', '(\d{2})', '(\d{2})', '(\d{4})', '(\d{1,2})', '(\d{1,2})', '(\d{1,2})', '(\d{1,2})');
+  // Build a regex pattern for each element allowed in the date and time format.
+  $date_entities_and_replacements = array(
+    // Date elements, one for each character in SCHEDULER_DATE_LETTERS.
+    'd' => '(\d{2})',      // Day of the month with leading zero.
+    'j' => '(\d{1,2})',    // Day of the month without leading zero.
+    'm' => '(\d{2})',      // Month number with leading zero.
+    'n' => '(\d{1,2})',    // Month number without leading zero.
+    'y' => '(\d{2})',      // Two-digit year.
+    'Y' => '(\d{4})',      // Four-digit year.
+
+    // Time elements, one for each character in SCHEDULER_TIME_LETTERS.
+    'h' => '(\d{2})',      // Hours in 12-hour format with leading zero.
+    'H' => '(\d{2})',      // Hours in 24-hour format with leading zero.
+    'g' => '(\d{1,2})',    // Hours in 12-hour format without leading zero.
+    'G' => '(\d{1,2})',    // Hours in 24-hour format without leading zero.
+    'i' => '(\d{2})',      // Minutes with leading zero.
+    's' => '(\d{2})',      // Seconds with leading zero.
+    'a' => '([ap]m)',      // Lower case meridian.
+    'A' => '([AP]M)',      // Upper case meridian.
+  );
+  $date_entities = array_keys($date_entities_and_replacements);
+  $date_regex_replacements = array_values($date_entities_and_replacements);
   $custom_pattern = str_replace($date_entities, $date_regex_replacements, $format);
   if (!preg_match("#$custom_pattern#", $date, $value_matches)) {
     return FALSE;
   }
 
-  if (!preg_match_all("/(\w)/", $format, $entity_matches)) {
+  if (!preg_match_all('/(\w)/', $format, $entity_matches)) {
     return FALSE;
   }
 
