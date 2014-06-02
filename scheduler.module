@@ -1002,7 +1002,7 @@ function _scheduler_strptime($date, $format) {
     return FALSE;
   }
 
-  $results = array('day' => 0, 'hour' => 0, 'month' => 0, 'minute' => 0, 'meridiem' => NULL, 'second' => 0, 'year' => 0);
+  $results = array('day' => 0, 'month' => 0, 'year' => 0, 'hour' => 0, 'minute' => 0, 'second' => 0, 'meridiem' => NULL);
   $index = 1;
   foreach ($entity_matches[1] as $entity) {
     $value = intval($value_matches[$index]);
@@ -1012,6 +1012,16 @@ function _scheduler_strptime($date, $format) {
         $results['day'] = $value;
         break;
 
+      case 'm':
+      case 'n':
+        $results['month'] = $value;
+        break;
+
+      case 'y':
+      case 'Y':
+        $results['year'] = $value;
+        break;
+
       case 'H':
       case 'h':
       case 'g':
@@ -1019,13 +1029,12 @@ function _scheduler_strptime($date, $format) {
         $results['hour'] = $value;
         break;
 
-      case 'm':
-      case 'n':
-        $results['month'] = $value;
-        break;
-
       case 'i':
         $results['minute'] = $value;
+        break;
+
+      case 's':
+        $results['second'] = $value;
         break;
 
       case 'a':
@@ -1033,14 +1042,6 @@ function _scheduler_strptime($date, $format) {
         $results['meridiem'] = $value_matches[$index];
         break;
 
-      case 's':
-        $results['second'] = $value;
-        break;
-
-      case 'y':
-      case 'Y':
-        $results['year'] = $value;
-        break;
     }
     $index++;
   }
