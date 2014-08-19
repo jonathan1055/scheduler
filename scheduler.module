@@ -309,15 +309,15 @@ function scheduler_admin_validate($form, &$form_state) {
   }
 
   // If date-only is enabled then check if a valid default time was entered.
-  // Allow leading zeros to be omitted, eg. 6:30:00 is considered valid.
+  // Leading zeros and seconds can be omitted, eg. 6:30 is considered valid.
   if ($form_state['values']['scheduler_allow_date_only']) {
-    $default_time = strptime($form_state['values']['scheduler_default_time'], '%H:%M:%S');
-    if (!$default_time) {
+    $default_time = date_parse($form_state['values']['scheduler_default_time']);
+    if ($default_time['error_count']) {
       form_set_error('scheduler_default_time', t('The default time should be in the format HH:MM:SS'));
     }
     else {
       // Insert any possibly omitted leading zeroes.
-      $unix_time = mktime($default_time['tm_hour'], $default_time['tm_min'], $default_time['tm_sec']);
+      $unix_time = mktime($default_time['hour'], $default_time['minute'], $default_time['second']);
       $form_state['values']['scheduler_default_time'] = format_date($unix_time, 'custom', 'H:i:s');
     }
   }
@@ -932,8 +932,8 @@ function _scheduler_strtotime($str) {
         if ($str == date($date_only_format, $time)) {
           // Parse the default time string into elements, then add the total
           // offset in seconds to the timestamp.
-          $default_time = strptime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME), '%H:%M:%S');
-          $time_offset = ($default_time['tm_hour'] * 3600) + ($default_time['tm_min'] * 60) + $default_time['tm_sec'];
+          $default_time = date_parse(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+          $time_offset = ($default_time['hour'] * 3600) + ($default_time['minute'] * 60) + $default_time['second'];
           $time += $time_offset;
         }
         else {

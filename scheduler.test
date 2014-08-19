@@ -297,16 +297,16 @@ class SchedulerTestCase extends DrupalWebTestCase {
    */
   public function testDefaultTime() {
     // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
-    variable_set('scheduler_default_time', '06:30:00');
+    variable_set('scheduler_default_time', '6:30');
 
     $this->drupalLogin($this->admin_user);
 
     // First test the regular date entry, without popup.
-    debug('Testing date entry using a textfield');
+    debug('Testing default time using a textfield');
     $this->assertDefaultTime();
 
     // Enable date popup and repeat the test.
-    debug('Testing date entry using a date popup');
+    debug('Testing default time using date popup');
     variable_set('scheduler_field_type', 'date_popup');
     $this->assertDefaultTime();
   }
@@ -332,7 +332,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $unpublish_validation_message = $using_popup ? t('The value input for field %field is invalid:', array('%field' => 'Unpublish on')) : "The 'unpublish on' value does not match the expected format of";
 
     // First test with the "date only" functionality disabled.
-    variable_set('scheduler_allow_date_only', FALSE);
+    $this->drupalPost('admin/config/content/scheduler', array('scheduler_allow_date_only' => FALSE), t('Save configuration'));
 
     // Test if entering a time is required.
     $edit = array(
@@ -346,7 +346,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->assertRaw($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
 
     // Allow the user to enter only the date and repeat the test.
-    variable_set('scheduler_allow_date_only', TRUE);
+    $this->drupalPost('admin/config/content/scheduler', array('scheduler_allow_date_only' => TRUE), t('Save configuration'));
 
     $this->drupalPost('node/add/page', $edit, t('Save'));
     $this->assertNoRaw("The 'publish on' value does not match the expected format of", 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
