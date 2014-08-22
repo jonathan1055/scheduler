@@ -563,15 +563,16 @@ class SchedulerTestCase extends DrupalWebTestCase {
       'Y-m-d' => FALSE,
       'd-m-Y' => FALSE,
       'm-d-Y' => FALSE,
-      'n-j-y' => FALSE,
+      'n/j/y' => FALSE,
+      'd F Y' => FALSE,
 
       // Test a number of supported date formats.
       'Y-m-d H:i' => TRUE,
       'd-m-Y h:ia' => TRUE,
       'm-d-Y h:iA' => TRUE,
       'n-j-y H:i:s' => TRUE,
-      'y-m-d h:i:sA' => TRUE,
-      'd-m-y h:i:sa' => TRUE,
+      'Y/M/d h:i:sA' => TRUE,
+      'j F y h:i:sa' => TRUE,
 
       // Test a number of date formats with invalid time specifications.
       'y-m-d G:i' => FALSE,
@@ -580,8 +581,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
       'y-m-d g:i:s' => FALSE,
       'n-j-y h:i' => FALSE,
       'd-m-y h:i:s' => FALSE,
-      'd-m-Y H:i:sA' => FALSE,
-      'Y-m-d H:ia' => FALSE,
+      'd/M/y H:i:sA' => FALSE,
+      'Y F d H:ia' => FALSE,
     );
     foreach ($test_cases as $date_format => $expected_result) {
       $edit = array(

@@ -17,7 +17,7 @@ define('SCHEDULER_TIME_ONLY_FORMAT', 'H:i:s');
 define('SCHEDULER_DEFAULT_TIME', '00:00:00');
 
 // The full set of date and time letters allowed in the scheduler date format.
-define('SCHEDULER_DATE_LETTERS', 'djmnyY');
+define('SCHEDULER_DATE_LETTERS', 'djmnFMyY');
 define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
 
 /**
@@ -643,7 +643,7 @@ function scheduler_form_alter(&$form, $form_state) {
         $form['scheduler_settings']['publish_on'] = array(
           '#type' => 'textfield',
           '#title' => t('Publish on'),
-          '#maxlength' => 25,
+          '#maxlength' => 30,
           '#required' => $publishing_required,
           '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
           '#description' => filter_xss(implode(' ', $descriptions)),
@@ -671,7 +671,7 @@ function scheduler_form_alter(&$form, $form_state) {
         $form['scheduler_settings']['unpublish_on'] = array(
           '#type' => 'textfield',
           '#title' => t('Unpublish on'),
-          '#maxlength' => 25,
+          '#maxlength' => 30,
           '#required' => $unpublishing_required,
           '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
           '#description' => filter_xss(implode(' ', $descriptions)),
@@ -978,6 +978,8 @@ function _scheduler_strptime($date, $format) {
     'j' => '(\d{1,2})',    // Day of the month without leading zero.
     'm' => '(\d{2})',      // Month number with leading zero.
     'n' => '(\d{1,2})',    // Month number without leading zero.
+    'M' => '(\w{3})',      // Three-letter month abbreviation.
+    'F' => '(\w{3,9})',    // Full month name, from 3 to 9 letters.
     'y' => '(\d{2})',      // Two-digit year.
     'Y' => '(\d{4})',      // Four-digit year.
 
@@ -1015,6 +1017,18 @@ function _scheduler_strptime($date, $format) {
       case 'm':
       case 'n':
         $results['month'] = $value;
+        break;
+
+      case 'M':
+      case 'F':
+        // Derive a time value from the matched month name text.
+        $temp_time = strtotime($value_matches[$index]);
+        if (empty($temp_time)) {
+          // If the text is not a valid month name or abbreviation then fail.
+          return FALSE;
+        }
+        // Derive the month number from the month name.
+        $results['month'] = date('n', $temp_time);
         break;
 
       case 'y':
