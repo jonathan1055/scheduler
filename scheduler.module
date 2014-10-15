@@ -1716,46 +1716,62 @@ function scheduler_preprocess_node(&$variables, $hook) {
 
 /**
  * Implements hook_feeds_processor_targets_alter().
+ *
+ * This function exposes publish_on and unpublish_on as mappable targets to the
+ * Feeds module.
  */
-function scheduler_feeds_processor_targets_alter(&$targets, $processor, $content_type) {
-  // This function will advertise publish_on and unpublish_on as mappable values
-  // to the Feeds module.
-  $publishing_enabled = variable_get('scheduler_publish_enable_' . $content_type, 0);
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $content_type, 0);
+function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
+  // Scheduler module only works on nodes.
+  if ($entity_type == 'node') {
+    $publishing_enabled = variable_get('scheduler_publish_enable_' . $bundle_name, 0);
+    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $bundle_name, 0);
 
-  if ($publishing_enabled) {
-    $targets['publish_on'] = array(
-      'name' => t('Scheduler: publish on'),
-      'description' => t('The date when Scheduler module will publish the node.'),
-      'callback' => 'scheduler_set_target',
-    );
-  }
-  if ($unpublishing_enabled) {
-    $targets['unpublish_on'] = array(
-      'name' => t('Scheduler: unpublish on'),
-      'description' => t('The date when Scheduler module will unpublish the node.'),
-      'callback' => 'scheduler_set_target',
-    );
+    if ($publishing_enabled) {
+      $targets['publish_on'] = array(
+        'name' => t('Scheduler: publish on'),
+        'description' => t('The date when the Scheduler module will publish the node.'),
+        'callback' => 'scheduler_feeds_set_target',
+      );
+    }
+    if ($unpublishing_enabled) {
+      $targets['unpublish_on'] = array(
+        'name' => t('Scheduler: unpublish on'),
+        'description' => t('The date when the Scheduler module will unpublish the node.'),
+        'callback' => 'scheduler_feeds_set_target',
+      );
+    }
   }
 }
 
 /**
  * Mapping callback for the Feeds module.
  */
-function scheduler_set_target($source, $node, $target, $value) {
-  if (!is_array($value)) {
-    // Convert input from parser to timestamp form.
-    if (!is_numeric($value)) {
-      $timestamp = strtotime($value);
+function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping) {
+  // We expect a string or integer, but can accomodate an array, by taking the
+  // first item. Use trim() so that a string of blanks is reduced to empty.
+  $value = is_array($value) ? trim(reset($value)) : trim($value);
+
+  // Convert input from parser to timestamp form. If $value is empty or blank
+  // then strtotime() must not be used, otherwise it returns the current time.
+  if (!empty($value) && !is_numeric($value)) {
+    if (!$timestamp = strtotime($value)) {
+      throw new FeedsValidationException(
+        // Throw an exception if the date format was not recognized.
+        t('Value %value for @source could not be converted to a valid %target date.', array(
+          '@source' => $mapping['source'],
+          '%value' => $value,
+          '%target' => $target,
+        )
+      ));
     }
-    else {
-      $timestamp = $value;
-    }
-    // If strtotime returned correct timestamp then set the value of the target
-    // field in the node. Otherwise do nothing.
-    if (($timestamp !== FALSE) && ($timestamp != -1)) {
-      $node->$target = $timestamp;
-    }
+  }
+  else {
+    $timestamp = $value;
+  }
+
+  // If the timestamp is valid then use it to set the target field in the node.
+  if (is_numeric($timestamp) && $timestamp > 0) {
+    $entity->$target = $timestamp;
   }
 }
 
