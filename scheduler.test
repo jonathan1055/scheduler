@@ -302,11 +302,9 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->admin_user);
 
     // First test the regular date entry, without popup.
-    debug('Testing default time using a textfield');
     $this->assertDefaultTime();
 
     // Enable date popup and repeat the test.
-    debug('Testing default time using date popup');
     variable_set('scheduler_field_type', 'date_popup');
     $this->assertDefaultTime();
   }
@@ -548,6 +546,26 @@ class SchedulerTestCase extends DrupalWebTestCase {
           break;
       }
     }
+  }
+
+  /**
+   * Tests the validation when editing a node.
+   */
+  function testValidationDuringEdit() {
+    $this->drupalLogin($this->admin_user);
+
+    // Create an unpublished page node.
+    $node = $this->drupalCreateNode(array('type' => 'page', 'status' => FALSE, 'title' => $this->randomName()));
+
+    // Set unpublishing to be required.
+    variable_set('scheduler_unpublish_required_page', TRUE);
+
+    // Edit the node and check the validation.
+    $edit = array(
+      'publish_on' => date('Y-m-d H:i:s', strtotime('+1 day', REQUEST_TIME)),
+    );
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->assertRaw(t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
   }
 
   /**
