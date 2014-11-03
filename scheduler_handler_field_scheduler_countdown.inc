@@ -21,39 +21,6 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   CONST DAY_SCALE = 86400;
   CONST WEEK_SCALE = 604800;
 
-  private $render_params = array(
-    'seconds' => array(
-      'scale' => self::SECOND_SCALE,
-      'singular' => 'second',
-      'plural' => 'seconds',
-      'abbreviated' => 's',
-    ),
-    'minutes' => array(
-      'scale' => self::MINUTE_SCALE,
-      'singular' => 'minute',
-      'plural' => 'minutes',
-      'abbreviated' => 'min',
-    ),
-    'hours' => array(
-      'scale' => self::HOUR_SCALE,
-      'singular' => 'hour',
-      'plural' => 'hours',
-      'abbreviated' => 'h',
-    ),
-    'days' => array(
-      'scale' => self::DAY_SCALE,
-      'singular' => 'day',
-      'plural' => 'days',
-      'abbreviated' => 'd',
-    ),
-    'weeks' => array(
-      'scale' => self::WEEK_SCALE,
-      'singular' => 'week',
-      'plural' => 'weeks',
-      'abbreviated' => 'w',
-    ),
-  );
-
   /**
    * Add the timestamp_field into the SQL query.
    *
@@ -115,43 +82,63 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
    * Renders the countdown value in the units required.
    */
   function render($values) {
+    // If the field has been set to 'Smart', determine the right timescale.
     $countdown_display = $this->options['countdown_display'];
     $value = $values->{$this->field_alias};
 
     if ($countdown_display == 'smart') {
-      if ($value > self::WEEK_SCALE) {
-        $countdown_display = 'weeks';
-      }
-      elseif ($value > self::DAY_SCALE) {
-        $countdown_display = 'days';
-      }
-      elseif ($value > self::HOUR_SCALE) {
-        $countdown_display = 'hours';
-      }
-      elseif ($value > self::MINUTE_SCALE) {
-        $countdown_display = 'minutes';
-      }
-      else {
-        $countdown_display = 'seconds';
-      }
+      $scales = array(
+        self::WEEK_SCALE,
+        self::DAY_SCALE,
+        self::HOUR_SCALE,
+        self::MINUTE_SCALE,
+      );
+      $scales = array_filter($scales, function ($var) use ($value) {
+        return $value > $var;
+      });
+      $scale = empty($scales) ? self::SECOND_SCALE : reset($scales);
     }
-    $params = $this->render_params[$countdown_display];
 
-    $scaled_value = round($value / $params['scale']);
+    // Get the display value by dividing the original value by the scale.
+    $scaled_value = round($value / $scale);
+
+    switch ($scale) {
+      case self::SECOND_SCALE:
+        $long = format_plural($scaled_value, '1 second', '@count seconds', array('@count' => $scaled_value));
+        $short = t('@counts', array('@count' => $scaled_value));
+        break;
+
+      case self::MINUTE_SCALE:
+        $long = format_plural($scaled_value, '1 minute', '@count minutes', array('@count' => $scaled_value));
+        $short = t('@countm', array('@count' => $scaled_value));
+        break;
+
+      case self::HOUR_SCALE:
+        $long = format_plural($scaled_value, '1 hour', '@count hours', array('@count' => $scaled_value));
+        $short = t('@counth', array('@count' => $scaled_value));
+        break;
+
+      case self::DAY_SCALE:
+        $long = format_plural($scaled_value, '1 day', '@count days', array('@count' => $scaled_value));
+        $short = t('@countd', array('@count' => $scaled_value));
+        break;
+
+      case self::WEEK_SCALE:
+        $long = format_plural($scaled_value, '1 week', '@count weeks', array('@count' => $scaled_value));
+        $short = t('@countw', array('@count' => $scaled_value));
+        break;
+    }
+
     switch ($this->options['units_display']) {
       case 'long':
-        $rendered_value = format_plural($scaled_value, '1 ' . $params['singular'], '@count ' . $params['plural']);
-        break;
+        return $long;
 
       case 'short':
-        $rendered_value = $scaled_value . $params['abbreviated'];
-        break;
+        return $short;
 
-      case 'none':
-        $rendered_value = $scaled_value;
-        break;
+      default:
+        return $scaled_value;
     }
-    return $rendered_value;
   }
 
 }

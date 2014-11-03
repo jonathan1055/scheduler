@@ -213,11 +213,15 @@ function scheduler_admin() {
 
   // Variable 'date_popup_timepicker' holds the type of timepicker selected.
   $timepicker_enabled = (variable_get('date_popup_timepicker', '') != 'none');
-  $description = $timepicker_enabled ? 'The timepicker type can be selected via !link.' : 'The timepicker is not enabled - turn it on via !link.';
+  $options = array('@date_popup_config' => url('admin/config/date/date_popup'));
+  $description = t('Restrict the time entry to specific minute increments.') . ' '
+    . ($timepicker_enabled
+    ? t('The timepicker type can be selected via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options)
+    : t('The timepicker is not enabled - turn it on via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options));
   $form['scheduler_date_popup_minute_increment'] = array(
     '#type' => 'textfield',
     '#title' => t('Date Popup minute increment'),
-    '#description' => t('Restrict the time entry to specific minute increments.') . ' ' . t($description, array('!link' => l(t('Date Popup configuration'), 'admin/config/date/date_popup'))),
+    '#description' => $description,
     '#field_suffix' => t('minutes'),
     '#size' => 2,
     '#maxlength' => 2,
