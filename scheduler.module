@@ -1173,31 +1173,33 @@ function scheduler_node_presave($node) {
     }
   }
 
-  // Check that other modules allow the action on this node.
-  $publication_allowed = _scheduler_allow($node, 'publish');
+  if ($node->publish_on > 0) {
+    // Check that other modules allow the action on this node.
+    $publication_allowed = _scheduler_allow($node, 'publish');
 
-  // Publish the node immediately if the publication date is in the past.
-  $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish';
-  if ($node->publish_on > 0 && $publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
-    // If required, set the created date to match published date.
-    if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
-      $node->created = $node->publish_on;
+    // Publish the node immediately if the publication date is in the past.
+    $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish';
+    if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
+      // If required, set the created date to match published date.
+      if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
+        $node->created = $node->publish_on;
+      }
+      $node->publish_on = 0;
+      $node->status = 1;
+      // Allow modules to react to immediate publishing.
+      _scheduler_scheduler_api($node, 'publish_immediately');
     }
-    $node->publish_on = 0;
-    $node->status = 1;
-    // Allow modules to react to immediate publishing.
-    _scheduler_scheduler_api($node, 'publish_immediately');
-  }
-  // Otherwise, if a publishing date has been set, make sure the node is
-  // unpublished since it will be published by cron later.
-  elseif ($node->publish_on > 0) {
-    $node->status = 0;
-    // Only inform the user that the node is scheduled if publication has not
-    // been prevented by other modules. Those modules have to display a message
-    // themselves explaining why publication is denied.
-    if ($publication_allowed) {
-      $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-      drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
+    else {
+      // Ensure the node is unpublished as it will be published by cron later.
+      $node->status = 0;
+
+      // Only inform the user that the node is scheduled if publication has not
+      // been prevented by other modules. Those modules have to display a
+      // message themselves explaining why publication is denied.
+      if ($publication_allowed) {
+        $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+        drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
+      }
     }
   }
 }
