@@ -294,8 +294,9 @@ function scheduler_admin_validate($form, &$form_state) {
     )));
   };
 
+  $time_format = scheduler_get_time_only_format($form_state['values']['scheduler_date_format']);
+
   if ($form_state['values']['scheduler_field_type'] == 'date_popup') {
-    $time_format = date_limit_format($form_state['values']['scheduler_date_format'], array('hour', 'minute', 'second'));
     // The Date Popup function date_popup_time_formats() only returns the values
     // 'H:i:s' and 'h:i:sA' but Scheduler can accept more variations than just
     // these. Firstly, we add the lowercase 'a' alternative. Secondly timepicker
@@ -304,11 +305,6 @@ function scheduler_admin_validate($form, &$form_state) {
 
     if ($time_format && !in_array($time_format, $acceptable)) {
       form_set_error('scheduler_date_format', t('When using the Date Popup module, the allowed time formats are: !formats', array('!formats' => implode(', ', $acceptable))));
-    }
-    if ($time_format == '' && !$form_state['values']['scheduler_allow_date_only']) {
-      // When using date popup check that either the main format has a time
-      // part or the date-only option is turned on.
-      form_set_error('scheduler_date_format', t('When using Date Popup you must either include a time within the date format or enable the date-only option'));
     }
   }
 
@@ -324,6 +320,12 @@ function scheduler_admin_validate($form, &$form_state) {
       $unix_time = mktime($default_time['hour'], $default_time['minute'], $default_time['second']);
       $form_state['values']['scheduler_default_time'] = format_date($unix_time, 'custom', 'H:i:s');
     }
+  }
+
+  // Check that either the date format has a time part or the date-only option
+  // is turned on.
+  if ($time_format == '' && !$form_state['values']['scheduler_allow_date_only']) {
+    form_set_error('scheduler_date_format', t('You must either include a time within the date format or enable the date-only option.'));
   }
 }
 
@@ -341,20 +343,54 @@ function scheduler_admin_submit($form, &$form_state) {
   // default time functionality. Assume the date and time time parts begin and
   // end with a letter, but any punctuation between these will be retained.
   $format = $form_state['values']['scheduler_date_format'];
-  $time_start = strcspn($format, SCHEDULER_TIME_LETTERS);
-  $time_length = strlen($format) - strcspn(strrev($format), SCHEDULER_TIME_LETTERS) - $time_start;
-  $time_only_format = substr($format, $time_start, $time_length);
+  $time_only_format = scheduler_get_time_only_format($format);
   variable_set('scheduler_time_only_format', $time_only_format);
 
-  $date_start = strcspn($format, SCHEDULER_DATE_LETTERS);
-  $date_length = strlen($format) - strcspn(strrev($format), SCHEDULER_DATE_LETTERS) - $date_start;
-  $date_only_format = substr($format, $date_start, $date_length);
+  $date_only_format = scheduler_get_date_only_format($format);
   variable_set('scheduler_date_only_format', $date_only_format);
 
-  drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part', array(
-    '%date_part' => $date_only_format,
-    '%time_part' => $time_only_format,
-  )));
+  if (empty($time_only_format)) {
+    drupal_set_message(t('The date part of the Scheduler format is %date_part. There is no time part', array('%date_part' => $date_only_format)));
+  }
+  else {
+    drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part.', array('%date_part' => $date_only_format, '%time_part' => $time_only_format)));
+  }
+}
+
+/**
+ * Returns the time part of a date format.
+ *
+ * For example, when given the string 'Y-m-d H:s:i' it will return 'H:s:i'.
+ *
+ * @param string $format
+ *   A date format compatible with the PHP date() function.
+ *
+ * @return string
+ *   The time part of the date format, or an empty string if it does not contain
+ *   a time part.
+ */
+function scheduler_get_time_only_format($format) {
+  $time_start = strcspn($format, SCHEDULER_TIME_LETTERS);
+  $time_length = strlen($format) - strcspn(strrev($format), SCHEDULER_TIME_LETTERS) - $time_start;
+  return substr($format, $time_start, $time_length);
+}
+
+/**
+ * Returns the date part of a date format.
+ *
+ * For example, when given the string 'Y-m-d H:s:i' it will return 'Y-m-d'.
+ *
+ * @param string $format
+ *   A date format compatible with the PHP date() function.
+ *
+ * @return string
+ *   The date part of the date format, or an empty string if it does not contain
+ *   a date part.
+ */
+function scheduler_get_date_only_format($format) {
+  $date_start = strcspn($format, SCHEDULER_DATE_LETTERS);
+  $date_length = strlen($format) - strcspn(strrev($format), SCHEDULER_DATE_LETTERS) - $date_start;
+  return substr($format, $date_start, $date_length);
 }
 
 /**
