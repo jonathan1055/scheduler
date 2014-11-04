@@ -79,28 +79,39 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   }
 
   /**
+   * Callback function to keep only the array scale values which are smaller
+   * than the countdown value being displayed.
+   */
+  function scale_filter_callback($array_value) {
+    return ($this->raw_value >= $array_value);
+  }
+
+  /**
    * Renders the countdown value in the units required.
    */
   function render($values) {
-    // If the field has been set to 'Smart', determine the right timescale.
     $countdown_display = $this->options['countdown_display'];
-    $value = $values->{$this->field_alias};
+    $this->raw_value = $values->{$this->field_alias};
 
+    $scales = array(
+      'weeks' => self::WEEK_SCALE,
+      'days' => self::DAY_SCALE,
+      'hours' => self::HOUR_SCALE,
+      'minutes' => self::MINUTE_SCALE,
+      'seconds' => self::SECOND_SCALE,
+    );
+    // If the field has been set to 'Smart', determine the right timescale.
     if ($countdown_display == 'smart') {
-      $scales = array(
-        self::WEEK_SCALE,
-        self::DAY_SCALE,
-        self::HOUR_SCALE,
-        self::MINUTE_SCALE,
-      );
-      $scales = array_filter($scales, function ($var) use ($value) {
-        return $value > $var;
-      });
+      $scales = array_filter($scales, array($this, 'scale_filter_callback'));
       $scale = empty($scales) ? self::SECOND_SCALE : reset($scales);
+    }
+    // Otherwise use the fixed display requested.
+    else {
+      $scale = $scales[$countdown_display];
     }
 
     // Get the display value by dividing the original value by the scale.
-    $scaled_value = round($value / $scale);
+    $scaled_value = round($this->raw_value / $scale);
 
     switch ($scale) {
       case self::SECOND_SCALE:
