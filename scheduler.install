@@ -88,3 +88,33 @@ function scheduler_update_last_removed() {
   // This function shows that the last update was scheduler_update_6101.
   return 6101;
 }
+
+/**
+ * Update roles with new 'View Scheduled Content' permission.
+ */
+function scheduler_update_7100() {
+  // Retrieve all roles that have both the 'administer nodes' and 'schedule
+  // (un)publishing of nodes' permissions.
+  // @see http://www.drupal.org/node/2355401
+  $query = db_select('role_permission', 'r');
+  $query->fields('r', array('rid'));
+  $query->condition('r.permission', 'administer nodes', '=');
+  $query->addJoin('INNER', 'role_permission', 'r2', 'r.rid = r2.rid');
+  $query->condition('r2.permission', 'schedule (un)publishing of nodes', '=');
+
+  // Grant these roles the 'view scheduled content' permission.
+  if ($roles_to_update = $query->execute()->fetchCol()) {
+    $query = db_insert('role_permission');
+    $query->fields(array('rid', 'permission', 'module'));
+    foreach ($roles_to_update as $rid ) {
+      $query->values(array(
+        'rid' => $rid,
+        'permission' => 'view scheduled content',
+        'module' => 'scheduler',
+      ));
+    }
+    $query->execute();
+  }
+
+  return format_plural(sizeof($roles_to_update), '1 role updated with view scheduled content permission.', '@count roles updated with view scheduled content permission.');
+}

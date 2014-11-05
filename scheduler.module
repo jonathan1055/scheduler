@@ -27,10 +27,15 @@ function scheduler_permission() {
   return array(
     'administer scheduler' => array(
       'title' => t('Administer scheduler'),
+      'description' => t('Configure scheduler date formats, pop-up calendar, default times, lightweight cron'),
     ),
     'schedule (un)publishing of nodes' => array(
       'title' => t('Schedule content publication'),
       'description' => t('Allows users to set a start and end time for content publication'),
+    ),
+    'view scheduled content' => array(
+      'title' => t('View scheduled content list'),
+      'description' => t('Allows users to see all content which is scheduled.'),
     ),
   );
 }
@@ -81,7 +86,7 @@ function scheduler_menu() {
     'title' => 'Time Check',
     'description' => 'Allows site admin to check their servers internal clock',
     'page callback' => '_scheduler_timecheck',
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('administer scheduler'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 15,
   );
@@ -91,7 +96,7 @@ function scheduler_menu() {
     'page callback' => 'scheduler_list',
     'page arguments' => array(NULL, NULL),
     'access callback' => 'scheduler_list_access_callback',
-    'access arguments' => array(NULL, NULL),
+    'access arguments' => array(NULL),
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
@@ -119,7 +124,7 @@ function scheduler_menu() {
     // This will pass the uid of the user account being viewed.
     'page arguments' => array('user_only', 1),
     'access callback' => 'scheduler_list_access_callback',
-    'access arguments' => array('user_only', 1),
+    'access arguments' => array(1),
     'description' => 'Display a list of scheduled nodes',
     'file' => NULL,
   );
@@ -130,14 +135,18 @@ function scheduler_menu() {
  * Return the users access to the scheduler list page.
  *
  * Separate function required because of the two access values to be checked.
+ *
+ * @param int $uid
+ *   The user ID of the user of which the scheduled nodes will be listed. Omit
+ *   this when listing the nodes of all users.
  */
-function scheduler_list_access_callback() {
-  $args = func_get_args();
+function scheduler_list_access_callback($uid = NULL) {
   global $user;
-  // If this is called from the user account page then allow the tab to be shown
-  // if you are viewing your own account as an alternative to having 'administer
-  // nodes' permission.
-  return (user_access('administer nodes') || ($args[0] == 'user_only' && $args[1] == $user->uid)) && user_access('schedule (un)publishing of nodes');
+
+  // All Scheduler users can see their own scheduled content via their user
+  // page. In addition, if they have 'view scheduled content' permission they
+  // will be able to see all scheduled content by all authors.
+  return user_access('view scheduled content') || ($uid == $user->uid && user_access('schedule (un)publishing of nodes'));
 }
 
 /**
