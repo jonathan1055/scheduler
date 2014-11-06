@@ -123,6 +123,8 @@ function scheduler_update_7100() {
  * Delete obsolete Scheduler rows for nodes already unpublished.
  */
 function scheduler_update_7101() {
+  // Retrieve all unpublished nodes which have a row in the Scheduler with an
+  // unpublish-on date in the past and no publish-on date.
   // @see http://www.drupal.org/node/2355129
   $query = db_select('scheduler', 's');
   $query->addField('s', 'nid');
@@ -131,10 +133,10 @@ function scheduler_update_7101() {
   $query->condition('s.publish_on', 0, '=');
   $query->condition('s.unpublish_on', 0, '>');
   $query->condition('s.unpublish_on', REQUEST_TIME, '<');
-  $nids_to_delete = $query->execute()->fetchCol();
-  $result = 0;
-  if ($nids_to_delete) {
-    $result = db_delete('scheduler')->condition('nid', $nids_to_delete, 'IN')->execute();
+
+  // Delete these rows from the Scheduler table.
+  if ($nids_to_delete = $query->execute()->fetchCol()) {
+    db_delete('scheduler')->condition('nid', $nids_to_delete, 'IN')->execute();
   }
-  return format_plural($result, '1 obsolete row deleted from scheduler table.', '@count obsolete rows deleted from scheduler table.');
+  return format_plural(sizeof($nids_to_delete), '1 obsolete row deleted from scheduler table.', '@count obsolete rows deleted from scheduler table.');
 }
