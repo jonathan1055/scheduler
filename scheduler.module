@@ -1402,17 +1402,19 @@ function _scheduler_publish() {
   $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
   $query->addJoin('INNER', 'users', 'u', 'u.uid = n.uid');
   $query->condition('s.publish_on', 0, '>');
-  $query->condition('s.publish_on', REQUEST_TIME, '<');
+  $query->condition('s.publish_on', REQUEST_TIME, '<=');
   $query_result = $query->execute();
   $nids = array();
   while ($node = $query_result->fetchObject()) {
     $nids[] = $node->nid;
   }
 
-  $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list('publish')));
+  $action = 'publish';
+
+  // Allow other modules to add to the list of nodes to be published.
+  $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list($action)));
 
   // Allow other modules to alter the list of nodes to be published.
-  $action = 'publish';
   drupal_alter('scheduler_nid_list', $nids, $action);
 
   foreach ($nids as $nid) {
@@ -1422,6 +1424,10 @@ function _scheduler_publish() {
     if (!_scheduler_allow($n, $action)) {
       continue;
     }
+
+    // Invoke Scheduler API for modules to react before the node is published.
+    // @todo For D8 move the 'pre' call to here.
+    // See https://www.drupal.org/node/2311273
 
     // Update timestamps.
     $n->changed = $n->publish_on;
@@ -1446,7 +1452,8 @@ function _scheduler_publish() {
 
     // Invoke scheduler API to allow modules to alter the node before it is
     // saved.
-    _scheduler_scheduler_api($n, 'pre_publish');
+    // @todo For D8, remove this from here.
+    _scheduler_scheduler_api($n, 'pre_' . $action);
 
     // Use the actions system to publish the node.
     watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid, array('alias' => TRUE)));
@@ -1459,8 +1466,8 @@ function _scheduler_publish() {
       rules_invoke_event('scheduler_node_has_been_published_event', $n, $publish_on, $n->unpublish_on);
     }
 
-    // Invoke scheduler API.
-    _scheduler_scheduler_api($n, 'publish');
+    // Invoke scheduler API for modules to react after the node is published.
+    _scheduler_scheduler_api($n, $action);
 
     $result = TRUE;
   }
@@ -1484,17 +1491,19 @@ function _scheduler_unpublish() {
   $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
   $query->addJoin('INNER', 'users', 'u', 'u.uid = n.uid');
   $query->condition('s.unpublish_on', 0, '>');
-  $query->condition('s.unpublish_on', REQUEST_TIME, '<');
+  $query->condition('s.unpublish_on', REQUEST_TIME, '<=');
   $query_result = $query->execute();
   $nids = array();
   while ($node = $query_result->fetchObject()) {
     $nids[] = $node->nid;
   }
 
-  $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list('unpublish')));
+  $action = 'unpublish';
+
+  // Allow other modules to add to the list of nodes to be unpublished.
+  $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list($action)));
 
   // Allow other modules to alter the list of nodes to be unpublished.
-  $action = 'unpublish';
   drupal_alter('scheduler_nid_list', $nids, $action);
 
   foreach ($nids as $nid) {
@@ -1511,6 +1520,10 @@ function _scheduler_unpublish() {
     if (!empty($n->publish_on) && $n->publish_on <= REQUEST_TIME) {
       continue;
     }
+
+    // Invoke scheduler API for modules to react before the node is unpublished.
+    // @todo For D8, move the 'pre' call to here.
+    // See https://www.drupal.org/node/2311273
 
     // Update timestamps.
     $old_change_date = $n->changed;
@@ -1532,7 +1545,8 @@ function _scheduler_unpublish() {
 
     // Invoke scheduler API to allow modules to alter the node before it is
     // saved.
-    _scheduler_scheduler_api($n, 'pre_unpublish');
+    // @todo For D8, remove this from here.
+    _scheduler_scheduler_api($n, 'pre_' . $action);
 
     // Use the actions system to unpublish the node.
     watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid, array('alias' => TRUE)));
@@ -1545,7 +1559,7 @@ function _scheduler_unpublish() {
       rules_invoke_event('scheduler_node_has_been_unpublished_event', $n, $n->publish_on, $unpublish_on);
     }
 
-    // Invoke scheduler API.
+    // Invoke scheduler API for modules to react after the node is unpublished.
     _scheduler_scheduler_api($n, 'unpublish');
 
     $result = TRUE;
