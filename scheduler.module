@@ -659,7 +659,7 @@ function scheduler_form_alter(&$form, $form_state) {
       if ($extra_info && $extra_info != '') {
         $form['scheduler_settings']['extra_info'] = array(
           '#type' => 'item',
-          '#markup' => $extra_info,
+          '#markup' => filter_xss_admin($extra_info),
         );
       }
 
