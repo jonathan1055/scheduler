@@ -9,11 +9,11 @@
  * Form constructor for the main admin form for configuring Scheduler.
  */
 function scheduler_admin() {
-  $now = t('Example: %date', array('%date' => format_date(REQUEST_TIME, 'custom', variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT))));
+  $now = t('Example: %date', array('%date' => format_date(REQUEST_TIME, 'custom', \Drupal::config('scheduler.settings')->get('date_format'))));
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
-    '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('date_format'),
     '#size' => 20,
     '#maxlength' => 20,
     '#required' => TRUE,
@@ -28,7 +28,7 @@ function scheduler_admin() {
   $form['scheduler_field_type'] = array(
     '#type' => 'radios',
     '#title' => t('Field type'),
-    '#default_value' => variable_get('scheduler_field_type', 'date_popup'),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('field_type'),
     '#options' => array(
       'textfield' => t('Standard text field'),
       'date_popup' => t('Date Popup calendar'),
@@ -57,7 +57,7 @@ function scheduler_admin() {
     '#size' => 2,
     '#maxlength' => 2,
     '#disabled' => !$timepicker_enabled,
-    '#default_value' => variable_get('scheduler_date_popup_minute_increment', 1),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('date_popup_minute_increment'),
     '#element_validate' => array('element_validate_integer_positive'),
     '#states' => array(
       'visible' => array(
@@ -75,13 +75,13 @@ function scheduler_admin() {
   $form['scheduler_date_only_fieldset']['scheduler_allow_date_only'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow users to enter only a date and provide a default time.'),
-    '#default_value' => variable_get('scheduler_allow_date_only', FALSE),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('allow_date_only'),
     '#description' => t('When only a date is entered the time will default to a specified value, but the user can change this if required.'),
   );
   $form['scheduler_date_only_fieldset']['scheduler_default_time'] = array(
     '#type' => 'textfield',
     '#title' => t('Default time'),
-    '#default_value' => variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('default_time'),
     '#size' => 20,
     '#maxlength' => 20,
     '#description' => t('This is the time that will be used if the user does not enter a value. Format: HH:MM:SS.'),
@@ -95,7 +95,7 @@ function scheduler_admin() {
   $form['scheduler_extra_info'] = array(
     '#type' => 'textarea',
     '#title' => t('Extra Info'),
-    '#default_value' => variable_get('scheduler_extra_info', ''),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('extra_info'),
     '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
   );
 
@@ -401,14 +401,14 @@ function _scheduler_lightweight_cron($form, &$form_state) {
   $form['scheduler_cron_settings']['scheduler_lightweight_log'] = array(
     '#type' => 'checkbox',
     '#title' => t('Log every activation and completion message.'),
-    '#default_value' => variable_get('scheduler_lightweight_log', 1),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('log'),
     '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
   );
   $form['scheduler_cron_settings']['scheduler_lightweight_access_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Lightweight cron access key'),
     '#size' => 100,
-    '#default_value' => variable_get('scheduler_lightweight_access_key', ''),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('lightweight_access_key'),
     '#description' => t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/&lt;this key&gt;. To disable security for lightweight cron leave this field blank."),
   );
   if (isset($form_state['scheduler_generate_new_key'])) {

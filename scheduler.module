@@ -168,7 +168,7 @@ function scheduler_help($section) {
 
     case 'admin/config/content/scheduler/cron':
       $base_url = $GLOBALS['base_url'];
-      $access_key = variable_get('scheduler_lightweight_access_key', '');
+      $access_key = \Drupal::config('scheduler.settings')->get('lightweight_access_key');
       $cron_url = $base_url . '/scheduler/cron' . ($access_key ? '/' . $access_key : '');
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not execute any cron tasks defined by Drupal core or any other modules.") . '</p>';
       $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>';
@@ -196,7 +196,7 @@ function scheduler_help($section) {
  *   TRUE if we are using date_popup. FALSE otherwise.
  */
 function _scheduler_use_date_popup() {
-  return module_exists('date_popup') && variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
+  return module_exists('date_popup') && \Drupal::config('scheduler.settings')->get('field_type') == 'date_popup';
 }
 
 /**
@@ -271,8 +271,8 @@ function _scheduler_allow($node, $action) {
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "") {
-    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-    $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
+    $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+    $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
 
     if (_scheduler_use_date_popup()) {
       // Date Popup currently returns the value into the $node using its default
@@ -290,15 +290,15 @@ function _scheduler_strtotime($str) {
     // If the time failed using the full $date_format or no time entry is
     // allowed, but date-only with a default time is enabled, check if the input
     // matches the "date only" date format.
-    $time_only_format = variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT);
-    if ((!$time || $time_only_format == '') && variable_get('scheduler_allow_date_only', FALSE)) {
+    $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
+    if ((!$time || $time_only_format == '') && \Drupal::config('scheduler.settings')->get('allow_date_only')) {
       if ($time = _scheduler_strptime($str, $date_only_format)) {
         // A time has been calculated, but also check that there was only a
         // date entered and no extra mal-formed time elements.
         if ($str == date($date_only_format, $time)) {
           // Parse the default time string into elements, then add the total
           // offset in seconds to the timestamp.
-          $default_time = date_parse(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+          $default_time = date_parse(\Drupal::config('scheduler.settings')->get('default_time'));
           $time_offset = ($default_time['hour'] * 3600) + ($default_time['minute'] * 60) + $default_time['second'];
           $time += $time_offset;
         }
@@ -498,7 +498,7 @@ function scheduler_node_validate($node, $form, &$form_state) {
   // validation error has occurred. In this case we should skip validation as
   // it is being handled by Date Popup.
 
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
 
   if (!empty($node->publish_on) && !is_numeric($node->publish_on) && !is_array($node->publish_on)) {
     $publishtime = _scheduler_strtotime($node->publish_on);
@@ -570,7 +570,7 @@ function scheduler_node_presave($node) {
       // been prevented by other modules. Those modules have to display a
       // message themselves explaining why publication is denied.
       if ($publication_allowed) {
-        $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+        $date_format = \Drupal::config('scheduler.settings')->get('date_format');
         drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
       }
     }
@@ -715,7 +715,7 @@ function scheduler_cron_is_running() {
  *   TRUE if the cron url key is correct. FALSE otherwise.
  */
 function _scheduler_cron_access($cron_key) {
-  $valid_cron_key = variable_get('scheduler_lightweight_access_key', '');
+  $valid_cron_key = \Drupal::config('scheduler.settings')->get('lightweight_access_key');
   return $valid_cron_key == $cron_key;
 }
 
@@ -785,7 +785,7 @@ function scheduler_field_extra_fields() {
  */
 function scheduler_preprocess_node(&$variables, $hook) {
   $node = $variables['node'];
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
+  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {
     $variables['publish_on'] = format_date($node->publish_on, 'custom', $date_format);
   }
@@ -912,10 +912,10 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
  */
 function scheduler_date_popup_pre_validate_alter($element, $form_state, &$input) {
   // Provide a default time if this is enabled and the time field is empty.
-  if (variable_get('scheduler_allow_date_only', FALSE) && $element['#array_parents'][0] == 'scheduler_settings' && $input['date'] != '' && $input['time'] == '') {
+  if (\Drupal::config('scheduler.settings')->get('allow_date_only') && $element['#array_parents'][0] == 'scheduler_settings' && $input['date'] != '' && $input['time'] == '') {
     // Get the default time as a timestamp number.
-    $default_time = strtotime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+    $default_time = strtotime(\Drupal::config('scheduler.settings')->get('default_time'));
     // Set the time in the required format just as if the user had typed it.
-    $input['time'] = format_date($default_time, 'custom', variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT));
+    $input['time'] = format_date($default_time, 'custom', \Drupal::config('scheduler.settings')->get('time_only_format'));
   }
 }

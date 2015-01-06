@@ -16,10 +16,10 @@
 function _scheduler_form_alter(&$form, $form_state) {
   $publishing_enabled = variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0) == 1;
   $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $form['type']['#value'], 0) == 1;
-  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
-  $date_only_format = variable_get('scheduler_date_only_format', SCHEDULER_DATE_ONLY_FORMAT);
-  $time_only_format = variable_get('scheduler_time_only_format', SCHEDULER_TIME_ONLY_FORMAT);
-  $date_only_allowed = variable_get('scheduler_allow_date_only', FALSE);
+  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
+  $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
+  $date_only_allowed = \Drupal::config('scheduler.settings')->get('allow_date_only');
   $use_date_popup = _scheduler_use_date_popup();
   $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
   $node = $form['#node'];
@@ -88,7 +88,7 @@ function _scheduler_form_alter(&$form, $form_state) {
     $form['scheduler_settings']['#attached']['js'][] = drupal_get_path('module', 'scheduler') . '/scheduler_vertical_tabs.js';
   }
 
-  $extra_info = variable_get('scheduler_extra_info', '');
+  $extra_info = \Drupal::config('scheduler.settings')->get('extra_info');
   if ($extra_info && $extra_info != '') {
     $form['scheduler_settings']['extra_info'] = array(
       '#type' => 'item',
@@ -112,7 +112,7 @@ function _scheduler_form_alter(&$form, $form_state) {
   // Show the default time so users know what they will get if they do not
   // enter a time.
   if ($date_only_allowed) {
-    $default_time = strtotime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
+    $default_time = strtotime(\Drupal::config('scheduler.settings')->get('default_time'));
     $descriptions['default'] = t('The default time is @default_time.', array(
       '@default_time' => format_date($default_time, 'custom', $time_only_format ? $time_only_format : SCHEDULER_TIME_ONLY_FORMAT),
     ));
@@ -137,7 +137,7 @@ function _scheduler_form_alter(&$form, $form_state) {
       $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
       $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
       $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
-      $form['scheduler_settings']['publish_on']['#date_increment'] = variable_get('scheduler_date_popup_minute_increment', 1);
+      $form['scheduler_settings']['publish_on']['#date_increment'] = \Drupal::config('scheduler.settings')->get('date_popup_minute_increment');
       unset($descriptions['format']);
       $form['scheduler_settings']['publish_on']['#description'] = filter_xss(implode(' ', $descriptions));
       unset($form['scheduler_settings']['publish_on']['#maxlength']);
@@ -166,7 +166,7 @@ function _scheduler_form_alter(&$form, $form_state) {
       $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
       $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
       $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
-      $form['scheduler_settings']['unpublish_on']['#date_increment'] = variable_get('scheduler_date_popup_minute_increment', 1);
+      $form['scheduler_settings']['unpublish_on']['#date_increment'] = \Drupal::config('scheduler.settings')->get('date_popup_minute_increment');
       unset($descriptions['format']);
       $form['scheduler_settings']['unpublish_on']['#description'] = filter_xss(implode(' ', $descriptions));
       unset($form['scheduler_settings']['unpublish_on']['#maxlength']);

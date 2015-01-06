@@ -222,7 +222,7 @@ function _scheduler_scheduler_nid_list($action) {
  * /admin/config/content/scheduler/cron.
  */
 function _scheduler_run_cron() {
-  $log = variable_get('scheduler_lightweight_log', 1);
+  $log = \Drupal::config('scheduler.settings')->get('log');
   if ($log) {
     watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
   }

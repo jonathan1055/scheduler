@@ -328,7 +328,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
   protected function assertDefaultTime() {
     // Define the form fields and date formats we will test according to whether
     // date popups have been enabled or not.
-    $using_popup = variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
+    $using_popup = \Drupal::config('scheduler.settings')->get('field_type') == 'date_popup';
     $publish_date_field = $using_popup ? 'publish_on[date]' : 'publish_on';
     $unpublish_date_field = $using_popup ? 'unpublish_on[date]' : 'unpublish_on';
     $publish_time_field = $using_popup ? 'publish_on[time]' : 'publish_on';
