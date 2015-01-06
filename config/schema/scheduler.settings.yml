@@ -1,0 +1,24 @@
+scheduler.settings:
+  type: mapping
+  label: Settings
+  mapping:
+    allow_date_only:
+      type: boolean
+    date_format:
+      type: string
+    date_only_format:
+      type: string
+    date_popup_minute_increment:
+      type: integer
+    default_time:
+      type: string
+    extra_info:
+      type: string
+    field_type:
+      type: string
+    lightweight_access_key:
+      type: string
+    log:
+      type: boolean
+    time_only_format:
+      type: string
