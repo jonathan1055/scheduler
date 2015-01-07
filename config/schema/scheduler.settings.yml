@@ -16,7 +16,7 @@ scheduler.settings:
       type: string
     field_type:
       type: string
-    lightweight_access_key:
+    lightweight_cron_access_key:
       type: string
     log:
       type: boolean

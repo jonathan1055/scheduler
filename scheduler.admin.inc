@@ -408,12 +408,12 @@ function _scheduler_lightweight_cron($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Lightweight cron access key'),
     '#size' => 100,
-    '#default_value' => \Drupal::config('scheduler.settings')->get('lightweight_access_key'),
+    '#default_value' => \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key'),
     '#description' => t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/&lt;this key&gt;. To disable security for lightweight cron leave this field blank."),
   );
   if (isset($form_state['scheduler_generate_new_key'])) {
     $new_access_key = substr(md5(rand()), 0, 20);
-    $form_state['input']['scheduler_lightweight_access_key'] = $new_access_key;
+    $form_state['input']['scheduler_lightweight_cron_access_key'] = $new_access_key;
     drupal_set_message(t('A new random key has been generated but not saved. If you wish to use this, first "Save Configuration" to store the value, then modify your crontab job.'), 'warning');
   }
   $form['scheduler_cron_settings']['create_key'] = array(

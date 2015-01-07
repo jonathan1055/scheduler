@@ -168,7 +168,7 @@ function scheduler_help($section) {
 
     case 'admin/config/content/scheduler/cron':
       $base_url = $GLOBALS['base_url'];
-      $access_key = \Drupal::config('scheduler.settings')->get('lightweight_access_key');
+      $access_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
       $cron_url = $base_url . '/scheduler/cron' . ($access_key ? '/' . $access_key : '');
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not execute any cron tasks defined by Drupal core or any other modules.") . '</p>';
       $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>';
@@ -715,7 +715,7 @@ function scheduler_cron_is_running() {
  *   TRUE if the cron url key is correct. FALSE otherwise.
  */
 function _scheduler_cron_access($cron_key) {
-  $valid_cron_key = \Drupal::config('scheduler.settings')->get('lightweight_access_key');
+  $valid_cron_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
   return $valid_cron_key == $cron_key;
 }
 

@@ -5,6 +5,6 @@ date_popup_minute_increment: 1
 default_time: '00:00:00'
 extra_info: ''
 field_type: date_popup
-lightweight_access_key: ''
+lightweight_cron_access_key: ''
 log: true
 time_only_format: 'H:i:s'
