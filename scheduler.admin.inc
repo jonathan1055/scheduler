@@ -356,6 +356,7 @@ function _scheduler_form_node_type_form_alter(&$form, $form_state) {
       ),
     ),
   );
+  // @todo Worthwhile to port this to D8 now form displays are configurable?
   $form['scheduler']['node_edit_layout']['scheduler_use_vertical_tabs'] = array(
     '#type' => 'radios',
     '#title' => t('Display scheduling options as'),
