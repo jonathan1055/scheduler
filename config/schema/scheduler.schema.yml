@@ -1,6 +1,6 @@
 scheduler.settings:
   type: mapping
-  label: Settings
+  label: 'Scheduler settings'
   mapping:
     allow_date_only:
       type: boolean
@@ -22,3 +22,32 @@ scheduler.settings:
       type: boolean
     time_only_format:
       type: string
+
+node_type.third_party.scheduler:
+  type: mapping
+  label: 'Scheduler content type settings'
+  mapping:
+    publish_enable:
+      type: boolean
+      label: 'Enable scheduled publishing'
+    publish_past_date:
+      type: string
+      label: 'Action to be taken for publication dates in the past'
+    publish_required:
+      type: boolean
+      label: 'Require scheduled publishing'
+    publish_revision:
+      type: boolean
+      label: 'Create a new revision on publishing'
+    publish_touch:
+      type: boolean
+      label: 'Change content creation time to match the scheduled publish time'
+    unpublish_enable:
+      type: boolean
+      label: 'Enable scheduled unpublishing'
+    unpublish_required:
+      type: boolean
+      label: 'Require scheduled unpublishing'
+    unpublish_revision:
+      type: boolean
+      label: 'Create a new revision on unpublishing'
