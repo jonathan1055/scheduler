@@ -1,0 +1,7 @@
+scheduler.admin_form:
+  path: /admin/config/content/scheduler
+  defaults:
+    _title: Scheduler
+    _form: \Drupal\scheduler\Form\SchedulerAdminForm
+  requirements:
+    _permission: 'administer scheduler'
