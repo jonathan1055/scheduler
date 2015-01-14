@@ -21,26 +21,6 @@ define('SCHEDULER_DATE_LETTERS', 'djmnFMyY');
 define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
 
 /**
- * Implements hook_permission().
- */
-function scheduler_permission() {
-  return array(
-    'administer scheduler' => array(
-      'title' => t('Administer scheduler'),
-      'description' => t('Configure scheduler date formats, pop-up calendar, default times, lightweight cron'),
-    ),
-    'schedule (un)publishing of nodes' => array(
-      'title' => t('Schedule content publication'),
-      'description' => t('Allows users to set a start and end time for content publication'),
-    ),
-    'view scheduled content' => array(
-      'title' => t('View scheduled content list'),
-      'description' => t('Allows users to see all content which is scheduled.'),
-    ),
-  );
-}
-
-/**
  * Implements hook_menu().
  */
 function scheduler_menu() {
