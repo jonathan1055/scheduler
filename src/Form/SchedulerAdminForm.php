@@ -27,8 +27,8 @@ class SchedulerAdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $now = t('Example: %date', array('%date' => format_date(REQUEST_TIME, 'custom', \Drupal::config('scheduler.settings')->get('date_format'))));
-    $form['date_format'] = array(
+    $now = t('Example: %date', ['%date' => format_date(REQUEST_TIME, 'custom', \Drupal::config('scheduler.settings')->get('date_format'))]);
+    $form['date_format'] = [
       '#type' => 'textfield',
       '#title' => t('Date format'),
       '#default_value' => \Drupal::config('scheduler.settings')->get('date_format'),
@@ -36,38 +36,38 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#maxlength' => 20,
       '#required' => TRUE,
       '#field_suffix' => ' <small>' . $now . '</small>',
-      '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', array(
+      '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', [
         '!date_letters' => SCHEDULER_DATE_LETTERS,
         '!time_letters' => SCHEDULER_TIME_LETTERS,
         '!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php')
-      )),
-    );
+      ]),
+    ];
 
-    $form['field_type'] = array(
+    $form['field_type'] = [
       '#type' => 'radios',
       '#title' => t('Field type'),
       '#default_value' => \Drupal::config('scheduler.settings')->get('field_type'),
-      '#options' => array(
+      '#options' => [
         'textfield' => t('Standard text field'),
         'date_popup' => t('Date Popup calendar'),
-      ),
-      '#description' => t('Date Popup is enabled. See the !date_popup_config for details.', array('!date_popup_config' => l(t('configuration page'), 'admin/config/date/date_popup'))),
-    );
+      ],
+      '#description' => t('Date Popup is enabled. See the !date_popup_config for details.', ['!date_popup_config' => l(t('configuration page'), 'admin/config/date/date_popup')]),
+    ];
 
     if (!\Drupal::moduleHandler()->moduleExists('date_popup')) {
       $form['field_type']['#default_value'] = 'textfield';
       $form['field_type']['#disabled'] = TRUE;
-      $form['field_type']['#description'] = t('To use the calendar you need to enable Date, Date API and Date Popup. Download the module from the !url.', array('!url' => l(t('Date project page'), 'http://drupal.org/project/date')));
+      $form['field_type']['#description'] = t('To use the calendar you need to enable Date, Date API and Date Popup. Download the module from the !url.', ['!url' => l(t('Date project page'), 'http://drupal.org/project/date')]);
     }
 
     // Variable 'date_popup_timepicker' holds the type of timepicker selected.
     $timepicker_enabled = (variable_get('date_popup_timepicker', '') != 'none');
-    $options = array('@date_popup_config' => url('admin/config/date/date_popup'));
+    $options = ['@date_popup_config' => url('admin/config/date/date_popup')];
     $description = t('Restrict the time entry to specific minute increments.') . ' '
       . ($timepicker_enabled
       ? t('The timepicker type can be selected via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options)
       : t('The timepicker is not enabled - turn it on via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options));
-    $form['date_popup_minute_increment'] = array(
+    $form['date_popup_minute_increment'] = [
       '#type' => 'textfield',
       '#title' => t('Date Popup minute increment'),
       '#description' => $description,
@@ -76,46 +76,46 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#maxlength' => 2,
       '#disabled' => !$timepicker_enabled,
       '#default_value' => \Drupal::config('scheduler.settings')->get('date_popup_minute_increment'),
-      '#element_validate' => array('element_validate_integer_positive'),
-      '#states' => array(
-        'visible' => array(
-          ':input[name="scheduler_field_type"]' => array('value' => 'date_popup'),
-        ),
-      ),
-    );
+      '#element_validate' => ['element_validate_integer_positive'],
+      '#states' => [
+        'visible' => [
+          ':input[name="scheduler_field_type"]' => ['value' => 'date_popup'],
+        ],
+      ],
+    ];
 
     // Options for setting date-only with default time.
-    $form['date_only_fieldset'] = array(
+    $form['date_only_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => t('Date only'),
       '#collapsible' => FALSE,
-    );
-    $form['date_only_fieldset']['allow_date_only'] = array(
+    ];
+    $form['date_only_fieldset']['allow_date_only'] = [
       '#type' => 'checkbox',
       '#title' => t('Allow users to enter only a date and provide a default time.'),
       '#default_value' => \Drupal::config('scheduler.settings')->get('allow_date_only'),
       '#description' => t('When only a date is entered the time will default to a specified value, but the user can change this if required.'),
-    );
-    $form['date_only_fieldset']['default_time'] = array(
+    ];
+    $form['date_only_fieldset']['default_time'] = [
       '#type' => 'textfield',
       '#title' => t('Default time'),
       '#default_value' => \Drupal::config('scheduler.settings')->get('default_time'),
       '#size' => 20,
       '#maxlength' => 20,
       '#description' => t('This is the time that will be used if the user does not enter a value. Format: HH:MM:SS.'),
-      '#states' => array(
-        'visible' => array(
-          ':input[name="scheduler_allow_date_only"]' => array('checked' => TRUE),
-        ),
-      ),
-    );
+      '#states' => [
+        'visible' => [
+          ':input[name="scheduler_allow_date_only"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
 
-    $form['extra_info'] = array(
+    $form['extra_info'] = [
       '#type' => 'textarea',
       '#title' => t('Extra Info'),
       '#default_value' => \Drupal::config('scheduler.settings')->get('extra_info'),
       '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
-    );
+    ];
 
     // Add a submit handler function.
     $form['#submit'][] = 'admin_submit';
@@ -137,11 +137,11 @@ class SchedulerAdminForm extends ConfigFormBase {
     // letters.
     $no_punctuation = preg_replace('/[^\w+]/', '', $form_state->getValue(['date_format']));
     if (preg_match_all('/[^' . SCHEDULER_DATE_LETTERS . SCHEDULER_TIME_LETTERS . ']/', $no_punctuation, $extra)) {
-      $form_state->setErrorByName('date_format', t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', array(
+      $form_state->setErrorByName('date_format', t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', [
         '$date_letters' => SCHEDULER_DATE_LETTERS,
         '$time_letters' => SCHEDULER_TIME_LETTERS,
         '$extra' => implode(' ', $extra[0]),
-      )));
+      ]));
     };
 
     $time_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
@@ -152,10 +152,10 @@ class SchedulerAdminForm extends ConfigFormBase {
       // than just these. Firstly, we add the lowercase 'a' alternative.
       // Secondly timepicker always requires hours and minutes, but seconds are
       // optional.
-      $acceptable = array('H:i:s', 'h:i:sA', 'h:i:sa', 'H:i', 'h:iA', 'h:ia');
+      $acceptable = ['H:i:s', 'h:i:sA', 'h:i:sa', 'H:i', 'h:iA', 'h:ia'];
 
       if ($time_format && !in_array($time_format, $acceptable)) {
-        $form_state->setErrorByName('date_format', t('When using the Date Popup module, the allowed time formats are: !formats', array('!formats' => implode(', ', $acceptable))));
+        $form_state->setErrorByName('date_format', t('When using the Date Popup module, the allowed time formats are: !formats', ['!formats' => implode(', ', $acceptable)]));
       }
     }
 
@@ -208,10 +208,10 @@ class SchedulerAdminForm extends ConfigFormBase {
     variable_set('date_only_format', $date_only_format);
 
     if (empty($time_only_format)) {
-      drupal_set_message(t('The date part of the Scheduler format is %date_part. There is no time part', array('%date_part' => $date_only_format)));
+      drupal_set_message(t('The date part of the Scheduler format is %date_part. There is no time part', ['%date_part' => $date_only_format]));
     }
     else {
-      drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part.', array('%date_part' => $date_only_format, '%time_part' => $time_only_format)));
+      drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part.', ['%date_part' => $date_only_format, '%time_part' => $time_only_format]));
     }
 
     parent::submitForm($form, $form_state);
