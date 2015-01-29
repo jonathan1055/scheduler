@@ -26,6 +26,13 @@ class SchedulerAdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  protected function getEditableConfigNames() {
+    return ['scheduler.settings'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $now = t('Example: %date', ['%date' => format_date(REQUEST_TIME, 'custom', \Drupal::config('scheduler.settings')->get('date_format'))]);
     $form['date_format'] = [
