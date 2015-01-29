@@ -139,7 +139,7 @@ function scheduler_admin() {
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
-    '#default_value' => \Drupal::config('scheduler.settings')->get('date_format'),
+    '#default_value' => variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT),
     '#size' => 20,
     '#maxlength' => 20,
     '#description' => t('The input format for the (un)scheduling time/date. See the date() function for formatting options: http://www.php.net/manual/en/function.date.php (only the following format characters are supported (don\'t use \'G\', \'a\' or \'A\' with Date Popup): djmnyYhHgGisaA)'),
@@ -148,7 +148,7 @@ function scheduler_admin() {
   $form['scheduler_field_type'] = array(
     '#type' => 'radios',
     '#title' => t('Field type'),
-    '#default_value' => \Drupal::config('scheduler.settings')->get('field_type'),
+    '#default_value' => variable_get('scheduler_field_type', 'date_popup'),
     '#options' => array(
       'textfield' => t('Standard text field'),
       'date_popup' => t('Date Popup field'),
@@ -168,7 +168,7 @@ function scheduler_admin() {
   $form['scheduler_extra_info'] = array(
     '#type' => 'textarea',
     '#title' => t('Extra Info'),
-    '#default_value' => \Drupal::config('scheduler.settings')->get('extra_info'),
+    '#default_value' => variable_get('scheduler_extra_info', ''),
     '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
   );
   return system_settings_form($form);
@@ -196,7 +196,7 @@ function scheduler_admin_validate($form, &$form_state) {
  * Do we use the date_popup for date/time selection?
  */
 function _scheduler_use_date_popup() {
-  return module_exists('date_popup') && \Drupal::config('scheduler.settings')->get('field_type') == 'date_popup';
+  return module_exists('date_popup') && variable_get('scheduler_field_type', 'date_popup') == 'date_popup';
 }
 
 /**
@@ -226,22 +226,22 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled publishing for this content type'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('publish_enable'),
+    '#default_value' => variable_get('scheduler_publish_enable_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_touch'] = array(
     '#type' => 'checkbox',
     '#title' => t('Change content creation time to match the scheduled publish time'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('publish_touch'),
+    '#default_value' => variable_get('scheduler_publish_touch_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled publishing'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('publish_required'),
+    '#default_value' => variable_get('scheduler_publish_required_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on publishing'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('publish_revision'),
+    '#default_value' => variable_get('scheduler_publish_revision_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish'] = array(
     '#type' => 'fieldset',
@@ -253,17 +253,17 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled unpublishing for this content type'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('unpublish_enable'),
+    '#default_value' => variable_get('scheduler_unpublish_enable_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled unpublishing'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('unpublish_required'),
+    '#default_value' => variable_get('scheduler_unpublish_required_' . $form['#node_type']->type, 0),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on unpublishing'),
-    '#default_value' => \Drupal::config('scheduler.type.' . $form['#node_type']->type)->get('unpublish_revision'),
+    '#default_value' => variable_get('scheduler_unpublish_revision_' . $form['#node_type']->type, 0),
   );
 }
 
@@ -273,15 +273,15 @@ function scheduler_form_node_type_form_alter(&$form, $form_state) {
 function scheduler_form_alter(&$form, $form_state) {
   // Is this a node form and scheduling has been enabled for this node type
   if (!empty($form['#node_edit_form']) && user_access('schedule (un)publishing of nodes')) {
-    $publishing_enabled = \Drupal::config('scheduler.type.' . $form['type']['#value'])->get('publish_enable') == 1;
-    $unpublishing_enabled = \Drupal::config('scheduler.type.' . $form['type']['#value'])->get('unpublish_enable') == 1;
+    $publishing_enabled = variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0) == 1;
+    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $form['type']['#value'], 0) == 1;
 
     // if scheduling has been enabled for this node type
     if ($publishing_enabled || $unpublishing_enabled) {
 
       $node = $form['#node'];
 
-      $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+      $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
       $use_date_popup = _scheduler_use_date_popup();
 
       $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
@@ -315,8 +315,8 @@ function scheduler_form_alter(&$form, $form_state) {
         $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
       }
 
-      $publishing_required = \Drupal::config('scheduler.type.' . $form['type']['#value'])->get('publish_required') == 1 && $node->status == 0;
-      $unpublishing_required = \Drupal::config('scheduler.type.' . $form['type']['#value'])->get('unpublish_enable') == 1 && $node->status == 1;
+      $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 0;
+      $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1 && $node->status == 1;
 
       $fieldset_extended = (
         (isset($defaults->publish_on) && $defaults->publish_on != 0)
@@ -339,7 +339,7 @@ function scheduler_form_alter(&$form, $form_state) {
         ),
       );
 
-      $extra_info = \Drupal::config('scheduler.settings')->get('extra_info');
+      $extra_info = variable_get('scheduler_extra_info', '');
       if ($extra_info && $extra_info != '') {
         $form['scheduler_settings']['extra_info'] = array(
           '#type' => 'item',
@@ -495,7 +495,7 @@ function scheduler_list() {
  */
 function _scheduler_strtotime($str) {
   if ($str && trim($str) != "") {
-    $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
     if (_scheduler_use_date_popup()) {
       $date_format = SCHEDULER_DATE_FORMAT;
@@ -591,11 +591,6 @@ function _scheduler_strptime($date, $format) {
  * Implements hook_node_load().
  */
 function scheduler_node_load($nodes, $types) {
-  // The date format in which the (un)publication dates are shown.
-  // @todo Keep these in unix time, and convert to human readable format on
-  // rendering.
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format_long');
-
   $nids = array_keys($nodes);
   $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids)', array(':nids' => $nids));
   foreach ($result as $record) {
@@ -603,8 +598,8 @@ function scheduler_node_load($nodes, $types) {
     $nodes[$nid]->publish_on = $record->publish_on;
     $nodes[$nid]->unpublish_on = $record->unpublish_on;
     $row = array();
-    $row['published'] = $record->publish_on ? date($date_format, $record->publish_on) : NULL;
-    $row['unpublished'] = $record->unpublish_on ? date($date_format, $record->unpublish_on) : NULL;
+    $row['published'] = $record->publish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->publish_on) : NULL;
+    $row['unpublished'] = $record->unpublish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->unpublish_on) : NULL;
     $row['publish_on'] = $record->publish_on;
     $row['unpublish_on'] = $record->unpublish_on;
     $nodes[$nid]->scheduler = $row;
@@ -642,7 +637,7 @@ function scheduler_node_validate($node, $form) {
   // module and a validation error has occurred. In this case we should skip
   // validation as it is being handled by Date Popup.
 
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   if (!empty($node->publish_on) && !is_numeric($node->publish_on) && !is_array($node->publish_on)) {
     $publishtime = _scheduler_strtotime($node->publish_on);
@@ -682,7 +677,7 @@ function scheduler_node_presave($node) {
   // If it has been set, we want to make sure the node is unpublished since it will be published at a later date
   if (isset($node->publish_on) && $node->publish_on != '' && is_numeric($node->publish_on) && $node->publish_on > REQUEST_TIME) {
     $node->status = 0;
-    $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+    $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
     drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
   }
 }
@@ -720,7 +715,19 @@ function scheduler_node_delete($node) {
  * Implements hook_node_type_delete().
  */
 function scheduler_node_type_delete($info) {
-  \Drupal::config('scheduler.type.' . $info->type)->delete();
+  $variables = array();
+
+  $variables[] = "scheduler_publish_enable_" . $info->type;
+  $variables[] = "scheduler_publish_touch_" . $info->type;
+  $variables[] = "scheduler_publish_required_" . $info->type;
+  $variables[] = "scheduler_publish_revision_" . $info->type;
+  $variables[] = "scheduler_unpublish_enable_" . $info->type;
+  $variables[] = "scheduler_unpublish_required_" . $info->type;
+  $variables[] = "scheduler_unpublish_revision_" . $info->type;
+
+  foreach ($variables as $variable) {
+    variable_del($variable);
+  }
 }
 
 /**
@@ -745,7 +752,7 @@ function scheduler_cron() {
  */
 function _scheduler_publish() {
   $result = FALSE;
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time now is greater than the time to publish a node, publish it.
   $query = db_select('scheduler', 's');
@@ -770,11 +777,11 @@ function _scheduler_publish() {
     $n                 = node_load($nid);
     $n->changed        = $n->publish_on;
     $old_creation_date = $n->created;
-    if (\Drupal::config('scheduler.type.' . $n->type)->get('publish_touch') == 1) {
+    if (variable_get('scheduler_publish_touch_' . $n->type, 0) == 1) {
       $n->created = $n->publish_on;
     }
 
-    $create_publishing_revision = \Drupal::config('scheduler.type.' . $n->type)->get('publish_revision') == 1;
+    $create_publishing_revision = variable_get('scheduler_publish_revision_' . $n->type, 0) == 1;
     if ($create_publishing_revision) {
       $n->revision = TRUE;
       $n->log = "Node published by scheduler module. Original creation date was " . format_date($old_creation_date, 'custom', $date_format) . ".";
@@ -820,7 +827,7 @@ function _scheduler_publish() {
  */
 function _scheduler_unpublish() {
   $result = FALSE;
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
 
   // If the time is greater than the time to unpublish a node, unpublish it.
   $query = db_select('scheduler', 's');
@@ -848,7 +855,7 @@ function _scheduler_unpublish() {
     $n->changed      = $n->unpublish_on;
 
     if ($n->status == 1) {
-      $create_unpublishing_revision = \Drupal::config('scheduler.type.' . $n->type)->get('unpublish_revision') == 1;
+      $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $n->type, 0) == 1;
       if ($create_unpublishing_revision) {
         $n->revision = TRUE;
         $n->log = "Node unpublished by scheduler module. Original change date was " . format_date($old_change_date, 'custom', $date_format) . ".";
@@ -911,7 +918,7 @@ function scheduler_theme() {
 }
 
 function _scheduler_run_cron() {
-  $log = \Drupal::config('scheduler.settings')->get('lightweight_log');
+  $log = variable_get('scheduler_lightweight_log', 1);
   if ($log) {
     watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
   }
@@ -953,7 +960,7 @@ function _scheduler_lightweight_cron() {
   $form['scheduler_cron_settings']['scheduler_lightweight_log'] = array(
     '#type' => 'checkbox',
     '#title' => t('Log every activation and completion message.'),
-    '#default_value' => \Drupal::config('scheduler.settings')->get('lightweight_log'),
+    '#default_value' => variable_get('scheduler_lightweight_log', 1),
     '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
   );
 
@@ -1003,8 +1010,8 @@ function scheduler_views_api() {
  */
 function scheduler_content_extra_fields($type_name) {
   $fields = array();
-  $publishing_enabled = \Drupal::config('scheduler.type.' . $type_name)->get('publish_enable') == 1;
-  $unpublishing_enabled = \Drupal::config('scheduler.type.' . $type_name)->get('unpublish_enable') == 1;
+  $publishing_enabled = variable_get('scheduler_publish_enable_' . $type_name, 0) == 1;
+  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $type_name, 0) == 1;
   if ($publishing_enabled || $unpublishing_enabled) {
     $fields['scheduler_settings'] = array(
       'label' => t('Scheduler'),
@@ -1021,7 +1028,7 @@ function scheduler_content_extra_fields($type_name) {
  */
 function scheduler_preprocess_node(&$variables, $hook) {
   $node = $variables['node'];
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
   if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {
     $variables['publish_on'] = format_date($node->publish_on, 'custom', $date_format);
   }
@@ -1036,8 +1043,8 @@ function scheduler_preprocess_node(&$variables, $hook) {
  */
 function scheduler_feeds_processor_targets_alter(&$targets, $processor, $content_type) {
 
-  $publishing_enabled = \Drupal::config('scheduler.type.' . $content_type)->get('publish_enable');
-  $unpublishing_enabled = \Drupal::config('scheduler.type.' . $content_type)->get('unpublish_enable');
+  $publishing_enabled = variable_get('scheduler_publish_enable_' . $content_type, 0);
+  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $content_type, 0);
 
   if ($publishing_enabled) {
     $targets['publish_on'] = array(

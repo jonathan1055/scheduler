@@ -44,20 +44,30 @@ function scheduler_schema() {
 }
 
 /**
- * Implements hook_install().
+ * Implements hook_uninstall().
  */
-function scheduler_install() {
-  // Set up default configuration for each node type.
-  foreach (node_type_get_types() as $type) {
-    \Drupal::config('scheduler.type.' . $type->type)
-      ->set('publish_enable', 0)
-      ->set('publish_required', 0)
-      ->set('publish_revision',0)
-      ->set('publish_touch',0)
-      ->set('unpublish_enable',0)
-      ->set('unpublish_required',0)
-      ->set('unpublish_revision',0)
-      ->save();
+function scheduler_uninstall() {
+  $variables = array(
+    'scheduler_date_format',
+    'scheduler_field_type',
+    'scheduler_extra_info',
+    'scheduler_lightweight_log',
+  );
+
+  $types = node_type_get_types();
+  foreach ($types as $type) {
+    $type_name = $type->type;
+    $variables[] = "scheduler_publish_enable_" . $type_name;
+    $variables[] = "scheduler_publish_touch_" . $type_name;
+    $variables[] = "scheduler_publish_required_" . $type_name;
+    $variables[] = "scheduler_publish_revision_" . $type_name;
+    $variables[] = "scheduler_unpublish_enable_" . $type_name;
+    $variables[] = "scheduler_unpublish_required_" . $type_name;
+    $variables[] = "scheduler_unpublish_revision_" . $type_name;
+  }
+
+  foreach ($variables as $variable) {
+    variable_del($variable);
   }
 }
 
@@ -68,30 +78,4 @@ function scheduler_update_last_removed() {
   // The updates for Scheduler 6.x are no longer required in this file.
   // This function shows that the last update was scheduler_update_6101.
   return 6101;
-}
-
-/**
- * Convert variables to config.
- */
-function scheduler_update_8000() {
-  update_variables_to_config('scheduler.settings', array(
-    'scheduler_date_format' => 'date_format',
-    'scheduler_date_format_long' => 'date_format_long',
-    'scheduler_extra_info' => 'extra_info',
-    'scheduler_field_type' => 'field_type',
-    'scheduler_lightweight_log' => 'lightweight_log',
-  ));
-
-  $types = db_query('SELECT type FROM {node_type}')->fetchCol();
-  foreach ($types as $type) {
-    update_variables_to_config('scheduler.type.' . $type, array(
-      'scheduler_publish_enable_' . $type => 'publish_enable',
-      'scheduler_publish_required_' . $type => 'publish_required',
-      'scheduler_publish_revision_' . $type => 'publish_revision',
-      'scheduler_publish_touch_' . $type => 'publish_touch',
-      'scheduler_unpublish_enable_' . $type => 'unpublish_enable',
-      'scheduler_unpublish_required_' . $type => 'unpublish_required',
-      'scheduler_unpublish_revision_' . $type => 'unpublish_revision',
-    ));
-  }
 }

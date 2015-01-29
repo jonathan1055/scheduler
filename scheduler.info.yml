@@ -1,4 +1,0 @@
-name: Scheduler
-description: This module allows nodes to be published and unpublished on specified dates and time. 
-type: module
-core: 8.x
