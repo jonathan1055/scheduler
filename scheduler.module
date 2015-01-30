@@ -170,16 +170,6 @@ function scheduler_help($section) {
 }
 
 /**
- * Returns whether we use the date_popup for date/time selection.
- *
- * @return bool
- *   TRUE if we are using date_popup. FALSE otherwise.
- */
-function _scheduler_use_date_popup() {
-  return module_exists('date_popup') && \Drupal::config('scheduler.settings')->get('field_type') == 'date_popup';
-}
-
-/**
  * Implements hook_form_node_type_form_alter().
  */
 function scheduler_form_node_type_form_alter(&$form, $form_state) {
@@ -254,16 +244,6 @@ function _scheduler_strtotime($str) {
     $date_format = \Drupal::config('scheduler.settings')->get('date_format');
     $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
 
-    if (_scheduler_use_date_popup()) {
-      // Date Popup currently returns the value into the $node using its default
-      // format DATE_FORMAT_DATETIME but reduced to the same granularity as the
-      // requested format. Until date issue http://drupal.org/node/1855810 is
-      // resolved we can use the date_popup functions date_format_order() and
-      // date_limit_format() to derive the format of the returned string value.
-      $granularity = date_format_order($date_format);
-      $date_format = date_limit_format(DATE_FORMAT_DATETIME, $granularity);
-      $date_only_format = date_limit_format(DATE_FORMAT_DATETIME, array('day', 'month', 'year'));
-    }
     $str = trim(preg_replace('/\s+/', ' ', $str));
     $time = _scheduler_strptime($str, $date_format);
 
@@ -473,14 +453,10 @@ function scheduler_node_validate($node, $form, &$form_state) {
   // to see if the value is numeric. If it is, assume we have already done the
   // strtotime conversion. This prevents us running strtotime on a value we have
   // already converted. This is needed because Drupal 6 removed 'submit' and
-  // added 'presave' and all this happens at different times. If the value is
-  // passed as an array this means we are using the Date Popup module and a
-  // validation error has occurred. In this case we should skip validation as
-  // it is being handled by Date Popup.
-
+  // added 'presave' and all this happens at different times.
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
 
-  if (!empty($node->publish_on) && !is_numeric($node->publish_on) && !is_array($node->publish_on)) {
+  if (!empty($node->publish_on) && !is_numeric($node->publish_on)) {
     $publishtime = _scheduler_strtotime($node->publish_on);
     if ($publishtime === FALSE) {
       form_set_error('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
@@ -490,7 +466,7 @@ function scheduler_node_validate($node, $form, &$form_state) {
     }
   }
 
-  if (!empty($node->unpublish_on) && !is_numeric($node->unpublish_on) && !is_array($node->unpublish_on)) {
+  if (!empty($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
     $unpublishtime = _scheduler_strtotime($node->unpublish_on);
     if ($unpublishtime === FALSE) {
       form_set_error('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
@@ -884,18 +860,5 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
   }
   if (isset($source_entity->unpublish_on)) {
     $entity->unpublish_on = $source_entity->unpublish_on;
-  }
-}
-
-/**
- * Implements hook_date_popup_pre_validate_alter().
- */
-function scheduler_date_popup_pre_validate_alter($element, $form_state, &$input) {
-  // Provide a default time if this is enabled and the time field is empty.
-  if (\Drupal::config('scheduler.settings')->get('allow_date_only') && $element['#array_parents'][0] == 'scheduler_settings' && $input['date'] != '' && $input['time'] == '') {
-    // Get the default time as a timestamp number.
-    $default_time = strtotime(\Drupal::config('scheduler.settings')->get('default_time'));
-    // Set the time in the required format just as if the user had typed it.
-    $input['time'] = format_date($default_time, 'custom', \Drupal::config('scheduler.settings')->get('time_only_format'));
   }
 }

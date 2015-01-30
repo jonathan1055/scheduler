@@ -35,7 +35,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
    * {@inheritdoc}
    */
   function setUp() {
-    parent::setUp('date', 'date_popup', 'scheduler');
+    parent::setUp('date', 'scheduler');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
@@ -46,7 +46,6 @@ class SchedulerTestCase extends DrupalWebTestCase {
     // Add scheduler functionality to the page node type.
     variable_set('scheduler_publish_enable_page', 1);
     variable_set('scheduler_unpublish_enable_page', 1);
-    variable_set('scheduler_field_type', 'textfield');
   }
 
   /**
@@ -298,49 +297,36 @@ class SchedulerTestCase extends DrupalWebTestCase {
   public function testDefaultTime() {
     $this->drupalLogin($this->admin_user);
 
-    foreach (array('textfield', 'date_popup') as $field_type) {
-      // Check that the correct default time is added to the scheduled date.
-      // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
-      $edit = array(
-        'scheduler_date_format' => 'Y-m-d H:i:s',
-        'scheduler_allow_date_only' => TRUE,
-        'scheduler_default_time' => '6:30',
-        'scheduler_field_type' => $field_type,
-      );
-      $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
-      $this->assertDefaultTime();
+    // Check that the correct default time is added to the scheduled date.
+    // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
+    $edit = array(
+      'scheduler_date_format' => 'Y-m-d H:i:s',
+      'scheduler_allow_date_only' => TRUE,
+      'scheduler_default_time' => '6:30',
+    );
+    $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
+    $this->assertDefaultTime();
 
-      // Check that it is not possible to enter a date format without a time if
-      // the 'date only' option is not enabled.
-      $edit = array(
-        'scheduler_date_format' => 'Y-m-d',
-        'scheduler_allow_date_only' => FALSE,
-        'scheduler_field_type' => $field_type,
-      );
-      $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
-      $this->assertRaw(t('You must either include a time within the date format or enable the date-only option.'), format_string('It is not possible to enter a date format without a time if the "date only" option is not enabled and the field type is set to %field_type.', array('%field_type' => $field_type)));
-    }
+    // Check that it is not possible to enter a date format without a time if
+    // the 'date only' option is not enabled.
+    $edit = array(
+      'scheduler_date_format' => 'Y-m-d',
+      'scheduler_allow_date_only' => FALSE,
+    );
+    $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
+    $this->assertRaw(t('You must either include a time within the date format or enable the date-only option.'), 'It is not possible to enter a date format without a time if the "date only" option is not enabled.');
   }
 
   /**
    * Asserts that the default time works as expected.
    */
   protected function assertDefaultTime() {
-    // Define the form fields and date formats we will test according to whether
-    // date popups have been enabled or not.
-    $using_popup = \Drupal::config('scheduler.settings')->get('field_type') == 'date_popup';
-    $publish_date_field = $using_popup ? 'publish_on[date]' : 'publish_on';
-    $unpublish_date_field = $using_popup ? 'unpublish_on[date]' : 'unpublish_on';
-    $publish_time_field = $using_popup ? 'publish_on[time]' : 'publish_on';
-    $unpublish_time_field = $using_popup ? 'unpublish_on[time]' : 'unpublish_on';
-    $time_format = $using_popup ? 'H:i:s' : 'Y-m-d H:i:s';
-
     // We cannot easily test the exact validation messages as they contain the
     // REQUEST_TIME of the POST request, which can be one or more seconds in the
     // past. Best we can do is check the fixed part of the message as it is when
     // passed to t(). This will only work in English.
-    $publish_validation_message = $using_popup ? t('The value input for field %field is invalid:', array('%field' => 'Publish on')) : "The 'publish on' value does not match the expected format of";
-    $unpublish_validation_message = $using_popup ? t('The value input for field %field is invalid:', array('%field' => 'Unpublish on')) : "The 'unpublish on' value does not match the expected format of";
+    $publish_validation_message = "The 'publish on' value does not match the expected format of";
+    $unpublish_validation_message = "The 'unpublish on' value does not match the expected format of";
 
     // First test with the "date only" functionality disabled.
     $this->drupalPost('admin/config/content/scheduler', array('scheduler_allow_date_only' => FALSE), t('Save configuration'));
@@ -348,8 +334,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
     // Test if entering a time is required.
     $edit = array(
       'title' => $this->randomName(),
-      $publish_date_field => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
-      $unpublish_date_field => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
+      'publish_on' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
+      'unpublish_on' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
     );
     $this->drupalPost('node/add/page', $edit, t('Save'));
 
@@ -366,8 +352,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
 
     // Check that the default time has been added to the scheduler form fields.
     $this->clickLink(t('Edit'));
-    $this->assertFieldByName($publish_time_field, date($time_format, strtotime('tomorrow', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for publication.');
-    $this->assertFieldByName($unpublish_time_field, date($time_format, strtotime('tomorrow +1 day', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for unpublication.');
+    $this->assertFieldByName('publish_on', date('Y-m-d H:i:s', strtotime('tomorrow', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for publication.');
+    $this->assertFieldByName('unpublish_on', date('Y-m-d H:i:s', strtotime('tomorrow +1 day', REQUEST_TIME) + 23400), 'The default time offset has been added to the date field when scheduling content for unpublication.');
   }
 
   /**
@@ -579,52 +565,6 @@ class SchedulerTestCase extends DrupalWebTestCase {
     );
     $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
     $this->assertRaw(t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
-  }
-
-  /**
-   * Tests configuration of different date formats with the Date Popup field.
-   */
-  public function testDatePopupFormats() {
-    $this->drupalLogin($this->admin_user);
-
-    // Define some date formats to test.
-    $test_cases = array(
-      // By default we are not using the 'date only' option, so passing only a
-      // date should fail.
-      'Y-m-d' => FALSE,
-      'd-m-Y' => FALSE,
-      'm-d-Y' => FALSE,
-      'n/j/y' => FALSE,
-      'd F Y' => FALSE,
-
-      // Test a number of supported date formats.
-      'Y-m-d H:i' => TRUE,
-      'd-m-Y h:ia' => TRUE,
-      'm-d-Y h:iA' => TRUE,
-      'n-j-y H:i:s' => TRUE,
-      'Y/M/d h:i:sA' => TRUE,
-      'j F y h:i:sa' => TRUE,
-
-      // Test a number of date formats with invalid time specifications.
-      'y-m-d G:i' => FALSE,
-      'y-j-n G:i:sa' => FALSE,
-      'Y-m-d g:i:sa' => FALSE,
-      'y-m-d g:i:s' => FALSE,
-      'n-j-y h:i' => FALSE,
-      'd-m-y h:i:s' => FALSE,
-      'd/M/y H:i:sA' => FALSE,
-      'Y F d H:ia' => FALSE,
-    );
-    foreach ($test_cases as $date_format => $expected_result) {
-      $edit = array(
-        'scheduler_date_format' => $date_format,
-        'scheduler_field_type' => 'date_popup',
-      );
-      $this->drupalPost('admin/config/content/scheduler', $edit, t('Save configuration'));
-      $message = format_string('When using date popups the date format %format is @expected', array('%format' => $date_format, '@expected' => $expected_result ? 'allowed' : 'not allowed.'));
-      $assert = $expected_result ? 'assertNoRaw' : 'assertRaw';
-      $this->$assert('Error message', $message);
-    }
   }
 
   /**

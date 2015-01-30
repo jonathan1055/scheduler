@@ -21,10 +21,10 @@ Drupal.behaviors.scheduler_settings = {
     // Provide summary when editing a node.
     $('fieldset#edit-scheduler-settings', context).drupalSetSummary(function(context) {
       var vals = [];
-      if ($('#edit-publish-on').val() || $('#edit-publish-on-datepicker-popup-0').val()) {
+      if ($('#edit-publish-on').val()) {
         vals.push(Drupal.t('Scheduled for publishing'));
       }
-      if ($('#edit-unpublish-on').val() || $('#edit-unpublish-on-datepicker-popup-0').val()) {
+      if ($('#edit-unpublish-on').val()) {
         vals.push(Drupal.t('Scheduled for unpublishing'));
       }
       if (!vals.length) {

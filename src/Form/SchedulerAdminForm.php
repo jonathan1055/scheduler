@@ -52,47 +52,6 @@ class SchedulerAdminForm extends ConfigFormBase {
       ]),
     ];
 
-    $form['field_type'] = [
-      '#type' => 'radios',
-      '#title' => t('Field type'),
-      '#default_value' => \Drupal::config('scheduler.settings')->get('field_type'),
-      '#options' => [
-        'textfield' => t('Standard text field'),
-        'date_popup' => t('Date Popup calendar'),
-      ],
-      '#description' => t('Date Popup is enabled. See the !date_popup_config for details.', ['!date_popup_config' => l(t('configuration page'), 'admin/config/date/date_popup')]),
-    ];
-
-    if (!\Drupal::moduleHandler()->moduleExists('date_popup')) {
-      $form['field_type']['#default_value'] = 'textfield';
-      $form['field_type']['#disabled'] = TRUE;
-      $form['field_type']['#description'] = t('To use the calendar you need to enable Date, Date API and Date Popup. Download the module from the !url.', ['!url' => l(t('Date project page'), 'http://drupal.org/project/date')]);
-    }
-
-    // Variable 'date_popup_timepicker' holds the type of timepicker selected.
-    $timepicker_enabled = (variable_get('date_popup_timepicker', '') != 'none');
-    $options = ['@date_popup_config' => url('admin/config/date/date_popup')];
-    $description = t('Restrict the time entry to specific minute increments.') . ' '
-      . ($timepicker_enabled
-      ? t('The timepicker type can be selected via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options)
-      : t('The timepicker is not enabled - turn it on via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options));
-    $form['date_popup_minute_increment'] = [
-      '#type' => 'textfield',
-      '#title' => t('Date Popup minute increment'),
-      '#description' => $description,
-      '#field_suffix' => t('minutes'),
-      '#size' => 2,
-      '#maxlength' => 2,
-      '#disabled' => !$timepicker_enabled,
-      '#default_value' => \Drupal::config('scheduler.settings')->get('date_popup_minute_increment'),
-      '#element_validate' => ['element_validate_integer_positive'],
-      '#states' => [
-        'visible' => [
-          ':input[name="scheduler_field_type"]' => ['value' => 'date_popup'],
-        ],
-      ],
-    ];
-
     // Options for setting date-only with default time.
     $form['date_only_fieldset'] = [
       '#type' => 'fieldset',
@@ -153,21 +112,6 @@ class SchedulerAdminForm extends ConfigFormBase {
       ]));
     };
 
-    $time_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
-
-    if ($form_state->getValue(['field_type']) == 'date_popup') {
-      // The Date Popup function date_popup_time_formats() only returns the
-      // values 'H:i:s' and 'h:i:sA' but Scheduler can accept more variations
-      // than just these. Firstly, we add the lowercase 'a' alternative.
-      // Secondly timepicker always requires hours and minutes, but seconds are
-      // optional.
-      $acceptable = ['H:i:s', 'h:i:sA', 'h:i:sa', 'H:i', 'h:iA', 'h:ia'];
-
-      if ($time_format && !in_array($time_format, $acceptable)) {
-        $form_state->setErrorByName('date_format', t('When using the Date Popup module, the allowed time formats are: !formats', ['!formats' => implode(', ', $acceptable)]));
-      }
-    }
-
     // If date-only is enabled then check if a valid default time was entered.
     // Leading zeros and seconds can be omitted, eg. 6:30 is considered valid.
     if ($form_state->getValue(['allow_date_only'])) {
@@ -184,6 +128,7 @@ class SchedulerAdminForm extends ConfigFormBase {
 
     // Check that either the date format has a time part or the date-only option
     // is turned on.
+    $time_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
     if ($time_format == '' && !$form_state->getValue(['allow_date_only'])) {
       $form_state->setErrorByName('date_format', t('You must either include a time within the date format or enable the date-only option.'));
     }
@@ -199,12 +144,6 @@ class SchedulerAdminForm extends ConfigFormBase {
       $config->set($variable, $form_state->getValue($form[$variable]['#parents']));
     }
     $config->save();
-
-    // For the minute increment, change a blank value to 1. Date popup does not
-    // support blank values.
-    if (empty($form_state->getValue(['date_popup_minute_increment']))) {
-      $form_state->setValue(['date_popup_minute_increment'], 1);
-    }
 
     // Extract the date part and time part of the full format, for use with the
     // default time functionality. Assume the date and time time parts begin and

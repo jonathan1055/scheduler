@@ -20,8 +20,6 @@ function _scheduler_form_alter(&$form, $form_state) {
   $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
   $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
   $date_only_allowed = \Drupal::config('scheduler.settings')->get('allow_date_only');
-  $use_date_popup = _scheduler_use_date_popup();
-  $internal_date_format = $use_date_popup ? SCHEDULER_DATE_FORMAT : $date_format;
   $node = $form['#node'];
 
   // If this is a preview then get the values from the form, not the
@@ -128,20 +126,10 @@ function _scheduler_form_alter(&$form, $form_state) {
       '#title' => t('Publish on'),
       '#maxlength' => 30,
       '#required' => $publishing_required,
-      '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $internal_date_format) : '',
+      '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
       '#description' => filter_xss(implode(' ', $descriptions)),
       '#value_callback' => 'scheduler_date_value_callback',
     );
-    if ($use_date_popup) {
-      // Make this a popup calendar widget.
-      $form['scheduler_settings']['publish_on']['#type'] = 'date_popup';
-      $form['scheduler_settings']['publish_on']['#date_format'] = $date_format;
-      $form['scheduler_settings']['publish_on']['#date_year_range'] = '0:+10';
-      $form['scheduler_settings']['publish_on']['#date_increment'] = \Drupal::config('scheduler.settings')->get('date_popup_minute_increment');
-      unset($descriptions['format']);
-      $form['scheduler_settings']['publish_on']['#description'] = filter_xss(implode(' ', $descriptions));
-      unset($form['scheduler_settings']['publish_on']['#maxlength']);
-    }
   }
 
   if ($unpublishing_enabled) {
@@ -156,21 +144,10 @@ function _scheduler_form_alter(&$form, $form_state) {
       '#title' => t('Unpublish on'),
       '#maxlength' => 30,
       '#required' => $unpublishing_required,
-      '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $internal_date_format) : '',
+      '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
       '#description' => filter_xss(implode(' ', $descriptions)),
       '#value_callback' => 'scheduler_date_value_callback',
     );
-
-    if ($use_date_popup) {
-      // Make this a popup calendar widget.
-      $form['scheduler_settings']['unpublish_on']['#type'] = 'date_popup';
-      $form['scheduler_settings']['unpublish_on']['#date_format'] = $date_format;
-      $form['scheduler_settings']['unpublish_on']['#date_year_range'] = '0:+10';
-      $form['scheduler_settings']['unpublish_on']['#date_increment'] = \Drupal::config('scheduler.settings')->get('date_popup_minute_increment');
-      unset($descriptions['format']);
-      $form['scheduler_settings']['unpublish_on']['#description'] = filter_xss(implode(' ', $descriptions));
-      unset($form['scheduler_settings']['unpublish_on']['#maxlength']);
-    }
   }
 }
 
@@ -184,11 +161,5 @@ function scheduler_date_value_callback(&$element, $input = FALSE, &$form_state) 
   // will match the value of the Delete button even if translated.
   if (isset($form_state['input']['op']) && isset($form_state['values']['delete']) && $form_state['input']['op'] == $form_state['values']['delete']) {
     $element['#required'] = FALSE;
-  }
-  // If using date popup then process the callback that would have been done had
-  // Scheduler not replaced this with its own one. If using plain text entry
-  // then no return value is needed.
-  if (_scheduler_use_date_popup()) {
-    return date_popup_element_value_callback($element, $input, $form_state);
   }
 }
