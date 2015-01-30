@@ -546,7 +546,7 @@ function scheduler_node_insert($node) {
     ))->execute();
 
     // Invoke the events to indicate that a new node has been scheduled.
-    if (module_exists('rules')) {
+    if (\Drupal::moduleHandler()->moduleExists('rules')) {
       if (!empty($node->publish_on)) {
         rules_invoke_event('scheduler_new_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
       }
@@ -571,7 +571,7 @@ function scheduler_node_update($node) {
     ))->execute();
 
     // Invoke the events to indicate that an existing node has been scheduled.
-    if (module_exists('rules')) {
+    if (\Drupal::moduleHandler()->moduleExists('rules')) {
       if (!empty($node->publish_on)) {
         rules_invoke_event('scheduler_existing_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
       }
@@ -627,7 +627,7 @@ function scheduler_cron() {
   //   #2136557 lands.
   // @see https://drupal.org/node/1182450
   // @see https://drupal.org/node/2136557
-  if (module_exists('i18n_sync')) {
+  if (\Drupal::moduleHandler()->moduleExists('i18n_sync')) {
     $i18n_sync_saved_state = i18n_sync();
     i18n_sync(FALSE);
   }
@@ -645,7 +645,7 @@ function scheduler_cron() {
   drupal_static_reset(__FUNCTION__);
 
   // Restore the i18n_sync state.
-  module_exists('i18n_sync') ? i18n_sync($i18n_sync_saved_state) : NULL;
+  \Drupal::moduleHandler()->moduleExists('i18n_sync') ? i18n_sync($i18n_sync_saved_state) : NULL;
 }
 
 /**

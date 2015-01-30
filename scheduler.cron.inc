@@ -84,7 +84,7 @@ function _scheduler_publish() {
     actions_do($actions, $n, $context, NULL, NULL);
 
     // Invoke the event to tell Rules that Scheduler has published this node.
-    if (module_exists('rules')) {
+    if (\Drupal::moduleHandler()->moduleExists('rules')) {
       rules_invoke_event('scheduler_node_has_been_published_event', $n, $publish_on, $n->unpublish_on);
     }
 
@@ -177,7 +177,7 @@ function _scheduler_unpublish() {
     actions_do($actions, $n, $context, NULL, NULL);
 
     // Invoke event to tell Rules that Scheduler has unpublished this node.
-    if (module_exists('rules')) {
+    if (\Drupal::moduleHandler()->moduleExists('rules')) {
       rules_invoke_event('scheduler_node_has_been_unpublished_event', $n, $n->publish_on, $unpublish_on);
     }
 
