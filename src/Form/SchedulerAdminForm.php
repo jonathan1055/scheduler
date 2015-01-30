@@ -10,6 +10,7 @@ namespace Drupal\scheduler\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Url;
 
 /**
  * Main administration form for the Scheduler module.
@@ -35,6 +36,7 @@ class SchedulerAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $now = t('Example: %date', ['%date' => format_date(REQUEST_TIME, 'custom', \Drupal::config('scheduler.settings')->get('date_format'))]);
+    $url = Url::fromUri('http://php.net/manual/en/function.date.php');
     $form['date_format'] = [
       '#type' => 'textfield',
       '#title' => t('Date format'),
@@ -46,7 +48,7 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', [
         '!date_letters' => SCHEDULER_DATE_LETTERS,
         '!time_letters' => SCHEDULER_TIME_LETTERS,
-        '!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php')
+        '!url' => \Drupal::l(t('the PHP date() function'), $url),
       ]),
     ];
 
