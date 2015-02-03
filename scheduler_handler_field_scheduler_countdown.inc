@@ -115,27 +115,27 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
 
     switch ($scale) {
       case self::SECOND_SCALE:
-        $long = format_plural($scaled_value, '1 second', '@count seconds', array('@count' => $scaled_value));
+        $long = \Drupal::translation()->formatPlural($scaled_value, '1 second', '@count seconds', array('@count' => $scaled_value));
         $short = t('@counts', array('@count' => $scaled_value));
         break;
 
       case self::MINUTE_SCALE:
-        $long = format_plural($scaled_value, '1 minute', '@count minutes', array('@count' => $scaled_value));
+        $long = \Drupal::translation()->formatPlural($scaled_value, '1 minute', '@count minutes', array('@count' => $scaled_value));
         $short = t('@countm', array('@count' => $scaled_value));
         break;
 
       case self::HOUR_SCALE:
-        $long = format_plural($scaled_value, '1 hour', '@count hours', array('@count' => $scaled_value));
+        $long = \Drupal::translation()->formatPlural($scaled_value, '1 hour', '@count hours', array('@count' => $scaled_value));
         $short = t('@counth', array('@count' => $scaled_value));
         break;
 
       case self::DAY_SCALE:
-        $long = format_plural($scaled_value, '1 day', '@count days', array('@count' => $scaled_value));
+        $long = \Drupal::translation()->formatPlural($scaled_value, '1 day', '@count days', array('@count' => $scaled_value));
         $short = t('@countd', array('@count' => $scaled_value));
         break;
 
       case self::WEEK_SCALE:
-        $long = format_plural($scaled_value, '1 week', '@count weeks', array('@count' => $scaled_value));
+        $long = \Drupal::translation()->formatPlural($scaled_value, '1 week', '@count weeks', array('@count' => $scaled_value));
         $short = t('@countw', array('@count' => $scaled_value));
         break;
     }
