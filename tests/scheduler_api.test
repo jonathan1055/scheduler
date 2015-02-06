@@ -95,7 +95,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
   protected function approveNode($nid) {
     $node = node_load($nid, NULL, TRUE);
     $node->field_scheduler_test_approved[$node->language][0]['value'] = TRUE;
-    node_save($node);
+    $node->save();
   }
 
   /**

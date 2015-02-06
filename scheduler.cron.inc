@@ -68,7 +68,7 @@ function _scheduler_publish() {
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
-    // to node_save(). Save the value for use when calling Rules.
+    // to $node->save(). Save the value for use when calling Rules.
     $publish_on = $n->publish_on;
     $n->publish_on = NULL;
 
@@ -161,7 +161,7 @@ function _scheduler_unpublish() {
       ));
     }
     // Unset unpublish_on so the node will not get rescheduled by subsequent
-    // calls to node_save(). Save the value for use when calling Rules.
+    // calls to $node->save(). Save the value for use when calling Rules.
     $unpublish_on = $n->unpublish_on;
     $n->unpublish_on = NULL;
 

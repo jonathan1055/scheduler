@@ -235,7 +235,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
     $node->{$action . '_on'} = strtotime('-1 day');
-    node_save($node);
+    $node->save();
     scheduler_cron();
     return node_load($node->nid, NULL, TRUE);
   }
