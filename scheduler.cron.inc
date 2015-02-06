@@ -237,8 +237,7 @@ function _scheduler_run_cron() {
     watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l(t('settings'), 'admin/config/content/scheduler/cron'));
   }
 
-  $menu_item = menu_get_item();
-  if ($menu_item['path'] == 'admin/config/content/scheduler/cron') {
+  if (\Drupal::request()->getRequestUri() === 'admin/config/content/scheduler/cron') {
     // This cron run has been initiated manually from the configuration form.
     // Give a message and return something so that an output page is created.
     // No output should be returned if running from a crontab job.
