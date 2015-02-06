@@ -79,7 +79,7 @@ function scheduler_update_7100() {
     $query->execute();
   }
 
-  return \Drupal::translation()->formatPlural((sizeof($roles_to_update), '1 role updated with view scheduled content permission.', '@count roles updated with view scheduled content permission.');
+  return \Drupal::translation()->formatPlural(sizeof($roles_to_update), '1 role updated with view scheduled content permission.', '@count roles updated with view scheduled content permission.');
 }
 
 /**
@@ -101,5 +101,5 @@ function scheduler_update_7101() {
   if ($nids_to_delete = $query->execute()->fetchCol()) {
     db_delete('scheduler')->condition('nid', $nids_to_delete, 'IN')->execute();
   }
-  return \Drupal::translation()->formatPlural((sizeof($nids_to_delete), '1 obsolete row deleted from scheduler table.', '@count obsolete rows deleted from scheduler table.');
+  return \Drupal::translation()->formatPlural(sizeof($nids_to_delete), '1 obsolete row deleted from scheduler table.', '@count obsolete rows deleted from scheduler table.');
 }
