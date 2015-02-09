@@ -134,7 +134,7 @@ function scheduler_set_publish_date_action($node, $date) {
     scheduler_node_update($node);
   }
   else {
-    $type_name = node_type_get_name($node->type);
+    $type_name = node_get_type_label($node);
     watchdog('scheduler', 'Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
   }
 }
@@ -154,7 +154,7 @@ function scheduler_set_unpublish_date_action($node, $date) {
     scheduler_node_update($node);
   }
   else {
-    $type_name = node_type_get_name($node->type);
+    $type_name = node_get_type_label($node);
     watchdog('scheduler', 'Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
   }
 }
@@ -172,7 +172,7 @@ function scheduler_remove_publish_date_action($node) {
     scheduler_node_update($node);
   }
   else {
-    $type_name = node_type_get_name($node->type);
+    $type_name = node_get_type_label($node);
     watchdog('scheduler', 'Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
   }
 }
@@ -190,7 +190,7 @@ function scheduler_remove_unpublish_date_action($node) {
     scheduler_node_update($node);
   }
   else {
-    $type_name = node_type_get_name($node->type);
+    $type_name = node_get_type_label($node);
     watchdog('scheduler', 'Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
   }
 }

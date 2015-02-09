@@ -370,7 +370,7 @@ function scheduler_list() {
 
     $rows[] = array(
       ($node->title ? l($node->title, "node/$node->nid") : t('Missing data for node @nid', array('@nid' => $node->nid))),
-      ($node->type ? check_plain(node_type_get_name($node)) : ''),
+      ($node->type ? check_plain(node_get_type_label($node)) : ''),
       ($node->type ? theme('username', array('account' => $node)) : ''),
       ($node->type ? ($node->status ? t('Published') : t('Unpublished')) : ''),
       ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
