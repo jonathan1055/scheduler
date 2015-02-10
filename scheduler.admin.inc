@@ -14,7 +14,8 @@ function _scheduler_form_node_type_form_alter(&$form, $form_state) {
   /** @var \Drupal\node\NodeTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
-  drupal_add_css(drupal_get_path('module', 'scheduler') . '/scheduler.css');
+  $form['#attached']['library'][] = 'scheduler/admin';
+
   $form['scheduler'] = array(
     '#type' => 'fieldset',
     '#title' => t('Scheduler'),

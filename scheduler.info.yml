@@ -8,3 +8,5 @@ dependencies:
   - node
 test_dependencies:
   - date
+libraries:
+  - scheduler/admin
