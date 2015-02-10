@@ -10,8 +10,6 @@ scheduler.settings:
       type: string
     default_time:
       type: string
-    extra_info:
-      type: string
     lightweight_cron_access_key:
       type: string
     log:

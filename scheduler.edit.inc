@@ -86,14 +86,6 @@ function _scheduler_form_alter(&$form, $form_state) {
     $form['scheduler_settings']['#attached']['js'][] = drupal_get_path('module', 'scheduler') . '/scheduler_vertical_tabs.js';
   }
 
-  $extra_info = \Drupal::config('scheduler.settings')->get('extra_info');
-  if ($extra_info && $extra_info != '') {
-    $form['scheduler_settings']['extra_info'] = array(
-      '#type' => 'item',
-      '#markup' => filter_xss_admin($extra_info),
-    );
-  }
-
   // Define the descriptions depending on whether the time can be skipped.
   $descriptions = array();
   if ($date_only_allowed && ($date_only_format != $date_format)) {

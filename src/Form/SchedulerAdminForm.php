@@ -78,13 +78,6 @@ class SchedulerAdminForm extends ConfigFormBase {
       ],
     ];
 
-    $form['extra_info'] = [
-      '#type' => 'textarea',
-      '#title' => t('Extra Info'),
-      '#default_value' => \Drupal::config('scheduler.settings')->get('extra_info'),
-      '#description' => t('The text entered into this field will be displayed above the scheduling fields in the node edit form.'),
-    ];
-
     // Add a submit handler function.
     $form['#submit'][] = 'admin_submit';
 
