@@ -4,6 +4,9 @@
  * @file
  * Tests for the Scheduler API.
  */
+
+use Drupal\Component\Utility\String;
+
 class SchedulerApiTestCase extends DrupalWebTestCase {
 
   /**
@@ -112,7 +115,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   public function assertNodeNotPublished($nid, $message = NULL, $group = 'Other') {
-    $message = $message ? $message : format_string('Node %nid is not published', array('%nid' => $nid));
+    $message = $message ? $message : String::format('Node %nid is not published', array('%nid' => $nid));
     return $this->assertFalse($this->getPublicationStatus($nid), $message, $group);
   }
 
@@ -130,7 +133,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   public function assertNodePublished($nid, $message = NULL, $group = 'Other') {
-    $message = $message ? $message : format_string('Node %nid is published', array('%nid' => $nid));
+    $message = $message ? $message : String::format('Node %nid is published', array('%nid' => $nid));
     return $this->assertTrue($this->getPublicationStatus($nid), $message, $group);
   }
 

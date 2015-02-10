@@ -5,6 +5,8 @@
  * Administration forms for the Scheduler module.
  */
 
+use Drupal\Component\Utility\String;
+
 /**
  * Helper function for the real hook_form_node_type_form_alter().
  *
@@ -262,7 +264,7 @@ function theme_scheduler_timecheck($variables) {
     '@localtime' => format_date($now, 'custom', 'jS F Y, H:i:s P T e'),
     '@daylight_saving' => format_date($now, 'custom', 'I') ? t('currently in daylight saving mode') : t('not in daylight saving mode'),
     '@user_account' => url('user/' . $user->uid . '/edit'),
-    '@date_default_timezone' => check_plain($date_default_timezone),
+    '@date_default_timezone' => String::checkPlain($date_default_timezone),
     '@date_default_offset' => format_date($now, 'custom', 'P', $date_default_timezone),
     '@date_default_code' => format_date($now, 'custom', 'T', $date_default_timezone),
     '@admin_regional_settings' => url('admin/config/regional/settings'),
@@ -371,7 +373,7 @@ function scheduler_list() {
 
     $rows[] = array(
       ($node->title ? l($node->title, "node/$node->nid") : t('Missing data for node @nid', array('@nid' => $node->nid))),
-      ($node->type ? check_plain(node_get_type_label($node)) : ''),
+      ($node->type ? String::checkPlain(node_get_type_label($node)) : ''),
       ($node->type ? theme('username', array('account' => $node)) : ''),
       ($node->type ? ($node->status ? t('Published') : t('Unpublished')) : ''),
       ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
