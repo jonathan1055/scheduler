@@ -244,7 +244,4 @@ function _scheduler_run_cron() {
     drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => url('admin/reports/dblog'))));
     return ' ';
   }
-  // drupal_exit() is the proper controlled way to terminate the request, as
-  // this will invoke all implementations of hook_exit().
-  drupal_exit();
 }
