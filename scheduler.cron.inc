@@ -204,7 +204,7 @@ function _scheduler_unpublish() {
 function _scheduler_scheduler_nid_list($action) {
   $nids = array();
 
-  foreach (module_implements('scheduler_nid_list') as $module) {
+  foreach (\Drupal::moduleHandler()->getImplementations('scheduler_nid_list') as $module) {
     $function = $module . '_scheduler_nid_list';
     $nids = array_merge($nids, $function($action));
   }

@@ -208,7 +208,7 @@ function _scheduler_allow($node, $action) {
   $result = TRUE;
   // Check that other modules allow the action.
   $hook = 'scheduler_allow_' . $action . 'ing';
-  foreach (module_implements($hook) as $module) {
+  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
     $function = $module . '_' . $hook;
     $result &= $function($node);
   }
@@ -677,7 +677,7 @@ function _scheduler_cron_access($cron_key) {
  *   'publish_immediately', 'pre_unpublish' or 'unpublish'.
  */
 function _scheduler_scheduler_api($node, $action) {
-  foreach (module_implements('scheduler_api') as $module) {
+  foreach (\Drupal::moduleHandler()->getImplementations('scheduler_api') as $module) {
     $function = $module . '_scheduler_api';
     $function($node, $action);
   }
