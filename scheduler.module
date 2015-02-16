@@ -5,6 +5,8 @@
  * Scheduler publishes and unpublishes nodes on dates specified by the user.
  */
 
+use Drupal\Core\Session\AccountInterface;
+
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
 
@@ -115,12 +117,12 @@ function scheduler_menu() {
  *   this when listing the nodes of all users.
  */
 function scheduler_list_access_callback($uid = NULL) {
-  global $user;
+  $account = \Drupal::currentUser();
 
   // All Scheduler users can see their own scheduled content via their user
   // page. In addition, if they have 'view scheduled content' permission they
   // will be able to see all scheduled content by all authors.
-  return \Drupal::currentUser()->hasPermission('view scheduled content') || ($uid == $user->uid && \Drupal::currentUser()->hasPermission('schedule (un)publishing of nodes'));
+  return \Drupal::currentUser()->hasPermission('view scheduled content') || ($uid == $account->id() && \Drupal::currentUser()->hasPermission('schedule (un)publishing of nodes'));
 }
 
 /**

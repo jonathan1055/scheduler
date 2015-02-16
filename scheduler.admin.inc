@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\String;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Helper function for the real hook_form_node_type_form_alter().
@@ -250,7 +251,7 @@ function _scheduler_timecheck() {
  * @ingroup themeable
  */
 function theme_scheduler_timecheck($variables) {
-  global $user;
+  $account = \Drupal::currentUser();
 
   $now = $variables['now'];
   $date_default_timezone = variable_get('date_default_timezone', date_default_timezone_get());
@@ -263,7 +264,7 @@ function theme_scheduler_timecheck($variables) {
     // site default setting is returned.
     '@localtime' => format_date($now, 'custom', 'jS F Y, H:i:s P T e'),
     '@daylight_saving' => format_date($now, 'custom', 'I') ? t('currently in daylight saving mode') : t('not in daylight saving mode'),
-    '@user_account' => url('user/' . $user->uid . '/edit'),
+    '@user_account' => url('user/' . $account->id() . '/edit'),
     '@date_default_timezone' => String::checkPlain($date_default_timezone),
     '@date_default_offset' => format_date($now, 'custom', 'P', $date_default_timezone),
     '@date_default_code' => format_date($now, 'custom', 'T', $date_default_timezone),
@@ -276,7 +277,7 @@ function theme_scheduler_timecheck($variables) {
 
   if (variable_get('configurable_timezones', 1)) {
     $output .= '<p>' . t('Your local time is @localtime (@daylight_saving). You can change this via your <a href="@user_account">user account</a>.', $t_options) . '</p>';
-    if (empty($user->timezone)) {
+    if (empty($account->getTimeZone())) {
       $output .= '<p>' . t('Note: The user timezone has not been stored, so defaulting to the website timezone.') . '</p>';
     }
   }
@@ -380,12 +381,12 @@ function scheduler_list() {
       ),
     );
   }
-  global $user;
+  $account = \Drupal::currentUser();
   $build['scheduler_list'] = array(
     '#theme' => 'table',
     '#header' => $header,
     '#rows' => $rows,
-    '#empty' => ($args[0] == 'user_only') ? t('There are no scheduled nodes for @username.', array('@username' => $user->name)) : t('There are no scheduled nodes.'),
+    '#empty' => ($args[0] == 'user_only') ? t('There are no scheduled nodes for @username.', array('@username' => $account->getUsername())) : t('There are no scheduled nodes.'),
   );
   return $build;
 }
