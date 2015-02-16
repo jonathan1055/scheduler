@@ -78,7 +78,8 @@ function _scheduler_publish() {
     _scheduler_scheduler_api($n, 'pre_' . $action);
 
     // Use the actions system to publish the node.
-    watchdog('scheduler', '@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid, array('alias' => TRUE)));
+    $view_link = $n->link(t('View'));
+    \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $n->type, '%title' => $n->title, 'link' => $view_link));
     $actions = array('node_publish_action', 'node_save_action');
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
@@ -171,7 +172,8 @@ function _scheduler_unpublish() {
     _scheduler_scheduler_api($n, 'pre_' . $action);
 
     // Use the actions system to unpublish the node.
-    watchdog('scheduler', '@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title), WATCHDOG_NOTICE, l(t('view'), 'node/' . $n->nid, array('alias' => TRUE)));
+    $view_link = $n->link(t('View'));
+    \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $n->type, '%title' => $n->title, 'link' => $view_link));
     $actions = array('node_unpublish_action', 'node_save_action');
     $context['node'] = $n;
     actions_do($actions, $n, $context, NULL, NULL);
@@ -224,7 +226,7 @@ function _scheduler_scheduler_nid_list($action) {
 function _scheduler_run_cron() {
   $log = \Drupal::config('scheduler.settings')->get('log');
   if ($log) {
-    watchdog('scheduler', 'Lightweight cron run activated', array(), WATCHDOG_NOTICE);
+    \Drupal::logger('scheduler')->notice('Lightweight cron run activated.');
   }
   scheduler_cron();
   if (ob_get_level() > 0) {
@@ -234,7 +236,7 @@ function _scheduler_run_cron() {
     }
   }
   if ($log) {
-    watchdog('scheduler', 'Lightweight cron run completed', array(), WATCHDOG_NOTICE, l(t('settings'), 'admin/config/content/scheduler/cron'));
+    \Drupal::logger('scheduler')->notice('Lightweight cron run completed.', array('link' => l(t('settings'), 'admin/config/content/scheduler/cron')));
   }
 
   if (\Drupal::request()->getRequestUri() === 'admin/config/content/scheduler/cron') {

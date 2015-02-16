@@ -135,7 +135,8 @@ function scheduler_set_publish_date_action($node, $date) {
   }
   else {
     $type_name = node_get_type_label($node);
-    watchdog('scheduler', 'Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
+    // @todo Replace l().
+    \Drupal::logger('scheduler')->warning('Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type)));
   }
 }
 
@@ -155,7 +156,9 @@ function scheduler_set_unpublish_date_action($node, $date) {
   }
   else {
     $type_name = node_get_type_label($node);
-    watchdog('scheduler', 'Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
+    // @todo Replace l().
+    $settings_link = l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type);
+    \Drupal::logger('scheduler')->warning('Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => $settings_link));
   }
 }
 
@@ -173,7 +176,9 @@ function scheduler_remove_publish_date_action($node) {
   }
   else {
     $type_name = node_get_type_label($node);
-    watchdog('scheduler', 'Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
+    // @todo Replace l().
+    $settings_link = l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type);
+    \Drupal::logger('scheduler')->warning('Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => $settings_link));
   }
 }
 
@@ -191,7 +196,9 @@ function scheduler_remove_unpublish_date_action($node) {
   }
   else {
     $type_name = node_get_type_label($node);
-    watchdog('scheduler', 'Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name), WATCHDOG_WARNING, l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type));
+    // @todo Replace l().
+    $settings_link = l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type);
+    \Drupal::logger('scheduler')->warning('Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => $settings_link));
   }
 }
 
