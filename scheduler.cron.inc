@@ -37,7 +37,7 @@ function _scheduler_publish() {
   $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list($action)));
 
   // Allow other modules to alter the list of nodes to be published.
-  drupal_alter('scheduler_nid_list', $nids, $action);
+  \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
   foreach ($nids as $nid) {
     $n = node_load($nid);
@@ -127,7 +127,7 @@ function _scheduler_unpublish() {
   $nids = array_unique(array_merge($nids, _scheduler_scheduler_nid_list($action)));
 
   // Allow other modules to alter the list of nodes to be unpublished.
-  drupal_alter('scheduler_nid_list', $nids, $action);
+  \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
   foreach ($nids as $nid) {
     $n = node_load($nid);
