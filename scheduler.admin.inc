@@ -356,20 +356,11 @@ function scheduler_list() {
   $rows = array();
 
   foreach ($result as $node) {
-    // Set the operations depending on whether the node is valid or corrupt.
-    if ($node->type) {
-      // Node type is present so this indicates a valid join with the node
-      // table. Provide regular operations to edit and delete the node.
-      $ops = array(
-        l(t('edit'), 'node/' . $node->nid . '/edit', array('query' => $destination)),
-        l(t('delete'), 'node/' . $node->nid . '/delete', array('query' => $destination)),
-      );
-    }
-    else {
-      // There was no matching row in the node table. Provide a special link to
-      // delete the row from the Scheduler table.
-      $ops = array(l(t('delete'), 'admin/content/scheduler/delete/' . $node->nid, array('query' => $destination)));
-    }
+    // Provide regular operations to edit and delete the node.
+    $ops = array(
+      l(t('edit'), 'node/' . $node->nid . '/edit', array('query' => $destination)),
+      l(t('delete'), 'node/' . $node->nid . '/delete', array('query' => $destination)),
+    );
 
     $rows[] = array(
       ($node->title ? l($node->title, "node/$node->nid") : t('Missing data for node @nid', array('@nid' => $node->nid))),
@@ -397,40 +388,4 @@ function scheduler_list() {
     '#empty' => ($args[0] == 'user_only') ? t('There are no scheduled nodes for @username.', array('@username' => $user->name)) : t('There are no scheduled nodes.'),
   );
   return $build;
-}
-
-/**
- * Form constructor for the Scheduler Delete Row confirmation form.
- *
- * @see _scheduler_delete_row_confirm_submit()
- */
-function _scheduler_delete_row_confirm($form, &$form_state, $nid) {
-  $form['nid'] = array('#type' => 'value', '#value' => $nid);
-  $details = array(t('Are you sure you want to delete the Scheduler row for missing node @nid?', array('@nid' => $nid)));
-  $details[] = t('This action cannot be undone.');
-  return confirm_form(
-    $form,
-    $details[0],
-    // The cancel path will be changed automatically because the calling url
-    // contains a destination value. We need to provide a default here anyway.
-    'admin/content/scheduler',
-    implode('<br>', $details),
-    t('Delete'),
-    t('Cancel')
-  );
-}
-
-/**
- * Form submission handler for _scheduler_delete_row_confirm().
- */
-function _scheduler_delete_row_confirm_submit($form, &$form_state) {
-  // This is a special case, where we only want to delete the row in the
-  // Scheduler table. The associated node does not exist any more so we cannot
-  // use the normal node/$nid/delete process as that requires a node object.
-  if ($form_state['values']['confirm']) {
-    $nid = $form_state['values']['nid'];
-    db_delete('scheduler')->condition('nid', $nid)->execute();
-    watchdog('scheduler', 'Row for missing node @nid deleted from scheduler table.', array('@nid' => $nid));
-    drupal_set_message(t('The scheduler data for missing node @nid has been deleted.', array('@nid' => $nid)));
-  }
 }

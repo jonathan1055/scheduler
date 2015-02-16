@@ -91,18 +91,6 @@ function scheduler_menu() {
     'weight' => 20,
   ) + $items['admin/content/scheduler'];
 
-  // Menu callback for confirmation before manually deleting obsolete rows from
-  // the Scheduler table. Cannot use normal node delete link because these rows
-  // no longer exist in the {node} table.
-  $items['admin/content/scheduler/delete/%'] = array(
-    'title' => 'Delete Scheduled Data',
-    'description' => 'Delete obsolete rows from Scheduler table',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('_scheduler_delete_row_confirm', 4),
-    'access arguments' => array('administer scheduler'),
-    'type' => MENU_CALLBACK,
-    'file' => 'scheduler.admin.inc',
-  );
   $items['user/%/scheduler'] = array(
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
