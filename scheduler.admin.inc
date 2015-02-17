@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\String;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -13,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @see scheduler_form_node_type_form_alter()
  */
-function _scheduler_form_node_type_form_alter(&$form, $form_state) {
+function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $form_state) {
   /** @var \Drupal\node\NodeTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
@@ -174,7 +175,7 @@ function _scheduler_form_node_type_form_alter(&$form, $form_state) {
 /**
  * Form constructor for the lightweight cron form to allow a manual run.
  */
-function _scheduler_lightweight_cron($form, &$form_state) {
+function _scheduler_lightweight_cron(array $form, FormStateInterface $form_state) {
   $form = array();
   $form['scheduler_cron'] = array(
     '#type' => 'submit',
@@ -227,7 +228,7 @@ function _scheduler_lightweight_cron_submit() {
  *
  * This only fires when the 'Generate new random key' button is clicked.
  */
-function _scheduler_generate_key($form, &$form_state) {
+function _scheduler_generate_key(array $form, FormStateInterface $form_state) {
   // Everything in $form_state is persistent, so we can use a direct attribute.
   $form_state['scheduler_generate_new_key'] = TRUE;
   // Setting $form_state['rebuild'] = TRUE causes the form to be rebuilt again.

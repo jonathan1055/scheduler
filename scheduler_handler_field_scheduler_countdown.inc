@@ -7,6 +7,8 @@
  * @see scheduler.views.inc
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Field handler to display a countdown until a scheduled action.
  *
@@ -51,7 +53,7 @@ class scheduler_handler_field_scheduler_countdown extends views_handler_field {
   /**
    * Defines the form for the user to select the display options.
    */
-  function options_form(&$form, &$form_state) {
+  function options_form(array &$form, FormStateInterface $form_state) {
     parent::options_form($form, $form_state);
     $form['countdown_display'] = array(
       '#title' => t('Display countdown as'),

@@ -7,6 +7,8 @@
  * This content type contains the publish and unpublish scheduling date fields.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 $plugin = array(
   'single' => TRUE,
   'edit form' => 'scheduler_form_pane_node_form_menu_content_type_edit_form',
@@ -50,6 +52,6 @@ function scheduler_form_pane_content_type_render($subtype, $conf, $panel_args, &
 /**
  * Content type form callback.
  */
-function scheduler_form_pane_node_form_menu_content_type_edit_form($form, &$form_state) {
+function scheduler_form_pane_node_form_menu_content_type_edit_form(array $form, FormStateInterface $form_state) {
   return $form;
 }

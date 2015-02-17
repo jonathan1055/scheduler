@@ -8,12 +8,14 @@
  * permission to schedule nodes, and the node-type is enabled for scheduling.
  */
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Helper function that does all the work for the real hook_form_alter().
  *
  * @see scheduler_form_alter()
  */
-function _scheduler_form_alter(&$form, $form_state) {
+function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $publishing_enabled = variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0) == 1;
   $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $form['type']['#value'], 0) == 1;
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
@@ -146,7 +148,7 @@ function _scheduler_form_alter(&$form, $form_state) {
 /**
  * Callback function for the Scheduler date entry elements.
  */
-function scheduler_date_value_callback(&$element, $input = FALSE, &$form_state) {
+function scheduler_date_value_callback(&$element, $input = FALSE, FormStateInterface $form_state) {
   // When processing a delete operation the user should not be forced to enter a
   // date. Hence set the scheduler date element's #required attribute to FALSE.
   // Test the input operation against $form_state['values']['delete'] as this
