@@ -84,9 +84,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     '#group' => $use_vertical_tabs ? 'additional_settings' : FALSE,
   );
   // Attach the javascript for the vertical tabs.
-  if ($use_vertical_tabs) {
-    $form['scheduler_settings']['#attached']['js'][] = drupal_get_path('module', 'scheduler') . '/scheduler_vertical_tabs.js';
-  }
+  $form['#attached']['library'][] = 'scheduler/vertical-tabs';
 
   // Define the descriptions depending on whether the time can be skipped.
   $descriptions = array();

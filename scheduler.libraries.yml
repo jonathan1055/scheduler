@@ -1,0 +1,9 @@
+vertical-tabs:
+  js:
+    js/scheduler_vertical_tabs.js: {}
+  dependencies:
+      - core/jquery
+scheduler/admin:
+  css:
+    theme:
+      css/scheduler.css: {}

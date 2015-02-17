@@ -19,17 +19,13 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $type = $form_state->getFormObject()->getEntity();
 
   $form['#attached']['library'][] = 'scheduler/admin';
+  $form['#attached']['library'][] = 'scheduler/vertical-tabs';
 
   $form['scheduler'] = array(
     '#type' => 'fieldset',
     '#title' => t('Scheduler'),
     '#weight' => 35,
     '#group' => 'additional_settings',
-    '#attached' => array(
-      'js' => array(
-        'vertical-tabs' => drupal_get_path('module', 'scheduler') . "/scheduler_vertical_tabs.js",
-      ),
-    ),
   );
 
   $form['scheduler']['publish'] = array(
