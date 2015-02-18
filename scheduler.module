@@ -5,6 +5,8 @@
  * Scheduler publishes and unpublishes nodes on dates specified by the user.
  */
 
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 
@@ -416,9 +418,9 @@ function scheduler_node_load($nodes, $types) {
 }
 
 /**
- * Implements hook_node_view().
+ * Implements hook_ENTITY_TYPE_view() for node entities.
  */
-function scheduler_node_view($node, $view_mode = 'full', $langcode) {
+function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
   // If the node is going to be unpublished then add this information to the
   // header for googlebot. Only do this when viewing the full node (not teaser)
   // on its own page and not in edit mode.
@@ -479,9 +481,9 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 }
 
 /**
- * Implements hook_node_presave().
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
-function scheduler_node_presave($node) {
+function scheduler_node_presave(EntityInterface $node) {
   foreach (array('publish_on', 'unpublish_on') as $key) {
     if (empty($node->$key) || is_array($node->$key)) {
       // Make sure publish_on and unpublish_on are not empty strings.
@@ -525,9 +527,9 @@ function scheduler_node_presave($node) {
 }
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_ENTITY_TYPE_insert() for node entities.
  */
-function scheduler_node_insert($node) {
+function scheduler_node_insert(EntityInterface $node) {
   // Only insert into database if we need to (un)publish this node at some date.
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
     db_insert('scheduler')->fields(array(
@@ -549,9 +551,9 @@ function scheduler_node_insert($node) {
 }
 
 /**
- * Implements hook_node_update().
+ * Implements hook_ENTITY_TYPE_update() for node entities.
  */
-function scheduler_node_update($node) {
+function scheduler_node_update(EntityInterface $node) {
   // Only update database if we need to (un)publish this node at some date,
   // otherwise the user probably cleared out the (un)publish dates so we should
   // remove the record.
@@ -577,9 +579,9 @@ function scheduler_node_update($node) {
 }
 
 /**
- * Implements hook_node_delete().
+ * Implements hook_ENTITY_TYPE_delete() for node entities.
  */
-function scheduler_node_delete($node) {
+function scheduler_node_delete(EntityInterface $node) {
   db_delete('scheduler')->condition('nid', $node->nid)->execute();
 }
 
