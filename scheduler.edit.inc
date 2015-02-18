@@ -22,7 +22,9 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
   $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
   $date_only_allowed = \Drupal::config('scheduler.settings')->get('allow_date_only');
+  /* @var $node \Drupal\node\NodeInterface */
   $node = $form['#node'];
+  $nid = $node->id();
 
   // If this is a preview then get the values from the form, not the
   // database.
@@ -31,11 +33,11 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     $defaults->publish_on = $publishing_enabled ? $form_state['values']['publish_on'] : NULL;
     $defaults->unpublish_on = $unpublishing_enabled ? $form_state['values']['unpublish_on'] : NULL;
   }
-  elseif (isset($node->nid) && $node->nid > 0) {
+  elseif ($nid > 0) {
     // Load the values from the database if we are viewing an existing node.
     $query = db_select('scheduler', 's');
     $query->fields('s', array('publish_on', 'unpublish_on'));
-    $query->condition('s.nid', $node->nid, '=');
+    $query->condition('s.nid', $nid, '=');
     $defaults = $query->execute()->fetchObject();
   }
   else {
@@ -58,13 +60,13 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
   $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1
-    && (empty($node->nid) || ($node->status == 0 && !empty($node->publish_on)));
+    && (empty($nid) || (!$node->isPublished() && !empty($node->publish_on)));
 
   // An unpublish_on date is required if the content type option is set and
   // the node is being created or the current status is published or the
   // node is scheduled to be published.
   $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1
-    && (empty($node->nid) || $node->status == 1 || !empty($node->publish_on));
+    && (empty($nid) || $node->isPublished() || !empty($node->publish_on));
 
   $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $form['type']['#value'], 1);
   $fieldset_extended = (
