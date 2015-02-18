@@ -52,24 +52,24 @@ function _scheduler_publish() {
     // See https://www.drupal.org/node/2311273
 
     // Update timestamps.
-    $node->changed = $node->publish_on;
-    $old_creation_date = $node->created;
-    if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
-      $node->created = $node->publish_on;
+    $publish_on = $node->publish_on;
+    $node->set('changed', $publish_on);
+    $old_creation_date = $node->getCreatedTime();
+    if (variable_get('scheduler_publish_touch_' . $node->getType(), 0) == 1) {
+      $node->setCreatedTime($publish_on);
     }
 
-    $create_publishing_revision = variable_get('scheduler_publish_revision_' . $node->type, 0) == 1;
+    $create_publishing_revision = variable_get('scheduler_publish_revision_' . $node->getType(), 0) == 1;
     if ($create_publishing_revision) {
-      $node->revision = TRUE;
+      $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
-      $node->log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
+      $node->revision_log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
         '@now' => format_date(REQUEST_TIME, 'short'),
         '@date' => format_date($old_creation_date, 'short'),
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
     // to $node->save(). Save the value for use when calling Rules.
-    $publish_on = $node->publish_on;
     $node->publish_on = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
@@ -79,7 +79,7 @@ function _scheduler_publish() {
 
     // Use the actions system to publish the node.
     $view_link = $node->link(t('View'));
-    \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $node->type, '%title' => $node->title, 'link' => $view_link));
+    \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
     $actions = array('node_publish_action', 'node_save_action');
     $context['node'] = $node;
     actions_do($actions, $node, $context, NULL, NULL);
@@ -140,7 +140,8 @@ function _scheduler_unpublish() {
     // Do not process the node if it has a publish_on time which is in the past,
     // as this implies that scheduled publishing has been blocked by one of the
     // API functions we provide. Hence unpublishing should be halted too.
-    if (!empty($node->publish_on) && $node->publish_on <= REQUEST_TIME) {
+    $publish_on = $node->publish_on;
+    if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
       continue;
     }
 
@@ -149,21 +150,21 @@ function _scheduler_unpublish() {
     // See https://www.drupal.org/node/2311273
 
     // Update timestamps.
-    $old_change_date = $node->changed;
-    $node->changed = $node->unpublish_on;
+    $old_change_date = $node->getChangedTime();
+    $unpublish_on = $node->unpublish_on;
+    $node->set('changed', $unpublish_on);
 
-    $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $node->type, 0) == 1;
+    $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $node->getType(), 0) == 1;
     if ($create_unpublishing_revision) {
-      $node->revision = TRUE;
+      $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
-      $node->log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
+      $node->revision_log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
         '@now' => format_date(REQUEST_TIME, 'short'),
         '@date' => format_date($old_change_date, 'short'),
       ));
     }
     // Unset unpublish_on so the node will not get rescheduled by subsequent
     // calls to $node->save(). Save the value for use when calling Rules.
-    $unpublish_on = $node->unpublish_on;
     $node->unpublish_on = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
@@ -173,7 +174,7 @@ function _scheduler_unpublish() {
 
     // Use the actions system to unpublish the node.
     $view_link = $node->link(t('View'));
-    \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $node->type, '%title' => $node->title, 'link' => $view_link));
+    \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
     $actions = array('node_unpublish_action', 'node_save_action');
     $context['node'] = $node;
     actions_do($actions, $node, $context, NULL, NULL);
