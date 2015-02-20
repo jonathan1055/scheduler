@@ -391,9 +391,9 @@ function _scheduler_strptime($date, $format) {
 }
 
 /**
- * Implements hook_node_load().
+ * Implements hook_ENTITY_TYPE_load() for node entities.
  */
-function scheduler_node_load($nodes, $types) {
+function scheduler_node_load($nodes) {
   $nids = array_keys($nodes);
   $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids[])', array(':nids[]' => $nids));
   foreach ($result as $record) {
@@ -713,7 +713,7 @@ function scheduler_field_extra_fields() {
 }
 
 /**
- * Implements hook_preprocess_node().
+ * Implements hook_preprocess_HOOK() for node templates.
  *
  * Makes the publish_on and unpublish_on data available as theme variables.
  */
