@@ -425,6 +425,7 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
 
 /**
  * Implements hook_node_validate().
+ * @todo hook_node_validate() and hook_node_submit() have been removed (#2420295)
  */
 function scheduler_node_validate($node, array $form, FormStateInterface $form_state) {
   // Adjust the entered times for timezone consideration. Note, we must check

@@ -106,11 +106,11 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
   /**
    * Check to see if a node is not published.
    *
-   * @param $nid
+   * @param int $nid
    *   The nid of the node to check.
-   * @param $message
+   * @param string $message
    *   The message to display along with the assertion.
-   * @param $group
+   * @param string $group
    *   The type of assertion - examples are "Browser", "PHP".
    *
    * @return
@@ -124,11 +124,11 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
   /**
    * Check to see if a node is published.
    *
-   * @param $nid
+   * @param int $nid
    *   The nid of the node to check.
-   * @param $message
+   * @param string $message
    *   The message to display along with the assertion.
-   * @param $group
+   * @param string $group
    *   The type of assertion - examples are "Browser", "PHP".
    *
    * @return
