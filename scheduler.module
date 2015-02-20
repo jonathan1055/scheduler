@@ -400,21 +400,6 @@ function scheduler_node_load($nodes, $types) {
     $nid = $record->nid;
     $nodes[$nid]->publish_on = $record->publish_on;
     $nodes[$nid]->unpublish_on = $record->unpublish_on;
-    $row = array();
-    // @todo This seems unneeded and is confusing. It is not certain that this
-    //   node is either published or unpublished, probably it isn't or the
-    //   'publish_on' property wouldn't be set in the first place. Remove this
-    //   for the D8 version.
-    $row['published'] = $record->publish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->publish_on) : NULL;
-    $row['unpublished'] = $record->unpublish_on ? date(variable_get('date_format_long', 'l, F j, Y - H:i'), $record->unpublish_on) : NULL;
-    // Add duplicates of the scheduling properties on $node->scheduler for
-    // backwards compatibility with the D5 and D6 versions of Scheduler. Please
-    // do not rely on these properties in new code, access them directly on
-    // $node->publish_on and $node->unpublish_on instead.
-    // @todo Remove this for the D8 version.
-    $row['publish_on'] = $record->publish_on;
-    $row['unpublish_on'] = $record->unpublish_on;
-    $nodes[$nid]->scheduler = $row;
   }
 }
 
