@@ -395,7 +395,7 @@ function _scheduler_strptime($date, $format) {
  */
 function scheduler_node_load($nodes, $types) {
   $nids = array_keys($nodes);
-  $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids)', array(':nids' => $nids));
+  $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids[])', array(':nids[]' => $nids));
   foreach ($result as $record) {
     $nid = $record->nid;
     $nodes[$nid]->publish_on = $record->publish_on;
