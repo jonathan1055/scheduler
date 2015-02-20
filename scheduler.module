@@ -439,7 +439,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
     if ($publishtime === FALSE) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
-    elseif ($publishtime && variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'error' && $publishtime < REQUEST_TIME) {
+    elseif ($publishtime && variable_get('scheduler_publish_past_date_' . $node->getType(), 'error') == 'error' && $publishtime < REQUEST_TIME) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' date must be in the future"));
     }
   }
@@ -460,7 +460,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 
   // The unpublish-on 'required' form attribute may not be set in some cases,
   // but a value must be entered if also setting a publish-on date.
-  if (variable_get('scheduler_unpublish_required_' . $node->type) && !empty($node->publish_on) && empty($node->unpublish_on)) {
+  if (variable_get('scheduler_unpublish_required_' . $node->getType()) && !empty($node->publish_on) && empty($node->unpublish_on)) {
     $form_state->setErrorByName('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
   }
 }
@@ -485,20 +485,20 @@ function scheduler_node_presave(EntityInterface $node) {
     $publication_allowed = _scheduler_allow($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
-    $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->type, 'error') == 'publish';
+    $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->getType(), 'error') == 'publish';
     if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
       // If required, set the created date to match published date.
-      if (variable_get('scheduler_publish_touch_' . $node->type, 0) == 1) {
-        $node->created = $node->publish_on;
+      if (variable_get('scheduler_publish_touch_' . $node->getType(), 0) == 1) {
+        $node->setCreatedTime($node->publish_on);
       }
       $node->publish_on = 0;
-      $node->status = 1;
+      $node->setPublished(TRUE);
       // Allow modules to react to immediate publishing.
       _scheduler_scheduler_api($node, 'publish_immediately');
     }
     else {
       // Ensure the node is unpublished as it will be published by cron later.
-      $node->status = 0;
+      $node->setPublished(FALSE);
 
       // Only inform the user that the node is scheduled if publication has not
       // been prevented by other modules. Those modules have to display a
@@ -518,7 +518,7 @@ function scheduler_node_insert(EntityInterface $node) {
   // Only insert into database if we need to (un)publish this node at some date.
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
     db_insert('scheduler')->fields(array(
-      'nid' => $node->nid,
+      'nid' => $node->id(),
       'publish_on' => $node->publish_on,
       'unpublish_on' => $node->unpublish_on,
     ))->execute();
@@ -543,7 +543,7 @@ function scheduler_node_update(EntityInterface $node) {
   // otherwise the user probably cleared out the (un)publish dates so we should
   // remove the record.
   if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
-    db_merge('scheduler')->key(array('nid' => $node->nid))->fields(array(
+    db_merge('scheduler')->key(array('nid' => $node->id()))->fields(array(
       'publish_on' => $node->publish_on,
       'unpublish_on' => $node->unpublish_on,
     ))->execute();
@@ -567,7 +567,7 @@ function scheduler_node_update(EntityInterface $node) {
  * Implements hook_ENTITY_TYPE_delete() for node entities.
  */
 function scheduler_node_delete(EntityInterface $node) {
-  db_delete('scheduler')->condition('nid', $node->nid)->execute();
+  db_delete('scheduler')->condition('nid', $node->id())->execute();
 }
 
 /**

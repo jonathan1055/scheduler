@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\node\Entity\Node;
+
 /**
  * @file
  * Tests for the Scheduler API.
@@ -54,21 +56,21 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
     // run, and check that the node is not published.
     $node = $this->createUnapprovedNode();
     scheduler_cron();
-    $this->assertNodeNotPublished($node->nid, 'An unapproved node is not published after scheduling.');
+    $this->assertNodeNotPublished($node->id(), 'An unapproved node is not published after scheduling.');
 
     // Approve the node for publication, simulate a cron run, check that the
     // node is now published.
-    $this->approveNode($node->nid);
+    $this->approveNode($node->id());
     scheduler_cron();
-    $this->assertNodePublished($node->nid, 'An approved node is published after scheduling.');
+    $this->assertNodePublished($node->id(), 'An approved node is published after scheduling.');
 
     // Turn on immediate publication of nodes with publication dates in the past
     // and repeat the tests. It is not needed to simulate cron runs now.
     variable_set('scheduler_publish_past_date_scheduler_test', 'publish');
     $node = $this->createUnapprovedNode();
-    $this->assertNodeNotPublished($node->nid, 'An unapproved node is not published immediately after saving.');
-    $this->approveNode($node->nid);
-    $this->assertNodePublished($node->nid, 'An approved node is published immediately after saving.');
+    $this->assertNodeNotPublished($node->id(), 'An unapproved node is not published immediately after saving.');
+    $this->approveNode($node->id());
+    $this->assertNodePublished($node->id(), 'An approved node is published immediately after saving.');
   }
 
   /**
@@ -97,7 +99,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
    */
   protected function approveNode($nid) {
     $node = node_load($nid, NULL, TRUE);
-    $node->field_scheduler_test_approved[$node->language][0]['value'] = TRUE;
+    $node->set('field_scheduler_test_approved' , TRUE);
     $node->save();
   }
 

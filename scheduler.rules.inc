@@ -128,7 +128,7 @@ function scheduler_set_publish_date_action($node, $date) {
   // hook_node_presave() and hook_node_update() will be executed anyway. But if
   // this action is being used to schedule a different node then we need to call
   // the functions directly here.
-  if (variable_get('scheduler_publish_enable_' . $node->type, 0)) {
+  if (variable_get('scheduler_publish_enable_' . $node->getType(), 0)) {
     $node->publish_on = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -136,7 +136,7 @@ function scheduler_set_publish_date_action($node, $date) {
   else {
     $type_name = node_get_type_label($node);
     // @todo Replace l().
-    \Drupal::logger('scheduler')->warning('Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->type)));
+    \Drupal::logger('scheduler')->warning('Scheduled publishing is not enabled for %type content. To prevent this message add the condition "Scheduled publishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => l(t('@type settings', array('@type' => $type_name)), 'admin/structure/types/manage/' . $node->getType())));
   }
 }
 
@@ -149,7 +149,7 @@ function scheduler_set_publish_date_action($node, $date) {
  *   The date for unpublishing, a unix timestamp integer.
  */
 function scheduler_set_unpublish_date_action($node, $date) {
-  if (variable_get('scheduler_unpublish_enable_' . $node->type, 0)) {
+  if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
     $node->unpublish_on = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -169,7 +169,7 @@ function scheduler_set_unpublish_date_action($node, $date) {
  *   The node object from which to remove the publish_on date.
  */
 function scheduler_remove_publish_date_action($node) {
-  if (variable_get('scheduler_publish_enable_' . $node->type, 0)) {
+  if (variable_get('scheduler_publish_enable_' . $node->getType(), 0)) {
     $node->publish_on = 0;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -189,7 +189,7 @@ function scheduler_remove_publish_date_action($node) {
  *   The node object from which to remove the unpublish_on date.
  */
 function scheduler_remove_unpublish_date_action($node) {
-  if (variable_get('scheduler_unpublish_enable_' . $node->type, 0)) {
+  if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
     $node->unpublish_on = 0;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -246,7 +246,7 @@ function scheduler_rules_condition_info() {
  *   TRUE if scheduled publishing is enabled for the node type, FALSE if not.
  */
 function scheduler_condition_publishing_is_enabled($node) {
-  return (variable_get('scheduler_publish_enable_' . $node->type, 0) == 1);
+  return (variable_get('scheduler_publish_enable_' . $node->getType(), 0) == 1);
 }
 
 /**
@@ -258,7 +258,7 @@ function scheduler_condition_publishing_is_enabled($node) {
  *   TRUE if scheduled unpublishing is enabled for the node type, FALSE if not.
  */
 function scheduler_condition_unpublishing_is_enabled($node) {
-  return (variable_get('scheduler_unpublish_enable_' . $node->type, 0) == 1);
+  return (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0) == 1);
 }
 
 /**

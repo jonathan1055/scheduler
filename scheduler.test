@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\String;
+use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 
 class SchedulerTestCase extends DrupalWebTestCase {
@@ -125,36 +126,36 @@ class SchedulerTestCase extends DrupalWebTestCase {
       'title' => $this->randomName(),
       'publish_on' => format_date(strtotime('-1 day'), 'custom', 'Y-m-d H:i:s'),
     );
-    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
 
     // Test the 'publish' behavior: the node should be published immediately.
     variable_set('scheduler_publish_past_date_page', 'publish');
-    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => String::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Reload the changed node and check that it is published.
-    $node = node_load($node->nid, NULL, TRUE);
-    $this->assertTrue($node->status, 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
+    $node = node_load($node->id(), NULL, TRUE);
+    $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Test the 'schedule' behavior: the node should be unpublished and become
     // published on the next cron run.
     variable_set('scheduler_publish_past_date_page', 'schedule');
-    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => String::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => $edit['publish_on'])), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
     // Reload the node and check that it is unpublished but scheduled correctly.
-    $node = node_load($node->nid, NULL, TRUE);
-    $this->assertFalse($node->status, 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
+    $node = node_load($node->id(), NULL, TRUE);
+    $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertEqual(format_date($node->publish_on, 'custom', 'Y-m-d H:i:s'), $edit['publish_on'], 'The node is scheduled for the required date');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();
-    $node = node_load($node->nid, NULL, TRUE);
-    $this->assertTrue($node->status, 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
+    $node = node_load($node->id(), NULL, TRUE);
+    $this->assertTrue($node->isPublished(), 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
   }
 
   /**
@@ -171,11 +172,11 @@ class SchedulerTestCase extends DrupalWebTestCase {
 
     // First test scheduled publication with revisioning disabled.
     $node = $this->schedule($node);
-    $this->assertRevisionCount($node->nid, 1, 'No new revision was created when a node was published with revisioning disabled.');
+    $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was published with revisioning disabled.');
 
     // Test scheduled unpublication.
     $node = $this->schedule($node, 'unpublish');
-    $this->assertRevisionCount($node->nid, 1, 'No new revision was created when a node was unpublished with revisioning disabled.');
+    $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was unpublished with revisioning disabled.');
 
     // Enable revisioning.
     variable_set('scheduler_publish_revision_page', 1);
@@ -183,21 +184,21 @@ class SchedulerTestCase extends DrupalWebTestCase {
 
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);
-    $this->assertRevisionCount($node->nid, 2, 'A new revision was created when revisioning is enabled.');
+    $this->assertRevisionCount($node->id(), 2, 'A new revision was created when revisioning is enabled.');
     $expected_message = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
       '@now' => format_date(REQUEST_TIME, 'short'),
       '@date' => format_date($created, 'short'),
     ));
-    $this->assertRevisionLogMessage($node->nid, $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
+    $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
 
     // Test scheduled unpublication with revisioning enabled.
     $node = $this->schedule($node, 'unpublish');
-    $this->assertRevisionCount($node->nid, 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
+    $this->assertRevisionCount($node->id(), 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
     $expected_message = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
       '@now' => format_date(REQUEST_TIME, 'short'),
       '@date' => format_date(REQUEST_TIME, 'short'),
     ));
-    $this->assertRevisionLogMessage($node->nid, $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
+    $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
   }
 
   /**
@@ -532,7 +533,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
         'publish_on' => '',
         'unpublish_on' => '',
       );
-      $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->nid . '/edit';
+      $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->id() . '/edit';
       $this->drupalPost($path, $edit, t('Save'));
 
       // Check for the expected result.
@@ -567,7 +568,7 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $edit = array(
       'publish_on' => date('Y-m-d H:i:s', strtotime('+1 day', REQUEST_TIME)),
     );
-    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertRaw(t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
   }
 
@@ -591,10 +592,10 @@ class SchedulerTestCase extends DrupalWebTestCase {
     variable_set('scheduler_unpublish_required_page', TRUE);
 
     // Check that deleting the nodes does not throw form validation errors.
-    $this->drupalPost('node/' . $published_node->nid . '/edit', array(), t('Delete'));
+    $this->drupalPost('node/' . $published_node->id() . '/edit', array(), t('Delete'));
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete a published node with no scheduling information.');
 
-    $this->drupalPost('node/' . $unpublished_node->nid . '/edit', array(), t('Delete'));
+    $this->drupalPost('node/' . $unpublished_node->id() . '/edit', array(), t('Delete'));
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
   }
 

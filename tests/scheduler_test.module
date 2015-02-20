@@ -27,7 +27,7 @@ function scheduler_test_node_info() {
 function scheduler_test_scheduler_allow_publishing($node) {
   // Only publish nodes that have the 'Approved for publication by the CEO'
   // checkbox ticked.
-  $items = field_get_items('node', $node, 'field_scheduler_test_approved');
+  $items = $node->field_scheduler_test_approved->getValue();
   $allowed = !empty($items[0]['value']);
 
   // If publication is denied then inform the user why.
