@@ -410,9 +410,8 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
   // If the node is going to be unpublished then add this information to the
   // header for googlebot. Only do this when viewing the full node (not teaser)
   // on its own page and not in edit mode.
-  // @todo Replace $node->scheduler with $node->unpublish_on.
-  if ($view_mode == 'full' && !empty($node->scheduler['unpublish_on']) && node_is_page($node) && arg(2) != 'edit') {
-    $unavailable_after = date("d-M-Y H:i:s T", $node->scheduler['unpublish_on']);
+  if ($view_mode == 'full' && !empty($node->unpublish_on) && node_is_page($node) && arg(2) != 'edit') {
+    $unavailable_after = date('d-M-Y H:i:s T', $node->unpublish_on);
     $element = array(
       '#tag' => 'meta',
       '#attributes' => array(
