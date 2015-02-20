@@ -9,6 +9,7 @@ use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
 
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
@@ -198,15 +199,15 @@ function scheduler_form_alter(array &$form, FormStateInterface $form_state) {
  * @see hook_scheduler_allow_publishing()
  * @see hook_scheduler_allow_unpublishing()
  *
- * @param stdClass $node
- *   The node object on which the action is to be performed.
+ * @param \Drupal\node\NodeInterface $node
+ *   The node on which the action is to be performed.
  * @param string $action
  *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
  *
  * @return bool
  *   TRUE if the action is allowed, FALSE if not.
  */
-function _scheduler_allow($node, $action) {
+function _scheduler_allow(NodeInterface $node, $action) {
   // Default to TRUE.
   $result = TRUE;
   // Check that other modules allow the action.
@@ -673,13 +674,13 @@ function _scheduler_cron_access($cron_key) {
  *
  * This allows other modules to implement hook_scheduler_api($node, $action).
  *
- * @param object $node
+ * @param \Drupal\node\NodeInterface $node
  *   The node object.
  * @param string $action
  *   The action being performed, either 'pre_publish', 'publish',
  *   'publish_immediately', 'pre_unpublish' or 'unpublish'.
  */
-function _scheduler_scheduler_api($node, $action) {
+function _scheduler_scheduler_api(NodeInterface $node, $action) {
   foreach (\Drupal::moduleHandler()->getImplementations('scheduler_api') as $module) {
     $function = $module . '_scheduler_api';
     $function($node, $action);
@@ -733,6 +734,7 @@ function scheduler_field_extra_fields() {
  * Makes the publish_on and unpublish_on data available as theme variables.
  */
 function scheduler_preprocess_node(&$variables, $hook) {
+  /* @var $node \Drupal\node\NodeInterface */
   $node = $variables['node'];
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {

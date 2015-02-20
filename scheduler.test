@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\String;
+use Drupal\node\NodeInterface;
 
 class SchedulerTestCase extends DrupalWebTestCase {
 
@@ -225,16 +226,16 @@ class SchedulerTestCase extends DrupalWebTestCase {
   /**
    * Simulates the scheduled (un)publication of a node.
    *
-   * @param object $node
+   * @param \Drupal\node\NodeInterface $node
    *   The node to schedule.
    * @param string $action
    *   The action to perform: either 'publish' or 'unpublish'. Defaults to
    *   'publish'.
    *
-   * @return object
+   * @return \Drupal\node\NodeInterface
    *   The updated node, after scheduled (un)publication.
    */
-  function schedule($node, $action = 'publish') {
+  function schedule(NodeInterface $node, $action = 'publish') {
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
     $node->{$action . '_on'} = strtotime('-1 day');
