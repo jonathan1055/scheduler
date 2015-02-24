@@ -26,17 +26,17 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
    *
    * @var object
    */
-  protected $admin_user;
+  protected $adminUser;
 
   /**
    * Helper function for testScheduler(). Schedules content and asserts status.
    */
-  function helpTestScheduler($edit) {
+  protected function helpTestScheduler($edit) {
     // Add a page.
     $langcode = LANGUAGE_NONE;
     $body = $this->randomName();
     $edit["body[$langcode][0][value]"] = $body;
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
     $this->drupalPost('node/add/page', $edit, t('Save'));
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
@@ -80,7 +80,7 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
    * @return \Drupal\node\NodeInterface
    *   The updated node, after scheduled (un)publication.
    */
-  function schedule(NodeInterface $node, $action = 'publish') {
+  protected function schedule(NodeInterface $node, $action = 'publish') {
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
 
     // Simulate scheduling by setting the (un)publication date in the past and
@@ -104,10 +104,10 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
    * @param string $group
    *   The type of assertion - examples are "Browser", "PHP".
    *
-   * @return
+   * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
+  protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
     $log_message = db_select('node_revision', 'r')
       ->fields('r', array('log'))
       ->condition('nid', $nid)
@@ -115,6 +115,7 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
       ->range(0, 1)
       ->execute()
       ->fetchColumn();
+
     return $this->assertEqual($log_message, $value, $message, $group);
   }
 
@@ -130,18 +131,20 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
    * @param string $group
    *   The type of assertion - examples are "Browser", "PHP".
    *
-   * @return
+   * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
+  protected function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
     $count = db_select('node_revision', 'r')
       ->fields('r', array('vid'))
       ->condition('nid', $nid)
       ->countQuery()
       ->execute()
       ->fetchColumn();
+
     return $this->assertEqual($count, $value, $message, $group);
   }
+
 }
 
 /**
@@ -163,14 +166,14 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  public function setUp() {
     parent::setUp('scheduler');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array(
+    $this->adminUser = $this->drupalCreateUser(array(
       'access content',
       'administer scheduler',
       'create page content',
@@ -178,7 +181,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       'delete own page content',
       'view own unpublished content',
       'administer nodes',
-      'schedule (un)publishing of nodes'
+      'schedule (un)publishing of nodes',
     ));
 
     // Add scheduler functionality to the page node type.
@@ -189,7 +192,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests basic scheduling of content.
    */
-  function testScheduler() {
+  public function testScheduler() {
     // Create node values. Set time to one hour in the future.
     $edit = array(
       'title' => 'title',
@@ -210,7 +213,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
 
     // Log in.
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
     $node = $this->drupalCreateNode(array('type' => 'page', 'status' => FALSE));
@@ -302,8 +305,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests if options can both be displayed as extra fields and vertical tabs.
    */
-  function testExtraFields() {
-    $this->drupalLogin($this->admin_user);
+  public function testExtraFields() {
+    $this->drupalLogin($this->adminUser);
 
     // Test if the options are shown as vertical tabs by default.
     $this->drupalGet('node/add/page');
@@ -325,16 +328,15 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests creating and editing nodes with required scheduling enabled.
    */
-  function testRequiredScheduling() {
-    $this->drupalLogin($this->admin_user);
+  public function testRequiredScheduling() {
+    $this->drupalLogin($this->adminUser);
 
     // Define test scenarios with expected results.
     $test_cases = array(
       // The 1-10 numbering used below matches the test cases described in
       // http://drupal.org/node/1198788#comment-7816119
-
+      //
       // A. Test scenarios that require scheduled publishing.
-
       // When creating a new unpublished node it is required to enter a
       // publication date.
       array(
@@ -395,7 +397,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       ),
 
       // B. Test scenarios that require scheduled unpublishing.
-
       // When creating a new unpublished node it is required to enter an
       // unpublication date since it is to be expected that the node will be
       // published at some point and should subsequently be unpublished.
@@ -507,7 +508,9 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         case 'not required':
           $string = '@type %title has been ' . ($test_case['operation'] == 'add' ? 'created' : 'updated') . '.';
           $args = array('@type' => 'Basic page', '%title' => $title);
+          // @codingStandardsIgnoreStart
           $this->assertRaw(t($string, $args), $test_case['id'] . '. ' . $test_case['message']);
+          // @codingStandardsIgnoreEnd
           break;
       }
     }
@@ -516,11 +519,16 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests the validation when editing a node.
    */
-  function testValidationDuringEdit() {
-    $this->drupalLogin($this->admin_user);
+  public function testValidationDuringEdit() {
+    $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
-    $node = $this->drupalCreateNode(array('type' => 'page', 'status' => FALSE, 'title' => $this->randomName()));
+    $settings = array(
+      'type' => 'page',
+      'status' => FALSE,
+      'title' => $this->randomName(),
+    ));
+    $node = $this->drupalCreateNode($settings);
 
     // Set unpublishing to be required.
     variable_set('scheduler_unpublish_required_page', TRUE);
@@ -538,11 +546,12 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    *
    * This tests if it is possible to delete a node that does not have a
    * publication date set, when scheduled publishing is required.
+   *
    * @see https://drupal.org/node/1614880
    */
   public function testScheduledNodeDelete() {
     // Log in.
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Create a published and an unpublished node, both without scheduling.
     $unpublished_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 0));
@@ -581,14 +590,14 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  public function setUp() {
     parent::setUp('date', 'scheduler');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
 
     // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array(
+    $this->adminUser = $this->drupalCreateUser(array(
       'access content',
       'administer scheduler',
       'create page content',
@@ -596,7 +605,7 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
       'delete own page content',
       'view own unpublished content',
       'administer nodes',
-      'schedule (un)publishing of nodes'
+      'schedule (un)publishing of nodes',
     ));
 
     // Add scheduler functionality to the page node type.
@@ -608,7 +617,7 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
    * Test the default time functionality.
    */
   public function testDefaultTime() {
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
 
     // Check that the correct default time is added to the scheduled date.
     // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
@@ -661,7 +670,9 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
     $this->drupalPost('node/add/page', $edit, t('Save'));
     $this->assertNoRaw("The 'publish on' value does not match the expected format of", 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
     $this->assertNoRaw("The 'unpublish on' value does not match the expected format of", 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
-    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => date('Y-m-d H:i:s', strtotime('tomorrow', REQUEST_TIME) + 23400))), 'The user is informed that the content will be published on the requested date, on the default time.');
+    $publish_time = date('Y-m-d H:i:s', strtotime('tomorrow', REQUEST_TIME) + 23400);
+    $args = array('@publish_time' => $publish_time);
+    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', $args), 'The user is informed that the content will be published on the requested date, on the default time.');
 
     // Check that the default time has been added to the scheduler form fields.
     $this->clickLink(t('Edit'));
