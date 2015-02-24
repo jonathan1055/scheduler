@@ -40,14 +40,6 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'scheduler.cron.inc',
   );
-  // Redirect the legacy URL 'scheduler/timecheck' to the new admin tab
-  // 'admin/config/content/scheduler/timecheck'.
-  $items['scheduler/timecheck'] = array(
-    'page callback' => 'drupal_goto',
-    'page arguments' => array('admin/config/content/scheduler/timecheck'),
-    'access arguments' => array('administer scheduler'),
-    'type' => MENU_CALLBACK,
-  );
   $items['admin/config/content/scheduler'] = array(
     'title' => 'Scheduler',
     'description' => "Configure settings for scheduled publishing and unpublishing, run the lightweight cron and check your servers clock time.",
