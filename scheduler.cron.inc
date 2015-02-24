@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\node\Entity\Node;
+
 /**
  * @file
  * Scheduler cron functions.
@@ -39,9 +41,8 @@ function _scheduler_publish() {
   // Allow other modules to alter the list of nodes to be published.
   \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
-  foreach ($nids as $nid) {
-    $node = node_load($nid);
-
+  $nodes = Node::loadMultiple($nids);
+  foreach ($nodes as $nid => $node) {
     // Check that other modules allow the action on this node.
     if (!_scheduler_allow($node, $action)) {
       continue;
@@ -129,9 +130,8 @@ function _scheduler_unpublish() {
   // Allow other modules to alter the list of nodes to be unpublished.
   \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
-  foreach ($nids as $nid) {
-    $node = node_load($nid);
-
+  $nodes = Node::loadMultiple($nids);
+  foreach ($nodes as $nid => $node) {
     // Check that other modules allow the action on this node.
     if (!_scheduler_allow($node, $action)) {
       continue;

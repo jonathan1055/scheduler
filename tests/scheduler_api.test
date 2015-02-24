@@ -98,7 +98,9 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
    *   The nid of the node to approve.
    */
   protected function approveNode($nid) {
-    $node = node_load($nid, NULL, TRUE);
+    $node_storage = $this->container->get('entity.manager')->getStorage('node');
+    $node_storage->resetCache(array($nid));
+    $node = $node_storage->load($nid);
     $node->set('field_scheduler_test_approved' , TRUE);
     $node->save();
   }

@@ -114,6 +114,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
    * Test the different options for past publication dates.
    */
   public function testSchedulerPastDates() {
+    $node_storage = $this->container->get('entity.manager')->getStorage('node');
+
     // Log in.
     $this->drupalLogin($this->admin_user);
 
@@ -136,7 +138,8 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => String::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Reload the changed node and check that it is published.
-    $node = node_load($node->id(), NULL, TRUE);
+    $node_storage->resetCache(array($node->id()));
+    $node = $node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Test the 'schedule' behavior: the node should be unpublished and become
@@ -148,13 +151,15 @@ class SchedulerTestCase extends DrupalWebTestCase {
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => $edit['publish_on'])), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
     // Reload the node and check that it is unpublished but scheduled correctly.
-    $node = node_load($node->id(), NULL, TRUE);
+    $node_storage->resetCache(array($node->id()));
+    $node = $node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertEqual(format_date($node->publish_on, 'custom', 'Y-m-d H:i:s'), $edit['publish_on'], 'The node is scheduled for the required date');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();
-    $node = node_load($node->id(), NULL, TRUE);
+    $node_storage->resetCache(array($node->id()));
+    $node = $node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
   }
 
@@ -237,12 +242,15 @@ class SchedulerTestCase extends DrupalWebTestCase {
    *   The updated node, after scheduled (un)publication.
    */
   function schedule(NodeInterface $node, $action = 'publish') {
+    $node_storage = $this->container->get('entity.manager')->getStorage('node');
+
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
     $node->{$action . '_on'} = strtotime('-1 day');
     $node->save();
     scheduler_cron();
-    return node_load($node->nid, NULL, TRUE);
+    $node_storage->resetCache(array($node->id()));
+    return $node_storage->load($node->id());
   }
 
   /**
