@@ -9,6 +9,7 @@ use Drupal\node\Entity\Node;
  * This file is included only when running a crontab job or executing the
  * lightweight cron via the admin interface.
  */
+use Drupal\Core\Url;
 
 /**
  * Publish scheduled nodes.
@@ -244,7 +245,7 @@ function _scheduler_run_cron() {
     // This cron run has been initiated manually from the configuration form.
     // Give a message and return something so that an output page is created.
     // No output should be returned if running from a crontab job.
-    drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => url('admin/reports/dblog'))));
+    drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => Url::fromRoute('dblog.overview'))));
     return ' ';
   }
 }

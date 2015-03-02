@@ -8,6 +8,7 @@
 use Drupal\Component\Utility\String;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 
 /**
  * Helper function for the real hook_form_node_type_form_alter().
@@ -261,11 +262,11 @@ function theme_scheduler_timecheck($variables) {
     // site default setting is returned.
     '@localtime' => format_date($now, 'custom', 'jS F Y, H:i:s P T e'),
     '@daylight_saving' => format_date($now, 'custom', 'I') ? t('currently in daylight saving mode') : t('not in daylight saving mode'),
-    '@user_account' => url('user/' . $account->id() . '/edit'),
+    '@user_account' => Url::fromRoute('entity.user.edit_form', array('user' => $account->id())),
     '@date_default_timezone' => String::checkPlain($date_default_timezone),
     '@date_default_offset' => format_date($now, 'custom', 'P', $date_default_timezone),
     '@date_default_code' => format_date($now, 'custom', 'T', $date_default_timezone),
-    '@admin_regional_settings' => url('admin/config/regional/settings'),
+    '@admin_regional_settings' => Url::fromRoute('system.regional_settings'),
   );
 
   $output = '<h4>' . t('Time check') . '</h4>'

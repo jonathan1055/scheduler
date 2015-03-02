@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Url;
 
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
@@ -128,7 +129,7 @@ function scheduler_help($section) {
   $output = '';
   switch ($section) {
     case 'admin/config/content/scheduler':
-      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', array('@link' => url('admin/structure/types'))) . '</br>';
+      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', array('@link' => Url::fromRoute('entity.node_type.collection'))) . '</br>';
       $output .= t('The options and settings below are common to all content types.') . '</p>';
       break;
 
