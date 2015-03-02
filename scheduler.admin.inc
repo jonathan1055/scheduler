@@ -274,7 +274,7 @@ function theme_scheduler_timecheck($variables) {
 
   if (variable_get('configurable_timezones', 1)) {
     $output .= '<p>' . t('Your local time is @localtime (@daylight_saving). You can change this via your <a href="@user_account">user account</a>.', $t_options) . '</p>';
-    if (empty($account->getTimeZone())) {
+    if (!$account->getTimezone()) {
       $output .= '<p>' . t('Note: The user timezone has not been stored, so defaulting to the website timezone.') . '</p>';
     }
   }
