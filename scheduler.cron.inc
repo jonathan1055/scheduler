@@ -238,7 +238,7 @@ function _scheduler_run_cron() {
     }
   }
   if ($log) {
-    \Drupal::logger('scheduler')->notice('Lightweight cron run completed.', array('link' => l(t('settings'), 'admin/config/content/scheduler/cron')));
+    \Drupal::logger('scheduler')->notice('Lightweight cron run completed.', array('link' => \Drupal::l(t('settings'), 'admin/config/content/scheduler/cron')));
   }
 
   if (\Drupal::request()->getRequestUri() === 'admin/config/content/scheduler/cron') {

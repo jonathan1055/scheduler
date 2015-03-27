@@ -357,8 +357,8 @@ function scheduler_list() {
   foreach ($result as $node) {
     // Provide regular operations to edit and delete the node.
     $ops = array(
-      l(t('edit'), 'node/' . $node->nid . '/edit', array('query' => $destination)),
-      l(t('delete'), 'node/' . $node->nid . '/delete', array('query' => $destination)),
+      \Drupal::l(t('edit'), Url::fromRoute('entity.node.edit_form', ['node' => $node->nid], ['query' => $destination])),
+      \Drupal::l(t('delete'), Url::fromRoute('entity.node.delete_form', ['node' => $node->nid], ['query' => $destination])),
     );
 
     $rows[] = array(
