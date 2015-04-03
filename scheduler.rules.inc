@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 
 /**
  * Implements hook_rules_event_info().
@@ -120,12 +121,12 @@ function scheduler_rules_action_info() {
 /**
  * Set the publish_on date for the node.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   The node object to be scheduled for publishing.
- * @param $date
+ * @param int $date
  *   The date for publishing, a unix timestamp integer.
  */
-function scheduler_set_publish_date_action($node, $date) {
+function scheduler_set_publish_date_action(Node $node, $date) {
   // When this action is invoked and it operates on the node being editted then
   // hook_node_presave() and hook_node_update() will be executed anyway. But if
   // this action is being used to schedule a different node then we need to call
@@ -145,12 +146,12 @@ function scheduler_set_publish_date_action($node, $date) {
 /**
  * Set the unpublish_on date for the node.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   The node object to be scheduled for unpublishing.
- * @param $date
+ * @param int $date
  *   The date for unpublishing, a unix timestamp integer.
  */
-function scheduler_set_unpublish_date_action($node, $date) {
+function scheduler_set_unpublish_date_action(Node $node, $date) {
   if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
     $node->unpublish_on = $date;
     scheduler_node_presave($node);
@@ -168,10 +169,10 @@ function scheduler_set_unpublish_date_action($node, $date) {
 /**
  * Remove the publish_on date for the node.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   The node object from which to remove the publish_on date.
  */
-function scheduler_remove_publish_date_action($node) {
+function scheduler_remove_publish_date_action(Node $node) {
   if (variable_get('scheduler_publish_enable_' . $node->getType(), 0)) {
     $node->publish_on = 0;
     scheduler_node_presave($node);
@@ -189,10 +190,10 @@ function scheduler_remove_publish_date_action($node) {
 /**
  * Remove the unpublish_on date for the node.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   The node object from which to remove the unpublish_on date.
  */
-function scheduler_remove_unpublish_date_action($node) {
+function scheduler_remove_unpublish_date_action(Node $node) {
   if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
     $node->unpublish_on = 0;
     scheduler_node_presave($node);
@@ -245,47 +246,47 @@ function scheduler_rules_condition_info() {
 /**
  * Determines whether scheduled publishing is enabled for this node type.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   A node object.
  * @return
  *   TRUE if scheduled publishing is enabled for the node type, FALSE if not.
  */
-function scheduler_condition_publishing_is_enabled($node) {
+function scheduler_condition_publishing_is_enabled(Node $node) {
   return (variable_get('scheduler_publish_enable_' . $node->getType(), 0) == 1);
 }
 
 /**
  * Determines whether scheduled unpublishing is enabled for this node type.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   A node object.
  * @return
  *   TRUE if scheduled unpublishing is enabled for the node type, FALSE if not.
  */
-function scheduler_condition_unpublishing_is_enabled($node) {
+function scheduler_condition_unpublishing_is_enabled(Node $node) {
   return (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0) == 1);
 }
 
 /**
  * Determines whether a node is scheduled for publishing.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   A node object.
  * @return
  *   TRUE if the node is scheduled for publishing, FALSE if not.
  */
-function scheduler_condition_node_is_scheduled_for_publishing($node) {
+function scheduler_condition_node_is_scheduled_for_publishing(Node $node) {
   return !empty($node->publish_on);
 }
 
 /**
  * Determines whether a node is scheduled for unpublishing.
  *
- * @param $node
+ * @param \Drupal\node\Entity\Node $node
  *   A node object.
  * @return
  *   TRUE if the node is scheduled for unpublishing, FALSE if not.
  */
-function scheduler_condition_node_is_scheduled_for_unpublishing($node) {
+function scheduler_condition_node_is_scheduled_for_unpublishing(Node $node) {
   return !empty($node->unpublish_on);
 }
