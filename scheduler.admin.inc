@@ -170,69 +170,6 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
 }
 
 /**
- * Form constructor for the lightweight cron form to allow a manual run.
- */
-function _scheduler_lightweight_cron(array $form, FormStateInterface $form_state) {
-  $form = array();
-  $form['scheduler_cron'] = array(
-    '#type' => 'submit',
-    '#prefix' => '<div class="container-inline">' . t("You can test Scheduler's lightweight cron process interactively") . ': ',
-    '#value' => t("Run Scheduler's lightweight cron now"),
-    '#submit' => array('_scheduler_lightweight_cron_submit'),
-    '#suffix' => "</div>\n",
-  );
-  $form['scheduler_cron_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Lightweight cron settings'),
-  );
-  $form['scheduler_cron_settings']['scheduler_lightweight_log'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Log every activation and completion message.'),
-    '#default_value' => \Drupal::config('scheduler.settings')->get('log'),
-    '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
-  );
-  $form['scheduler_cron_settings']['scheduler_lightweight_access_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Lightweight cron access key'),
-    '#size' => 100,
-    '#default_value' => \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key'),
-    '#description' => t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/&lt;this key&gt;. To disable security for lightweight cron leave this field blank."),
-  );
-  if (isset($form_state['scheduler_generate_new_key'])) {
-    $new_access_key = substr(md5(rand()), 0, 20);
-    $form_state['input']['scheduler_lightweight_cron_access_key'] = $new_access_key;
-    drupal_set_message(t('A new random key has been generated but not saved. If you wish to use this, first "Save Configuration" to store the value, then modify your crontab job.'), 'warning');
-  }
-  $form['scheduler_cron_settings']['create_key'] = array(
-    '#type' => 'submit',
-    '#value' => t('Generate new random key'),
-    '#submit' => array('_scheduler_generate_key'),
-  );
-  return system_settings_form($form);
-}
-
-/**
- * Form submission handler for _scheduler_lightweight_cron().
- */
-function _scheduler_lightweight_cron_submit() {
-  // Load the cron functions file.
-  module_load_include('inc', 'scheduler', 'scheduler.cron');
-  _scheduler_run_cron();
-}
-
-/**
- * Form submission handler for _scheduler_lightweight_cron().
- *
- * This only fires when the 'Generate new random key' button is clicked.
- */
-function _scheduler_generate_key(array $form, FormStateInterface $form_state) {
-  // Everything in $form_state is persistent, so we can use a direct attribute.
-  $form_state['scheduler_generate_new_key'] = TRUE;
-  // Setting $form_state['rebuild'] = TRUE causes the form to be rebuilt again.
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
  * Page callback: Generate the timecheck admin page.
  */
 function _scheduler_timecheck() {

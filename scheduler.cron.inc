@@ -1,7 +1,5 @@
 <?php
 
-use Drupal\node\Entity\Node;
-
 /**
  * @file
  * Scheduler cron functions.
@@ -9,7 +7,9 @@ use Drupal\node\Entity\Node;
  * This file is included only when running a crontab job or executing the
  * lightweight cron via the admin interface.
  */
+
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 
 /**
  * Publish scheduled nodes.
@@ -25,7 +25,8 @@ function _scheduler_publish() {
   $query = db_select('scheduler', 's');
   $query->addField('s', 'nid');
   $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
-  $query->addJoin('INNER', 'users', 'u', 'u.uid = n.uid');
+  $query->addJoin('LEFT', 'node_field_data', 'nd', 'n.nid = nd.nid');
+  $query->addJoin('INNER', 'users', 'u', 'u.uid = nd.uid');
   $query->condition('s.publish_on', 0, '>');
   $query->condition('s.publish_on', REQUEST_TIME, '<=');
   $query_result = $query->execute();
@@ -114,7 +115,8 @@ function _scheduler_unpublish() {
   $query = db_select('scheduler', 's');
   $query->addField('s', 'nid');
   $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
-  $query->addJoin('INNER', 'users', 'u', 'u.uid = n.uid');
+  $query->addJoin('LEFT', 'node_field_data', 'nd', 'n.nid = nd.nid');
+  $query->addJoin('INNER', 'users', 'u', 'u.uid = nd.uid');
   $query->condition('s.unpublish_on', 0, '>');
   $query->condition('s.unpublish_on', REQUEST_TIME, '<=');
   $query_result = $query->execute();
@@ -238,14 +240,6 @@ function _scheduler_run_cron() {
     }
   }
   if ($log) {
-    \Drupal::logger('scheduler')->notice('Lightweight cron run completed.', array('link' => \Drupal::l(t('settings'), 'admin/config/content/scheduler/cron')));
-  }
-
-  if (\Drupal::request()->getRequestUri() === 'admin/config/content/scheduler/cron') {
-    // This cron run has been initiated manually from the configuration form.
-    // Give a message and return something so that an output page is created.
-    // No output should be returned if running from a crontab job.
-    drupal_set_message(t('Lightweight cron run completed - see <a href="@url">log</a> for details.', array('@url' => Url::fromRoute('dblog.overview'))));
-    return ' ';
+    \Drupal::logger('scheduler')->notice('Lightweight cron run completed.', array('link' => \Drupal::l(t('settings'), Url::fromRoute('scheduler.cron_form'))));
   }
 }
