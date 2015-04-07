@@ -5,6 +5,8 @@
  * Builds placeholder replacement tokens for node scheduler data.
  */
 
+use Drupal\Component\Utility;
+
 /**
  * Implements hook_token_info().
  */
@@ -49,10 +51,10 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
     }
 
     // Chained token replacement.
-    if (isset($node->publish_on) && $publish_tokens = token_find_with_prefix($tokens, 'scheduler-publish')) {
+    if (isset($node->publish_on) && $publish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-publish')) {
       $replacements += token_generate('date', $publish_tokens, array('date' => $node->publish_on), $options);
     }
-    if (isset($node->unpublish_on) && $unpublish_tokens = token_find_with_prefix($tokens, 'scheduler-unpublish')) {
+    if (isset($node->unpublish_on) && $unpublish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-unpublish')) {
       $replacements += token_generate('date', $unpublish_tokens, array('date' => $node->unpublish_on), $options);
     }
   }
