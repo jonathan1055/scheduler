@@ -7,8 +7,8 @@
 
 use Drupal\Component\Utility\String;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Drupal\node\NodeTypeInterface;
 
 /**
  * Helper function for the real hook_form_node_type_form_alter().
@@ -167,6 +167,24 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       ),
     ),
   );
+
+  $form['#entity_builders'][] = 'scheduler_form_node_type_form_builder';
+}
+
+/**
+ * Entity builder for the node type form with scheduler options.
+ */
+function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $type, &$form, FormStateInterface $form_state) {
+  $type->setThirdPartySetting('scheduler', 'expand_fieldset', $form_state->getValue('scheduler_expand_fieldset'));
+  $type->setThirdPartySetting('scheduler', 'publish_enable', $form_state->getValue('scheduler_publish_enable'));
+  $type->setThirdPartySetting('scheduler', 'publish_past_date', $form_state->getValue('scheduler_publish_past_date'));
+  $type->setThirdPartySetting('scheduler', 'publish_required', $form_state->getValue('scheduler_publish_required'));
+  $type->setThirdPartySetting('scheduler', 'publish_revision', $form_state->getValue('scheduler_publish_revision'));
+  $type->setThirdPartySetting('scheduler', 'publish_touch', $form_state->getValue('scheduler_publish_touch'));
+  $type->setThirdPartySetting('scheduler', 'unpublish_enable', $form_state->getValue('scheduler_unpublish_enable'));
+  $type->setThirdPartySetting('scheduler', 'unpublish_required', $form_state->getValue('scheduler_unpublish_required'));
+  $type->setThirdPartySetting('scheduler', 'unpublish_revision', $form_state->getValue('scheduler_unpublish_revision'));
+  $type->setThirdPartySetting('scheduler', 'use_vertical_tabs', $form_state->getValue('scheduler_use_vertical_tabs'));
 }
 
 /**
