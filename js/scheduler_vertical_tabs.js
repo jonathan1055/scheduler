@@ -34,7 +34,7 @@ Drupal.behaviors.scheduler_settings = {
     });
 
     // Provide summary during content type configuration.
-    $('fieldset#edit-scheduler', context).drupalSetSummary(function(context) {
+    $('#edit-scheduler', context).drupalSetSummary(function(context) {
       var vals = [];
       if ($('#edit-scheduler-publish-enable', context).is(':checked')) {
         vals.push(Drupal.t('Publishing enabled'));

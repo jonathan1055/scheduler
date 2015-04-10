@@ -3,6 +3,7 @@ vertical-tabs:
     js/scheduler_vertical_tabs.js: {}
   dependencies:
       - core/jquery
+      - core/drupal.ajax
 scheduler/admin:
   css:
     theme:
