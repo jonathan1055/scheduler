@@ -23,7 +23,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['#attached']['library'][] = 'scheduler/vertical-tabs';
 
   $form['scheduler'] = array(
-    '#type' => 'details',
+    '#type' => 'fieldset',
     '#title' => t('Scheduler'),
     '#weight' => 35,
     '#group' => 'additional_settings',
