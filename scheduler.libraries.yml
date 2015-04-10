@@ -4,6 +4,7 @@ vertical-tabs:
   dependencies:
       - core/jquery
       - core/drupal.ajax
+      - core/drupalSettings
 scheduler/admin:
   css:
     theme:
