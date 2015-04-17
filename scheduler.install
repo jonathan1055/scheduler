@@ -104,16 +104,21 @@ function scheduler_update_7100() {
 
   // Grant these roles the 'view scheduled content' permission.
   if ($roles_to_update = $query->execute()->fetchCol()) {
-    $query = db_insert('role_permission');
-    $query->fields(array('rid', 'permission', 'module'));
     foreach ($roles_to_update as $rid ) {
-      $query->values(array(
+      // Use db_merge not db_insert in case the role already has the permission.
+      $query = db_merge('role_permission');
+      $query->key(array(
         'rid' => $rid,
         'permission' => 'view scheduled content',
         'module' => 'scheduler',
       ));
+      $query->fields(array(
+        'rid' => $rid,
+        'permission' => 'view scheduled content',
+        'module' => 'scheduler',
+      ));
+      $query->execute();
     }
-    $query->execute();
   }
 
   return format_plural(sizeof($roles_to_update), '1 role updated with view scheduled content permission.', '@count roles updated with view scheduled content permission.');
