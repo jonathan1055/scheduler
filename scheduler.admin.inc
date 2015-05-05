@@ -188,60 +188,6 @@ function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $
 }
 
 /**
- * Page callback: Generate the timecheck admin page.
- */
-function _scheduler_timecheck() {
-  return theme('scheduler_timecheck', array('now' => REQUEST_TIME));
-}
-
-/**
- * Returns HTML the timecheck administration page.
- *
- * @param array $variables
- *   An associative array containing:
- *   - 'now': A UNIX timestamp to format.
- *
- * @ingroup themeable
- */
-function theme_scheduler_timecheck($variables) {
-  $account = \Drupal::currentUser();
-
-  $now = $variables['now'];
-  $date_default_timezone = variable_get('date_default_timezone', date_default_timezone_get());
-
-  $t_options = array(
-    // For @utc specify 'GMT' as the timezone (4th parameter) so that no
-    // timezone offset is returned.
-    '@utc' => format_date($now, 'custom', 'jS F Y, H:i:s P', 'GMT'),
-    // For @localtime do not specify any timezone parameter so that the user or
-    // site default setting is returned.
-    '@localtime' => format_date($now, 'custom', 'jS F Y, H:i:s P T e'),
-    '@daylight_saving' => format_date($now, 'custom', 'I') ? t('currently in daylight saving mode') : t('not in daylight saving mode'),
-    '@user_account' => Url::fromRoute('entity.user.edit_form', array('user' => $account->id())),
-    '@date_default_timezone' => String::checkPlain($date_default_timezone),
-    '@date_default_offset' => format_date($now, 'custom', 'P', $date_default_timezone),
-    '@date_default_code' => format_date($now, 'custom', 'T', $date_default_timezone),
-    '@admin_regional_settings' => Url::fromRoute('system.regional_settings'),
-  );
-
-  $output = '<h4>' . t('Time check') . '</h4>'
-    . '<p>' . t('Your server\'s time is @utc. In most cases this should match <a href="https://www.google.com/search?q=Greenwich%20Mean%20Time">Greenwich Mean Time (GMT) / Coordinated Universal Time (UTC)</a>', $t_options) . '</p>'
-    . '<p>' . t('The website default timezone is @date_default_timezone (@date_default_code) which is offset from GMT by @date_default_offset hours. This timezone can be <a href="@admin_regional_settings">changed by admin users</a> with the appropriate access.', $t_options) . '</p>';
-
-  if (variable_get('configurable_timezones', 1)) {
-    $output .= '<p>' . t('Your local time is @localtime (@daylight_saving). You can change this via your <a href="@user_account">user account</a>.', $t_options) . '</p>';
-    if (!$account->getTimezone()) {
-      $output .= '<p>' . t('Note: The user timezone has not been stored, so defaulting to the website timezone.') . '</p>';
-    }
-  }
-  else {
-    $output .= '<p>' . t('Your local time is @localtime (@daylight_saving). This is not configurable by you.', $t_options) . '</p>';
-  }
-
-  return $output;
-}
-
-/**
  * Page callback: Displays a list of nodes scheduled for (un)publication.
  *
  * This will appear as a tab on the content admin page ('admin/content'). It is

@@ -55,15 +55,6 @@ function scheduler_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 5,
   );
-  $items['admin/config/content/scheduler/timecheck'] = array(
-    'title' => 'Time Check',
-    'description' => 'Allows site admin to check their servers internal clock',
-    'page callback' => '_scheduler_timecheck',
-    'access arguments' => array('administer scheduler'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 15,
-    'file' => 'scheduler.admin.inc',
-  );
   $items['admin/content/scheduler'] = array(
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
@@ -653,17 +644,6 @@ function _scheduler_scheduler_api(NodeInterface $node, $action) {
     $function = $module . '_scheduler_api';
     $function($node, $action);
   }
-}
-
-/**
- * Implements hook_theme().
- */
-function scheduler_theme() {
-  return array(
-    'scheduler_timecheck' => array(
-      'arguments' => array('now' => NULL),
-    ),
-  );
 }
 
 /**
