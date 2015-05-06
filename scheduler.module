@@ -789,19 +789,3 @@ function scheduler_i18n_sync_options($entity_type, $bundle_name) {
     return $options;
   }
 }
-
-/**
- * Implements hook_field_attach_prepare_translation_alter().
- */
-function scheduler_field_attach_prepare_translation_alter($entity, $context) {
-  // Prefill the node translation form with values from the translation source
-  // node.
-  $source_entity = $context['source_entity'];
-
-  if (isset($source_entity->publish_on)) {
-    $entity->publish_on = $source_entity->publish_on;
-  }
-  if (isset($source_entity->unpublish_on)) {
-    $entity->unpublish_on = $source_entity->unpublish_on;
-  }
-}

@@ -43,8 +43,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   else {
     // Initialise standard values.
     $defaults = new StdClass;
-    // Respect presets added by functions like
-    // scheduler_field_attach_prepare_translation_alter().
     $defaults->publish_on = isset($node->publish_on) ? $node->publish_on : NULL;
     $defaults->unpublish_on = isset($node->unpublish_on) ? $node->unpublish_on : NULL;
   }
