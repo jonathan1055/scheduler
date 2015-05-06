@@ -8,6 +8,7 @@
  * permission to schedule nodes, and the node-type is enabled for scheduling.
  */
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -16,22 +17,25 @@ use Drupal\Core\Form\FormStateInterface;
  * @see scheduler_form_alter()
  */
 function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
-  $publishing_enabled = variable_get('scheduler_publish_enable_' . $form['type']['#value'], 0) == 1;
-  $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $form['type']['#value'], 0) == 1;
+  /** @var \Drupal\node\NodeTypeInterface $type */
+  $type = $form_state->getFormObject()->getEntity()->type->entity;
+  $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
+  $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
   $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
   $date_only_allowed = \Drupal::config('scheduler.settings')->get('allow_date_only');
+
   /* @var $node \Drupal\node\NodeInterface */
-  $node = $form['#node'];
+  $node = $form_state->getFormObject()->getEntity();
   $nid = $node->id();
 
-  // If this is a preview then get the values from the form, not the
-  // database.
-  if (isset($form_state['values']['op']) && $form_state['values']['op'] == t('Preview')) {
+  // If this is a preview then get the values from the form, not the database.
+  if (isset($form_state->values['op']) && $form_state->values['op'] == t('Preview')) {
     $defaults = new StdClass;
-    $defaults->publish_on = $publishing_enabled ? $form_state['values']['publish_on'] : NULL;
-    $defaults->unpublish_on = $unpublishing_enabled ? $form_state['values']['unpublish_on'] : NULL;
+    $defaults->publish_on = $publishing_enabled ? $form_state->values['publish_on'] : NULL;
+    $defaults->unpublish_on = $unpublishing_enabled ? $form_state->values['unpublish_on'] : NULL;
   }
   elseif ($nid > 0) {
     // Load the values from the database if we are viewing an existing node.
@@ -57,31 +61,34 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
 
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
-  $publishing_required = variable_get('scheduler_publish_required_' . $form['type']['#value'], 0) == 1
+  $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', FALSE)
     && (empty($nid) || (!$node->isPublished() && !empty($node->publish_on)));
 
   // An unpublish_on date is required if the content type option is set and
   // the node is being created or the current status is published or the
   // node is scheduled to be published.
-  $unpublishing_required = variable_get('scheduler_unpublish_required_' . $form['type']['#value'], 0) == 1
+  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE)
     && (empty($nid) || $node->isPublished() || !empty($node->publish_on));
 
-  $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $form['type']['#value'], 1);
-  $fieldset_extended = (
+  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'use_vertical_tabs', TRUE);
+  $expand_details = (
     (isset($defaults->publish_on) && $defaults->publish_on != 0)
     || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
     || $publishing_required
     || $unpublishing_required
-    || variable_get('scheduler_expand_fieldset_' . $form['type']['#value'], 0)
+    || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE)
   );
 
   $form['scheduler_settings'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('Scheduling options'),
-    '#collapsible' => TRUE,
-    '#collapsed' => !$fieldset_extended,
+    '#open' => $expand_details,
     '#weight' => 35,
-    '#group' => $use_vertical_tabs ? 'additional_settings' : FALSE,
+    '#group' => $use_vertical_tabs ? 'advanced' : FALSE,
+    '#attributes' => array(
+      'class' => array('scheduler-form'),
+    ),
+    '#optional' => FALSE,
   );
   // Attach the javascript for the vertical tabs.
   $form['#attached']['library'][] = 'scheduler/vertical-tabs';
@@ -119,7 +126,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
       '#maxlength' => 30,
       '#required' => $publishing_required,
       '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
-      '#description' => filter_xss(implode(' ', $descriptions)),
+      '#description' => Xss::filter(implode(' ', $descriptions)),
       '#value_callback' => 'scheduler_date_value_callback',
     );
   }
@@ -137,7 +144,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
       '#maxlength' => 30,
       '#required' => $unpublishing_required,
       '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
-      '#description' => filter_xss(implode(' ', $descriptions)),
+      '#description' => Xss::filter(implode(' ', $descriptions)),
       '#value_callback' => 'scheduler_date_value_callback',
     );
   }
@@ -151,7 +158,7 @@ function scheduler_date_value_callback(&$element, $input = FALSE, FormStateInter
   // date. Hence set the scheduler date element's #required attribute to FALSE.
   // Test the input operation against $form_state['values']['delete'] as this
   // will match the value of the Delete button even if translated.
-  if (isset($form_state['input']['op']) && isset($form_state['values']['delete']) && $form_state['input']['op'] == $form_state['values']['delete']) {
+  if (isset($form_state->input['op']) && isset($form_state->values['delete']) && $form_state->input['op'] == $form_state->values['delete']) {
     $element['#required'] = FALSE;
   }
 }
