@@ -680,9 +680,11 @@ function scheduler_field_extra_fields() {
 }
 
 /**
- * Implements hook_preprocess_HOOK() for node templates.
+ * Prepares variables for node templates.
  *
  * Makes the publish_on and unpublish_on data available as theme variables.
+ *
+ * @see template_preprocess_node()
  */
 function scheduler_preprocess_node(&$variables, $hook) {
   /* @var $node \Drupal\node\NodeInterface */
