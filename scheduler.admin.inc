@@ -189,6 +189,8 @@ function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $
  *   A render array for a page containing a list of nodes.
  */
 function scheduler_list() {
+  $renderer = \Drupal::service('renderer');
+
   $header = array(
     array(
       'data' => t('Title'),
@@ -256,14 +258,14 @@ function scheduler_list() {
     $rows[] = array(
       ($node->title ? l($node->title, "node/$node->nid") : t('Missing data for node @nid', array('@nid' => $node->nid))),
       ($node->type ? String::checkPlain(node_get_type_label($node)) : ''),
-      ($node->type ? theme('username', array('account' => $node)) : ''),
+      ($node->type ? $renderer->render(['#theme' => 'username', '#account' => $node]) : ''),
       ($node->type ? ($node->status ? t('Published') : t('Unpublished')) : ''),
       ($node->publish_on ? format_date($node->publish_on) : '&nbsp;'),
       ($node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;'),
       implode(' ', $ops),
     );
   }
-  if (count($rows) && ($pager = theme('pager'))) {
+  if (count($rows) && ($pager = $renderer->render(['#theme' => 'pager']))) {
     $rows[] = array(
       array(
         'data' => $pager,
