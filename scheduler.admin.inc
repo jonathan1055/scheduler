@@ -30,9 +30,8 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   );
 
   $form['scheduler']['publish'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('Publishing'),
-    '#collapsible' => FALSE,
     '#weight' => 1,
     '#group' => 'scheduler',
   );
@@ -72,10 +71,9 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     ),
   );
   $form['scheduler']['publish']['advanced'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('Advanced options'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#open' => FALSE,
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -93,9 +91,8 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     ),
   );
   $form['scheduler']['unpublish'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('Unpublishing'),
-    '#collapsible' => FALSE,
     '#weight' => 2,
     '#group' => 'scheduler',
   );
@@ -127,9 +124,8 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   // The 'node_edit_layout' fieldset contains options to alter the layout of
   // node edit pages.
   $form['scheduler']['node_edit_layout'] = array(
-    '#type' => 'fieldset',
+    '#type' => 'details',
     '#title' => t('Node edit page layout'),
-    '#collapsible' => FALSE,
     '#weight' => 3,
     '#group' => 'scheduler',
     // The #states processing only caters for AND and does not do OR. So to set
