@@ -41,20 +41,6 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'scheduler.cron.inc',
   );
-  $items['admin/config/content/scheduler'] = array(
-    'title' => 'Scheduler',
-    'description' => "Configure settings for scheduled publishing and unpublishing, run the lightweight cron and check your servers clock time.",
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('scheduler_admin'),
-    'access arguments' => array('administer scheduler'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'scheduler.admin.inc',
-  );
-  $items['admin/config/content/scheduler/default'] = array(
-    'title' => 'Settings',
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => 5,
-  );
   $items['admin/content/scheduler'] = array(
     'title' => 'Scheduled',
     'page callback' => 'scheduler_list',
