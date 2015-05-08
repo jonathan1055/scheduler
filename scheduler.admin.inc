@@ -161,11 +161,6 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       '0' => t('Expand only when a scheduled date exists or when a date is required'),
       '1' => t('Always open the fieldset, even if no dates exist'),
     ),
-    '#states' => array(
-      'visible' => array(
-        ':input[name="scheduler_use_vertical_tabs"]' => array('value' => '0'),
-      ),
-    ),
   );
 
   $form['#entity_builders'][] = 'scheduler_form_node_type_form_builder';
