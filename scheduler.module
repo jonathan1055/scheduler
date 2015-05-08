@@ -686,7 +686,7 @@ function scheduler_field_extra_fields() {
  *
  * @see template_preprocess_node()
  */
-function scheduler_preprocess_node(&$variables, $hook) {
+function scheduler_preprocess_node(&$variables) {
   /* @var $node \Drupal\node\NodeInterface */
   $node = $variables['node'];
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
