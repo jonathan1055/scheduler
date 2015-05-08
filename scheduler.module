@@ -785,7 +785,7 @@ function scheduler_field_extra_fields() {
  *
  * @see template_preprocess_node()
  */
-function scheduler_preprocess_node(&$variables, $hook) {
+function scheduler_preprocess_node(&$variables) {
   $node = $variables['node'];
   $date_format = variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT);
   if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {
