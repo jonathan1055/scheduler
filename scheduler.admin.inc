@@ -29,11 +29,13 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     '#group' => 'additional_settings',
   );
 
+  // Publishing options.
   $form['scheduler']['publish'] = array(
     '#type' => 'details',
     '#title' => t('Publishing'),
     '#weight' => 1,
     '#group' => 'scheduler',
+    '#open' => TRUE,
   );
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
     '#type' => 'checkbox',
@@ -90,11 +92,14 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       'schedule' => t('Schedule the content for publication on the next cron run'),
     ),
   );
+
+  // Unpublishing options.
   $form['scheduler']['unpublish'] = array(
     '#type' => 'details',
     '#title' => t('Unpublishing'),
     '#weight' => 2,
     '#group' => 'scheduler',
+    '#open' => TRUE,
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
     '#type' => 'checkbox',
@@ -121,6 +126,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       ),
     ),
   );
+
   // The 'node_edit_layout' fieldset contains options to alter the layout of
   // node edit pages.
   $form['scheduler']['node_edit_layout'] = array(
