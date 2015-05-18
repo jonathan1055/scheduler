@@ -535,26 +535,6 @@ function scheduler_node_delete(EntityInterface $node) {
 }
 
 /**
- * Implements hook_node_type_delete().
- */
-function scheduler_node_type_delete($info) {
-  $variables = array();
-
-  $variables[] = "scheduler_publish_enable_" . $info->type;
-  $variables[] = "scheduler_publish_touch_" . $info->type;
-  $variables[] = "scheduler_publish_required_" . $info->type;
-  $variables[] = "scheduler_publish_revision_" . $info->type;
-  $variables[] = "scheduler_publish_past_date_" . $info->type;
-  $variables[] = "scheduler_unpublish_enable_" . $info->type;
-  $variables[] = "scheduler_unpublish_required_" . $info->type;
-  $variables[] = "scheduler_unpublish_revision_" . $info->type;
-
-  foreach ($variables as $variable) {
-    variable_del($variable);
-  }
-}
-
-/**
  * Implements hook_cron().
  */
 function scheduler_cron() {
