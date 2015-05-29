@@ -148,6 +148,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
       '#value_callback' => 'scheduler_date_value_callback',
     );
   }
+  $form['#entity_builders'][] = 'scheduler_node_builder';
 }
 
 /**

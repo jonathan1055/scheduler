@@ -136,8 +136,8 @@ function scheduler_form_node_type_form_alter(array &$form, FormStateInterface $f
  * Implements hook_form_BASE_FORM_ID_alter() for node_form.
  */
 function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // Load the real code only when needed. First check if this a node form and
-  // that the user has permission to use Scheduler.
+  // Load the real code only when needed. First check that the user has
+  // permission to use Scheduler.
   if (\Drupal::currentUser()->hasPermission('schedule (un)publishing of nodes')) {
     // Check if scheduling has been enabled for this node type.
     /** @var \Drupal\node\NodeTypeInterface $type */
@@ -449,10 +449,12 @@ function scheduler_node_presave(EntityInterface $node) {
     $publication_allowed = _scheduler_allow($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
-    $publish_immediately = variable_get('scheduler_publish_past_date_' . $node->getType(), 'error') == 'publish';
+    $type = $node->type->entity;
+    $publish_immediately = $type->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
+
     if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
       // If required, set the created date to match published date.
-      if (variable_get('scheduler_publish_touch_' . $node->getType(), 0) == 1) {
+      if ($type->getThirdPartySetting('scheduler', 'publish_touch', 0) == 1) {
         $node->setCreatedTime($node->publish_on);
       }
       $node->publish_on = 0;
@@ -759,4 +761,12 @@ function scheduler_i18n_sync_options($entity_type, $bundle_name) {
     }
     return $options;
   }
+}
+
+/**
+ * Entity builder for nodes with scheduler options.
+ */
+function scheduler_node_builder($entity_type, NodeInterface $node, &$form, FormStateInterface $form_state) {
+  $node->publish_on = $form_state->getValue('publish_on');
+  $node->unpublish_on = $form_state->getValue('unpublish_on');
 }
