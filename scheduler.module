@@ -7,10 +7,11 @@
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Session\AccountInterface;
-use Drupal\node\NodeInterface;
 use Drupal\Core\Url;
+use Drupal\node\NodeInterface;
 
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
@@ -149,6 +150,35 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state, 
       module_load_include('inc', 'scheduler', 'scheduler.edit');
       _scheduler_form_alter($form, $form_state);
     }
+  }
+}
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'node') {
+    $fields['publish_on'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Publish on'))
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 30,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE);
+
+    $fields['unpublish_on'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Unpublish on'))
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 30,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE);
+
+    return $fields;
   }
 }
 
