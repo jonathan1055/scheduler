@@ -9,8 +9,8 @@ namespace Drupal\scheduler\Plugin\Field\FieldWidget;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Datetime\Element\Datetime;
 use Drupal\Core\Datetime\Entity\DateFormat;
-use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Datetime\Plugin\Field\FieldWidget\TimestampDatetimeWidget;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
