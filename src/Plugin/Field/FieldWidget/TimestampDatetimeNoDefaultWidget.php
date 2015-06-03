@@ -17,7 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Plugin implementation of the 'datetime timestamp' widget.
  *
  * @FieldWidget(
- *   id = "datetime_timestamp_none",
+ *   id = "datetime_timestamp_no_default",
  *   label = @Translation("Datetime Timestamp no default"),
  *   description = @Translation("A datetime stamp field that provides no default."),
  *   field_types = {

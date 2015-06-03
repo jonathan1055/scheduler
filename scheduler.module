@@ -161,7 +161,7 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
     $fields['publish_on'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Publish on'))
       ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
+        'type' => 'datetime_timestamp_no_default',
         'weight' => 30,
       ])
       ->setDisplayConfigurable('form', TRUE)
@@ -171,7 +171,7 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
     $fields['unpublish_on'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Unpublish on'))
       ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
+        'type' => 'datetime_timestamp_no_default',
         'weight' => 30,
       ])
       ->setDisplayConfigurable('form', TRUE)
