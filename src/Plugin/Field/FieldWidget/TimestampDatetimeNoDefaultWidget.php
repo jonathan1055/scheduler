@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @FieldWidget(
  *   id = "datetime_timestamp_no_default",
  *   label = @Translation("Datetime Timestamp no default"),
- *   description = @Translation("A datetime stamp field that provides no default."),
+ *   description = @Translation("An optional datetime field. Does not provide a default time if left blank."),
  *   field_types = {
  *     "timestamp",
  *   }
