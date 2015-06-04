@@ -101,39 +101,27 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     ));
   }
 
-  if ($publishing_enabled) {
-    if (!$publishing_required) {
-      $descriptions['blank'] = t('Leave the date blank for no scheduled publishing.');
-    }
-
-    $form['scheduler_settings']['publish_on'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Publish on'),
-      '#maxlength' => 30,
-      '#required' => $publishing_required,
-      '#default_value' => isset($defaults->publish_on) && $defaults->publish_on ? format_date($defaults->publish_on, 'custom', $date_format) : '',
-      '#description' => Xss::filter(implode(' ', $descriptions)),
-      '#value_callback' => 'scheduler_date_value_callback',
-    );
+  if (!$publishing_required) {
+    $descriptions['blank'] = t('Leave the date blank for no scheduled publishing.');
   }
 
-  if ($unpublishing_enabled) {
-    if (!$unpublishing_required) {
-      $descriptions['blank'] = t('Leave the date blank for no scheduled unpublishing.');
-    }
-    else {
-      unset($descriptions['blank']);
-    }
-    $form['scheduler_settings']['unpublish_on'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Unpublish on'),
-      '#maxlength' => 30,
-      '#required' => $unpublishing_required,
-      '#default_value' => isset($defaults->unpublish_on) && $defaults->unpublish_on ? format_date($defaults->unpublish_on, 'custom', $date_format) : '',
-      '#description' => Xss::filter(implode(' ', $descriptions)),
-      '#value_callback' => 'scheduler_date_value_callback',
-    );
+  $form['publish_on']['#access'] = $publishing_enabled;
+  $form['publish_on']['#group'] = 'scheduler_settings';
+  $form['publish_on']['widget'][0]['value']['#required'] = $publishing_required;
+  $form['publish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
+
+  if (!$unpublishing_required) {
+    $descriptions['blank'] = t('Leave the date blank for no scheduled unpublishing.');
   }
+  else {
+    unset($descriptions['blank']);
+  }
+
+  $form['unpublish_on']['#access'] = $unpublishing_enabled;
+  $form['unpublish_on']['#group'] = 'scheduler_settings';
+  $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
+  $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
+
   $form['#entity_builders'][] = 'scheduler_node_builder';
 }
 
