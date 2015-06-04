@@ -37,13 +37,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     $defaults->publish_on = $publishing_enabled ? $form_state->values['publish_on'] : NULL;
     $defaults->unpublish_on = $unpublishing_enabled ? $form_state->values['unpublish_on'] : NULL;
   }
-  elseif ($nid > 0) {
-    // Load the values from the database if we are viewing an existing node.
-    $query = db_select('scheduler', 's');
-    $query->fields('s', array('publish_on', 'unpublish_on'));
-    $query->condition('s.nid', $nid, '=');
-    $defaults = $query->execute()->fetchObject();
-  }
   else {
     // Initialise standard values.
     $defaults = new StdClass;
