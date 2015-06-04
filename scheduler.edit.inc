@@ -21,6 +21,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $type = $form_state->getFormObject()->getEntity()->type->entity;
   $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
   $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'use_vertical_tabs', TRUE);
 
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
@@ -62,7 +63,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE)
     && ($node->isNew() || $node->isPublished() || !empty($node->publish_on));
 
-  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'use_vertical_tabs', TRUE);
   $expand_details = (
     (isset($defaults->publish_on) && $defaults->publish_on != 0)
     || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
@@ -83,7 +83,9 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     '#optional' => FALSE,
   );
   // Attach the javascript for the vertical tabs.
-  $form['#attached']['library'][] = 'scheduler/vertical-tabs';
+  if ($use_vertical_tabs) {
+    $form['scheduler_settings']['#attached']['library'][] = 'scheduler/vertical-tabs';
+  }
 
   // Define the descriptions depending on whether the time can be skipped.
   $descriptions = array();
