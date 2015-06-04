@@ -333,19 +333,6 @@ function _scheduler_strptime($date, $format) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_load() for node entities.
- */
-function scheduler_node_load($nodes) {
-  $nids = array_keys($nodes);
-  $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids[])', array(':nids[]' => $nids));
-  foreach ($result as $record) {
-    $nid = $record->nid;
-    $nodes[$nid]->publish_on->value = $record->publish_on;
-    $nodes[$nid]->unpublish_on->value = $record->unpublish_on;
-  }
-}
-
-/**
  * Implements hook_ENTITY_TYPE_view() for node entities.
  */
 function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
@@ -451,12 +438,6 @@ function scheduler_node_presave(EntityInterface $node) {
 function scheduler_node_insert(EntityInterface $node) {
   // Only insert into database if we need to (un)publish this node at some date.
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
-    db_insert('scheduler')->fields(array(
-      'nid' => $node->id(),
-      'publish_on' => $node->publish_on->value,
-      'unpublish_on' => $node->unpublish_on->value,
-    ))->execute();
-
     // Invoke the events to indicate that a new node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
       if (!empty($node->publish_on->value)) {
@@ -477,11 +458,6 @@ function scheduler_node_update(EntityInterface $node) {
   // otherwise the user probably cleared out the (un)publish dates so we should
   // remove the record.
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
-    db_merge('scheduler')->key(array('nid' => $node->id()))->fields(array(
-      'publish_on' => $node->publish_on->value,
-      'unpublish_on' => $node->unpublish_on->value,
-    ))->execute();
-
     // Invoke the events to indicate that an existing node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
       if (!empty($node->publish_on->value)) {
@@ -495,13 +471,6 @@ function scheduler_node_update(EntityInterface $node) {
   else {
     scheduler_node_delete($node);
   }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_delete() for node entities.
- */
-function scheduler_node_delete(EntityInterface $node) {
-  db_delete('scheduler')->condition('nid', $node->id())->execute();
 }
 
 /**
