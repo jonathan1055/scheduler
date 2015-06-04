@@ -792,11 +792,3 @@ function scheduler_i18n_sync_options($entity_type, $bundle_name) {
     return $options;
   }
 }
-
-/**
- * Entity builder for nodes with scheduler options.
- */
-function scheduler_node_builder($entity_type, NodeInterface $node, &$form, FormStateInterface $form_state) {
-  $node->publish_on = $form_state->getValue('publish_on');
-  $node->unpublish_on = $form_state->getValue('unpublish_on');
-}

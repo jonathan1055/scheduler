@@ -104,8 +104,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $form['unpublish_on']['#group'] = 'scheduler_settings';
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
-
-  $form['#entity_builders'][] = 'scheduler_node_builder';
 }
 
 /**
