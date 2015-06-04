@@ -44,14 +44,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
     $defaults->unpublish_on = isset($node->unpublish_on) ? $node->unpublish_on : NULL;
   }
 
-  // If there is a text value then convert it to a Unix timestamp.
-  if (isset($defaults->publish_on) && $defaults->publish_on && !is_numeric($defaults->publish_on)) {
-    $defaults->publish_on = _scheduler_strtotime($defaults->publish_on);
-  }
-  if (isset($defaults->unpublish_on) && $defaults->unpublish_on && !is_numeric($defaults->unpublish_on)) {
-    $defaults->unpublish_on = _scheduler_strtotime($defaults->unpublish_on);
-  }
-
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
   $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', FALSE)
