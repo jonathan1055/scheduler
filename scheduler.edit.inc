@@ -105,16 +105,3 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
 }
-
-/**
- * Callback function for the Scheduler date entry elements.
- */
-function scheduler_date_value_callback(&$element, $input = FALSE, FormStateInterface $form_state) {
-  // When processing a delete operation the user should not be forced to enter a
-  // date. Hence set the scheduler date element's #required attribute to FALSE.
-  // Test the input operation against $form_state['values']['delete'] as this
-  // will match the value of the Delete button even if translated.
-  if (isset($form_state->input['op']) && isset($form_state->values['delete']) && $form_state->input['op'] == $form_state->values['delete']) {
-    $element['#required'] = FALSE;
-  }
-}
