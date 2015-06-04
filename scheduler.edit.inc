@@ -31,19 +31,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   /* @var $node \Drupal\node\NodeInterface */
   $node = $form_state->getFormObject()->getEntity();
 
-  // If this is a preview then get the values from the form, not the database.
-  if (isset($form_state->values['op']) && $form_state->values['op'] == t('Preview')) {
-    $defaults = new StdClass;
-    $defaults->publish_on = $publishing_enabled ? $form_state->values['publish_on'] : NULL;
-    $defaults->unpublish_on = $unpublishing_enabled ? $form_state->values['unpublish_on'] : NULL;
-  }
-  else {
-    // Initialise standard values.
-    $defaults = new StdClass;
-    $defaults->publish_on = isset($node->publish_on) ? $node->publish_on : NULL;
-    $defaults->unpublish_on = isset($node->unpublish_on) ? $node->unpublish_on : NULL;
-  }
-
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
   $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', FALSE)
@@ -55,13 +42,9 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE)
     && ($node->isNew() || $node->isPublished() || !empty($node->publish_on));
 
-  $expand_details = (
-    (isset($defaults->publish_on) && $defaults->publish_on != 0)
-    || (isset($defaults->unpublish_on) && $defaults->unpublish_on != 0)
-    || $publishing_required
-    || $unpublishing_required
-    || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE)
-  );
+  // Expand the fieldset if either publishing or unpublishing is required, or if
+  // the fieldset was configured to be expanded.
+  $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE);
 
   $form['scheduler_settings'] = array(
     '#type' => 'details',
