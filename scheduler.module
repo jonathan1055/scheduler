@@ -214,57 +214,6 @@ function _scheduler_allow(NodeInterface $node, $action) {
 }
 
 /**
- * Converts a time string from the user's timezone into a Unix timestamp.
- *
- * This expects the time string to be in the date format configured by the user.
- *
- * @param string $str
- *   A string containing a time in the user configured date format.
- *
- * @return int
- *   The time in Unix timestamp representation (UTC). NULL if the given time
- *   string is empty (NULL, FALSE, an empty string or only containing
- *   whitespace). FALSE if the given time string is malformed.
- */
-function _scheduler_strtotime($str) {
-  if ($str && trim($str) != "") {
-    $date_format = \Drupal::config('scheduler.settings')->get('date_format');
-    $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
-
-    $str = trim(preg_replace('/\s+/', ' ', $str));
-    $time = _scheduler_strptime($str, $date_format);
-
-    // If the time failed using the full $date_format or no time entry is
-    // allowed, but date-only with a default time is enabled, check if the input
-    // matches the "date only" date format.
-    $time_only_format = \Drupal::config('scheduler.settings')->get('time_only_format');
-    if ((!$time || $time_only_format == '') && \Drupal::config('scheduler.settings')->get('allow_date_only')) {
-      if ($time = _scheduler_strptime($str, $date_only_format)) {
-        // A time has been calculated, but also check that there was only a
-        // date entered and no extra mal-formed time elements.
-        if ($str == date($date_only_format, $time)) {
-          // Parse the default time string into elements, then add the total
-          // offset in seconds to the timestamp.
-          $default_time = date_parse(\Drupal::config('scheduler.settings')->get('default_time'));
-          $time_offset = ($default_time['hour'] * 3600) + ($default_time['minute'] * 60) + $default_time['second'];
-          $time += $time_offset;
-        }
-        else {
-          // The date was not the only text entered, so reject it.
-          $time = FALSE;
-        }
-      }
-    }
-  }
-  else {
-    // $str is empty.
-    $time = NULL;
-  }
-
-  return $time;
-}
-
-/**
  * Parse a time/date as UTC time.
  *
  * The php function strptime() has a limited life, due to it returning varying
@@ -429,7 +378,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
 
   if (!empty($node->publish_on) && !is_numeric($node->publish_on)) {
-    $publishtime = _scheduler_strtotime($node->publish_on);
+    $publishtime = $node->publish_on;
     if ($publishtime === FALSE) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
@@ -439,7 +388,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
   }
 
   if (!empty($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
-    $unpublishtime = _scheduler_strtotime($node->unpublish_on);
+    $unpublishtime = $node->unpublish_on;
     if ($unpublishtime === FALSE) {
       $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
@@ -463,17 +412,6 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_node_presave(EntityInterface $node) {
-  foreach (array('publish_on', 'unpublish_on') as $key) {
-    if (empty($node->$key) || is_array($node->$key)) {
-      // Make sure publish_on and unpublish_on are not empty strings.
-      $node->$key = 0;
-    }
-    elseif (!is_numeric($node->$key)) {
-      // Convert to unix timestamp, but ensure any failure is converted to zero.
-      $node->$key = _scheduler_strtotime($node->$key) + 0;
-    }
-  }
-
   if ($node->publish_on > 0) {
     // Check that other modules allow the action on this node.
     $publication_allowed = _scheduler_allow($node, 'publish');
