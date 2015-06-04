@@ -340,8 +340,8 @@ function scheduler_node_load($nodes) {
   $result = db_query('SELECT * FROM {scheduler} WHERE nid IN (:nids[])', array(':nids[]' => $nids));
   foreach ($result as $record) {
     $nid = $record->nid;
-    $nodes[$nid]->publish_on = $record->publish_on;
-    $nodes[$nid]->unpublish_on = $record->unpublish_on;
+    $nodes[$nid]->publish_on->value = $record->publish_on;
+    $nodes[$nid]->unpublish_on->value = $record->unpublish_on;
   }
 }
 
@@ -352,8 +352,8 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
   // If the node is going to be unpublished then add this information to the
   // header for googlebot. Only do this when viewing the full node (not teaser)
   // on its own page and not in edit mode.
-  if ($view_mode == 'full' && !empty($node->unpublish_on) && node_is_page($node) && arg(2) != 'edit') {
-    $unavailable_after = date('d-M-Y H:i:s T', $node->unpublish_on);
+  if ($view_mode == 'full' && !empty($node->unpublish_on->value) && node_is_page($node) && arg(2) != 'edit') {
+    $unavailable_after = date('d-M-Y H:i:s T', $node->unpublish_on->value);
     $element = array(
       '#tag' => 'meta',
       '#attributes' => array(
@@ -377,8 +377,8 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
   // added 'presave' and all this happens at different times.
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
 
-  if (!empty($node->publish_on) && !is_numeric($node->publish_on)) {
-    $publishtime = $node->publish_on;
+  if (!empty($node->publish_on->value) && !is_numeric($node->publish_on->value)) {
+    $publishtime = $node->publish_on->value;
     if ($publishtime === FALSE) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
@@ -387,8 +387,8 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
     }
   }
 
-  if (!empty($node->unpublish_on) && !is_numeric($node->unpublish_on)) {
-    $unpublishtime = $node->unpublish_on;
+  if (!empty($node->unpublish_on->value) && !is_numeric($node->unpublish_on->value)) {
+    $unpublishtime = $node->unpublish_on->value;
     if ($unpublishtime === FALSE) {
       $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
@@ -403,7 +403,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 
   // The unpublish-on 'required' form attribute may not be set in some cases,
   // but a value must be entered if also setting a publish-on date.
-  if (variable_get('scheduler_unpublish_required_' . $node->getType()) && !empty($node->publish_on) && empty($node->unpublish_on)) {
+  if (variable_get('scheduler_unpublish_required_' . $node->getType()) && !empty($node->publish_on->value) && empty($node->unpublish_on->value)) {
     $form_state->setErrorByName('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
   }
 }
@@ -412,7 +412,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_node_presave(EntityInterface $node) {
-  if ($node->publish_on > 0) {
+  if ($node->publish_on->value > 0) {
     // Check that other modules allow the action on this node.
     $publication_allowed = _scheduler_allow($node, 'publish');
 
@@ -420,12 +420,12 @@ function scheduler_node_presave(EntityInterface $node) {
     $type = $node->type->entity;
     $publish_immediately = $type->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
 
-    if ($publication_allowed && $publish_immediately && $node->publish_on <= REQUEST_TIME) {
+    if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
       // If required, set the created date to match published date.
       if ($type->getThirdPartySetting('scheduler', 'publish_touch', 0) == 1) {
-        $node->setCreatedTime($node->publish_on);
+        $node->setCreatedTime($node->publish_on->value);
       }
-      $node->publish_on = 0;
+      $node->publish_on->value = 0;
       $node->setPublished(TRUE);
       // Allow modules to react to immediate publishing.
       _scheduler_scheduler_api($node, 'publish_immediately');
@@ -439,7 +439,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // message themselves explaining why publication is denied.
       if ($publication_allowed) {
         $date_format = \Drupal::config('scheduler.settings')->get('date_format');
-        drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on, 'custom', $date_format))), 'status', FALSE);
+        drupal_set_message(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => format_date($node->publish_on->value, 'custom', $date_format))), 'status', FALSE);
       }
     }
   }
@@ -450,20 +450,20 @@ function scheduler_node_presave(EntityInterface $node) {
  */
 function scheduler_node_insert(EntityInterface $node) {
   // Only insert into database if we need to (un)publish this node at some date.
-  if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
+  if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     db_insert('scheduler')->fields(array(
       'nid' => $node->id(),
-      'publish_on' => $node->publish_on,
-      'unpublish_on' => $node->unpublish_on,
+      'publish_on' => $node->publish_on->value,
+      'unpublish_on' => $node->unpublish_on->value,
     ))->execute();
 
     // Invoke the events to indicate that a new node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
-      if (!empty($node->publish_on)) {
-        rules_invoke_event('scheduler_new_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
+      if (!empty($node->publish_on->value)) {
+        rules_invoke_event('scheduler_new_node_is_scheduled_for_publishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
       }
-      if (!empty($node->unpublish_on)) {
-        rules_invoke_event('scheduler_new_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on, $node->unpublish_on);
+      if (!empty($node->unpublish_on->value)) {
+        rules_invoke_event('scheduler_new_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
       }
     }
   }
@@ -476,19 +476,19 @@ function scheduler_node_update(EntityInterface $node) {
   // Only update database if we need to (un)publish this node at some date,
   // otherwise the user probably cleared out the (un)publish dates so we should
   // remove the record.
-  if (!empty($node->publish_on) || !empty($node->unpublish_on)) {
+  if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     db_merge('scheduler')->key(array('nid' => $node->id()))->fields(array(
-      'publish_on' => $node->publish_on,
-      'unpublish_on' => $node->unpublish_on,
+      'publish_on' => $node->publish_on->value,
+      'unpublish_on' => $node->unpublish_on->value,
     ))->execute();
 
     // Invoke the events to indicate that an existing node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
-      if (!empty($node->publish_on)) {
-        rules_invoke_event('scheduler_existing_node_is_scheduled_for_publishing_event', $node, $node->publish_on, $node->unpublish_on);
+      if (!empty($node->publish_on->value)) {
+        rules_invoke_event('scheduler_existing_node_is_scheduled_for_publishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
       }
-      if (!empty($node->unpublish_on)) {
-        rules_invoke_event('scheduler_existing_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on, $node->unpublish_on);
+      if (!empty($node->unpublish_on->value)) {
+        rules_invoke_event('scheduler_existing_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
       }
     }
   }
@@ -626,11 +626,11 @@ function scheduler_preprocess_node(&$variables) {
   /* @var $node \Drupal\node\NodeInterface */
   $node = $variables['node'];
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
-  if (!empty($node->publish_on) && $node->publish_on && is_numeric($node->publish_on)) {
-    $variables['publish_on'] = format_date($node->publish_on, 'custom', $date_format);
+  if (!empty($node->publish_on->value) && $node->publish_on->value && is_numeric($node->publish_on->value)) {
+    $variables['publish_on'] = format_date($node->publish_on->value, 'custom', $date_format);
   }
-  if (!empty($node->unpublish_on) && $node->unpublish_on && is_numeric($node->unpublish_on)) {
-    $variables['unpublish_on'] = format_date($node->unpublish_on, 'custom', $date_format);
+  if (!empty($node->unpublish_on->value) && $node->unpublish_on->value && is_numeric($node->unpublish_on->value)) {
+    $variables['unpublish_on'] = format_date($node->unpublish_on->value, 'custom', $date_format);
   }
 }
 

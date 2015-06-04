@@ -132,7 +132,7 @@ function scheduler_set_publish_date_action(Node $node, $date) {
   // this action is being used to schedule a different node then we need to call
   // the functions directly here.
   if (variable_get('scheduler_publish_enable_' . $node->getType(), 0)) {
-    $node->publish_on = $date;
+    $node->publish_on->value = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }
@@ -153,7 +153,7 @@ function scheduler_set_publish_date_action(Node $node, $date) {
  */
 function scheduler_set_unpublish_date_action(Node $node, $date) {
   if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
-    $node->unpublish_on = $date;
+    $node->unpublish_on->value = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }
@@ -174,7 +174,7 @@ function scheduler_set_unpublish_date_action(Node $node, $date) {
  */
 function scheduler_remove_publish_date_action(Node $node) {
   if (variable_get('scheduler_publish_enable_' . $node->getType(), 0)) {
-    $node->publish_on = 0;
+    $node->publish_on->value = 0;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }
@@ -195,7 +195,7 @@ function scheduler_remove_publish_date_action(Node $node) {
  */
 function scheduler_remove_unpublish_date_action(Node $node) {
   if (variable_get('scheduler_unpublish_enable_' . $node->getType(), 0)) {
-    $node->unpublish_on = 0;
+    $node->unpublish_on->value = 0;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }
@@ -276,7 +276,7 @@ function scheduler_condition_unpublishing_is_enabled(Node $node) {
  *   TRUE if the node is scheduled for publishing, FALSE if not.
  */
 function scheduler_condition_node_is_scheduled_for_publishing(Node $node) {
-  return !empty($node->publish_on);
+  return !empty($node->publish_on->value);
 }
 
 /**
@@ -288,5 +288,5 @@ function scheduler_condition_node_is_scheduled_for_publishing(Node $node) {
  *   TRUE if the node is scheduled for unpublishing, FALSE if not.
  */
 function scheduler_condition_node_is_scheduled_for_unpublishing(Node $node) {
-  return !empty($node->unpublish_on);
+  return !empty($node->unpublish_on->value);
 }

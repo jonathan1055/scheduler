@@ -34,13 +34,13 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
   $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', FALSE)
-    && ($node->isNew() || (!$node->isPublished() && !empty($node->publish_on)));
+    && ($node->isNew() || (!$node->isPublished() && !empty($node->publish_on->value)));
 
   // An unpublish_on date is required if the content type option is set and
   // the node is being created or the current status is published or the
   // node is scheduled to be published.
   $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE)
-    && ($node->isNew() || $node->isPublished() || !empty($node->publish_on));
+    && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
 
   // Expand the fieldset if either publishing or unpublishing is required, or if
   // the fieldset was configured to be expanded.

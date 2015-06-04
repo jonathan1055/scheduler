@@ -250,7 +250,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node_storage->resetCache(array($node->id()));
     $node = $node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEqual(format_date($node->publish_on, 'custom', 'Y-m-d H:i:s'), $edit['publish_on'], 'The node is scheduled for the required date');
+    $this->assertEqual(format_date($node->publish_on->value, 'custom', 'Y-m-d H:i:s'), $edit['publish_on'], 'The node is scheduled for the required date');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();

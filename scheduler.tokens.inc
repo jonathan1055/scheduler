@@ -38,24 +38,24 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'scheduler-publish':
-          if (isset($node->publish_on)) {
-            $replacements[$original] = format_date($node->publish_on, 'medium', '', NULL, $language_code);
+          if (isset($node->publish_on->value)) {
+            $replacements[$original] = format_date($node->publish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
         case 'scheduler-unpublish':
-          if (isset($node->unpublish_on)) {
-            $replacements[$original] = format_date($node->unpublish_on, 'medium', '', NULL, $language_code);
+          if (isset($node->unpublish_on->value)) {
+            $replacements[$original] = format_date($node->unpublish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
       }
     }
 
     // Chained token replacement.
-    if (isset($node->publish_on) && $publish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-publish')) {
-      $replacements += token_generate('date', $publish_tokens, array('date' => $node->publish_on), $options);
+    if (isset($node->publish_on->value) && $publish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-publish')) {
+      $replacements += token_generate('date', $publish_tokens, array('date' => $node->publish_on->value), $options);
     }
-    if (isset($node->unpublish_on) && $unpublish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-unpublish')) {
-      $replacements += token_generate('date', $unpublish_tokens, array('date' => $node->unpublish_on), $options);
+    if (isset($node->unpublish_on->value) && $unpublish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-unpublish')) {
+      $replacements += token_generate('date', $unpublish_tokens, array('date' => $node->unpublish_on->value), $options);
     }
   }
 

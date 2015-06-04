@@ -55,7 +55,7 @@ function _scheduler_publish() {
     // See https://www.drupal.org/node/2311273
 
     // Update timestamps.
-    $publish_on = $node->publish_on;
+    $publish_on = $node->publish_on->value;
     $node->set('changed', $publish_on);
     $old_creation_date = $node->getCreatedTime();
     if (variable_get('scheduler_publish_touch_' . $node->getType(), 0) == 1) {
@@ -73,7 +73,7 @@ function _scheduler_publish() {
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
     // to $node->save(). Save the value for use when calling Rules.
-    $node->publish_on = NULL;
+    $node->publish_on->value = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
     // saved.
@@ -89,7 +89,7 @@ function _scheduler_publish() {
 
     // Invoke the event to tell Rules that Scheduler has published this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
-      rules_invoke_event('scheduler_node_has_been_published_event', $node, $publish_on, $node->unpublish_on);
+      rules_invoke_event('scheduler_node_has_been_published_event', $node, $publish_on, $node->unpublish_on->value);
     }
 
     // Invoke scheduler API for modules to react after the node is published.
