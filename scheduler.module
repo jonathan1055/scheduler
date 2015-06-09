@@ -337,18 +337,18 @@ function _scheduler_strptime($date, $format) {
  */
 function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
   // If the node is going to be unpublished then add this information to the
-  // header for googlebot. Only do this when viewing the full node (not teaser)
-  // on its own page and not in edit mode.
-  if ($view_mode == 'full' && !empty($node->unpublish_on->value) && node_is_page($node) && arg(2) != 'edit') {
+  // header for googlebot. Only do this when the current page is the full-page
+  // view of the node.
+  if (!empty($node->unpublish_on->value) && node_is_page($node)) {
     $unavailable_after = date('d-M-Y H:i:s T', $node->unpublish_on->value);
-    $element = array(
+    $metatag = [
       '#tag' => 'meta',
-      '#attributes' => array(
+      '#attributes' => [
         'name' => 'googlebot',
         'content' => 'unavailable_after: ' . $unavailable_after,
-      ),
-    );
-    drupal_add_html_head($element, 'scheduler_unavailable');
+      ],
+    ];
+    $build['#attached']['html_head'][] = [$metatag, 'scheduler_unavailable'];
   }
 }
 
