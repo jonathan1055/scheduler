@@ -21,19 +21,10 @@ function _scheduler_publish() {
   $result = FALSE;
 
   // If the time now is greater than the time to publish a node, publish it.
-  // The INNER join on 'node' and 'users' is just to ensure the nodes are valid.
-  $query = db_select('scheduler', 's');
-  $query->addField('s', 'nid');
-  $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
-  $query->addJoin('LEFT', 'node_field_data', 'nd', 'n.nid = nd.nid');
-  $query->addJoin('INNER', 'users', 'u', 'u.uid = nd.uid');
-  $query->condition('s.publish_on', 0, '>');
-  $query->condition('s.publish_on', REQUEST_TIME, '<=');
-  $query_result = $query->execute();
-  $nids = array();
-  while ($node = $query_result->fetchObject()) {
-    $nids[] = $node->nid;
-  }
+  $query = \Drupal::entityQuery('node')
+    ->condition('publish_on', 0, '>')
+    ->condition('publish_on', REQUEST_TIME, '<=');
+  $nids = $query->execute();
 
   $action = 'publish';
 
