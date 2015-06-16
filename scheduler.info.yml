@@ -3,6 +3,7 @@ type: module
 description: 'Publish and unpublish content on specified dates and time.'
 core: 8.x
 dependencies:
+  - action
   - datetime
   - field
   - node
