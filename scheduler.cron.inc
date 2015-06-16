@@ -49,11 +49,11 @@ function _scheduler_publish() {
     $publish_on = $node->publish_on->value;
     $node->set('changed', $publish_on);
     $old_creation_date = $node->getCreatedTime();
-    if (variable_get('scheduler_publish_touch_' . $node->getType(), 0) == 1) {
+    if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', FALSE)) {
       $node->setCreatedTime($publish_on);
     }
 
-    $create_publishing_revision = variable_get('scheduler_publish_revision_' . $node->getType(), 0) == 1;
+    $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', FALSE);
     if ($create_publishing_revision) {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
