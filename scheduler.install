@@ -62,3 +62,19 @@ function scheduler_requirements($phase) {
 
   return $requirements;
 }
+
+/**
+ * Implements hook_install().
+ */
+function scheduler_install() {
+  // Add our base fields to the schema.
+  \Drupal::service('entity.definition_update_manager')->applyUpdates();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function scheduler_uninstall() {
+  // Remove our base fields from the schema.
+  \Drupal::service('entity.definition_update_manager')->applyUpdates();
+}
