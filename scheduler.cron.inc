@@ -101,19 +101,10 @@ function _scheduler_unpublish() {
   $result = FALSE;
 
   // If the time is greater than the time to unpublish a node, unpublish it.
-  // The INNER join on 'node' and 'users' is just to ensure the nodes are valid.
-  $query = db_select('scheduler', 's');
-  $query->addField('s', 'nid');
-  $query->addJoin('INNER', 'node', 'n', 's.nid = n.nid');
-  $query->addJoin('LEFT', 'node_field_data', 'nd', 'n.nid = nd.nid');
-  $query->addJoin('INNER', 'users', 'u', 'u.uid = nd.uid');
-  $query->condition('s.unpublish_on', 0, '>');
-  $query->condition('s.unpublish_on', REQUEST_TIME, '<=');
-  $query_result = $query->execute();
-  $nids = array();
-  while ($node = $query_result->fetchObject()) {
-    $nids[] = $node->nid;
-  }
+  $query = \Drupal::entityQuery('node')
+    ->condition('unpublish_on', 0, '>')
+    ->condition('unpublish_on', REQUEST_TIME, '<=');
+  $nids = $query->execute();
 
   $action = 'unpublish';
 
