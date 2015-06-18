@@ -71,6 +71,7 @@ function _scheduler_publish() {
     // @todo For D8, remove this from here.
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
+    // Log the fact that a scheduled publication is about to take place.
     $view_link = $node->link(t('View'));
     \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
 
@@ -156,6 +157,7 @@ function _scheduler_unpublish() {
     // @todo For D8, remove this from here.
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
+    // Log the fact that a scheduled unpublication is about to take place.
     $view_link = $node->link(t('View'));
     \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
 
