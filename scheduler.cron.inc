@@ -71,12 +71,11 @@ function _scheduler_publish() {
     // @todo For D8, remove this from here.
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
-    // Use the actions system to publish the node.
     $view_link = $node->link(t('View'));
     \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
-    $actions = array('node_publish_action', 'node_save_action');
-    $context['node'] = $node;
-    actions_do($actions, $node, $context, NULL, NULL);
+
+    // Use the actions system to publish the node.
+    \Drupal::entityManager()->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
 
     // Invoke the event to tell Rules that Scheduler has published this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
@@ -166,12 +165,11 @@ function _scheduler_unpublish() {
     // @todo For D8, remove this from here.
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
-    // Use the actions system to unpublish the node.
     $view_link = $node->link(t('View'));
     \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
-    $actions = array('node_unpublish_action', 'node_save_action');
-    $context['node'] = $node;
-    actions_do($actions, $node, $context, NULL, NULL);
+
+    // Use the actions system to publish the node.
+    \Drupal::entityManager()->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
 
     // Invoke event to tell Rules that Scheduler has unpublished this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
