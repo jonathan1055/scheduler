@@ -454,9 +454,6 @@ function scheduler_node_insert(EntityInterface $node) {
  * Implements hook_ENTITY_TYPE_update() for node entities.
  */
 function scheduler_node_update(EntityInterface $node) {
-  // Only update database if we need to (un)publish this node at some date,
-  // otherwise the user probably cleared out the (un)publish dates so we should
-  // remove the record.
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     // Invoke the events to indicate that an existing node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
@@ -467,9 +464,6 @@ function scheduler_node_update(EntityInterface $node) {
         rules_invoke_event('scheduler_existing_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
       }
     }
-  }
-  else {
-    scheduler_node_delete($node);
   }
 }
 
