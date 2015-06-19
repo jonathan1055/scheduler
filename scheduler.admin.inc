@@ -233,6 +233,7 @@ function scheduler_list() {
     $_GET['sort'] = 'ASC';
   }
 
+  // @todo Convert this to an entityQuery().
   $query = db_select('scheduler', 's')->extend('PagerDefault');
   $query->limit(50);
   $query->addJoin('LEFT', 'node', 'n', 's.nid = n.nid');
