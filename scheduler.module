@@ -42,33 +42,6 @@ function scheduler_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'scheduler.cron.inc',
   );
-  $items['admin/content/scheduler'] = array(
-    'title' => 'Scheduled',
-    'page callback' => 'scheduler_list',
-    'page arguments' => array(NULL, NULL),
-    'access callback' => 'scheduler_list_access_callback',
-    'access arguments' => array(NULL),
-    'description' => 'Display a list of scheduled nodes',
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'scheduler.admin.inc',
-  );
-  // Reuse the above definition in the scheduler admin page.
-  $items['admin/config/content/scheduler/list'] = array(
-    'title' => 'Scheduled Content',
-    'weight' => 20,
-  ) + $items['admin/content/scheduler'];
-
-  $items['user/%/scheduler'] = array(
-    'title' => 'Scheduled',
-    'page callback' => 'scheduler_list',
-    // This will pass the uid of the user account being viewed.
-    'page arguments' => array('user_only', 1),
-    'access callback' => 'scheduler_list_access_callback',
-    'access arguments' => array(1),
-    'description' => 'Display a list of scheduled nodes',
-    'type' => MENU_LOCAL_TASK,
-    'file' => 'scheduler.admin.inc',
-  );
   return $items;
 }
 

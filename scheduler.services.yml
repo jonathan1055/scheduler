@@ -1,0 +1,6 @@
+services:
+    access_checker.scheduler_content:
+      class: Drupal\scheduler\Access\ScheduledListAccess
+      arguments: ['@current_user']
+      tags:
+        - { name: access_check }
