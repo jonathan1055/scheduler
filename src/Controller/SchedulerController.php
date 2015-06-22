@@ -55,9 +55,6 @@ class SchedulerController extends ControllerBase {
    *   A render array for a page containing a list of nodes.
    */
   public function listScheduled(AccountInterface $user = NULL, $user_only = NULL) {
-    // @todo Inject the Renderer service.
-    $renderer = \Drupal::service('renderer');
-
     $header = [
       ['data' => t('Title'), 'field' => 'nd.title'],
       ['data' => t('Type'), 'field' => 'n.type'],
