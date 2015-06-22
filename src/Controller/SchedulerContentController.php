@@ -10,13 +10,39 @@ namespace Drupal\scheduler\Controller;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Query;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Main administration form for the Scheduler module.
+ * Controller for the Scheduler module.
  */
 class SchedulerContentController extends ControllerBase {
+
+  /**
+   * The renderer.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
+   * Constructs a SchedulerContentController object.
+   *
+   * @param \Drupal\Core\Render\RendererInterface
+   *   The renderer.
+   */
+  public function __construct(RendererInterface $renderer) {
+    $this->renderer = $renderer;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('renderer'));
+  }
 
   /**
    * Displays a list of nodes scheduled for (un)publication.
@@ -82,7 +108,7 @@ class SchedulerContentController extends ControllerBase {
       $rows[] = [
         $node->title ? \Drupal::l($node->title, Url::fromRoute('entity.node.canonical', ['node' => $node->nid])) : t('Missing data for node @nid', ['@nid' => $node->nid]),
         $node->type ? SafeMarkup::checkPlain(node_get_type_label($node)) : '',
-        $node->type ? $renderer->render(['#theme' => 'username', '#account' => $node]) : '',
+        $node->type ? $this->renderer->render(['#theme' => 'username', '#account' => $node]) : '',
         $node->type ? ($node->status ? t('Published') : t('Unpublished')) : '',
         $node->publish_on ? format_date($node->publish_on) : '&nbsp;',
         $node->unpublish_on ? format_date($node->unpublish_on) : '&nbsp;',
@@ -90,7 +116,7 @@ class SchedulerContentController extends ControllerBase {
       ];
     }
 
-    if (count($rows) && ($pager = $renderer->render(['#theme' => 'pager']))) {
+    if (count($rows) && ($pager = $this->renderer->render(['#theme' => 'pager']))) {
       $rows[] = [
         ['data' => $pager, 'colspan' => count($rows['0'])],
       ];
