@@ -20,7 +20,7 @@ scheduler.content:
   defaults:
     _title: Scheduled
     _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerContentController::listScheduled
+    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
   requirements:
     _access_scheduler_content: 'TRUE'
 
@@ -29,7 +29,7 @@ scheduler.user_content:
   defaults:
     _title: Scheduled
     _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerContentController::listScheduled
+    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
     user_only: 'TRUE'
   requirements:
     _access_scheduler_content: 'TRUE'
@@ -39,6 +39,6 @@ scheduler.config_content:
   defaults:
     _title: Scheduled Content
     _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerContentController::listScheduled
+    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
   requirements:
     _access_scheduler_content: 'TRUE'

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\scheduler\Controller\SchedulerContentController.
+ * Contains \Drupal\scheduler\Controller\SchedulerController.
  */
 
 namespace Drupal\scheduler\Controller;
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Controller for the Scheduler module.
  */
-class SchedulerContentController extends ControllerBase {
+class SchedulerController extends ControllerBase {
 
   /**
    * The renderer.
@@ -28,7 +28,7 @@ class SchedulerContentController extends ControllerBase {
   protected $renderer;
 
   /**
-   * Constructs a SchedulerContentController object.
+   * Constructs a SchedulerController object.
    *
    * @param \Drupal\Core\Render\RendererInterface
    *   The renderer.
