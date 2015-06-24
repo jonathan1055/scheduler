@@ -568,19 +568,29 @@ function scheduler_list() {
   $rows = array();
 
   foreach ($result as $node) {
+    // Check the access allowed on this node.
+    $can_edit = node_access('update', $node);
+    dd($can_edit, '$can_edit');
+    $can_delete = node_access('delete', $node);
+    dd($can_delete, '$can_delete');
     // Set the operations depending on whether the node is valid or corrupt.
+    $ops = array();
     if ($node->type) {
       // Node type is present so this indicates a valid join with the node
       // table. Provide regular operations to edit and delete the node.
-      $ops = array(
-        l(t('edit'), 'node/' . $node->nid . '/edit', array('query' => $destination)),
-        l(t('delete'), 'node/' . $node->nid . '/delete', array('query' => $destination)),
-      );
+      if ($can_edit) {
+        $ops[] = l(t('edit'), 'node/' . $node->nid . '/edit', array('query' => $destination));
+      }
+      if ($can_delete) {
+        $ops[] = l(t('delete'), 'node/' . $node->nid . '/delete', array('query' => $destination));
+      }
     }
     else {
       // There was no matching row in the node table. Provide a special link to
       // delete the row from the Scheduler table.
-      $ops = array(l(t('delete'), 'admin/content/scheduler/delete/' . $node->nid, array('query' => $destination)));
+      if ($can_delete) {
+        $ops[] = l(t('delete'), 'admin/content/scheduler/delete/' . $node->nid, array('query' => $destination));
+      }
     }
 
     $rows[] = array(
