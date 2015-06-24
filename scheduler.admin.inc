@@ -570,9 +570,7 @@ function scheduler_list() {
   foreach ($result as $node) {
     // Check the access allowed on this node.
     $can_edit = node_access('update', $node);
-    dd($can_edit, '$can_edit');
     $can_delete = node_access('delete', $node);
-    dd($can_delete, '$can_delete');
     // Set the operations depending on whether the node is valid or corrupt.
     $ops = array();
     if ($node->type) {
