@@ -7,6 +7,7 @@ dependencies:
   - datetime
   - field
   - node
+  - views
 test_dependencies:
   - date
 libraries:
