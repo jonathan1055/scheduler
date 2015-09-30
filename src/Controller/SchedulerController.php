@@ -7,7 +7,6 @@
 
 namespace Drupal\scheduler\Controller;
 
-use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Database\Query;
 use Drupal\Core\Render\RendererInterface;
@@ -89,22 +88,32 @@ class SchedulerController extends ControllerBase {
 
     $rows = [];
     foreach (Node::loadMultiple($query->execute()) as $node) {
-      // Provide regular operations to edit and delete the node.
-      $ops = [
-        \Drupal::l(t('edit'), Url::fromRoute('entity.node.edit_form', ['node' => $node->id()], ['query' => $destination])),
-        \Drupal::l(t('delete'), Url::fromRoute('entity.node.delete_form', ['node' => $node->id()], ['query' => $destination])),
-      ];
-
       $username = ['#theme' => 'username', '#account' => $node->uid->entity];
-      $rows[] = [
+      $row = [
         \Drupal::l($node->getTitle(), Url::fromRoute('entity.node.canonical', ['node' => $node->id()])),
-        SafeMarkup::checkPlain($node->type->entity->label()),
-        SafeMarkup::set($this->renderer->render($username)),
+        $node->type->entity->label(),
+        $this->renderer->render($username),
         $node->status ? t('Published') : t('Unpublished'),
         !$node->publish_on->isEmpty() ? format_date($node->publish_on->value) : '',
         !$node->unpublish_on->isEmpty() ? format_date($node->unpublish_on->value) : '',
-        SafeMarkup::set(implode(' ', $ops)),
+        // Provide operations to edit and delete the node.
+        [
+          'data' => [
+            '#type' => 'operations',
+            '#links' => [
+              'edit' => [
+                'title' => t('Edit'),
+                'url' => Url::fromRoute('entity.node.edit_form', ['node' => $node->id()], ['query' => $destination]),
+              ],
+              'delete' => [
+                'title' => t('Delete'),
+                'url' => Url::fromRoute('entity.node.delete_form', ['node' => $node->id()], ['query' => $destination]),
+              ],
+            ],
+          ],
+        ]
       ];
+      $rows[] = $row;
     }
 
     $account = \Drupal::currentUser();
