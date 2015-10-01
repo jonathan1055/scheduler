@@ -14,31 +14,3 @@ scheduler.cron_form:
     _form: \Drupal\scheduler\Form\SchedulerCronForm
   requirements:
     _permission: 'administer scheduler'
-
-scheduler.content:
-  path: /admin/content/scheduler
-  defaults:
-    _title: Scheduled
-    _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
-  requirements:
-    _access_scheduler_content: 'TRUE'
-
-scheduler.user_content:
-  path: /user/{user}/scheduler
-  defaults:
-    _title: Scheduled
-    _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
-    user_only: 'TRUE'
-  requirements:
-    _access_scheduler_content: 'TRUE'
-
-scheduler.config_content:
-  path: /admin/config/content/scheduler/list
-  defaults:
-    _title: Scheduled Content
-    _description: Display a list of scheduled nodes.
-    _controller: \Drupal\scheduler\Controller\SchedulerController::listScheduled
-  requirements:
-    _access_scheduler_content: 'TRUE'
