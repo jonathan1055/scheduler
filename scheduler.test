@@ -2,17 +2,25 @@
 
 /**
  * @file
- * Scheduler module test case file.
+ * Contains
+ *   \Drupal\scheduler\Tests\SchedulerTestBase
+ *   \Drupal\scheduler\Tests\SchedulerFunctionalTest
+ *   \Drupal\scheduler\Tests\ScedulerDateCombineFunctionalTest
  */
+
+namespace Drupal\scheduler\Tests;
 
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
+use Drupal\simpletest\WebTestBase;
 
 /**
  * Provides common helper methods for Scheduler module tests.
+ *
+ * @group scheduler
  */
-abstract class SchedulerTestBase extends DrupalWebTestCase {
+abstract class SchedulerTestBase extends WebTestBase {
 
   /**
    * The profile to install as a basis for testing.

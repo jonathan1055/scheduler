@@ -1,15 +1,22 @@
 <?php
 
-use Drupal\node\Entity\Node;
-
 /**
  * @file
- * Tests for the Scheduler API.
+ * Contains \Drupal\scheduler\Tests\SchedulerApiTestCase.
  */
 
-use Drupal\Component\Utility\SafeMarkup;
+namespace Drupal\scheduler\Tests;
 
-class SchedulerApiTestCase extends DrupalWebTestCase {
+use Drupal\Component\Utility\SafeMarkup;
+use Drupal\node\Entity\Node;
+use Drupal\simpletest\WebTestBase;
+
+/**
+ * Tests the hooks of the scheduler module.
+ *
+ * @group scheduler
+ */
+class SchedulerApiTestCase extends WebTestBase {
 
   /**
    * The profile to install as a basis for testing.
@@ -32,7 +39,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp() {
+  protected function setUp() {
     parent::setUp('scheduler', 'scheduler_test');
 
     // Add scheduler functionality to the 'scheduler_test' node type.
@@ -51,7 +58,7 @@ class SchedulerApiTestCase extends DrupalWebTestCase {
    * @todo Create and update the nodes through the interface so we can check if
    *   the correct messages are displayed.
    */
-  function testAllowedPublishing() {
+  public function testAllowedPublishing() {
     // Create a node that is not approved for publication. Then simulate a cron
     // run, and check that the node is not published.
     $node = $this->createUnapprovedNode();
