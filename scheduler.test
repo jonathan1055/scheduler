@@ -5,7 +5,7 @@
  * Scheduler module test case file.
  */
 
-use Drupal\Component\Utility\String;
+use Drupal\Component\Utility\SafeMarkup;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 
@@ -231,7 +231,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     variable_set('scheduler_publish_past_date_page', 'publish');
     $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
-    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => String::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
+    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Reload the changed node and check that it is published.
     $node_storage->resetCache(array($node->id()));
@@ -243,7 +243,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     variable_set('scheduler_publish_past_date_page', 'schedule');
     $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => String::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => $edit['publish_on'])), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
     // Reload the node and check that it is unpublished but scheduled correctly.
