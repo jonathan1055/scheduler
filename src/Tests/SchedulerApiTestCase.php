@@ -12,7 +12,7 @@ use Drupal\node\Entity\Node;
 use Drupal\simpletest\WebTestBase;
 
 /**
- * Tests the hooks of the scheduler module.
+ * Tests the API of the Scheduler module.
  *
  * @group scheduler
  */
@@ -24,17 +24,6 @@ class SchedulerApiTestCase extends WebTestBase {
    * @var string
    */
   protected $profile = 'testing';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Scheduler API',
-      'description' => 'Tests for the Scheduler API.',
-      'group' => 'Scheduler',
-    );
-  }
 
   /**
    * {@inheritdoc}

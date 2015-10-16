@@ -16,20 +16,11 @@ use Drupal\node\NodeInterface;
 use Drupal\simpletest\WebTestBase;
 
 /**
- * Tests the components of the scheduler interface which use the date module.
+ * Tests the components of the Scheduler interface which use the Date module.
+ *
+ * @group scheduler
  */
 class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Scheduler date functionalities',
-      'description' => 'Scheduler functionalities which require the date module.',
-      'group' => 'Scheduler',
-    );
-  }
 
   /**
    * {@inheritdoc}

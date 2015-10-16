@@ -16,20 +16,11 @@ use Drupal\node\NodeInterface;
 use Drupal\simpletest\WebTestBase;
 
 /**
- * Tests the scheduler interface.
+ * Tests the user interface of the Scheduler module.
+ *
+ * @group scheduler
  */
 class SchedulerFunctionalTest extends SchedulerTestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function getInfo() {
-    return array(
-      'name' => 'Scheduler functionality',
-      'description' => 'Publish/unpublish on time.',
-      'group' => 'Scheduler',
-    );
-  }
 
   /**
    * {@inheritdoc}

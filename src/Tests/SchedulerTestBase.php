@@ -17,8 +17,6 @@ use Drupal\simpletest\WebTestBase;
 
 /**
  * Provides common helper methods for Scheduler module tests.
- *
- * @group scheduler
  */
 abstract class SchedulerTestBase extends WebTestBase {
 
