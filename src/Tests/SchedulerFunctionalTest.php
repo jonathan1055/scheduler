@@ -386,7 +386,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       'type' => 'page',
       'status' => FALSE,
       'title' => $this->randomName(),
-    ));
+    );
     $node = $this->drupalCreateNode($settings);
 
     // Set unpublishing to be required.
