@@ -3,8 +3,6 @@
 /**
  * @file
  * Contains
- *   \Drupal\scheduler\Tests\SchedulerTestBase
- *   \Drupal\scheduler\Tests\SchedulerFunctionalTest
  *   \Drupal\scheduler\Tests\ScedulerDateCombineFunctionalTest
  */
 
@@ -18,15 +16,21 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the components of the Scheduler interface which use the Date module.
  *
- * @group scheduler
+ * @group Scheduler
  */
 class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
+
+  /**
+   * The modules to be loaded for these tests.
+   */
+  public static $modules = array('node', 'scheduler', 'datetime');
 
   /**
    * {@inheritdoc}
    */
   public function setUp() {
-    parent::setUp('date', 'scheduler');
+    parent::setUp();
+    $config = $this->config('scheduler.settings');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
@@ -44,8 +48,8 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
     ));
 
     // Add scheduler functionality to the page node type.
-    variable_set('scheduler_publish_enable_page', 1);
-    variable_set('scheduler_unpublish_enable_page', 1);
+    $config->set('scheduler_publish_enable_page', 1);
+    $config->set('scheduler_unpublish_enable_page', 1);
   }
 
   /**

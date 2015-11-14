@@ -4,8 +4,6 @@
  * @file
  * Contains
  *   \Drupal\scheduler\Tests\SchedulerTestBase
- *   \Drupal\scheduler\Tests\SchedulerFunctionalTest
- *   \Drupal\scheduler\Tests\ScedulerDateCombineFunctionalTest
  */
 
 namespace Drupal\scheduler\Tests;
@@ -40,7 +38,8 @@ abstract class SchedulerTestBase extends WebTestBase {
   protected function helpTestScheduler($edit) {
     // Add a page.
     $langcode = LANGUAGE_NONE;
-    $body = $this->randomName();
+    $body = $this->randomString(30);
+
     $edit["body[$langcode][0][value]"] = $body;
     $this->drupalLogin($this->adminUser);
     $this->drupalPost('node/add/page', $edit, t('Save'));

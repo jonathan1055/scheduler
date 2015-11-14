@@ -14,9 +14,14 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the API of the Scheduler module.
  *
- * @group scheduler
+ * @group Scheduler
  */
 class SchedulerApiTestCase extends WebTestBase {
+
+  /**
+   * The modules to be loaded for these tests.
+   */
+  public static $modules = array('node', 'scheduler', 'scheduler_test');
 
   /**
    * The profile to install as a basis for testing.
@@ -29,11 +34,15 @@ class SchedulerApiTestCase extends WebTestBase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    parent::setUp('scheduler', 'scheduler_test');
+    parent::setUp();
+    $config = $this->config('scheduler.settings');
 
     // Add scheduler functionality to the 'scheduler_test' node type.
-    variable_set('scheduler_publish_enable_scheduler_test', 1);
-    variable_set('scheduler_unpublish_enable_scheduler_test', 1);
+    $config
+      ->set('scheduler_publish_enable_scheduler_test', 1)
+      ->set('scheduler_unpublish_enable_scheduler_test', 1)
+      ->save();
+    debug($config, '$config');
   }
 
   /**
@@ -48,6 +57,8 @@ class SchedulerApiTestCase extends WebTestBase {
    *   the correct messages are displayed.
    */
   public function testAllowedPublishing() {
+    $config = \Drupal::config('scheduler.settings');
+//    $config = $this->config('scheduler.settings');
     // Create a node that is not approved for publication. Then simulate a cron
     // run, and check that the node is not published.
     $node = $this->createUnapprovedNode();
@@ -62,7 +73,7 @@ class SchedulerApiTestCase extends WebTestBase {
 
     // Turn on immediate publication of nodes with publication dates in the past
     // and repeat the tests. It is not needed to simulate cron runs now.
-    variable_set('scheduler_publish_past_date_scheduler_test', 'publish');
+    $config->set('scheduler_publish_past_date_scheduler_test', 'publish');
     $node = $this->createUnapprovedNode();
     $this->assertNodeNotPublished($node->id(), 'An unapproved node is not published immediately after saving.');
     $this->approveNode($node->id());

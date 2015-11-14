@@ -1,11 +1,8 @@
 <?php
-
 /**
  * @file
  * Contains
- *   \Drupal\scheduler\Tests\SchedulerTestBase
  *   \Drupal\scheduler\Tests\SchedulerFunctionalTest
- *   \Drupal\scheduler\Tests\ScedulerDateCombineFunctionalTest
  */
 
 namespace Drupal\scheduler\Tests;
@@ -18,15 +15,29 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the user interface of the Scheduler module.
  *
- * @group scheduler
+ * @group Scheduler
  */
 class SchedulerFunctionalTest extends SchedulerTestBase {
+
+  /**
+   * The modules to be loaded for these tests.
+   */
+  public static $modules = array('node', 'scheduler');
+  
+//   public static function getInfo() {
+//     return array(
+//       'name' => 'Scheduler functionality',
+//       'description' => 'Publish/unpublish on time.',
+//       'group' => 'Scheduler',
+//     );
+//   }
 
   /**
    * {@inheritdoc}
    */
   public function setUp() {
-    parent::setUp('scheduler');
+    parent::setUp();
+    $config = $this->config('scheduler.settings');
 
     // Create a 'Basic Page' content type.
     $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
@@ -44,8 +55,9 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     ));
 
     // Add scheduler functionality to the page node type.
-    variable_set('scheduler_publish_enable_page', 1);
-    variable_set('scheduler_unpublish_enable_page', 1);
+    $config->set('scheduler_publish_enable_page', 1); // fails with 'cannot set immutable' when using $config = \Drupal::config('scheduler.settings')
+    //, seems to be OK using $config = $this->config('scheduler.settings')
+    $config->set('scheduler_unpublish_enable_page', 1);
   }
 
   /**
@@ -69,6 +81,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Test the different options for past publication dates.
    */
   public function testSchedulerPastDates() {
+    $config = $this->config('scheduler.settings');
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
 
     // Log in.
@@ -80,15 +93,15 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
     $edit = array(
-      'title' => $this->randomName(),
+      'title' => $this->randomString(15),
       'publish_on' => format_date(strtotime('-1 day'), 'custom', 'Y-m-d H:i:s'),
     );
-    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
 
     // Test the 'publish' behavior: the node should be published immediately.
-    variable_set('scheduler_publish_past_date_page', 'publish');
-    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
+    $config->set('scheduler_publish_past_date_page', 'publish');
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
@@ -99,8 +112,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Test the 'schedule' behavior: the node should be unpublished and become
     // published on the next cron run.
-    variable_set('scheduler_publish_past_date_page', 'schedule');
-    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
+    $config->set('scheduler_publish_past_date_page', 'schedule');
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', array('@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title']))), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', array('@publish_time' => $edit['publish_on'])), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
@@ -122,6 +135,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests the creation of new revisions on scheduling.
    */
   public function testRevisioning() {
+    $config = $this->config('scheduler.settings');
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day');
     $settings = array(
@@ -139,8 +153,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was unpublished with revisioning disabled.');
 
     // Enable revisioning.
-    variable_set('scheduler_publish_revision_page', 1);
-    variable_set('scheduler_unpublish_revision_page', 1);
+    $config->set('scheduler_publish_revision_page', 1);
+    $config->set('scheduler_unpublish_revision_page', 1);
 
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);
@@ -165,6 +179,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests if options can both be displayed as extra fields and vertical tabs.
    */
   public function testExtraFields() {
+    $config = $this->config('scheduler.settings');
     $this->drupalLogin($this->adminUser);
 
     // Test if the options are shown as vertical tabs by default.
@@ -172,13 +187,13 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertTrue($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'By default the scheduler options are shown as a vertical tab.');
 
     // Test if the options are shown as extra fields when configured to do so.
-    variable_set('scheduler_use_vertical_tabs_page', 0);
+    $config->set('scheduler_use_vertical_tabs_page', 0);
     $this->drupalGet('node/add/page');
     $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an extra field.');
     $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and contains(@class, "collapsed")]'), 'The scheduler options are shown as a collapsed fieldset when they are configured to show as an extra field.');
 
     // Test the option to expand the fieldset.
-    variable_set('scheduler_expand_fieldset_page', 1);
+    $config->set('scheduler_expand_fieldset_page', 1);
     $this->drupalGet('node/add/page');
     $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an expanded fieldset.');
     $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and not(contains(@class, "collapsed"))]'), 'The scheduler options are shown as an expanded fieldset.');
@@ -188,6 +203,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests creating and editing nodes with required scheduling enabled.
    */
   public function testRequiredScheduling() {
+    $config = $this->config('scheduler.settings');
     $this->drupalLogin($this->adminUser);
 
     // Define test scenarios with expected results.
@@ -319,12 +335,12 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     foreach ($test_cases as $test_case) {
       // Enable required (un)publishing as stipulated by the test case.
-      variable_set('scheduler_publish_required_page', $test_case['required'] == 'publish');
-      variable_set('scheduler_unpublish_required_page', $test_case['required'] == 'unpublish');
+      $config->set('scheduler_publish_required_page', $test_case['required'] == 'publish');
+      $config->set('scheduler_unpublish_required_page', $test_case['required'] == 'unpublish');
 
       // Set the default node status, used when creating a new node.
       $node_options_page = !empty($test_case['status']) ? array('status') : array();
-      variable_set('node_options_page', $node_options_page);
+      $config->set('node_options_page', $node_options_page);
 
       // To assist viewing and analysing the generated test result pages create
       // a text string showing all the test case parameters.
@@ -355,7 +371,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         'unpublish_on' => '',
       );
       $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->id() . '/edit';
-      $this->drupalPost($path, $edit, t('Save'));
+      $this->drupalPostForm($path, $edit, t('Save'));
 
       // Check for the expected result.
       switch ($test_case['expected']) {
@@ -379,24 +395,25 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests the validation when editing a node.
    */
   public function testValidationDuringEdit() {
+    $config = $this->config('scheduler.settings');
     $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
     $settings = array(
       'type' => 'page',
       'status' => FALSE,
-      'title' => $this->randomName(),
+      'title' => $this->randomString(15),
     );
     $node = $this->drupalCreateNode($settings);
 
     // Set unpublishing to be required.
-    variable_set('scheduler_unpublish_required_page', TRUE);
+    $config->set('scheduler_unpublish_required_page', TRUE);
 
     // Edit the node and check the validation.
     $edit = array(
       'publish_on' => date('Y-m-d H:i:s', strtotime('+1 day', REQUEST_TIME)),
     );
-    $this->drupalPost('node/' . $node->id() . '/edit', $edit, t('Save'));
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertRaw(t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
   }
 
@@ -409,6 +426,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * @see https://drupal.org/node/1614880
    */
   public function testScheduledNodeDelete() {
+    $config = $this->config('scheduler.settings');
     // Log in.
     $this->drupalLogin($this->adminUser);
 
@@ -417,14 +435,14 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1));
 
     // Make scheduled publishing and unpublishing required.
-    variable_set('scheduler_publish_required_page', TRUE);
-    variable_set('scheduler_unpublish_required_page', TRUE);
+    $config->set('scheduler_publish_required_page', TRUE);
+    $config->set('scheduler_unpublish_required_page', TRUE);
 
     // Check that deleting the nodes does not throw form validation errors.
-    $this->drupalPost('node/' . $published_node->id() . '/edit', array(), t('Delete'));
+    $this->drupalPostForm('node/' . $published_node->id() . '/edit', array(), t('Delete'));
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete a published node with no scheduling information.');
 
-    $this->drupalPost('node/' . $unpublished_node->id() . '/edit', array(), t('Delete'));
+    $this->drupalPostForm('node/' . $unpublished_node->id() . '/edit', array(), t('Delete'));
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
   }
 
