@@ -1,3 +1,5 @@
+# Schema for Scheduler module configuration.
+
 scheduler.settings:
   type: mapping
   label: 'Scheduler settings'
@@ -16,6 +18,8 @@ scheduler.settings:
       type: boolean
     time_only_format:
       type: string
+    langcode:        # Added langcode to avoid fatal error in simpletests.
+      type: string   # @TODO But is it correct? Why should we need LANGCODE in Scheduler settings?
 
 node_type.third_party.scheduler:
   type: mapping
@@ -45,3 +49,5 @@ node_type.third_party.scheduler:
     unpublish_revision:
       type: boolean
       label: 'Create a new revision on unpublishing'
+    use_vertical_tabs: # Added this to avoid fatal error in simpletests.
+      type: boolean    # @TODO verify that this is OK, then remove the comment.
