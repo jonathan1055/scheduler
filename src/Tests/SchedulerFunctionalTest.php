@@ -376,7 +376,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       // Check for the expected result.
       switch ($test_case['expected']) {
         case 'required':
-          $string = t('!name field is required.', array('!name' => ucfirst($test_case['required']) . ' on'));
+          $string = t('%name field is required.', array('%name' => ucfirst($test_case['required']) . ' on'));
           $this->assertRaw($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
 
