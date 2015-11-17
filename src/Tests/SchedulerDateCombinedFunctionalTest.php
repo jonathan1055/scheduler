@@ -94,7 +94,7 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
 
     // Test if entering a time is required.
     $edit = array(
-      'title' => $this->randomName(),
+      'title' => $this->randomString(15),
       'publish_on' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
       'unpublish_on' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
     );
