@@ -14,7 +14,7 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the API of the Scheduler module.
  *
- * @group Scheduler
+ * @group scheduler
  */
 class SchedulerApiTestCase extends WebTestBase {
 

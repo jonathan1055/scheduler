@@ -16,7 +16,7 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the components of the Scheduler interface which use the Date module.
  *
- * @group Scheduler
+ * @group scheduler
  */
 class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
 

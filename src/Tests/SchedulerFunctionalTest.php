@@ -15,7 +15,7 @@ use Drupal\simpletest\WebTestBase;
 /**
  * Tests the user interface of the Scheduler module.
  *
- * @group Scheduler
+ * @group scheduler
  */
 class SchedulerFunctionalTest extends SchedulerTestBase {
 
