@@ -49,5 +49,6 @@ node_type.third_party.scheduler:
     unpublish_revision:
       type: boolean
       label: 'Create a new revision on unpublishing'
-    use_vertical_tabs: # Added this to avoid fatal error in simpletests.
-      type: boolean    # @TODO verify that this is OK, then remove the comment.
+    use_vertical_tabs:
+      type: boolean
+      label: 'Display the scheduling fields in vertical tabs'
