@@ -22,14 +22,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * The modules to be loaded for these tests.
    */
   public static $modules = array('node', 'scheduler');
-  
-//   public static function getInfo() {
-//     return array(
-//       'name' => 'Scheduler functionality',
-//       'description' => 'Publish/unpublish on time.',
-//       'group' => 'Scheduler',
-//     );
-//   }
 
   /**
    * {@inheritdoc}
