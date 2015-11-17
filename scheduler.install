@@ -31,16 +31,16 @@ function scheduler_requirements($phase) {
       '%date_default_timezone' => $date_default_timezone,
       '%date_default_offset' => $date_formatter->format($now, 'custom', 'P', $date_default_timezone),
       '%date_default_code' => $date_formatter->format($now, 'custom', 'T', $date_default_timezone),
-      '!account_edit' => \Drupal::url('entity.user.edit_form', ['user' => $user->id()]),
-      '!admin_regional_settings' => \Drupal::url('system.regional_settings'),
+      '@account_edit' => \Drupal::url('entity.user.edit_form', ['user' => $user->id()]),
+      '@admin_regional_settings' => \Drupal::url('system.regional_settings'),
     ];
 
     $descriptions = [
       t('In most cases the server time matches Coordinated Universal Time (UTC).', $t_options),
-      t('Default timezone: %date_default_timezone (%date_default_code), offset from GMT by %date_default_offset hours. This timezone can be <a href="!admin_regional_settings">changed by admin users</a> with the appropriate access.', $t_options),
+      t('Default timezone: %date_default_timezone (%date_default_code), offset from GMT by %date_default_offset hours. This timezone can be <a href="@admin_regional_settings">changed by admin users</a> with the appropriate access.', $t_options),
     ];
     if ($system_date->get('timezone.user.configurable')) {
-      $descriptions[] = t('Local time: %localtime (%daylight_saving). You can change this via your <a href="!account_edit">user account</a>.', $t_options);
+      $descriptions[] = t('Local time: %localtime (%daylight_saving). You can change this via your <a href="@account_edit">user account</a>.', $t_options);
       if (!$user->getTimezone()) {
         $descriptions[] = t('Note: The user timezone has not been stored, so defaulting to the website timezone.');
       }

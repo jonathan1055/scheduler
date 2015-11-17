@@ -46,10 +46,10 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#maxlength' => 20,
       '#required' => TRUE,
       '#field_suffix' => ' <small>' . $now . '</small>',
-      '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', [
-        '!date_letters' => SCHEDULER_DATE_LETTERS,
-        '!time_letters' => SCHEDULER_TIME_LETTERS,
-        '!url' => \Drupal::l(t('the PHP date() function'), $url),
+      '#description' => t('The format for entering scheduled dates and times. For the date use the letters %date_letters and for the time use %time_letters. See @url for more details.', [
+        '%date_letters' => SCHEDULER_DATE_LETTERS,
+        '%time_letters' => SCHEDULER_TIME_LETTERS,
+        '@url' => \Drupal::l(t('the PHP date() function'), $url),
       ]),
     ];
 
