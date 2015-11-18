@@ -37,10 +37,9 @@ abstract class SchedulerTestBase extends WebTestBase {
    */
   protected function helpTestScheduler($edit) {
     // Add a page.
-    $langcode = LANGUAGE_NONE;
     $body = $this->randomString(30);
 
-    $edit["body[$langcode][0][value]"] = $body;
+    $edit['body[0][value]'] = $body;
     $this->drupalLogin($this->adminUser);
     $this->drupalPost('node/add/page', $edit, t('Save'));
     // Show the site front page for an anonymous visitor, then assert that the
