@@ -41,7 +41,7 @@ abstract class SchedulerTestBase extends WebTestBase {
 
     $edit['body[0][value]'] = $body;
     $this->drupalLogin($this->adminUser);
-    $this->drupalPost('node/add/page', $edit, t('Save'));
+    $this->drupalPostForm('node/add/page', $edit, t('Save'));
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalLogout();
