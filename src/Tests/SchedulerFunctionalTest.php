@@ -57,14 +57,16 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   public function testScheduler() {
     // Create node values. Set time to one hour in the future.
     $edit = array(
-      'title' => 'title',
-      'publish_on' => format_date(time() + 3600, 'custom', 'Y-m-d H:i:s'),
-      'status' => 1,
-      'promote' => 1,
+      'title[0][value]' => 'title',
+      'publish_on[0][value][date]' => format_date(time() + 3600, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => format_date(time() + 3600, 'custom', 'H:i:s'),
+      'promote[value]' => 1,
     );
     $this->helpTestScheduler($edit);
-    $edit['unpublish_on'] = $edit['publish_on'];
-    unset($edit['publish_on']);
+    $edit['unpublish_on[0][value][date]'] = $edit['publish_on[0][value][date]'];
+    $edit['unpublish_on[0][value][time]'] = $edit['publish_on[0][value][time]'];
+    unset($edit['publish_on[0][value][date]']);
+    unset($edit['publish_on[0][value][time]']);
     $this->helpTestScheduler($edit);
   }
 
