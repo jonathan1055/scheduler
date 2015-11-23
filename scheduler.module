@@ -379,7 +379,7 @@ function scheduler_node_presave(EntityInterface $node) {
 
     // Publish the node immediately if the publication date is in the past.
     $entity = $node->type->entity;
-    $publish_immediately = $type->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
+    $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
       // If required, set the created date to match published date.
