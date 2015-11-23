@@ -139,7 +139,7 @@ function _scheduler_unpublish() {
     $unpublish_on = $node->unpublish_on;
     $node->set('changed', $unpublish_on);
 
-    $create_unpublishing_revision = variable_get('scheduler_unpublish_revision_' . $node->getType(), 0) == 1;
+    $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', FALSE);
     if ($create_unpublishing_revision) {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
