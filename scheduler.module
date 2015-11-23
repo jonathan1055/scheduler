@@ -336,13 +336,14 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
   // already converted. This is needed because Drupal 6 removed 'submit' and
   // added 'presave' and all this happens at different times.
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+  $entity = $node->type->entity;
 
   if (!empty($node->publish_on->value) && !is_numeric($node->publish_on->value)) {
     $publishtime = $node->publish_on->value;
     if ($publishtime === FALSE) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => format_date(REQUEST_TIME, 'custom', $date_format))));
     }
-    elseif ($publishtime && variable_get('scheduler_publish_past_date_' . $node->getType(), 'error') == 'error' && $publishtime < REQUEST_TIME) {
+    elseif ($publishtime && $entity->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'error' && $publishtime < REQUEST_TIME) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' date must be in the future"));
     }
   }
@@ -363,7 +364,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 
   // The unpublish-on 'required' form attribute may not be set in some cases,
   // but a value must be entered if also setting a publish-on date.
-  if (variable_get('scheduler_unpublish_required_' . $node->getType()) && !empty($node->publish_on->value) && empty($node->unpublish_on->value)) {
+  if ($entity->getThirdPartySetting('scheduler', 'unpublish_required') && !empty($node->publish_on->value) && empty($node->unpublish_on->value)) {
     $form_state->setErrorByName('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
   }
 }
@@ -377,12 +378,12 @@ function scheduler_node_presave(EntityInterface $node) {
     $publication_allowed = _scheduler_allow($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
-    $type = $node->type->entity;
+    $entity = $node->type->entity;
     $publish_immediately = $type->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
       // If required, set the created date to match published date.
-      if ($type->getThirdPartySetting('scheduler', 'publish_touch', 0) == 1) {
+      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', 0)) {
         $node->setCreatedTime($node->publish_on->value);
       }
       $node->publish_on->value = 0;
@@ -536,9 +537,11 @@ function scheduler_field_extra_fields() {
   $fields = array();
 
   foreach (node_type_get_types() as $type) {
-    $publishing_enabled = variable_get('scheduler_publish_enable_' . $type->type, 0);
-    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $type->type, 0);
-    $use_vertical_tabs = variable_get('scheduler_use_vertical_tabs_' . $type->type, 1);
+    $entity = $type->type->entity;
+
+    $publishing_enabled = $entity->getThirdPartySetting('scheduler', 'publish_enable', 0);
+    $unpublishing_enabled = $entity->getThirdPartySetting('scheduler', 'unpublish_enable', 0);
+    $use_vertical_tabs = $entity->getThirdPartySetting('scheduler', 'use_vertical_tabs', 1);
 
     if (($publishing_enabled || $unpublishing_enabled) && !$use_vertical_tabs) {
       $fields['node'][$type->type]['form']['scheduler_settings'] = array(
@@ -579,8 +582,8 @@ function scheduler_preprocess_node(&$variables) {
 function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
   // Scheduler module only works on nodes.
   if ($entity_type == 'node') {
-    $publishing_enabled = variable_get('scheduler_publish_enable_' . $bundle_name, 0);
-    $unpublishing_enabled = variable_get('scheduler_unpublish_enable_' . $bundle_name, 0);
+    $publishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'publish_enable', 0);
+    $unpublishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'unpublish_enable', 0);
 
     if ($publishing_enabled) {
       $targets['publish_on'] = array(
@@ -650,14 +653,13 @@ function scheduler_i18n_sync_options($entity_type, $bundle_name) {
   // been defined as translations of each other.
   if ($entity_type == 'node') {
     $options = array();
-    // $bundle_name holds the content_type.
-    if (variable_get('scheduler_publish_enable_' . $bundle_name, 0)) {
+    if ($entity_type->getThirdPartySetting('scheduler', 'publish_enable')) {
       $options['publish_on'] = array(
         'title' => t('Publish on'),
         'description' => t('Scheduler Publish date and time'),
       );
     }
-    if (variable_get('scheduler_unpublish_enable_' . $bundle_name, 0)) {
+    if ($entity_type->getThirdPartySetting('scheduler', 'unpublish_enable')) {
       $options['unpublish_on'] = array(
         'title' => t('Unpublish on'),
         'description' => t('Scheduler Unpublish date and time'),
