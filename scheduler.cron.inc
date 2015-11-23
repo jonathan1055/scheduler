@@ -125,7 +125,7 @@ function _scheduler_unpublish() {
     // Do not process the node if it has a publish_on time which is in the past,
     // as this implies that scheduled publishing has been blocked by one of the
     // API functions we provide. Hence unpublishing should be halted too.
-    $publish_on = $node->publish_on;
+    $publish_on = $node->publish_on->value;
     if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
       continue;
     }
@@ -136,7 +136,7 @@ function _scheduler_unpublish() {
 
     // Update timestamps.
     $old_change_date = $node->getChangedTime();
-    $unpublish_on = $node->unpublish_on;
+    $unpublish_on = $node->unpublish_on->value;
     $node->set('changed', $unpublish_on);
 
     $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', FALSE);
@@ -150,7 +150,7 @@ function _scheduler_unpublish() {
     }
     // Unset unpublish_on so the node will not get rescheduled by subsequent
     // calls to $node->save(). Save the value for use when calling Rules.
-    $node->unpublish_on = NULL;
+    $node->unpublish_on->value = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
     // saved.
