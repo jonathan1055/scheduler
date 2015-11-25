@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Contains
- *   \Drupal\scheduler\Tests\SchedulerTestBase
+ * Contains \Drupal\scheduler\Tests\SchedulerTestBase
  */
 
 namespace Drupal\scheduler\Tests;
@@ -46,29 +45,33 @@ abstract class SchedulerTestBase extends WebTestBase {
     // node is correctly published or unpublished.
     $this->drupalLogout();
     $this->drupalGet('node');
-    if (isset($edit['publish_on'])) {
+    if (isset($edit['publish_on[0][value][date]'])) {
       $key = 'publish_on';
-      $this->assertNoText($body, t('Node is unpublished'));
+      $this->assertNoText($body, t('Node is unpublished before Cron'));
     }
     else {
       $key = 'unpublish_on';
-      $this->assertText($body, t('Node is published'));
+      $this->assertText($body, t('Node is published before Cron'));
     }
-    // Verify that the scheduler table is not empty.
-    $this->assertTrue(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is not empty');
-    // Modify the scheduler row to a time in the past, then run cron.
-    db_update('scheduler')->fields(array($key => time() - 1))->execute();
+
+    // Modify the scheduler field data to a time in the past, then run cron.
+    $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
+    debug($node->id() . ' ' . $node->title->value, '$node->id() and title');
+//    debug($node->$key, '$node->' . $key);
+
+    $x = db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
+    debug('db_update returned ' . $x);
+
     $this->cronRun();
-    // Verify that the scheduler table is empty.
-    $this->assertFalse(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is empty');
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalGet('node');
-    if (isset($edit['publish_on'])) {
-      $this->assertText($body, t('Node is published'));
+    debug($edit, 'edit');
+    if (isset($edit['publish_on[0][value][date]'])) {
+      $this->assertText($body, t('Node is published after Cron'));
     }
     else {
-      $this->assertNoText($body, t('Node is unpublished'));
+      $this->assertNoText($body, t('Node is unpublished after Cron'));
     }
   }
 
@@ -112,13 +115,16 @@ abstract class SchedulerTestBase extends WebTestBase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
+    debug($nid, 'assertRevisionLogMessage nid');
+    // Retrieve the latest revision log message for this node.
     $log_message = db_select('node_revision', 'r')
-      ->fields('r', array('log'))
+      ->fields('r', array('revision_log'))
       ->condition('nid', $nid)
       ->orderBy('vid', 'DESC')
       ->range(0, 1)
       ->execute()
       ->fetchColumn();
+    debug($log_message, '$log_message');
 
     return $this->assertEqual($log_message, $value, $message, $group);
   }
