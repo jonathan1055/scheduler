@@ -36,6 +36,11 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     ### @TODO the string 'page' is hard-coded eleven times in this file (so far)
     ### @TODO Could make it a variable, which would allow future testing of other entity types?
 
+    // Add scheduler functionality to the page node type.
+    $node_type = NodeType::load('page'); ### @TODO Is this the correct/best way?
+    $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE);
+    $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE);
+
     // Create an administrator user.
     $this->adminUser = $this->drupalCreateUser(array(
       'access content',
@@ -47,11 +52,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       'administer nodes',
       'schedule (un)publishing of nodes',
     ));
-
-    // Add scheduler functionality to the page node type.
-    $node_type = NodeType::load('page'); ### @TODO Is there was another way without NodeType::load ?
-    $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE);
-    $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE);
   }
 
   /**
@@ -60,7 +60,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   public function testScheduler() {
     // Create node values. Set time to one hour in the future.
     $edit = array(
-      'title[0][value]' => $this->randomString(10),
+      'title[0][value]' => $this->randomMachineName(10),
       'publish_on[0][value][date]' => format_date(time() + 3600, 'custom', 'Y-m-d'),
       'publish_on[0][value][time]' => format_date(time() + 3600, 'custom', 'H:i:s'),
       'promote[value]' => 1,
@@ -73,7 +73,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     unset($edit['publish_on[0][value][date]']);
     unset($edit['publish_on[0][value][time]']);
     // Need a new title for the new node, as we identify the node by title.
-    $edit['title[0][value]'] = $this->randomString(10);
+    $edit['title[0][value]'] = $this->randomMachineName(10);
     $this->helpTestScheduler($edit);
   }
 

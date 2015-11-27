@@ -35,8 +35,9 @@ abstract class SchedulerTestBase extends WebTestBase {
    * Helper function for testScheduler(). Schedules content and asserts status.
    */
   protected function helpTestScheduler($edit) {
-    // Add a page.
-    $body = $this->randomString(30);
+    // Add a page, using randomMachineName for the body text, not randomString,
+    // because assertText works better without difficult non-alpha characters.
+    $body = $this->randomMachineName(30);
 
     $edit['body[0][value]'] = $body;
     $this->drupalLogin($this->adminUser);
@@ -56,17 +57,12 @@ abstract class SchedulerTestBase extends WebTestBase {
 
     // Modify the scheduler field data to a time in the past, then run cron.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    debug($node->id() . ' ' . $node->title->value, '$node->id() and title');
-//    debug($node->$key, '$node->' . $key);
-
-    $x = db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
-    debug('db_update returned ' . $x);
+    db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
 
     $this->cronRun();
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalGet('node');
-    debug($edit, 'edit');
     if (isset($edit['publish_on[0][value][date]'])) {
       $this->assertText($body, t('Node is published after Cron'));
     }
