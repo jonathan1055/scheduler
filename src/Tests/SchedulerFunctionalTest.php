@@ -460,7 +460,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Check that deleting the nodes does not throw form validation errors.
     ### @TODO Old: $this->drupalPostForm('node/' . $published_node->id() . '/edit', array(), t('Delete'));
-    ### @TODO Delete is not a button but a separate link node/<nid>/delete. 
+    ### @TODO Delete is not a button but a separate link node/<nid>/delete.
     ### Is the previous validation (that we had to avoid on delete) still done now in D8, given that there is no form?
     ### Maybe this test is not actually checking anything useful? Can it be altered to do something testable?
     $this->drupalGet('node/' . $published_node->id() . '/delete');
@@ -470,4 +470,76 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
   }
 
+   /**
+   * Tests that a non-enabled node type cannot be scheduled.
+   *
+   * This checks that the scheduler input date/time fields are not displayed
+   * if the node type has not been enabled for scheduling.
+   */
+  public function testNonEnabledNodeType() {
+    // Create a 'Not for scheduler' content type.
+    $name = 'not_for_scheduler';
+    $this->drupalCreateContentType(array('type' => $name, 'name' => t('Not-for-Scheduler')));
+    $node_type = NodeType::load($name);
+
+    // Create an administrator user.
+    ### @TODO There should be a way to add the new permissions to the existing
+    ### adminUser instead of creating a new user?
+    $this->adminUser2 = $this->drupalCreateUser(array(
+      'access content',
+      'administer scheduler',
+      'create ' . $name . ' content',
+      'edit own ' . $name . ' content',
+      'delete own ' . $name . ' content',
+      'view own unpublished content',
+      'administer nodes',
+      'schedule (un)publishing of nodes',
+    ));
+
+    // Log in.
+    $this->drupalLogin($this->adminUser2);
+
+    // By default check that the scheduler options are not enabled.
+    $this->drupalGet('node/add/' . $name);
+    $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown by default when the content type is not enabled for Scheduler.');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown by default when the content type is not enabled for Scheduler.');
+
+    // Explicitly disable this content type for scheduler, and test again.
+    $node_type->setThirdPartySetting('scheduler', 'publish_enable', FALSE);
+    $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+
+    $this->drupalGet('node/add/' . $name);
+    $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown after setting the content type to not enabled for Scheduler.');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown after setting the content type to not enabled for Scheduler.');
+
+    // Attempt to create a node with a scheduled publishing date in the future.
+    $body = $this->randomMachineName(30);
+    $edit = array(
+      'title[0][value]' => $this->randomMachineName(10),
+      'publish_on[0][value][date]' => format_date(time() + 3600, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => format_date(time() + 3600, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => format_date(time() + 7200, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => format_date(time() + 7200, 'custom', 'H:i:s'),
+      'promote[value]' => 1,
+      'body[0][value]' => $body,
+    );
+
+    $this->drupalPostForm('node/add/' . $name, $edit, t('Save and publish'));
+    // Show the site front page for an anonymous visitor, then assert that the
+    // node is correctly published.
+    $this->drupalLogout();
+    $this->drupalGet('node');
+    $this->assertText($body, t('The %name node is not scheduled and is published immediately.', array('%name' => $name)));
+
+    $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
+
+    // Check that no data has been saved for the scheduler fields.
+    $field_data = db_select('node_field_data', 'f')
+      ->fields('f')
+      ->condition('nid', $node->id())
+      ->execute()
+      ->fetchAll();
+    $this->assertNull($field_data[0]->publish_on, t('There is no publish_on date stored for this node in node_field_data.'));
+    $this->assertNull($field_data[0]->unpublish_on, t('There is no unpublish_on date stored for this node in node_field_data.'));
+  }
 }
