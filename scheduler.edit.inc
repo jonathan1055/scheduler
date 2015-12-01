@@ -66,13 +66,13 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   $descriptions = array();
   if ($date_only_allowed && ($date_only_format != $date_format)) {
     $descriptions['format'] = t('Format: %date_only_format or %standard_format.', array(
-      '%date_only_format' => format_date(time(), 'custom', $date_only_format),
-      '%standard_format' => format_date(time(), 'custom', $date_format),
+      '%date_only_format' => \Drupal::service('date.formatter')->format(time(), 'custom', $date_only_format),
+      '%standard_format' => \Drupal::service('date.formatter')->format(time(), 'custom', $date_format),
     ));
   }
   else {
     $descriptions['format'] = t('Format: %standard_format.', array(
-      '%standard_format' => format_date(time(), 'custom', $date_format),
+      '%standard_format' => \Drupal::service('date.formatter')->format(time(), 'custom', $date_format),
     ));
   }
   // Show the default time so users know what they will get if they do not
@@ -80,7 +80,7 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   if ($date_only_allowed) {
     $default_time = strtotime(\Drupal::config('scheduler.settings')->get('default_time'));
     $descriptions['default'] = t('The default time is @default_time.', array(
-      '@default_time' => format_date($default_time, 'custom', $time_only_format ? $time_only_format : SCHEDULER_TIME_ONLY_FORMAT),
+      '@default_time' => \Drupal::service('date.formatter')->format($default_time, 'custom', $time_only_format ? $time_only_format : SCHEDULER_TIME_ONLY_FORMAT),
     ));
   }
 

@@ -61,8 +61,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Create node values. Set time to one hour in the future.
     $edit = array(
       'title[0][value]' => $this->randomMachineName(10),
-      'publish_on[0][value][date]' => format_date(time() + 3600, 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => format_date(time() + 3600, 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'H:i:s'),
       'promote[value]' => 1,
     );
     $this->helpTestScheduler($edit);
@@ -94,8 +94,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // enters a publication date that is in the past.
     $edit = array(
       'title[0][value]' => t('Past') . ' ' . $this->randomString(10),
-      'publish_on[0][value][date]' => format_date(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
-      'publish_on[0][value][time]' => format_date(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
     );
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
@@ -125,7 +125,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node_storage->resetCache(array($node->id()));
     $node = $node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEqual(format_date($node->publish_on->value, 'custom', 'Y-m-d H:i:s'), $publish_time, 'The node is scheduled for the required date');
+    $this->assertEqual(\Drupal::service('date.formatter')->format($node->publish_on->value, 'custom', 'Y-m-d H:i:s'), $publish_time, 'The node is scheduled for the required date');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();
@@ -163,8 +163,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node = $this->schedule($node);
     $this->assertRevisionCount($node->id(), 2, 'A new revision was created when revisioning is enabled.');
     $expected_message = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
-      '@now' => format_date(REQUEST_TIME, 'short'),
-      '@date' => format_date($created, 'short'),
+      '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+      '@date' => \Drupal::service('date.formatter')->format($created, 'short'),
     ));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
 
@@ -172,8 +172,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node = $this->schedule($node, 'unpublish');
     $this->assertRevisionCount($node->id(), 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
     $expected_message = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
-      '@now' => format_date(REQUEST_TIME, 'short'),
-      '@date' => format_date(REQUEST_TIME, 'short'),
+      '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+      '@date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
     ));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
   }
@@ -370,8 +370,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
           'type' => 'page',
           'status' => $test_case['status'],
            ### @TODO should use default date part from config, not hardcode
-          'publish_on[0][value][date]' => !empty($test_case['scheduled']) ? format_date(strtotime('+1 day'), 'custom', 'Y-m-d') : NULL,
-          'publish_on[0][value][time]' => !empty($test_case['scheduled']) ? format_date(strtotime('+1 day'), 'custom', 'H-i-s') : NULL,
+          'publish_on[0][value][date]' => !empty($test_case['scheduled']) ? \Drupal::service('date.formatter')->format(strtotime('+1 day'), 'custom', 'Y-m-d') : NULL,
+          'publish_on[0][value][time]' => !empty($test_case['scheduled']) ? \Drupal::service('date.formatter')->format(strtotime('+1 day'), 'custom', 'H-i-s') : NULL,
         );
 //        debug($options, 'creating node with $options');
         $node = $this->drupalCreateNode($options);
@@ -516,10 +516,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $body = $this->randomMachineName(30);
     $edit = array(
       'title[0][value]' => $this->randomMachineName(10),
-      'publish_on[0][value][date]' => format_date(time() + 3600, 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => format_date(time() + 3600, 'custom', 'H:i:s'),
-      'unpublish_on[0][value][date]' => format_date(time() + 7200, 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][time]' => format_date(time() + 7200, 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 7200, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 7200, 'custom', 'H:i:s'),
       'promote[value]' => 1,
       'body[0][value]' => $body,
     );

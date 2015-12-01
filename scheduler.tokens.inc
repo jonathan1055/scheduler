@@ -39,12 +39,12 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
       switch ($name) {
         case 'scheduler-publish':
           if (isset($node->publish_on->value)) {
-            $replacements[$original] = format_date($node->publish_on->value, 'medium', '', NULL, $language_code);
+            $replacements[$original] = \Drupal::service('date.formatter')->format($node->publish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
         case 'scheduler-unpublish':
           if (isset($node->unpublish_on->value)) {
-            $replacements[$original] = format_date($node->unpublish_on->value, 'medium', '', NULL, $language_code);
+            $replacements[$original] = \Drupal::service('date.formatter')->format($node->unpublish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
       }

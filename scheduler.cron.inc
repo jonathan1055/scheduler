@@ -58,8 +58,8 @@ function _scheduler_publish() {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
       $node->revision_log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
-        '@now' => format_date(REQUEST_TIME, 'short'),
-        '@date' => format_date($old_creation_date, 'short'),
+        '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+        '@date' => \Drupal::service('date.formatter')->format($old_creation_date, 'short'),
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
@@ -144,8 +144,8 @@ function _scheduler_unpublish() {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
       $node->revision_log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
-        '@now' => format_date(REQUEST_TIME, 'short'),
-        '@date' => format_date($old_change_date, 'short'),
+        '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+        '@date' => \Drupal::service('date.formatter')->format($old_change_date, 'short'),
       ));
     }
     // Unset unpublish_on so the node will not get rescheduled by subsequent

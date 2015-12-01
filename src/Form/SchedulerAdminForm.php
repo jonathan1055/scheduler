@@ -36,7 +36,7 @@ class SchedulerAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('scheduler.settings');
-    $now = t('Example: %date', ['%date' => format_date(REQUEST_TIME, 'custom', $config->get('date_format'))]);
+    $now = t('Example: %date', ['%date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $config->get('date_format'))]);
     $url = Url::fromUri('http://php.net/manual/en/function.date.php');
     $form['date_format'] = [
       '#type' => 'textfield',
@@ -113,7 +113,7 @@ class SchedulerAdminForm extends ConfigFormBase {
       else {
         // Insert any possibly omitted leading zeroes.
         $unix_time = mktime($default_time['hour'], $default_time['minute'], $default_time['second']);
-        $form_state->setValue(['default_time'], format_date($unix_time, 'custom', 'H:i:s'));
+        $form_state->setValue(['default_time'], \Drupal::service('date.formatter')->format($unix_time, 'custom', 'H:i:s'));
       }
     }
 
