@@ -18,16 +18,14 @@ use Drupal\simpletest\WebTestBase;
 abstract class SchedulerTestBase extends WebTestBase {
 
   /**
-   * The profile to install as a basis for testing.
-   *
-   * @var string
+   * {@inheritdoc}
    */
   protected $profile = 'testing';
 
   /**
    * A user with administration rights.
    *
-   * @var object
+   * @var \Drupal\Core\Session\AccountInterface
    */
   protected $adminUser;
 
