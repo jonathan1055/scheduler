@@ -7,9 +7,11 @@
 namespace Drupal\scheduler\Tests;
 
 use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType; ### @TODO Only added for NodeType::load() is there a better way?
 use Drupal\node\NodeInterface;
+use Drupal\node\NodeTypeInterface;
 use Drupal\simpletest\WebTestBase;
 
 /**
@@ -37,6 +39,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     ### @TODO Could make it a variable, which would allow future testing of other entity types?
 
     // Add scheduler functionality to the page node type.
+    /** @var NodeTypeInterface $node_type */
     $node_type = NodeType::load('page'); ### @TODO Is this the correct/best way?
     $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE);
     $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE);
@@ -82,6 +85,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    */
   public function testSchedulerPastDates() {
     $config = $this->config('scheduler.settings');
+    /** @var EntityStorageInterface $node_storage */
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
 
     // Log in.
@@ -101,6 +105,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
 
     // Test the 'publish' behavior: the node should be published immediately.
+    /** @var NodeTypeInterface $entity */
     $entity = $node->type->entity;
     $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish');
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
@@ -109,6 +114,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Reload the changed node and check that it is published.
     $node_storage->resetCache(array($node->id()));
+
+    /** @var NodeInterface $node */
     $node = $node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
 
