@@ -31,6 +31,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    */
   public function setUp() {
     parent::setUp();
+    // @todo The $config variable is currently unused.
     $config = $this->config('scheduler.settings');
 
     // Create a 'Basic Page' content type.
@@ -84,6 +85,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Test the different options for past publication dates.
    */
   public function testSchedulerPastDates() {
+    // @todo The $config variable is currently unused.
     $config = $this->config('scheduler.settings');
     /** @var EntityStorageInterface $node_storage */
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
