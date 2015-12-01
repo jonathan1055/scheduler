@@ -88,7 +88,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // @todo The $config variable is currently unused.
     $config = $this->config('scheduler.settings');
     /** @var EntityStorageInterface $node_storage */
-    $node_storage = $this->container->get('entity.manager')->getStorage('node');
+    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
 
     // Log in.
     $this->drupalLogin($this->adminUser);
