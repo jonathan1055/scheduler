@@ -6,20 +6,27 @@ scheduler.settings:
   mapping:
     allow_date_only:
       type: boolean
+      label: 'Allow date-only input'
     date_format:
       type: string
+      label: 'Full date and time format'
     date_only_format:
       type: string
+      label: 'Date part of the full format'
     default_time:
       type: string
+      label: 'Default Time'
     lightweight_cron_access_key:
       type: string
+      label: 'Lightweight cron access key'
     log:
       type: boolean
+      label: 'Log every Scheduler lightweight cron activation and completion message'
     time_only_format:
       type: string
+      label: 'Time part of the full format'
 
-node_type.third_party.scheduler:
+node.type.*.third_party.scheduler:
   type: mapping
   label: 'Scheduler content type settings'
   mapping:
@@ -50,3 +57,6 @@ node_type.third_party.scheduler:
     use_vertical_tabs:
       type: boolean
       label: 'Display the scheduling fields in vertical tabs'
+    expand_fieldset:
+      type: boolean
+      label: 'Always expand the scheduler date input fieldset'
