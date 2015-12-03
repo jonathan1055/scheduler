@@ -79,7 +79,7 @@ abstract class SchedulerTestBase extends WebTestBase {
    *   'publish'.
    *
    * @return \Drupal\node\NodeInterface
-   *   The updated node, after scheduled (un)publication.
+   *   The updated node, after scheduled (un)publication via a cron run.
    */
   protected function schedule(NodeInterface $node, $action = 'publish') {
     $node_storage = $this->container->get('entity.manager')->getStorage('node');
@@ -109,7 +109,6 @@ abstract class SchedulerTestBase extends WebTestBase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
-    debug($nid, 'assertRevisionLogMessage nid');
     // Retrieve the latest revision log message for this node.
     $log_message = db_select('node_revision', 'r')
       ->fields('r', array('revision_log'))
@@ -118,7 +117,6 @@ abstract class SchedulerTestBase extends WebTestBase {
       ->range(0, 1)
       ->execute()
       ->fetchColumn();
-    debug($log_message, '$log_message');
 
     return $this->assertEqual($log_message, $value, $message, $group);
   }
@@ -140,7 +138,6 @@ abstract class SchedulerTestBase extends WebTestBase {
    */
   protected function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
     $count = db_select('node_revision', 'r')
-      ->fields('r', array('vid'))
       ->condition('nid', $nid)
       ->countQuery()
       ->execute()
