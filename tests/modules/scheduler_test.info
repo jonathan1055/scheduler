@@ -1,7 +1,0 @@
-name = "Scheduler tests"
-description = "Support module for Scheduler related testing."
-package = Testing
-core = 7.x
-hidden = TRUE
-dependencies[] = list
-dependencies[] = options
