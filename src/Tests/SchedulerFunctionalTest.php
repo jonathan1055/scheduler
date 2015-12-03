@@ -9,7 +9,7 @@ namespace Drupal\scheduler\Tests;
 use Drupal\Component\Utility\SafeMarkup;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\node\Entity\Node;
-use Drupal\node\Entity\NodeType; ### @TODO Only added for NodeType::load() is there a better way?
+use Drupal\node\Entity\NodeType;
 use Drupal\node\NodeInterface;
 use Drupal\node\NodeTypeInterface;
 use Drupal\simpletest\WebTestBase;
@@ -41,9 +41,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Add scheduler functionality to the page node type.
     /** @var NodeTypeInterface $node_type */
-    $node_type = NodeType::load('page'); ### @TODO Is this the correct/best way?
+    $node_type = NodeType::load('page');
     $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE);
     $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE);
+    $node_type->save();
 
     // Create an administrator user.
     $this->adminUser = $this->drupalCreateUser([
@@ -109,7 +110,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Test the 'publish' behavior: the node should be published immediately.
     /** @var NodeTypeInterface $entity */
     $entity = $node->type->entity;
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish');
+    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', ['@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title[0][value]'])]), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
@@ -123,8 +124,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Test the 'schedule' behavior: the node should be unpublished and become
     // published on the next cron run.
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule');
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
+    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep published'));
     $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]']; ### @TODO should use date format from config
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', ['@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title[0][value]'])]), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
@@ -155,7 +156,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     ];
     $node = $this->drupalCreateNode($settings);
 
-    // First test scheduled publication with revisioning disabled.
+    // First test scheduled publication with revisioning disabled by default.
     $node = $this->schedule($node);
     $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was published with revisioning disabled.');
 
@@ -167,6 +168,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $entity = $node->type->entity;
     $entity->setThirdPartySetting('scheduler', 'publish_revision', TRUE);
     $entity->setThirdPartySetting('scheduler', 'unpublish_revision', TRUE);
+    $entity->save();
 
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);
@@ -199,13 +201,13 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertTrue($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'By default the scheduler options are shown as a vertical tab.');
 
     // Test if the options are shown as extra fields when configured to do so.
-    $node_type->setThirdPartySetting('scheduler', 'use_vertical_tabs', FALSE);
+    $node_type->setThirdPartySetting('scheduler', 'use_vertical_tabs', FALSE)->save();
     $this->drupalGet('node/add/page');
     $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an extra field.');
     $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and contains(@class, "collapsed")]'), 'The scheduler options are shown as a collapsed fieldset when they are configured to show as an extra field.');
 
     // Test the option to expand the fieldset.
-    $node_type->setThirdPartySetting('scheduler', 'expand_fieldset', TRUE);
+    $node_type->setThirdPartySetting('scheduler', 'expand_fieldset', TRUE)->save();
     $this->drupalGet('node/add/page');
     $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an expanded fieldset.');
     $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and not(contains(@class, "collapsed"))]'), 'The scheduler options are shown as an expanded fieldset.');
@@ -350,7 +352,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       // Enable required (un)publishing as stipulated by the test case.
       $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
       $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
-
+      $node_type->save();
 
       // Set the default node status, used when creating a new node.
       $node_options_page = !empty($test_case['status']) ? ['status' => TRUE] : []; // existing.
@@ -358,7 +360,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       $config->set('node_options_page', $node_options_page); ### @TODO check this. It does not look right.
       $existing_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
       debug($existing_options, $key . ' $existing_options');
-      $node_type->setThirdPartySetting('node', 'options', $node_options_page); ### @TODO but this is only my guess! Does not affect the results.
+//      $node_type->setThirdPartySetting('node', 'options', $node_options_page)->save(); ### @TODO but this is only my guess. fails.
       $updated_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
       debug($updated_options, $key . ' $updated_options');
 
@@ -435,7 +437,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node = $this->drupalCreateNode($settings);
 
     // Set unpublishing to be required.
-    $node->type->entity->setThirdPartySetting('scheduler', 'unpublish_required', TRUE);
+    $node->type->entity->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
 
     // Edit the node and check the validation.
     $edit = [
@@ -459,24 +461,30 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Create a published and an unpublished node, both without scheduling.
-    $unpublished_node = $this->drupalCreateNode(['type' => 'page', 'status' => 0]);
     $published_node = $this->drupalCreateNode(['type' => 'page', 'status' => 1]);
+    $unpublished_node = $this->drupalCreateNode(['type' => 'page', 'status' => 0]);
 
     // Make scheduled publishing and unpublishing required.
     $node_type = NodeType::load('page');
     $node_type->setThirdPartySetting('scheduler', 'publish_required', TRUE);
     $node_type->setThirdPartySetting('scheduler', 'unpublish_required', TRUE);
+    $node_type->save();
 
     // Check that deleting the nodes does not throw form validation errors.
-    ### @TODO Old: $this->drupalPostForm('node/' . $published_node->id() . '/edit', [], t('Delete'));
-    ### @TODO Delete is not a button but a separate link node/<nid>/delete.
+    ### @TODO Delete was a button in 7.x but a separate link node/<nid>/delete in 8.x
     ### Is the previous validation (that we had to avoid on delete) still done now in D8, given that there is no form?
     ### Maybe this test is not actually checking anything useful? Can it be altered to do something testable?
     $this->drupalGet('node/' . $published_node->id() . '/delete');
+    // Note that the text 'error message' is used in a header h2 html tag which
+    // is normally made hidden from browsers but will be in the page source.
+    // It is also good when testing for the absense of somthing to also test
+    // for the presence of text, hence the second assertion for each check.
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete a published node with no scheduling information.');
+    $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete a published node with no scheduling information.');
 
     $this->drupalGet('node/' . $unpublished_node->id() . '/delete');
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
+    $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
   }
 
    /**
@@ -489,7 +497,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Create a 'Not for scheduler' content type.
     $name = 'not_for_scheduler';
     $this->drupalCreateContentType(['type' => $name, 'name' => t('Not-for-Scheduler')]);
-    $node_type = NodeType::load($name);
 
     // Create an administrator user.
     ### @TODO There should be a way to add the new permissions to the existing
@@ -514,8 +521,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown by default when the content type is not enabled for Scheduler.');
 
     // Explicitly disable this content type for scheduler, and test again.
+    $node_type = NodeType::load($name);
     $node_type->setThirdPartySetting('scheduler', 'publish_enable', FALSE);
     $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+    $node_type->save();
 
     $this->drupalGet('node/add/' . $name);
     $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown after setting the content type to not enabled for Scheduler.');
