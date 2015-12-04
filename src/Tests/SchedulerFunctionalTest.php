@@ -190,7 +190,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   }
 
   /**
-   * Tests if options can both be displayed as extra fields and vertical tabs.
+   * Tests date input is displayed as vertical tab or expandable extra fieldset.
    */
   public function testExtraFields() {
     $node_type = NodeType::load('page');
@@ -198,19 +198,19 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Test if the options are shown as vertical tabs by default.
     $this->drupalGet('node/add/page');
-    $this->assertTrue($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'By default the scheduler options are shown as a vertical tab.');
+    $this->assertTrue($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'By default the scheduler options are shown as a vertical tab.');
 
     // Test if the options are shown as extra fields when configured to do so.
     $node_type->setThirdPartySetting('scheduler', 'use_vertical_tabs', FALSE)->save();
     $this->drupalGet('node/add/page');
-    $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an extra field.');
-    $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and contains(@class, "collapsed")]'), 'The scheduler options are shown as a collapsed fieldset when they are configured to show as an extra field.');
+    $this->assertFalse($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an extra field.');
+    $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and not(@open = "open")]'), 'The scheduler options are shown as a collapsed fieldset when they are configured to show as an extra field.');
 
     // Test the option to expand the fieldset.
     $node_type->setThirdPartySetting('scheduler', 'expand_fieldset', TRUE)->save();
     $this->drupalGet('node/add/page');
-    $this->assertFalse($this->xpath('//div[contains(@class, "vertical-tabs-panes")]/fieldset[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an expanded fieldset.');
-    $this->assertTrue($this->xpath('//fieldset[@id = "edit-scheduler-settings" and not(contains(@class, "collapsed"))]'), 'The scheduler options are shown as an expanded fieldset.');
+    $this->assertFalse($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler options are not shown as a vertical tab when they are configured to show as an expanded fieldset.');
+    $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler options are shown as an expanded fieldset.');
   }
 
   /**
