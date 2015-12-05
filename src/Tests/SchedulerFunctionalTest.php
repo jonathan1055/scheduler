@@ -347,8 +347,15 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       ],
     ];
 
+
+    ### reminder that deafult unpublished node are not being tested yet.
+    $this->assert(False, '@TODO: Not testing default node status of unpublished.');
+
     $node_type = NodeType::load('page');
-    foreach ($test_cases as $key => $test_case) {
+    debug($node_type, '$node_type');
+    foreach ($test_cases as $test_case) {
+      debug('=== Loop ' . $test_case['id'] . ' ===');
+      debug($test_case, '$test_case');
       // Enable required (un)publishing as stipulated by the test case.
       $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
       $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
@@ -357,12 +364,12 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       // Set the default node status, used when creating a new node.
       $node_options_page = !empty($test_case['status']) ? ['status' => TRUE] : []; // existing.
       $node_options_page = ['status' => $test_case['status']];
-      $config->set('node_options_page', $node_options_page); ### @TODO check this. It does not look right.
-      $existing_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
-      debug($existing_options, $key . ' $existing_options');
+//      $config->set('node_options_page', $node_options_page); ### @TODO check this. It does not look right.
+//       $existing_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
+//       debug($existing_options, '$existing_options'); 
 //      $node_type->setThirdPartySetting('node', 'options', $node_options_page)->save(); ### @TODO but this is only my guess. fails.
-      $updated_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
-      debug($updated_options, $key . ' $updated_options');
+//       $updated_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
+//       debug($updated_options, '$updated_options');
 
       // To assist viewing and analysing the generated test result pages create
       // a text string showing all the test case parameters.
@@ -376,16 +383,17 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
       // If the test case requires editing a node, we need to create one first.
       if ($test_case['operation'] == 'edit') {
+        // Note: The key names in the $options parameter for drupalCreateNode()
+        // are the plain field names i.e. 'title' not title[0][value]
         $options = [
-          'title[0][value]' => $title,
+          'title' => $title,
           'type' => 'page',
           'status' => $test_case['status'],
-           ### @TODO should use default date part from config, not hardcode
-          'publish_on[0][value][date]' => !empty($test_case['scheduled']) ? \Drupal::service('date.formatter')->format(strtotime('+1 day'), 'custom', 'Y-m-d') : NULL,
-          'publish_on[0][value][time]' => !empty($test_case['scheduled']) ? \Drupal::service('date.formatter')->format(strtotime('+1 day'), 'custom', 'H-i-s') : NULL,
+          'publish_on' => !empty($test_case['scheduled']) ? strtotime('+1 day') : NULL,
         ];
-//        debug($options, 'creating node with $options');
         $node = $this->drupalCreateNode($options);
+        debug($node->title->value, 'new node id ' . $node->id() . ' title');
+        debug('status = ' . $node->status->value . ' publish_on = ' . $node->publish_on->value);
       }
 
       // Make sure the publication date fields are empty so we can check if they
@@ -398,16 +406,14 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         'unpublish_on[0][value][time]' => '',
       ];
       $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->id() . '/edit';
-//      debug($path, '$path');
-      if ($test_case['operation'] == 'edit') debug($node->status->value, 'Editing ' . $node->id() . ' $node->status->value');
+      if ($test_case['operation'] == 'edit') debug('Editing nid ' . $node->id() . ' with status ' . $node->status->value);
       $button_text = $test_case['operation'] == 'add' ? t('Save and publish') : ($node->status->value ? t('Save and keep published') : t('Save and keep unpublished'));
-//      debug($button_text, '$button_text'); // big translation object
       $this->drupalPostForm($path, $edit, $button_text);
 
       // Check for the expected result.
       switch ($test_case['expected']) {
         case 'required':
-          $string = t('%name field is required.', ['%name' => ucfirst($test_case['required']) . ' on']);
+          $string = t('The %name date is required.', ['%name' => ucfirst($test_case['required']) . ' on']);
           $this->assertRaw($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
 
