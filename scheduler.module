@@ -149,7 +149,8 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setTranslatable(TRUE)
-      ->setRevisionable(TRUE);
+      ->setRevisionable(TRUE)
+      ->addConstraint('SchedulerUnpublishOn');
 
     return $fields;
   }
@@ -360,12 +361,6 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 
   if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {
     $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' date must be later than the 'publish on' date."));
-  }
-
-  // The unpublish-on 'required' form attribute may not be set in some cases,
-  // but a value must be entered if also setting a publish-on date.
-  if ($entity->getThirdPartySetting('scheduler', 'unpublish_required') && !empty($node->publish_on->value) && empty($node->unpublish_on->value)) {
-    $form_state->setErrorByName('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
   }
 }
 
