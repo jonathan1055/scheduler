@@ -55,6 +55,11 @@ abstract class SchedulerTestBase extends WebTestBase {
 
     // Modify the scheduler field data to a time in the past, then run cron.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
+    if (empty($node)) {
+      $date_time = $edit[$key . '[0][value][date]'] . ' ' . $edit[$key . '[0][value][time]'];
+      $this->assert(FALSE, t('Node with %key = @date_time was not created.', ['%key' => $key, '@date_time' => $date_time]));
+      return;
+    }
     db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
 
     $this->cronRun();
