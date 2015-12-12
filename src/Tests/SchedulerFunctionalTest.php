@@ -142,6 +142,16 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node_storage->resetCache([$node->id()]);
     $node = $node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
+
+    // Check that an Unpublish date in the past fails validation.
+    $edit = [
+      'title[0][value]' => t('Unpublish in the past') . ' ' . $this->randomString(10),
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'H:i:s'),
+    ];
+    $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
+    $this->assertRaw(t("The 'unpublish on' date must be in the future"), 'An error message is shown when the unpublish date is in the past.');
+
   }
 
   /**
