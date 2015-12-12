@@ -358,14 +358,13 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     ];
 
 
-    ### reminder that deafult unpublished node are not being tested yet.
+    ### @TODO: Default status of unpublished is not being tested yet.
     $this->assert(False, '@TODO: Not testing default node status of unpublished.');
 
     $node_type = NodeType::load('page');
-    debug($node_type, '$node_type');
     foreach ($test_cases as $test_case) {
-      debug('=== Loop ' . $test_case['id'] . ' ===');
-      debug($test_case, '$test_case');
+//       debug('=== Loop ' . $test_case['id'] . ' ===');
+//       debug($test_case, '$test_case');
       // Enable required (un)publishing as stipulated by the test case.
       $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
       $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
@@ -402,8 +401,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
           'publish_on' => !empty($test_case['scheduled']) ? strtotime('+1 day') : NULL,
         ];
         $node = $this->drupalCreateNode($options);
-        debug($node->title->value, 'new node id ' . $node->id() . ' title');
-        debug('status = ' . $node->status->value . ' publish_on = ' . $node->publish_on->value);
+//         debug($node->title->value, 'new node id ' . $node->id() . ' title');
+//         debug('status = ' . $node->status->value . ' publish_on = ' . $node->publish_on->value);
       }
 
       // Make sure the publication date fields are empty so we can check if they
@@ -416,7 +415,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         'unpublish_on[0][value][time]' => '',
       ];
       $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->id() . '/edit';
-      if ($test_case['operation'] == 'edit') debug('Editing nid ' . $node->id() . ' with status ' . $node->status->value);
+      //if ($test_case['operation'] == 'edit') debug('Editing nid ' . $node->id() . ' with status ' . $node->status->value);
       $button_text = $test_case['operation'] == 'add' ? t('Save and publish') : ($node->status->value ? t('Save and keep published') : t('Save and keep unpublished'));
       $this->drupalPostForm($path, $edit, $button_text);
 
@@ -455,13 +454,25 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Set unpublishing to be required.
     $node->type->entity->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
 
-    // Edit the node and check the validation.
+    // Edit the unpublished node and check that if a publish-on date is entered
+    // then an unpublish-on date is also needed.
     $edit = [
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)), ### @TODO should we get the default format? not hard-code.
       'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', REQUEST_TIME)),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
     $this->assertRaw(t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
+
+    // Edit the node and check that if both dates are entered then the unpublish
+    // date must be later than the publish-on date.
+    $edit = [
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME + 7200, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME + 7200, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME + 3600, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME + 3600, 'custom', 'H:i:s'),
+    ];
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
+    $this->assertRaw(t("The 'unpublish on' date must be later than the 'publish on' date."), 'Validation prevents entering an unpublish-on date which is earlier than the publish-on date.');
   }
 
   /**
