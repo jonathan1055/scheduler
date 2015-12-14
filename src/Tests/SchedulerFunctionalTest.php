@@ -63,6 +63,12 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests basic scheduling of content.
    */
   public function testScheduler() {
+    // Login to admin user. This is required here before creating the publish_on
+    // date and time values so that date.formatter can utilise the current users
+    // timezone. The constraints receive values which have been converted using
+    // the users timezone so they need to be consistent.
+    $this->drupalLogin($this->adminUser);
+
     // Create node values. Set time to one hour in the future.
     $edit = [
       'title[0][value]' => $this->randomMachineName(10),
@@ -365,7 +371,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     foreach ($test_cases as $test_case) {
 //       debug('=== Loop ' . $test_case['id'] . ' ===');
 //       debug($test_case, '$test_case');
-      // Enable required (un)publishing as stipulated by the test case.
+      // Set required (un)publishing as stipulated by the test case.
       $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
       $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
       $node_type->save();
