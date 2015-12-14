@@ -28,6 +28,10 @@ define('SCHEDULER_DEFAULT_TIME', '00:00:00');
 define('SCHEDULER_DATE_LETTERS', 'djmnFMyY');
 define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
 
+// Specify defaults for the content-type default settings, which should be used
+// as a consistent third parameter for getThirdPartySetting() calls.
+define('SCHEDULER_DEFAULT_PUBLISH_PAST_DATE', 'error');
+
 /**
  * Implements hook_menu().
  */
@@ -139,7 +143,8 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setTranslatable(TRUE)
-      ->setRevisionable(TRUE);
+      ->setRevisionable(TRUE)
+      ->addConstraint('SchedulerPublishOn');
 
     $fields['unpublish_on'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Unpublish on'))
@@ -344,9 +349,6 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
     if ($publishtime === FALSE) {
       $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", array('%time' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $date_format))));
     }
-    elseif ($publishtime && $entity->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'error' && $publishtime < REQUEST_TIME) {
-      $form_state->setErrorByName('publish_on', t("The 'publish on' date must be in the future"));
-    }
   }
 
   if (!empty($node->unpublish_on->value) && !is_numeric($node->unpublish_on->value)) {
@@ -374,7 +376,7 @@ function scheduler_node_presave(EntityInterface $node) {
 
     // Publish the node immediately if the publication date is in the past.
     $entity = $node->type->entity;
-    $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', 'error') == 'publish';
+    $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', SCHEDULER_DEFAULT_PUBLISH_PAST_DATE) == 'publish';
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
       // If required, set the created date to match published date.
