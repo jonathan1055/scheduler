@@ -356,9 +356,6 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
     if ($unpublishtime === FALSE) {
       $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", array('%time' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $date_format))));
     }
-    elseif ($unpublishtime && $unpublishtime < REQUEST_TIME) {
-      $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' date must be in the future"));
-    }
   }
 
   if (isset($publishtime) && isset($unpublishtime) && $unpublishtime < $publishtime) {

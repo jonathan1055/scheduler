@@ -30,5 +30,14 @@ class SchedulerUnpublishOnConstraintValidator extends ConstraintValidator {
         ->atPath('unpublish_on')
         ->addViolation();
     }
+
+    // Check that the unpublish-on date is in the future. Unlike the publish-on
+    // field, there is no option to use a past date, as this is not relevant for
+    // unpublshing. The date must ALWAYS be in the future if it is entered.
+    if ($unpublish_on && $unpublish_on < REQUEST_TIME) {
+      $this->context->buildViolation($constraint->messageUnpublishOnDateNotInFuture)
+        ->atPath('unpublish_on')
+        ->addViolation();
+    }
   }
 }
