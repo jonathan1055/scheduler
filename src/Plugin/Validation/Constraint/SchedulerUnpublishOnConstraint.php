@@ -28,6 +28,13 @@ class SchedulerUnpublishOnConstraint extends CompositeConstraintBase {
   public $messageUnpublishOnRequiredIfPublishOnEntered = "If you set a 'publish-on' date then you must also set an 'unpublish-on' date.";
 
   /**
+   * Message shown when unpublish_on is not in the future.
+   *
+   * @var string
+   */
+  public $messageUnpublishOnDateNotInFuture = "The 'unpublish on' date must be in the future.";
+
+  /**
    * {@inheritdoc}
    */
   public function coversFields() {
