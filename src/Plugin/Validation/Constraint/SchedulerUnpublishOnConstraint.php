@@ -34,6 +34,13 @@ class SchedulerUnpublishOnConstraint extends CompositeConstraintBase {
    */
   public $messageUnpublishOnDateNotInFuture = "The 'unpublish on' date must be in the future.";
 
+   /**
+   * Message shown when unpublish date is not later than the publish date.
+   *
+   * @var string
+   */
+  public $messageUnpublishOnTooEarly = "The 'unpublish on' date must be later than the 'publish on' date.";
+
   /**
    * {@inheritdoc}
    */

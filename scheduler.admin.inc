@@ -85,7 +85,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['advanced']['scheduler_publish_past_date'] = array(
     '#type' => 'radios',
     '#title' => t('Action to be taken for publication dates in the past'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date', 'error'),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date', SCHEDULER_DEFAULT_PUBLISH_PAST_DATE),
     '#options' => array(
       'error' => t('Display an error message - do not allow dates in the past'),
       'publish' => t('Publish the content immediately after saving'),
