@@ -233,7 +233,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Tests creating and editing nodes with required scheduling enabled.
    */
   public function testRequiredScheduling() {
-    $config = $this->config('scheduler.settings');
     $this->drupalLogin($this->adminUser);
 
     // Define test scenarios with expected results.
@@ -363,28 +362,14 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       ],
     ];
 
-
-    ### @TODO: Default status of unpublished is not being tested yet.
-    $this->assert(False, '@TODO: Not testing default node status of unpublished.');
-
     $node_type = NodeType::load('page');
+    $fields = \Drupal::entityManager()->getFieldDefinitions('node', 'page');
+
     foreach ($test_cases as $test_case) {
-//       debug('=== Loop ' . $test_case['id'] . ' ===');
-//       debug($test_case, '$test_case');
       // Set required (un)publishing as stipulated by the test case.
       $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
       $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
       $node_type->save();
-
-      // Set the default node status, used when creating a new node.
-      $node_options_page = !empty($test_case['status']) ? ['status' => TRUE] : []; // existing.
-      $node_options_page = ['status' => $test_case['status']];
-//      $config->set('node_options_page', $node_options_page); ### @TODO check this. It does not look right.
-//       $existing_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
-//       debug($existing_options, '$existing_options'); 
-//      $node_type->setThirdPartySetting('node', 'options', $node_options_page)->save(); ### @TODO but this is only my guess. fails.
-//       $updated_options = $node_type->getThirdPartySetting('node', 'options', 'nothing');
-//       debug($updated_options, '$updated_options');
 
       // To assist viewing and analysing the generated test result pages create
       // a text string showing all the test case parameters.
@@ -407,12 +392,22 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
           'publish_on' => !empty($test_case['scheduled']) ? strtotime('+1 day') : NULL,
         ];
         $node = $this->drupalCreateNode($options);
-//         debug($node->title->value, 'new node id ' . $node->id() . ' title');
-//         debug('status = ' . $node->status->value . ' publish_on = ' . $node->publish_on->value);
+        // Define the path and button to use for editing the node.
+        $path = 'node/' . $node->id() . '/edit';
+        $button_text = $node->status->value ? t('Save and keep published') : t('Save and keep unpublished');
+      }
+      else {
+        // Set the default status, used when testing creation of the new node.
+        $fields['status']->getConfig('page')
+          ->setDefaultValue($test_case['status'])
+          ->save();
+        // Define the path and button to use for creating the node.
+        $path = 'node/add/page';
+        $button_text = t('Save and publish');
       }
 
-      // Make sure the publication date fields are empty so we can check if they
-      // throw form validation errors when they are required.
+      // Make sure that both date fields are empty so we can check if they throw
+      // validation errors when the fields are required.
       $edit = [
         'title[0][value]' => $title,
         'publish_on[0][value][date]' => '',
@@ -420,9 +415,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         'unpublish_on[0][value][date]' => '',
         'unpublish_on[0][value][time]' => '',
       ];
-      $path = $test_case['operation'] == 'add' ? 'node/add/page' : 'node/' . $node->id() . '/edit';
-      //if ($test_case['operation'] == 'edit') debug('Editing nid ' . $node->id() . ' with status ' . $node->status->value);
-      $button_text = $test_case['operation'] == 'add' ? t('Save and publish') : ($node->status->value ? t('Save and keep published') : t('Save and keep unpublished'));
       $this->drupalPostForm($path, $edit, $button_text);
 
       // Check for the expected result.
