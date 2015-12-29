@@ -9,7 +9,6 @@ namespace Drupal\scheduler\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Render\Element;
 use Drupal\Core\Url;
 
 /**
@@ -36,42 +35,42 @@ class SchedulerAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('scheduler.settings');
-    $now = t('Example: %date', ['%date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $config->get('date_format'))]);
+    $now = $this->t('Example: %date', ['%date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $config->get('date_format'))]);
     $url = Url::fromUri('http://php.net/manual/en/function.date.php');
     $form['date_format'] = [
       '#type' => 'textfield',
-      '#title' => t('Date format'),
+      '#title' => $this->t('Date format'),
       '#default_value' => $config->get('date_format'),
       '#size' => 20,
       '#maxlength' => 20,
       '#required' => TRUE,
       '#field_suffix' => ' <small>' . $now . '</small>',
-      '#description' => t('The format for entering scheduled dates and times. For the date use the letters %date_letters and for the time use %time_letters. See @url for more details.', [
+      '#description' => $this->t('The format for entering scheduled dates and times. For the date use the letters %date_letters and for the time use %time_letters. See @url for more details.', [
         '%date_letters' => SCHEDULER_DATE_LETTERS,
         '%time_letters' => SCHEDULER_TIME_LETTERS,
-        '@url' => \Drupal::l(t('the PHP date() function'), $url),
+        '@url' => \Drupal::l($this->t('the PHP date() function'), $url),
       ]),
     ];
 
     // Options for setting date-only with default time.
     $form['date_only_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => t('Date only'),
+      '#title' => $this->t('Date only'),
       '#collapsible' => FALSE,
     ];
     $form['date_only_fieldset']['allow_date_only'] = [
       '#type' => 'checkbox',
-      '#title' => t('Allow users to enter only a date and provide a default time.'),
+      '#title' => $this->t('Allow users to enter only a date and provide a default time.'),
       '#default_value' => $config->get('allow_date_only'),
-      '#description' => t('When only a date is entered the time will default to a specified value, but the user can change this if required.'),
+      '#description' => $this->t('When only a date is entered the time will default to a specified value, but the user can change this if required.'),
     ];
     $form['date_only_fieldset']['default_time'] = [
       '#type' => 'textfield',
-      '#title' => t('Default time'),
+      '#title' => $this->t('Default time'),
       '#default_value' => $config->get('default_time'),
       '#size' => 20,
       '#maxlength' => 20,
-      '#description' => t('This is the time that will be used if the user does not enter a value. Format: HH:MM:SS.'),
+      '#description' => $this->t('This is the time that will be used if the user does not enter a value. Format: HH:MM:SS.'),
       '#states' => [
         'visible' => [
           ':input[name="scheduler_allow_date_only"]' => ['checked' => TRUE],
@@ -96,7 +95,7 @@ class SchedulerAdminForm extends ConfigFormBase {
     // letters.
     $no_punctuation = preg_replace('/[^\w+]/', '', $form_state->getValue(['date_format']));
     if (preg_match_all('/[^' . SCHEDULER_DATE_LETTERS . SCHEDULER_TIME_LETTERS . ']/', $no_punctuation, $extra)) {
-      $form_state->setErrorByName('date_format', t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', [
+      $form_state->setErrorByName('date_format', $this->t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', [
         '$date_letters' => SCHEDULER_DATE_LETTERS,
         '$time_letters' => SCHEDULER_TIME_LETTERS,
         '$extra' => implode(' ', $extra[0]),
@@ -108,7 +107,7 @@ class SchedulerAdminForm extends ConfigFormBase {
     if ($form_state->getValue(['allow_date_only'])) {
       $default_time = date_parse($form_state->getValue(['default_time']));
       if ($default_time['error_count']) {
-        $form_state->setErrorByName('default_time', t('The default time should be in the format HH:MM:SS'));
+        $form_state->setErrorByName('default_time', $this->t('The default time should be in the format HH:MM:SS'));
       }
       else {
         // Insert any possibly omitted leading zeroes.
@@ -121,7 +120,7 @@ class SchedulerAdminForm extends ConfigFormBase {
     // is turned on.
     $time_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
     if ($time_format == '' && !$form_state->getValue(['allow_date_only'])) {
-      $form_state->setErrorByName('date_format', t('You must either include a time within the date format or enable the date-only option.'));
+      $form_state->setErrorByName('date_format', $this->t('You must either include a time within the date format or enable the date-only option.'));
     }
   }
 
@@ -145,10 +144,10 @@ class SchedulerAdminForm extends ConfigFormBase {
       ->save();
 
     if (empty($time_only_format)) {
-      drupal_set_message(t('The date part of the Scheduler format is %date_part. There is no time part', ['%date_part' => $date_only_format]));
+      drupal_set_message($this->t('The date part of the Scheduler format is %date_part. There is no time part', ['%date_part' => $date_only_format]));
     }
     else {
-      drupal_set_message(t('The date part of the Scheduler format is %date_part and the time part is %time_part.', ['%date_part' => $date_only_format, '%time_part' => $time_only_format]));
+      drupal_set_message($this->t('The date part of the Scheduler format is %date_part and the time part is %time_part.', ['%date_part' => $date_only_format, '%time_part' => $time_only_format]));
     }
 
     parent::submitForm($form, $form_state);
