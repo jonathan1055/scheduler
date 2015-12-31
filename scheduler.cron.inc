@@ -18,6 +18,7 @@ use Drupal\node\Entity\Node;
  *   TRUE if any node has been published, FALSE otherwise.
  */
 function _scheduler_publish() {
+  $date_formatter = \Drupal::service('date.formatter');
   $result = FALSE;
 
   // If the time now is greater than the time to publish a node, publish it.
@@ -58,8 +59,8 @@ function _scheduler_publish() {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
       $node->revision_log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
-        '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
-        '@date' => \Drupal::service('date.formatter')->format($old_creation_date, 'short'),
+        '@now' => $date_formatter->format(REQUEST_TIME, 'short'),
+        '@date' => $date_formatter->format($old_creation_date, 'short'),
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
@@ -99,6 +100,7 @@ function _scheduler_publish() {
  *   TRUE is any node has been unpublished, FALSE otherwise.
  */
 function _scheduler_unpublish() {
+  $date_formatter = \Drupal::service('date.formatter');
   $result = FALSE;
 
   // If the time is greater than the time to unpublish a node, unpublish it.
@@ -144,8 +146,8 @@ function _scheduler_unpublish() {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
       $node->revision_log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
-        '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
-        '@date' => \Drupal::service('date.formatter')->format($old_change_date, 'short'),
+        '@now' => $date_formatter->format(REQUEST_TIME, 'short'),
+        '@date' => $date_formatter->format($old_change_date, 'short'),
       ));
     }
     // Unset unpublish_on so the node will not get rescheduled by subsequent

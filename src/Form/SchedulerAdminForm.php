@@ -7,14 +7,40 @@
 
 namespace Drupal\scheduler\Form;
 
+use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Main administration form for the Scheduler module.
  */
 class SchedulerAdminForm extends ConfigFormBase {
+
+  /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
+   * Creates instance of SchedulerAdminForm.
+   *
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   *   The date formatter service.
+   */
+  public function __construct(DateFormatterInterface $date_formatter) {
+    $this->dateFormatter = $date_formatter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('date.formatter'));
+  }
 
   /**
    * {@inheritdoc}
@@ -35,7 +61,7 @@ class SchedulerAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config('scheduler.settings');
-    $now = $this->t('Example: %date', ['%date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'custom', $config->get('date_format'))]);
+    $now = $this->t('Example: %date', ['%date' => $this->dateFormatter->format(REQUEST_TIME, 'custom', $config->get('date_format'))]);
     $url = Url::fromUri('http://php.net/manual/en/function.date.php');
     $form['date_format'] = [
       '#type' => 'textfield',
@@ -112,7 +138,7 @@ class SchedulerAdminForm extends ConfigFormBase {
       else {
         // Insert any possibly omitted leading zeroes.
         $unix_time = mktime($default_time['hour'], $default_time['minute'], $default_time['second']);
-        $form_state->setValue(['default_time'], \Drupal::service('date.formatter')->format($unix_time, 'custom', 'H:i:s'));
+        $form_state->setValue(['default_time'], $this->dateFormatter->format($unix_time, 'custom', 'H:i:s'));
       }
     }
 

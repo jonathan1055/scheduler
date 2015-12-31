@@ -29,6 +29,7 @@ function scheduler_token_info() {
  * Implements hook_tokens().
  */
 function scheduler_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $date_formatter = \Drupal::service('date.formatter');
   $language_code = isset($options['language']) ? $options['language']->language : NULL;
   $replacements = array();
 
@@ -39,12 +40,12 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
       switch ($name) {
         case 'scheduler-publish':
           if (isset($node->publish_on->value)) {
-            $replacements[$original] = \Drupal::service('date.formatter')->format($node->publish_on->value, 'medium', '', NULL, $language_code);
+            $replacements[$original] = $date_formatter->format($node->publish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
         case 'scheduler-unpublish':
           if (isset($node->unpublish_on->value)) {
-            $replacements[$original] = \Drupal::service('date.formatter')->format($node->unpublish_on->value, 'medium', '', NULL, $language_code);
+            $replacements[$original] = $date_formatter->format($node->unpublish_on->value, 'medium', '', NULL, $language_code);
           }
           break;
       }
