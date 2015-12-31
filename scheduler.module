@@ -57,6 +57,12 @@ function scheduler_menu() {
  * @param int $uid
  *   The user ID of the user of which the scheduled nodes will be listed. Omit
  *   this when listing the nodes of all users.
+ *
+ * @return bool
+ *   TRUE, if current user has any of following permissions:
+ *   - 'view scheduled content'
+ *   - 'schedule (un)publishing of nodes'.
+ *   OR, current user is owner of content.
  */
 function scheduler_list_access_callback($uid = NULL) {
   $account = \Drupal::currentUser();
@@ -64,7 +70,7 @@ function scheduler_list_access_callback($uid = NULL) {
   // All Scheduler users can see their own scheduled content via their user
   // page. In addition, if they have 'view scheduled content' permission they
   // will be able to see all scheduled content by all authors.
-  return \Drupal::currentUser()->hasPermission('view scheduled content') || ($uid == $account->id() && \Drupal::currentUser()->hasPermission('schedule (un)publishing of nodes'));
+  return $account->hasPermission('view scheduled content') || ($uid == $account->id() && $account->hasPermission('schedule (un)publishing of nodes'));
 }
 
 /**
