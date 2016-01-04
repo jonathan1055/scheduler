@@ -3,6 +3,9 @@
 /**
  * @file
  * Builds placeholder replacement tokens for node scheduler data.
+ *
+ * @todo This still needs to be converted to Drupal 8.
+ * @see https://www.drupal.org/node/2644208
  */
 
 use Drupal\Component\Utility;
