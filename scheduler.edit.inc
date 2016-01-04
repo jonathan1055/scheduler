@@ -40,26 +40,32 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   // An unpublish_on date is required if the content type option is set and
   // the node is being created or the current status is published or the
   // node is scheduled to be published.
-  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE)
-    && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
+  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE) && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
 
-  // Expand the fieldset if either publishing or unpublishing is required, or if
-  // the fieldset was configured to be expanded.
-  $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE);
+  // Create a field group for the vertical tabs if this option is enabled.
+  if ($use_vertical_tabs && ($publishing_enabled || $unpublishing_enabled)) {
+    // Expand the fieldset if either publishing or unpublishing is required,
+    // or if the fieldset was configured to be expanded.
+    $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE);
 
-  $form['scheduler_settings'] = array(
-    '#type' => 'details',
-    '#title' => t('Scheduling options'),
-    '#open' => $expand_details,
-    '#weight' => 35,
-    '#group' => $use_vertical_tabs ? 'advanced' : FALSE,
-    '#attributes' => array(
-      'class' => array('scheduler-form'),
-    ),
-    '#optional' => FALSE,
-  );
-  // Attach the javascript for the vertical tabs.
-  if ($use_vertical_tabs) {
+    // Create the group for the fields.
+    $form['scheduler_settings'] = array(
+      '#type' => 'details',
+      '#title' => t('Scheduling options'),
+      '#open' => $expand_details,
+      '#weight' => 35,
+      '#group' => 'advanced',
+      '#attributes' => array(
+        'class' => array('scheduler-form'),
+      ),
+      '#optional' => FALSE,
+    );
+
+    // Attach the fields to group.
+    $form['unpublish_on']['#group'] = 'scheduler_settings';
+    $form['publish_on']['#group'] = 'scheduler_settings';
+
+    // Attach the javascript for the vertical tabs.
     $form['scheduler_settings']['#attached']['library'][] = 'scheduler/vertical-tabs';
   }
 
@@ -90,7 +96,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   }
 
   $form['publish_on']['#access'] = $publishing_enabled;
-  $form['publish_on']['#group'] = 'scheduler_settings';
   $form['publish_on']['widget'][0]['value']['#required'] = $publishing_required;
   $form['publish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
 
@@ -102,7 +107,6 @@ function _scheduler_form_alter(array &$form, FormStateInterface $form_state) {
   }
 
   $form['unpublish_on']['#access'] = $unpublishing_enabled;
-  $form['unpublish_on']['#group'] = 'scheduler_settings';
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
 }
