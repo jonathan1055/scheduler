@@ -402,7 +402,7 @@ function _scheduler_lightweight_cron($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Log every activation and completion message.'),
     '#default_value' => variable_get('scheduler_lightweight_log', 1),
-    '#description' => t("When this option is checked, Scheduler will write an entry to the dblog every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
+    '#description' => t("When this option is checked, Scheduler will write an entry to the log every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
   );
   $form['scheduler_cron_settings']['scheduler_lightweight_access_key'] = array(
     '#type' => 'textfield',
