@@ -5,9 +5,7 @@
  * Administration forms for the Scheduler module.
  */
 
-use Drupal\Component\Utility\String;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\node\NodeTypeInterface;
 
 /**
