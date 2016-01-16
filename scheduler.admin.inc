@@ -155,11 +155,11 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   );
   $form['scheduler']['node_edit_layout']['scheduler_expand_fieldset'] = array(
     '#type' => 'radios',
-    '#title' => t('Expand fieldset'),
+    '#title' => t('Expand fieldset or vertical tab'),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE),
     '#options' => array(
       '0' => t('Expand only when a scheduled date exists or when a date is required'),
-      '1' => t('Always open the fieldset, even if no dates exist'),
+      '1' => t('Always open the fieldset or vertical tab'),
     ),
   );
 
