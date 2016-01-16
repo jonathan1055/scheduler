@@ -562,14 +562,3 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
     $entity->$target = $timestamp;
   }
 }
-
-/**
- * Implements hook_ctools_plugin_directory().
- */
-function scheduler_ctools_plugin_directory($owner, $plugin_type) {
- // Declare a form pane (panels content type) for use in ctools and page
- // manager. This allows the Scheduler fieldset to be placed in a panel.
-  if ($owner == 'ctools' && $plugin_type == 'content_types') {
-    return 'plugins/content_types';
-  }
-}
