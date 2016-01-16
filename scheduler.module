@@ -452,12 +452,6 @@ function _scheduler_scheduler_api(NodeInterface $node, $action) {
 }
 
 /**
- * Implements hook_views_api().
- */
-function scheduler_views_api() {
-  $info['api'] = 2;
-  return $info;
-}
  * Prepares variables for node templates.
  *
  * Makes the publish_on and unpublish_on data available as theme variables.
