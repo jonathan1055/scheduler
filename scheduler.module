@@ -393,19 +393,6 @@ function scheduler_cron() {
   // Load the cron functions file.
   module_load_include('inc', 'scheduler', 'scheduler.cron');
 
-  // During cron runs we do not want i18n_sync to make any changes to the
-  // translation nodes, as this affects processing later in the same cron job.
-  // Hence we save the i18n_sync state here, turn it off for the duration of
-  // Scheduler cron processing, then restore the setting afterwards.
-  // @todo Replace this workaround with a hook implementation when issue
-  //   #2136557 lands.
-  // @see https://drupal.org/node/1182450
-  // @see https://drupal.org/node/2136557
-  if (\Drupal::moduleHandler()->moduleExists('i18n_sync')) {
-    $i18n_sync_saved_state = i18n_sync();
-    i18n_sync(FALSE);
-  }
-
   // Use drupal_static so that any function can find out if we are running
   // Scheduler cron. Set the default value to FALSE, then turn on the flag.
   // @see scheduler_cron_is_running()
@@ -417,9 +404,6 @@ function scheduler_cron() {
 
   // Reset the static scheduler_cron flag.
   drupal_static_reset(__FUNCTION__);
-
-  // Restore the i18n_sync state.
-  \Drupal::moduleHandler()->moduleExists('i18n_sync') ? i18n_sync($i18n_sync_saved_state) : NULL;
 }
 
 /**
@@ -588,29 +572,5 @@ function scheduler_ctools_plugin_directory($owner, $plugin_type) {
  // manager. This allows the Scheduler fieldset to be placed in a panel.
   if ($owner == 'ctools' && $plugin_type == 'content_types') {
     return 'plugins/content_types';
-  }
-}
-
-/**
- * Implements hook_i18n_sync_options().
- */
-function scheduler_i18n_sync_options($entity_type, $bundle_name) {
-  // Keep the scheduler dates synchronised between separate nodes which have
-  // been defined as translations of each other.
-  if ($entity_type == 'node') {
-    $options = array();
-    if ($entity_type->getThirdPartySetting('scheduler', 'publish_enable')) {
-      $options['publish_on'] = array(
-        'title' => t('Publish on'),
-        'description' => t('Scheduler Publish date and time'),
-      );
-    }
-    if ($entity_type->getThirdPartySetting('scheduler', 'unpublish_enable')) {
-      $options['unpublish_on'] = array(
-        'title' => t('Unpublish on'),
-        'description' => t('Scheduler Unpublish date and time'),
-      );
-    }
-    return $options;
   }
 }
