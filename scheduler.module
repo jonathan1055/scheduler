@@ -35,6 +35,9 @@ define('SCHEDULER_DEFAULT_PUBLISH_PAST_DATE', 'error');
 
 /**
  * Implements hook_menu().
+ *
+ * @deprecated Will be removed before the first alpha release.
+ * @see https://www.drupal.org/node/2626480
  */
 function scheduler_menu() {
   $items = array();
@@ -235,6 +238,9 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
  * unpublishing, by implementing hook_scheduler_allow_publishing() or
  * hook_scheduler_allow_unpublishing().
  *
+ * @deprecated Will be moved to a service.
+ *
+ * @see https://www.drupal.org/node/2651338
  * @see hook_scheduler_allow_publishing()
  * @see hook_scheduler_allow_unpublishing()
  *
@@ -281,7 +287,12 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
 
 /**
  * Implements hook_node_validate().
- * @todo hook_node_validate() and hook_node_submit() have been removed (#2420295)
+ *
+ * @deprecated hook_node_validate() and hook_node_submit() have been removed.
+ *
+ * @see https://www.drupal.org/node/2420295
+ * @see https://www.drupal.org/node/2490570
+ * @see https://www.drupal.org/node/2490578
  */
 function scheduler_node_validate($node, array $form, FormStateInterface $form_state) {
   // Adjust the entered times for timezone consideration. Note, we must check
@@ -353,6 +364,10 @@ function scheduler_node_presave(EntityInterface $node) {
 
 /**
  * Implements hook_ENTITY_TYPE_insert() for node entities.
+ *
+ * @todo Still needs to be ported to Drupal 8.
+ *
+ * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_insert(EntityInterface $node) {
   // Only insert into database if we need to (un)publish this node at some date.
@@ -371,6 +386,10 @@ function scheduler_node_insert(EntityInterface $node) {
 
 /**
  * Implements hook_ENTITY_TYPE_update() for node entities.
+ *
+ * @todo Still needs to be ported to Drupal 8.
+ *
+ * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_update(EntityInterface $node) {
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
@@ -443,6 +462,10 @@ function _scheduler_cron_access($cron_key) {
  * @param string $action
  *   The action being performed, either 'pre_publish', 'publish',
  *   'publish_immediately', 'pre_unpublish' or 'unpublish'.
+ *
+ * @deprecated Will be moved to a service.
+ *
+ * @see https://www.drupal.org/node/2651338
  */
 function _scheduler_scheduler_api(NodeInterface $node, $action) {
   foreach (\Drupal::moduleHandler()->getImplementations('scheduler_api') as $module) {
@@ -476,6 +499,10 @@ function scheduler_preprocess_node(&$variables) {
  *
  * This function exposes publish_on and unpublish_on as mappable targets to the
  * Feeds module.
+ *
+ * @todo Port to Drupal 8.
+ *
+ * @see https://www.drupal.org/node/2651354
  */
 function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
   // Scheduler module only works on nodes.
@@ -502,6 +529,10 @@ function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundl
 
 /**
  * Mapping callback for the Feeds module.
+ *
+ * @todo Port to Drupal 8.
+ *
+ * @see https://www.drupal.org/node/2651354
  */
 function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping) {
   // We expect a string or integer, but can accomodate an array, by taking the
