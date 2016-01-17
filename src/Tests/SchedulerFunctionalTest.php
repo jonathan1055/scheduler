@@ -547,4 +547,24 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
   }
 
+  /**
+   * Tests that users without permission do not see the scheduler date fields.
+   */
+  public function testUserPermissions() {
+    // Create a user who can add the 'page' content type but who does not have
+    // the permission to use the scheduler functionality.
+    $this->webUser = $this->drupalCreateUser([
+      'access content',
+      'create page content',
+      'edit own page content',
+      'delete own page content',
+      'view own unpublished content',
+    ]);
+    $this->drupalLogin($this->webUser);
+
+    // Check that neither of the fields are displayed when creating a node.
+    $this->drupalGet('node/add/page');
+    $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown for users who do not have permission to schedule content');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
+  }
 }
