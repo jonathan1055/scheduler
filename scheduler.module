@@ -133,9 +133,11 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // If either publishing or unpublishing is enabled, provide a field group to
   // wrap the scheduling fields.
   if ($publishing_enabled || $unpublishing_enabled) {
-    // Expand the fieldset if either publishing or unpublishing is required, or
-    // if the fieldset was configured to be expanded.
-    $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', SCHEDULER_DEFAULT_EXPAND_FIELDSET) === 'always';
+    // Expand the fieldset if publishing or unpublishing is required, if a date
+    // already exists or the fieldset is configured to be always expanded.
+    $has_data = !empty($node->publish_on->value) || !empty($node->unpublish_on->value);
+    $always_expand = $type->getThirdPartySetting('scheduler', 'expand_fieldset', SCHEDULER_DEFAULT_EXPAND_FIELDSET) === 'always';
+    $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
     // Create the group for the fields.
     $form['scheduler_settings'] = array(
