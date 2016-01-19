@@ -30,6 +30,12 @@ node.type.*.third_party.scheduler:
   type: mapping
   label: 'Scheduler content type settings'
   mapping:
+    expand_fieldset:
+      type: string
+      label: 'Under which conditions the date input fieldset will be expanded'
+    fields_display_mode:
+      type: string
+      label: 'The way the scheduling fields will be displayed in the node form'
     publish_enable:
       type: boolean
       label: 'Enable scheduled publishing'
@@ -54,9 +60,3 @@ node.type.*.third_party.scheduler:
     unpublish_revision:
       type: boolean
       label: 'Create a new revision on unpublishing'
-    use_vertical_tabs:
-      type: boolean
-      label: 'Display the scheduling fields in vertical tabs'
-    expand_fieldset:
-      type: boolean
-      label: 'Always expand the scheduler date input fieldset'

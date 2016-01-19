@@ -14,6 +14,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 
+// @todo Move constants into a class, so we do not pollute the global space,
+// and use them like this, for example: SchedulerApi::MY_CONSTANT.
+
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
 
@@ -29,9 +32,11 @@ define('SCHEDULER_DEFAULT_TIME', '00:00:00');
 define('SCHEDULER_DATE_LETTERS', 'djmnFMyY');
 define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
 
-// Specify defaults for the content-type default settings, which should be used
-// as a consistent third parameter for getThirdPartySetting() calls.
+// Specify defaults for the per-content-type settings. These should be used as
+// a consistent third parameter for calls to getThirdPartySetting().
 define('SCHEDULER_DEFAULT_PUBLISH_PAST_DATE', 'error');
+define('SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE', 'vertical_tab');
+define('SCHEDULER_DEFAULT_EXPAND_FIELDSET', 'when_required');
 
 /**
  * Implements hook_menu().
@@ -105,7 +110,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $type = $form_state->getFormObject()->getEntity()->type->entity;
   $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
   $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
-  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'use_vertical_tabs', TRUE);
+  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'fields_display_mode', SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE) === 'vertical_tab';
 
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   $date_only_format = \Drupal::config('scheduler.settings')->get('date_only_format');
@@ -130,7 +135,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   if ($publishing_enabled || $unpublishing_enabled) {
     // Expand the fieldset if either publishing or unpublishing is required, or
     // if the fieldset was configured to be expanded.
-    $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE);
+    $expand_details = $publishing_required || $unpublishing_required || $type->getThirdPartySetting('scheduler', 'expand_fieldset', SCHEDULER_DEFAULT_EXPAND_FIELDSET) === 'always';
 
     // Create the group for the fields.
     $form['scheduler_settings'] = array(

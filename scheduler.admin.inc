@@ -143,23 +143,23 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     ),
   );
   // @todo Worthwhile to port this to D8 now form displays are configurable?
-  $form['scheduler']['node_edit_layout']['scheduler_use_vertical_tabs'] = array(
+  $form['scheduler']['node_edit_layout']['scheduler_fields_display_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Display scheduling options as'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'use_vertical_tabs', TRUE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'fields_display_mode', SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE),
     '#options' => array(
-      '1' => t('Vertical tab'),
-      '0' => t('Separate fieldset'),
+      'vertical_tab' => t('Vertical tab'),
+      'fieldset' => t('Separate fieldset'),
     ),
     '#description' => t('Use this option to specify how the scheduling options will be displayed when editing a node.'),
   );
   $form['scheduler']['node_edit_layout']['scheduler_expand_fieldset'] = array(
     '#type' => 'radios',
     '#title' => t('Expand fieldset or vertical tab'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', SCHEDULER_DEFAULT_EXPAND_FIELDSET),
     '#options' => array(
-      '0' => t('Expand only when a scheduled date exists or when a date is required'),
-      '1' => t('Always open the fieldset or vertical tab'),
+      'when_required' => t('Expand only when a scheduled date exists or when a date is required'),
+      'always' => t('Always open the fieldset or vertical tab'),
     ),
   );
 
@@ -171,6 +171,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
  */
 function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $type, &$form, FormStateInterface $form_state) {
   $type->setThirdPartySetting('scheduler', 'expand_fieldset', $form_state->getValue('scheduler_expand_fieldset'));
+  $type->setThirdPartySetting('scheduler', 'fields_display_mode', $form_state->getValue('scheduler_fields_display_mode'));
   $type->setThirdPartySetting('scheduler', 'publish_enable', $form_state->getValue('scheduler_publish_enable'));
   $type->setThirdPartySetting('scheduler', 'publish_past_date', $form_state->getValue('scheduler_publish_past_date'));
   $type->setThirdPartySetting('scheduler', 'publish_required', $form_state->getValue('scheduler_publish_required'));
@@ -179,5 +180,4 @@ function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $
   $type->setThirdPartySetting('scheduler', 'unpublish_enable', $form_state->getValue('scheduler_unpublish_enable'));
   $type->setThirdPartySetting('scheduler', 'unpublish_required', $form_state->getValue('scheduler_unpublish_required'));
   $type->setThirdPartySetting('scheduler', 'unpublish_revision', $form_state->getValue('scheduler_unpublish_revision'));
-  $type->setThirdPartySetting('scheduler', 'use_vertical_tabs', $form_state->getValue('scheduler_use_vertical_tabs'));
 }
