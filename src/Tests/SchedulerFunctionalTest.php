@@ -24,7 +24,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * The modules to be loaded for these tests.
    */
-  public static $modules = ['node', 'scheduler'];
+  public static $modules = ['scheduler'];
 
   /**
    * {@inheritdoc}
@@ -35,16 +35,16 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $config = $this->config('scheduler.settings');
 
     // Create a 'Basic Page' content type.
-    $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
-    ### @TODO the string 'page' is hard-coded eleven times in this file (so far)
-    ### @TODO Could make it a variable, which would allow future testing of other entity types?
-
-    // Add scheduler functionality to the page node type.
     /** @var NodeTypeInterface $node_type */
-    $node_type = NodeType::load('page');
-    $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE);
-    $node_type->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE);
-    $node_type->save();
+    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
+    ### @TODO Remove all NodeType::load('page') and use $this->nodetype
+    ### @TODO Remove all 'page' and use $this->nodetype->get('type')
+    ### @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
+
+    // Add scheduler functionality to the node type.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
+      ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
+      ->save();
 
     // Create an administrator user.
     $this->adminUser = $this->drupalCreateUser([
