@@ -62,7 +62,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests basic scheduling of content.
    */
-  public function testScheduler() {
+  public function _testScheduler() {
     // Login to admin user. This is required here before creating the publish_on
     // date and time values so that date.formatter can utilise the current users
     // timezone. The constraints receive values which have been converted using
@@ -91,7 +91,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Test the different options for past publication dates.
    */
-  public function testSchedulerPastDates() {
+  public function _testSchedulerPastDates() {
     // @todo The $config variable is currently unused.
     $config = $this->config('scheduler.settings');
     /** @var EntityStorageInterface $node_storage */
@@ -163,7 +163,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests the creation of new revisions on scheduling.
    */
-  public function testRevisioning() {
+  public function _testRevisioning() {
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day');
     $settings = [
@@ -208,7 +208,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
    */
-  public function testFieldsDisplay() {
+  public function _testFieldsDisplay() {
     /** @var NodeTypeInterface $node_type */
     $node_type = NodeType::load('page');
     $this->drupalLogin($this->adminUser);
@@ -267,7 +267,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests creating and editing nodes with required scheduling enabled.
    */
-  public function testRequiredScheduling() {
+  public function _testRequiredScheduling() {
     $this->drupalLogin($this->adminUser);
 
     // Define test scenarios with expected results.
@@ -473,7 +473,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests the validation when editing a node.
    */
-  public function testValidationDuringEdit() {
+  public function _testValidationDuringEdit() {
     $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
@@ -516,7 +516,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    *
    * @see https://drupal.org/node/1614880
    */
-  public function testScheduledNodeDelete() {
+  public function _testScheduledNodeDelete() {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
@@ -555,16 +555,26 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // the permission to use the scheduler functionality.
     $this->webUser = $this->drupalCreateUser([
       'access content',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
+      'create ' . $this->nodetype->get('type') . ' content',
+      'edit own ' . $this->nodetype->get('type') . ' content',
+      'delete own ' . $this->nodetype->get('type') . ' content',
       'view own unpublished content',
     ]);
     $this->drupalLogin($this->webUser);
+
+    // Set publishing and unpublishing to required, to make it a stronger test.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', TRUE)
+      ->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)
+      ->save();
 
     // Check that neither of the fields are displayed when creating a node.
     $this->drupalGet('node/add/page');
     $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown for users who do not have permission to schedule content');
     $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
+
+    // Check that the new node can be created and saved.
+    $title = $this->randomString(15);
+    $this->drupalPostForm('node/add/page', ['title[0][value]' => $title], t('Save'));
+    $this->assertRaw(t('@type %title has been created.', array('@type' => $this->nodetype->get('name'), '%title' => $title)), 'The node was created and saved when the user does not have scheduler permissions.');
   }
 }
