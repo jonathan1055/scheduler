@@ -62,7 +62,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests basic scheduling of content.
    */
-  public function _testScheduler() {
+  public function testScheduler() {
     // Login to admin user. This is required here before creating the publish_on
     // date and time values so that date.formatter can utilise the current users
     // timezone. The constraints receive values which have been converted using
@@ -91,7 +91,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Test the different options for past publication dates.
    */
-  public function _testSchedulerPastDates() {
+  public function testSchedulerPastDates() {
     // @todo The $config variable is currently unused.
     $config = $this->config('scheduler.settings');
     /** @var EntityStorageInterface $node_storage */
@@ -163,7 +163,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests the creation of new revisions on scheduling.
    */
-  public function _testRevisioning() {
+  public function testRevisioning() {
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day');
     $settings = [
@@ -208,7 +208,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
    */
-  public function _testFieldsDisplay() {
+  public function testFieldsDisplay() {
     /** @var NodeTypeInterface $node_type */
     $node_type = NodeType::load('page');
     $this->drupalLogin($this->adminUser);
@@ -267,7 +267,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests creating and editing nodes with required scheduling enabled.
    */
-  public function _testRequiredScheduling() {
+  public function testRequiredScheduling() {
     $this->drupalLogin($this->adminUser);
 
     // Define test scenarios with expected results.
@@ -473,7 +473,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   /**
    * Tests the validation when editing a node.
    */
-  public function _testValidationDuringEdit() {
+  public function testValidationDuringEdit() {
     $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
@@ -516,7 +516,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    *
    * @see https://drupal.org/node/1614880
    */
-  public function _testScheduledNodeDelete() {
+  public function testScheduledNodeDelete() {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
