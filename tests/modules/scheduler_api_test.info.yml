@@ -1,8 +1,9 @@
-name: 'Scheduler tests'
+name: 'Scheduler API testing'
 type: module
-description: 'Support module for Scheduler related testing.'
+description: 'Support module for Scheduler API-related testing.'
 package: Testing
 core: 8.x
 dependencies:
   - list
   - options
+# @TODO. Check that we still need list and options. These were from 7.x

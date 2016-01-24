@@ -2,13 +2,77 @@
 
 /**
  * @file
- * Install, uninstall, update and schema hooks for the Scheduler Test module.
+ * Install and uninstall hooks for the Scheduler API Test module.
  */
+
+use Drupal\field\Entity\FieldConfig;
+use Drupal\node\Entity\NodeType; // needed for NodeType::loadMultiple();
+use Drupal\node\NodeTypeInterface;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
  * Implements hook_install().
  */
-function scheduler_test_install() {
+function scheduler_api_test_install() {
+//   dd('==scheduler_api_test_install()==');
+  // Ensure the scheduler_api_test node type is available.
+  $types = NodeType::loadMultiple();
+  if (!isset($types['scheduler_api_test'])) {
+    // Create the node type.
+    $node_type = entity_create('node_type', ['type' => 'scheduler_api_test', 'name' => 'Scheduler API testing', 'description' => 'Simulated third-party module used for testing Scheduler API and hook function']);
+    $node_type->save();
+    // Attach a body field to the node type.
+    node_add_body_field($node_type);
+  }
+
+  $node_names = node_type_get_names();
+//   dd($node_names, '$node_names'); // for debug;
+
+  $field_name = 'approved';
+  $field = FieldStorageConfig::loadByName('node', $field_name);
+//   dd($field);
+  if (empty($field)) {
+    dd('no field named ' . $field_name);
+  }
+
+  $entity_manager = \Drupal::entityManager();
+  $definitions = $entity_manager->getFieldStorageDefinitions('node');
+  $definition_names = array_keys($definitions);
+//   dd($definition_names, 'definition_names');
+
+  // Create field storage for the 'approved' base field.
+  if (isset($definitions[$field_name])) {
+//     dd($definitions[$field_name], "definitions[$field_name]");
+  }
+  else {
+//     dd("No definition for '$field_name'. Now creating ...");
+
+   // block_content.install has code just like this. What is different such that it works there? Maybe the field already exists?
+    $field_definition = BaseFieldDefinition::create('integer')
+      ->setLabel(ucfirst($field_name))
+      ->setDescription(t('Approved for publication'));
+//     dd($field_definition, '$field_definition');
+
+//    \Drupal::entityManager()->clearCachedDefinitions();
+//   $entity_manager->onFieldStorageDefinitionCreate($field_definition); // gives message: the '' entity type does not exist
+
+    $ins = ($field_definition instanceof BaseFieldDefinition);
+//     dd($ins, '$field_definition instanceof BaseFieldDefinition?');
+
+    \Drupal::entityDefinitionUpdateManager()
+      ->installFieldStorageDefinition($field_name, 'node', 'scheduler_api_test', $field_definition); // calls onFieldStorageDefinitionCreate
+
+//    \Drupal::service('entity.definition_update_manager')->applyUpdates(); // removes 'Mismatched entity and/or field definitions The following changes were detected in the entity type and field definitions. Content Delete the APP3 + app3 field.' from status report
+  }
+}
+
+/**
+ * Implements hook_install().
+ * This is the original 7.x version left here temporarily for reference.
+ */
+function scheduler_test_7xinstall() {
+
   $t = get_t();
 
   // Ensure the scheduler_test node type is available.
