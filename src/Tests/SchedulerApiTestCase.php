@@ -60,7 +60,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     debug($node_type_names, '$node_type_names'); // for debug;
     
     // Create an administrator user.
-    $this->adminUser = $this->drupalCreateUser(['create ' . $this->nodetype->get('type') . ' content']);
+    $this->adminUser = $this->drupalCreateUser(['create ' . $this->nodetype->get('type') . ' content', 'edit any ' . $this->nodetype->get('type') . ' content',]);
   }
 
   /**
@@ -82,7 +82,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     // Create a node that is scheduled but not approved for publication. Then
     // simulate a cron run, and check that the node is not published.
     $node = $this->createUnapprovedNode();
-    debug($node->id() . ' ' . $node->title, 'node');
+    $this->drupalGet('node/' . $node->id() . '/edit'); // debug to display the node created.
     scheduler_cron();
     $this->assertFalse($node->isPublished(), 'An unapproved node is not published after scheduling.');
 
@@ -117,7 +117,6 @@ class SchedulerApiTestCase extends SchedulerTestBase {
       'status' => 0,
       'publish_on' => strtotime('-1 day'),
       'type' => $this->nodetype->get('type'),
-      'title' => $this->randomMachineName(10),
     );
     return $this->drupalCreateNode($settings);
   }

@@ -31,10 +31,7 @@ function scheduler_api_test_install() {
 
   $field_name = 'approved';
   $field = FieldStorageConfig::loadByName('node', $field_name);
-//   dd($field);
-  if (empty($field)) {
-    dd('no field named ' . $field_name);
-  }
+//   dd(empty($field) ? 'empty' : $field, 'field named ' . $field_name);
 
   $entity_manager = \Drupal::entityManager();
   $definitions = $entity_manager->getFieldStorageDefinitions('node');
@@ -52,16 +49,16 @@ function scheduler_api_test_install() {
     $field_definition = BaseFieldDefinition::create('integer')
       ->setLabel(ucfirst($field_name))
       ->setDescription(t('Approved for publication'));
-//     dd($field_definition, '$field_definition');
+//     dd($field_definition, '$field_definition'); // all ok.
 
 //    \Drupal::entityManager()->clearCachedDefinitions();
 //   $entity_manager->onFieldStorageDefinitionCreate($field_definition); // gives message: the '' entity type does not exist
 
     $ins = ($field_definition instanceof BaseFieldDefinition);
-//     dd($ins, '$field_definition instanceof BaseFieldDefinition?');
+//     dd($ins, '$field_definition is instanceof BaseFieldDefinition?');
 
     \Drupal::entityDefinitionUpdateManager()
-      ->installFieldStorageDefinition($field_name, 'node', 'scheduler_api_test', $field_definition); // calls onFieldStorageDefinitionCreate
+      ->installFieldStorageDefinition($field_name, 'node', 'scheduler_api_test', $field_definition);
 
 //    \Drupal::service('entity.definition_update_manager')->applyUpdates(); // removes 'Mismatched entity and/or field definitions The following changes were detected in the entity type and field definitions. Content Delete the APP3 + app3 field.' from status report
   }
