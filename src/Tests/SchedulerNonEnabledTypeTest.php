@@ -59,38 +59,40 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
   protected function checkNonEnabledTypes($publishing_enabled, $unpublishing_enabled, $text) {
 
     // Create title to show what combinations are being tested.
-    $title = 'Publishing ' . ($publishing_enabled ? 'enabled' : 'not enabled')
+    $info = 'Publishing ' . ($publishing_enabled ? 'enabled' : 'not enabled')
       . ', Unpublishing ' . ($unpublishing_enabled ? 'enabled' : 'not enabled')
       . ', ' . $text;
+    $title = $info . ', test fields (a)';
 
     // Check that the field(s) are displayed only for the correct settings.
     $this->drupalGet('node/add/' . $this->content_name);
     if ($publishing_enabled) {
-      $this->assertFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is shown when content type has: ' . $title);
+      $this->assertFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is shown for: ' . $title);
     }
     else {
-      $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown when content type has: ' . $title);
+      $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown for: ' . $title);
     }
 
     if ($unpublishing_enabled) {
-      $this->assertFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is shown when content type has: ' . $title);
+      $this->assertFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is shown for: ' . $title);
     }
     else {
-      $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown when content type has: ' . $title);
+      $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for: ' . $title);
     }
 
     // Create an unpublished node then set a publishing date, which mimics what
     // could be done by a third-party module, or a by-product of the node type
     // being enabled for publishing then being disabled before it got published.
+    $title = $info . ', test publishing (b)';
     $edit = [
       'title' => $title,
       'promote' => 1,
       'status' => 0,
       'type' => $this->content_name,
       'body' => $this->randomMachineName(30),
+      'publish_on' => REQUEST_TIME -2,
     ];
     $node = $this->drupalCreateNode($edit);
-    db_update('node_field_data')->fields(array('publish_on' => REQUEST_TIME - 2))->condition('nid', $node->id())->execute();
 
     // Run cron.
     $this->cronRun();
@@ -106,9 +108,16 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     }
 
     // Create a published node and set an unpublishing date.
-    $edit['status'] = 1;
+    $title = $info . ', test unpublishing (c)';
+    $edit = [
+      'title' => $title,
+      'promote' => 1,
+      'status' => 1,
+      'type' => $this->content_name,
+      'body' => $this->randomMachineName(30),
+      'unpublish_on' => REQUEST_TIME -1,
+    ];
     $node = $this->drupalCreateNode($edit);
-    db_update('node_field_data')->fields(array('unpublish_on' => REQUEST_TIME - 1))->condition('nid', $node->id())->execute();
 
     // Run cron.
     $this->cronRun();
