@@ -32,13 +32,13 @@ Tom Dobes <tomdobes [at] purdue.edu>
 INSTALLATION
 --------------------------------------------------------------------------
 1. Copy the scheduler.module to your modules directory
-2. Enable module, database schemas will be setup automatically.     
-3. Grant users the permission "schedule (un)publishing of nodes" so they can
+2. Enable module, database schemas will be setup automatically.
+3. Grant users the permission "schedule publishing of nodes" so they can
    set when the nodes they create are to be (un)published.
-   
+
 4. Visit admin > settings > content-types and click on any node type and
    check the box "enable scheduled (un)publishing" for this node type
-   
+
 5. Repeat for all node types that you want scheduled publishing for
 
 The scheduler will run with Drupal's cron.php, and will (un)publish nodes

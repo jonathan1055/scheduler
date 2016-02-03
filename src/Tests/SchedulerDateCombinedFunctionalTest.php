@@ -51,7 +51,7 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
       'delete own page content',
       'view own unpublished content',
       'administer nodes',
-      'schedule (un)publishing of nodes',
+      'schedule publishing of nodes',
     ]);
   }
 

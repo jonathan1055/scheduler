@@ -45,7 +45,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
       'delete own ' . $this->content_name . ' content',
       'view own unpublished content',
       'administer nodes',
-      'schedule (un)publishing of nodes',
+      'schedule publishing of nodes',
     ]);
   }
 
