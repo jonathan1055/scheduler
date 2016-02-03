@@ -17,20 +17,12 @@ use Drupal\node\Entity\NodeType;
  *
  * @group scheduler
  */
-//class SchedulerApiTestCase extends WebTestBase {
 class SchedulerApiTestCase extends SchedulerTestBase {
 
   /**
-   * The modules to be loaded for these tests.
+   * The additional modules to be loaded for this test.
    */
-  public static $modules = array('scheduler', 'scheduler_api_test');
-
-  /**
-   * The profile to install as a basis for testing.
-   *
-   * @var string
-   */
-  protected $profile = 'testing';
+  public static $modules = ['scheduler_api_test'];
 
   /**
    * {@inheritdoc}
@@ -55,12 +47,17 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     }
     else {
       $this->fail('Node type "scheduler_api_test" was not created');
+      return;
     }
     $node_type_names = node_type_get_names();
     debug($node_type_names, '$node_type_names'); // for debug;
     
     // Create an administrator user.
     $this->adminUser = $this->drupalCreateUser(['create ' . $this->nodetype->get('type') . ' content', 'edit any ' . $this->nodetype->get('type') . ' content',]);
+
+    // Create node_storage property.
+    $this->node_storage = $this->container->get('entity.manager')->getStorage('node');
+
   }
 
   /**
@@ -74,6 +71,11 @@ class SchedulerApiTestCase extends SchedulerTestBase {
    *   the correct messages are displayed.
    */
   public function testAllowedPublishing() {
+    if (!NodeType::load('scheduler_api_test')) {
+      $this->fail('*** testing abandoned ***');
+      return;
+    }
+
     // Check that the approved field is shown on the node/add form.
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('node/add/' . $this->nodetype->get('type'));
@@ -81,9 +83,12 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     
     // Create a node that is scheduled but not approved for publication. Then
     // simulate a cron run, and check that the node is not published.
+    debug('scheduled unapproved node');
     $node = $this->createUnapprovedNode();
     $this->drupalGet('node/' . $node->id() . '/edit'); // debug to display the node created.
     scheduler_cron();
+    $this->node_storage->resetCache(array($node->id()));
+    $node = $this->node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An unapproved node is not published after scheduling.');
 
     // Approve the node for publication, simulate a cron run, check that the
@@ -91,6 +96,8 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     debug('now approving the node');
     $this->approveNode($node->id());
     scheduler_cron();
+    $this->node_storage->resetCache(array($node->id()));
+    $node = $this->node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node is published after scheduling.');
 
     // Turn on immediate publication of nodes with publication dates in the past

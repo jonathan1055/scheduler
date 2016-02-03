@@ -22,17 +22,10 @@ use Drupal\simpletest\WebTestBase;
 class SchedulerFunctionalTest extends SchedulerTestBase {
 
   /**
-   * The modules to be loaded for these tests.
-   */
-  public static $modules = ['scheduler'];
-
-  /**
    * {@inheritdoc}
    */
   public function setUp() {
     parent::setUp();
-    // @todo The $config variable is currently unused.
-    $config = $this->config('scheduler.settings');
 
     // Create a 'Basic Page' content type.
     /** @var NodeTypeInterface $node_type */
@@ -92,8 +85,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * Test the different options for past publication dates.
    */
   public function testSchedulerPastDates() {
-    // @todo The $config variable is currently unused.
-    $config = $this->config('scheduler.settings');
     /** @var EntityStorageInterface $node_storage */
     $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
 

@@ -16,10 +16,6 @@ use Drupal\node\Entity\NodeType;
  */
 class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
 
-  /**
-   * The modules to be loaded for these tests.
-   */
-  public static $modules = ['scheduler'];
   // @todo Now that date functionality is it core there is no reason to have
   // just the date tests separate from the main functional tests. Alternatively
   // split the main tests into separate files for each existing test function.

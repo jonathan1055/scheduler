@@ -18,10 +18,17 @@ use Drupal\simpletest\WebTestBase;
 abstract class SchedulerTestBase extends WebTestBase {
 
   /**
-   * {@inheritdoc}
+   * The profile to install as a basis for testing.
+   *
+   * @var string
    */
   protected $profile = 'testing';
 
+  /**
+   * The modules to be loaded for these tests.
+   */
+  public static $modules = ['node', 'scheduler'];
+  
   /**
    * A user with administration rights.
    *

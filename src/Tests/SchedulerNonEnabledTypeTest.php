@@ -15,18 +15,6 @@ namespace Drupal\scheduler\Tests;
 class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
 
   /**
-   * The modules to be loaded for these tests.
-   */
-  public static $modules = ['node', 'scheduler'];
-
-  /**
-   * A user with administration rights.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $adminUser;
-
-  /**
    * {@inheritdoc}
    */
   public function setUp() {
