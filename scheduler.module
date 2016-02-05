@@ -40,26 +40,6 @@ define('SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE', 'vertical_tab');
 define('SCHEDULER_DEFAULT_EXPAND_FIELDSET', 'when_required');
 
 /**
- * Implements hook_menu().
- *
- * @deprecated Will be removed before the first alpha release.
- * @see https://www.drupal.org/node/2626480
- */
-function scheduler_menu() {
-  $items = array();
-  $items['scheduler/cron'] = array(
-    'title' => 'Lightweight cron handler',
-    'description' => 'Run the lightweight cron process',
-    'page callback' => '_scheduler_run_cron',
-    'access callback' => '_scheduler_cron_access',
-    'access arguments' => array(2),
-    'type' => MENU_CALLBACK,
-    'file' => 'scheduler.cron.inc',
-  );
-  return $items;
-}
-
-/**
  * Implements hook_help().
  */
 function scheduler_help($route_name, RouteMatchInterface $route_match) {
@@ -77,9 +57,9 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
     case 'scheduler.cron_form':
       $base_url = $GLOBALS['base_url'];
       $access_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
-      $cron_url = $base_url . '/scheduler/cron' . ($access_key ? '/' . $access_key : '');
+      $cron_url = $base_url . '/scheduler/cron/' . $access_key;
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not execute any cron tasks defined by Drupal core or any other modules.") . '</p>';
-      $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron and a sample crontab entry to run scheduler every minute might look like:") . '</p>';
+      $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron/{access-key} and a sample crontab entry to run scheduler every minute might look like:") . '</p>';
       $output .= '<code>* * * * * wget -q -O /dev/null "' . $cron_url . '"</code>';
       $output .= '<p>' . t('or') . '</p>';
       $output .= '<code>* * * * * curl -s -o /dev/null "' . $cron_url . '"</code><br/><br/>';
@@ -440,20 +420,6 @@ function scheduler_cron() {
  */
 function scheduler_cron_is_running() {
   return drupal_static('scheduler_cron');
-}
-
-/**
- * Access callback for the lightweight cron url /scheduler/cron/key.
- *
- * @param string $cron_key
- *   The cron key that was passed as a URL argument.
- *
- * @return bool
- *   TRUE if the cron url key is correct. FALSE otherwise.
- */
-function _scheduler_cron_access($cron_key) {
-  $valid_cron_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
-  return $valid_cron_key == $cron_key;
 }
 
 /**

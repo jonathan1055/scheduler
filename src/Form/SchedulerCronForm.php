@@ -77,8 +77,9 @@ class SchedulerCronForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Lightweight cron access key'),
       '#default_value' => $config->get('lightweight_cron_access_key'),
+      '#required' => TRUE,
       '#size' => 25,
-      '#description' => $this->t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/&lt;this key&gt;. To disable security for lightweight cron leave this field blank."),
+      '#description' => $this->t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/{access key}"),
     ];
     // Add a submit handler function for the key generation.
     $form['cron_settings']['create_key'][] = [

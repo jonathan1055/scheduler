@@ -69,6 +69,10 @@ function scheduler_requirements($phase) {
 function scheduler_install() {
   // Add our base fields to the schema.
   \Drupal::service('entity.definition_update_manager')->applyUpdates();
+  // Set cron access key value, as this is now required in SchedulerCronForm
+  $config = \Drupal::service('config.factory')->getEditable('scheduler.settings');
+  $config->set('lightweight_cron_access_key', substr(md5(rand()), 0, 20))
+    ->save();
 }
 
 /**
