@@ -13,6 +13,7 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
 
 // @todo Move constants into a class, so we do not pollute the global space,
 // and use them like this, for example: SchedulerApi::MY_CONSTANT.
@@ -61,15 +62,19 @@ function scheduler_menu() {
 /**
  * Implements hook_help().
  */
-function scheduler_help($section) {
+function scheduler_help($route_name, RouteMatchInterface $route_match) {
   $output = '';
-  switch ($section) {
-    case 'admin/config/content/scheduler':
-      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', array('@link' => Url::fromRoute('entity.node_type.collection'))) . '</br>';
+  switch ($route_name) {
+    case 'help.page.scheduler':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
+      $output .= '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', array('@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt')) . '</p>';
+      break;
+    case 'scheduler.admin_form':
+      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', array('@link' => Url::fromRoute('entity.node_type.collection')->toString())) . '</br>';
       $output .= t('The options and settings below are common to all content types.') . '</p>';
       break;
-
-    case 'admin/config/content/scheduler/cron':
+    case 'scheduler.cron_form':
       $base_url = $GLOBALS['base_url'];
       $access_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
       $cron_url = $base_url . '/scheduler/cron' . ($access_key ? '/' . $access_key : '');
@@ -79,14 +84,6 @@ function scheduler_help($section) {
       $output .= '<p>' . t('or') . '</p>';
       $output .= '<code>* * * * * curl -s -o /dev/null "' . $cron_url . '"</code><br/><br/>';
       break;
-
-    case 'admin/help#scheduler':
-      // This is shown at the top of admin/help/scheduler.
-      $output = '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
-      $output .= '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', array('@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt')) . '</p>';
-      break;
-
     default:
   }
   return $output;
