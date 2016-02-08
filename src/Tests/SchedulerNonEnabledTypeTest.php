@@ -15,6 +15,11 @@ namespace Drupal\scheduler\Tests;
 class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
 
   /**
+   * Additional modules required. SchedulerTestBase loads the standard modules.
+   */
+  public static $modules = ['dblog'];
+
+  /**
    * {@inheritdoc}
    */
   public function setUp() {
@@ -34,25 +39,33 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
       'view own unpublished content',
       'administer nodes',
       'schedule publishing of nodes',
+      'access site reports',
     ]);
   }
 
   /**
    * Helper function for testNonEnabledNodeType().
    *
-   * This function is called four times. Checks that the date entry are correct
-   * shown or not shown in /node/add. Check that a node is not processed by cron
-   * if it is not enabled for that action.
+   * This function is called four times.
+   * Check that the date fields are correctly shown or not shown in /node/add.
+   * Check that a node is not processed if it is not enabled for the action.
    */
-  protected function checkNonEnabledTypes($publishing_enabled, $unpublishing_enabled, $text) {
+  protected function checkNonEnabledTypes($publishing_enabled, $unpublishing_enabled, $run_number) {
 
-    // Create title to show what combinations are being tested.
+    // Create title to show what combinations are being tested. Store base info
+    // then add secondary details.
+    $details = array(
+      1 => 'by default',
+      2 => 'after disabling both settings',
+      3 => 'after enabling publishing only',
+      4 => 'after enabling unpublishing only',
+    );
     $info = 'Publishing ' . ($publishing_enabled ? 'enabled' : 'not enabled')
       . ', Unpublishing ' . ($unpublishing_enabled ? 'enabled' : 'not enabled')
-      . ', ' . $text;
-    $title = $info . ', test fields (a)';
+      . ', ' . $details[$run_number];
 
     // Check that the field(s) are displayed only for the correct settings.
+    $title = $info . ' (' . $run_number . 'a)';
     $this->drupalGet('node/add/' . $this->content_name);
     if ($publishing_enabled) {
       $this->assertFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is shown for: ' . $title);
@@ -68,22 +81,22 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
       $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for: ' . $title);
     }
 
-    // Create an unpublished node then set a publishing date, which mimics what
+    // Create an unpublished node with a publishing date, which mimics what
     // could be done by a third-party module, or a by-product of the node type
     // being enabled for publishing then being disabled before it got published.
-    $title = $info . ', test publishing (b)';
+    $title = $info . ' (' . $run_number . 'b)';
     $edit = [
       'title' => $title,
-      'promote' => 1,
       'status' => 0,
       'type' => $this->content_name,
-      'body' => $this->randomMachineName(30),
       'publish_on' => REQUEST_TIME -2,
     ];
     $node = $this->drupalCreateNode($edit);
 
-    // Run cron.
+    // Run cron and display the dblog.
     $this->cronRun();
+    $this->drupalGet('admin/reports/dblog');
+
     // Reload the node.
     $this->node_storage->resetCache([$node->id()]);
     $node = $this->node_storage->load($node->id());
@@ -94,21 +107,23 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     else {
       $this->assertFalse($node->isPublished(), 'The unpublished node remains unpublished for: ' . $title);
     }
+    // Delete the node to avoid affecting subsequent tests.
+    $node->delete();
 
-    // Create a published node and set an unpublishing date.
-    $title = $info . ', test unpublishing (c)';
+    // Do the same for unpublishing.
+    $title = $info . ' (' . $run_number . 'c)';
     $edit = [
       'title' => $title,
-      'promote' => 1,
       'status' => 1,
       'type' => $this->content_name,
-      'body' => $this->randomMachineName(30),
       'unpublish_on' => REQUEST_TIME -1,
     ];
     $node = $this->drupalCreateNode($edit);
 
-    // Run cron.
+    // Run cron and display the dblog.
     $this->cronRun();
+    $this->drupalGet('admin/reports/dblog');
+
     // Reload the node.
     $this->node_storage->resetCache([$node->id()]);
     $node = $this->node_storage->load($node->id());
@@ -119,6 +134,8 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     else {
       $this->assertTrue($node->isPublished(), 'The published node remains published for: ' . $title);
     }
+    // Delete the node to avoid affecting subsequent tests.
+    $node->delete();
   }
 
   /**
@@ -136,24 +153,24 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     // settings work independently.
 
     // 1. By default check that the scheduler date fields are not displayed.
-    $this->checkNonEnabledTypes(FALSE, FALSE, 'by default (1)');
+    $this->checkNonEnabledTypes(FALSE, FALSE, 1);
 
     // 2. Explicitly disable this content type for both settings and test again.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)
       ->save();
-    $this->checkNonEnabledTypes(FALSE, FALSE, 'after disabling both settings (2)');
+    $this->checkNonEnabledTypes(FALSE, FALSE, 2);
 
     // 3. Turn on scheduled publishing only and test again.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
       ->save();
-    $this->checkNonEnabledTypes(TRUE, FALSE, 'after enabling publishing only (3)');
+    $this->checkNonEnabledTypes(TRUE, FALSE, 3);
 
     // 4. Turn on scheduled unpublishing only and test again.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
-    $this->checkNonEnabledTypes(FALSE, TRUE, 'after enabling unpublishing only (4)');
+    $this->checkNonEnabledTypes(FALSE, TRUE, 4);
   }
 
 }
