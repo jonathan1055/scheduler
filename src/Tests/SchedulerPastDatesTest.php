@@ -6,6 +6,8 @@
 
 namespace Drupal\scheduler\Tests;
 
+use Drupal\Component\Utility\SafeMarkup;
+
 /**
  * Tests the options and processing when dates are entered in the past.
  *
