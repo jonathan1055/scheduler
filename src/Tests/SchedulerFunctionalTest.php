@@ -26,30 +26,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    */
   public function setUp() {
     parent::setUp();
-
-    // Create a 'Basic Page' content type.
-    /** @var NodeTypeInterface $node_type */
-    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
-    ### @TODO Remove all NodeType::load('page') and use $this->nodetype
-    ### @TODO Remove all 'page' and use $this->nodetype->get('type')
-    ### @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
-
-    // Add scheduler functionality to the node type.
-    $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
-      ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
-      ->save();
-
-    // Create an administrator user.
-    $this->adminUser = $this->drupalCreateUser([
-      'access content',
-      'administer scheduler',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
-      'view own unpublished content',
-      'administer nodes',
-      'schedule publishing of nodes',
-    ]);
   }
 
   /**
@@ -79,76 +55,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Need a new title for the new node, as we identify the node by title.
     $edit['title[0][value]'] = $this->randomMachineName(10);
     $this->helpTestScheduler($edit);
-  }
-
-  /**
-   * Test the different options for past publication dates.
-   */
-  public function testSchedulerPastDates() {
-    /** @var EntityStorageInterface $node_storage */
-    $node_storage = $this->container->get('entity_type.manager')->getStorage('node');
-
-    // Log in.
-    $this->drupalLogin($this->adminUser);
-
-    // Create an unpublished page node.
-    $node = $this->drupalCreateNode(['type' => 'page', 'status' => FALSE]);
-
-    // Test the default behavior: an error message should be shown when the user
-    // enters a publication date that is in the past.
-    $edit = [
-      'title[0][value]' => t('Past') . ' ' . $this->randomString(10),
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
-    ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
-    $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
-
-    // Test the 'publish' behavior: the node should be published immediately.
-    /** @var NodeTypeInterface $entity */
-    $entity = $node->type->entity;
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
-    $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
-    $this->assertRaw(t('@type %title has been updated.', ['@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title[0][value]'])]), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
-
-    // Reload the changed node and check that it is published.
-    $node_storage->resetCache([$node->id()]);
-
-    /** @var NodeInterface $node */
-    $node = $node_storage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
-
-    // Test the 'schedule' behavior: the node should be unpublished and become
-    // published on the next cron run.
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep published'));
-    $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]']; ### @TODO should use date format from config
-    $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertRaw(t('@type %title has been updated.', ['@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title[0][value]'])]), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', ['@publish_time' => $publish_time]), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
-
-    // Reload the node and check that it is unpublished but scheduled correctly.
-    $node_storage->resetCache([$node->id()]);
-    $node = $node_storage->load($node->id());
-    $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEqual(\Drupal::service('date.formatter')->format($node->publish_on->value, 'custom', 'Y-m-d H:i:s'), $publish_time, 'The node is scheduled for the required date');
-
-    // Simulate a cron run and check that the node is published.
-    scheduler_cron();
-    $node_storage->resetCache([$node->id()]);
-    $node = $node_storage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
-
-    // Check that an Unpublish date in the past fails validation.
-    $edit = [
-      'title[0][value]' => t('Unpublish in the past') . ' ' . $this->randomString(10),
-      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'H:i:s'),
-    ];
-    $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
-    $this->assertRaw(t("The 'unpublish on' date must be in the future"), 'An error message is shown when the unpublish date is in the past.');
-
   }
 
   /**
@@ -538,34 +444,4 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
   }
 
-  /**
-   * Tests that users without permission do not see the scheduler date fields.
-   */
-  public function testUserPermissions() {
-    // Create a user who can add the 'page' content type but who does not have
-    // the permission to use the scheduler functionality.
-    $this->webUser = $this->drupalCreateUser([
-      'access content',
-      'create ' . $this->nodetype->get('type') . ' content',
-      'edit own ' . $this->nodetype->get('type') . ' content',
-      'delete own ' . $this->nodetype->get('type') . ' content',
-      'view own unpublished content',
-    ]);
-    $this->drupalLogin($this->webUser);
-
-    // Set publishing and unpublishing to required, to make it a stronger test.
-    $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', TRUE)
-      ->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)
-      ->save();
-
-    // Check that neither of the fields are displayed when creating a node.
-    $this->drupalGet('node/add/page');
-    $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown for users who do not have permission to schedule content');
-    $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
-
-    // Check that the new node can be created and saved.
-    $title = $this->randomString(15);
-    $this->drupalPostForm('node/add/page', ['title[0][value]' => $title], t('Save'));
-    $this->assertRaw(t('@type %title has been created.', array('@type' => $this->nodetype->get('name'), '%title' => $title)), 'The node was created and saved when the user does not have scheduler permissions.');
-  }
 }

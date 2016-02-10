@@ -37,6 +37,37 @@ abstract class SchedulerTestBase extends WebTestBase {
   protected $adminUser;
 
   /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Create a 'Basic Page' content type.
+    /** @var NodeTypeInterface $node_type */
+    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
+    ### @TODO Remove all NodeType::load('page') and use $this->nodetype
+    ### @TODO Remove all 'page' and use $this->nodetype->get('type')
+    ### @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
+
+    // Add scheduler functionality to the node type.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
+      ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
+      ->save();
+
+    // Create an administrator user.
+    $this->adminUser = $this->drupalCreateUser([
+      'access content',
+      'administer scheduler',
+      'create page content',
+      'edit own page content',
+      'delete own page content',
+      'view own unpublished content',
+      'administer nodes',
+      'schedule publishing of nodes',
+    ]);
+  }
+  
+  /**
    * Helper function for testScheduler(). Schedules content and asserts status.
    */
   protected function helpTestScheduler($edit) {

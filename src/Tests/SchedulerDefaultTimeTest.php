@@ -2,19 +2,17 @@
 
 /**
  * @file
- * Contains \Drupal\scheduler\Tests\ScedulerDateCombineFunctionalTest
+ * Contains \Drupal\scheduler\Tests\SchedulerDefaultTimeTest
  */
 
 namespace Drupal\scheduler\Tests;
-
-use Drupal\node\Entity\NodeType;
 
 /**
  * Tests the components of the Scheduler interface which use the Date module.
  *
  * @group scheduler
  */
-class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
+class SchedulerDefaultTimeTest extends SchedulerTestBase {
 
   // @todo Now that date functionality is it core there is no reason to have
   // just the date tests separate from the main functional tests. Alternatively
@@ -25,30 +23,6 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
    */
   public function setUp() {
     parent::setUp();
-
-    // Create a 'Basic Page' content type.
-    $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
-    ### @TODO the string 'page' is hard-coded eleven times in this file (so far)
-    ### @TODO Could make it a variable, which would allow future testing of other entity types?
-
-    // Add scheduler functionality to the page node type.
-    /** @var NodeTypeInterface $node_type */
-    $node_type = NodeType::load('page');
-    $node_type->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
-      ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
-      ->save();
-
-    // Create an administrator user.
-    $this->adminUser = $this->drupalCreateUser([
-      'access content',
-      'administer scheduler',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
-      'view own unpublished content',
-      'administer nodes',
-      'schedule publishing of nodes',
-    ]);
   }
 
   /**
@@ -129,5 +103,4 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
     $this->assertFieldByName('publish_on[0][value][time]', $time_text, 'The default time offset has been added to the date field when scheduling content for publication.');
     $this->assertFieldByName('unpublish_on[0][value][time]', $time_text, 'The default time offset has been added to the date field when scheduling content for unpublication.');
   }
-
 }

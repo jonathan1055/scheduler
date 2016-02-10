@@ -27,7 +27,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  public function setUp() {
     parent::setUp();
     $config = $this->config('scheduler.settings');
 
