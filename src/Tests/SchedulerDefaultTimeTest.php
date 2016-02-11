@@ -14,10 +14,6 @@ namespace Drupal\scheduler\Tests;
  */
 class SchedulerDefaultTimeTest extends SchedulerTestBase {
 
-  // @todo Now that date functionality is it core there is no reason to have
-  // just the date tests separate from the main functional tests. Alternatively
-  // split the main tests into separate files for each existing test function.
-
   /**
    * {@inheritdoc}
    */
