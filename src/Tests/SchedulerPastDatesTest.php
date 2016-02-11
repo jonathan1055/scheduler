@@ -33,7 +33,7 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
-    $node = $this->drupalCreateNode(['type' => 'page', 'status' => FALSE]);
+    $node = $this->drupalCreateNode(['type' => $this->nodetype->get('type'), 'status' => FALSE]);
 
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
@@ -46,9 +46,7 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
 
     // Test the 'publish' behavior: the node should be published immediately.
-    /** @var NodeTypeInterface $entity */
-    $entity = $node->type->entity;
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertRaw(t('@type %title has been updated.', ['@type' => t('Basic page'), '%title' => SafeMarkup::checkPlain($edit['title[0][value]'])]), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
@@ -59,10 +57,11 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
     /** @var NodeInterface $node */
     $node = $node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
+    $this->assertNull($node->publish_on->value, 'The node publish_on date has been removed after publishing when the "publish" behavior is chosen.');
 
     // Test the 'schedule' behavior: the node should be unpublished and become
     // published on the next cron run.
-    $entity->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep published'));
     $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]']; ### @TODO should use date format from config
     $this->assertNoRaw(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
