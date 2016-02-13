@@ -21,12 +21,6 @@ class SchedulerLightweightCronTest extends SchedulerTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Create an administrator user.
-    $this->adminUser = $this->drupalCreateUser([
-      'access content',
-      'administer scheduler',
-    ]);
-
     $this->routeCronForm = Url::fromRoute('scheduler.cron_form');
   }
 

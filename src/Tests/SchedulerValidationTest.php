@@ -22,25 +22,27 @@ class SchedulerValidationTest extends SchedulerTestBase {
 
   /**
    * Tests the validation when editing a node.
+   *
+   * The 'required' checks and 'dates in the past' checks are handled in other
+   * tests. This test checks validation when the two fields interact.
    */
   public function testValidationDuringEdit() {
     $this->drupalLogin($this->adminUser);
 
     // Create an unpublished page node.
     $settings = [
-      'type' => 'page',
+      'type' => $this->nodetype->get('type'),
       'status' => FALSE,
-      'title[0][value]' => $this->randomString(15),
     ];
     $node = $this->drupalCreateNode($settings);
 
     // Set unpublishing to be required.
-    $node->type->entity->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
+    $this->nodetype->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
 
     // Edit the unpublished node and check that if a publish-on date is entered
     // then an unpublish-on date is also needed.
     $edit = [
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)), ### @TODO should we get the default format? not hard-code.
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', REQUEST_TIME)),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
