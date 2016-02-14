@@ -174,7 +174,7 @@ function scheduler_set_unpublish_date_action(Node $node, $date) {
  */
 function scheduler_remove_publish_date_action(Node $node) {
   if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable')) {
-    $node->publish_on->value = 0;
+    $node->publish_on->value = NULL;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }
@@ -195,7 +195,7 @@ function scheduler_remove_publish_date_action(Node $node) {
  */
 function scheduler_remove_unpublish_date_action(Node $node) {
   if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable')) {
-    $node->unpublish_on->value = 0;
+    $node->unpublish_on->value = NULL;
     scheduler_node_presave($node);
     scheduler_node_update($node);
   }

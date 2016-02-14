@@ -325,7 +325,7 @@ function scheduler_node_presave(EntityInterface $node) {
       if ($entity->getThirdPartySetting('scheduler', 'publish_touch', 0)) {
         $node->setCreatedTime($node->publish_on->value);
       }
-      $node->publish_on->value = 0;
+      $node->publish_on->value = NULL;
       $node->setPublished(TRUE);
       // Allow modules to react to immediate publishing.
       _scheduler_scheduler_api($node, 'publish_immediately');
