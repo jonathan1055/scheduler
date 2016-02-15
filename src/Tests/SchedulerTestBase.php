@@ -51,16 +51,19 @@ abstract class SchedulerTestBase extends WebTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
-    // Create an administrator user.
+    // Create an administrator user having the main admin permissions, full
+    // rights on the 'page' content type and all of the Scheduler permissions.
+    // Users with reduced permissions are created in the tests that need them.
     $this->adminUser = $this->drupalCreateUser([
+      'administer nodes',
       'access content',
-      'administer scheduler',
       'create page content',
       'edit own page content',
       'delete own page content',
       'view own unpublished content',
-      'administer nodes',
+      'administer scheduler',
       'schedule publishing of nodes',
+      'view scheduled content',
     ]);
   }
 

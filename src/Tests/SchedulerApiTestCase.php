@@ -7,9 +7,6 @@
 
 namespace Drupal\scheduler\Tests;
 
-use Drupal\Component\Utility\SafeMarkup;
-use Drupal\node\Entity\Node;
-use Drupal\simpletest\WebTestBase;
 use Drupal\node\Entity\NodeType;
 
 /**
@@ -22,38 +19,36 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   /**
    * The additional modules to be loaded for this test.
    */
-  public static $modules = ['scheduler_api_test'];
+  public static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
+  // @todo 'menu_ui' is in the exported node.type definition, and 'path' is in
+  // the entity_form_display. Could these be removed from the config files and
+  // then not needed here?
 
   /**
    * {@inheritdoc}
    */
   public function setUp() {
     parent::setUp();
-    $config = $this->config('scheduler.settings');
 
-    // TEMP. Add these lines to send devel dd() to the usual file.     
-    debug(file_directory_temp(), 'existing file_directory_temp()');   
-    \Drupal::configFactory()->getEditable('system.file')->set('path.temporary', '/private/tmp')->save(TRUE);   
-    debug(file_directory_temp(), 'new file_directory_temp()');   
-
-    // Add scheduler functionality to the custom node type.
-    $this->nodetype = NodeType::load('scheduler_api_test');
+    // Load the custom node type and check it .
+    $this->custom_type = 'scheduler_api_test';
+    $this->nodetype = NodeType::load($this->custom_type);
     if ($this->nodetype) {
-      $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
-        ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
-        ->save();
-      debug($this->nodetype->get('type'), 'nodetype->get(type)');
-      debug($this->nodetype->get('name'), 'nodetype->get(name)');
+      $this->pass('Custom node type ' . $this->custom_type . ' "' . $this->nodetype->get('name') . '"  created during install');
+      // Do not need to enable this node type for scheduler as that is already
+      // pre-configured in node.type.scheduler_api_test.yml
     }
     else {
-      $this->fail('Node type "scheduler_api_test" was not created');
+      $this->fail('*** Custom node type ' . $this->custom_type . ' does not exist. Testing abandoned ***');
       return;
     }
-    $node_type_names = node_type_get_names();
-    debug($node_type_names, '$node_type_names'); // for debug;
-    
-    // Create an administrator user.
-    $this->adminUser = $this->drupalCreateUser(['create ' . $this->nodetype->get('type') . ' content', 'edit any ' . $this->nodetype->get('type') . ' content',]);
+
+    // Create a web user for this content type.
+    $this->webUser = $this->drupalCreateUser([
+      'create ' . $this->custom_type . ' content',
+      'edit any ' . $this->custom_type . ' content',
+      'schedule publishing of nodes',
+    ]);
 
     // Create node_storage property.
     $this->node_storage = $this->container->get('entity.manager')->getStorage('node');
@@ -71,43 +66,50 @@ class SchedulerApiTestCase extends SchedulerTestBase {
    *   the correct messages are displayed.
    */
   public function testAllowedPublishing() {
-    if (!NodeType::load('scheduler_api_test')) {
-      $this->fail('*** testing abandoned ***');
+    if (empty($this->nodetype)) {
+      $this->fail('*** Custom node type ' . $this->custom_type . ' does not exist. Testing abandoned ***');
       return;
     }
 
     // Check that the approved field is shown on the node/add form.
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('node/add/' . $this->nodetype->get('type'));
-    $this->assertFieldByName('approved[0][value]', '', 'The Approved field is shown on the node form');
-    
+    $this->drupalLogin($this->webUser);
+    $this->drupalGet('node/add/' . $this->custom_type);
+    $this->assertFieldById('edit-field-approved-value', '', 'The Approved field is shown on the node form');
+
     // Create a node that is scheduled but not approved for publication. Then
-    // simulate a cron run, and check that the node is not published.
-    debug('scheduled unapproved node');
+    // simulate a cron run, and check that the node is still not published.
     $node = $this->createUnapprovedNode();
-    $this->drupalGet('node/' . $node->id() . '/edit'); // debug to display the node created.
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
-    $this->assertFalse($node->isPublished(), 'An unapproved node is not published after scheduling.');
+    $this->assertFalse($node->isPublished(), 'An unapproved node is not published during cron processing.');
 
-    // Approve the node for publication, simulate a cron run, check that the
+    // Approve the node for publication, simulate a cron run and check that the
     // node is now published.
-    debug('now approving the node');
     $this->approveNode($node->id());
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'An approved node is published after scheduling.');
+    $this->assertTrue($node->isPublished(), 'An approved node is published during cron processing.');
 
     // Turn on immediate publication of nodes with publication dates in the past
-    // and repeat the tests. It is not needed to simulate cron runs now.
-    debug('turn on immediate publishing');
+    // and repeat the tests. It is not needed to simulate cron runs here.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $node = $this->createUnapprovedNode();
-    $this->assertFalse($node->isPublished(), 'An unapproved node is not published immediately after saving.');
+    $this->assertFalse($node->isPublished(), 'An unapproved node with a date in the past is not published immediately after saving.');
+
+    // Check that the node can be approved and published programatically.
     $this->approveNode($node->id());
-    $this->assertTrue($node->isPublished(), 'An approved node is published immediately after saving.');
+    $this->node_storage->resetCache(array($node->id()));
+    $node = $this->node_storage->load($node->id());
+    $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately via $node->set()->save().');
+
+    // Check that a node can be approved and published via edit form.
+    $node = $this->createUnapprovedNode();
+    $this->drupalPostForm('node/' . $node->id() . '/edit', ['field_approved[value]' => '1'], t('Save'));
+    $this->node_storage->resetCache(array($node->id()));
+    $node = $this->node_storage->load($node->id());
+    $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately after saving via edit form.');
   }
 
   /**
@@ -123,7 +125,8 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $settings = array(
       'status' => 0,
       'publish_on' => strtotime('-1 day'),
-      'type' => $this->nodetype->get('type'),
+      'field_approved' => 0,
+      'type' => $this->custom_type,
     );
     return $this->drupalCreateNode($settings);
   }
@@ -132,14 +135,12 @@ class SchedulerApiTestCase extends SchedulerTestBase {
    * Approves a node for publication.
    *
    * @param int $nid
-   *   The nid of the node to approve.
+   *   The id of the node to approve.
    */
   protected function approveNode($nid) {
-    $node_storage = $this->container->get('entity.manager')->getStorage('node');
-    $node_storage->resetCache(array($nid));
-    $node = $node_storage->load($nid);
-    $node->set('field_scheduler_api_test_approved' , TRUE);
-    $node->save();
+    $this->node_storage->resetCache(array($nid));
+    $node = $this->node_storage->load($nid);
+    $node->set('field_approved' , TRUE)->save();
   }
 
 }
