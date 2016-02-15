@@ -5,110 +5,24 @@
  * Install and uninstall hooks for the Scheduler API Test module.
  */
 
-use Drupal\field\Entity\FieldConfig;
-use Drupal\node\Entity\NodeType; // needed for NodeType::loadMultiple();
-use Drupal\node\NodeTypeInterface;
-use Drupal\field\Entity\FieldStorageConfig;
-use Drupal\Core\Field\BaseFieldDefinition;
-
 /**
  * Implements hook_install().
  */
 function scheduler_api_test_install() {
-//   dd('==scheduler_api_test_install()==');
-  // Ensure the scheduler_api_test node type is available.
-  $types = NodeType::loadMultiple();
-  if (!isset($types['scheduler_api_test'])) {
-    // Create the node type.
-    $node_type = entity_create('node_type', ['type' => 'scheduler_api_test', 'name' => 'Scheduler API testing', 'description' => 'Simulated third-party module used for testing Scheduler API and hook function']);
-    $node_type->save();
-    // Attach a body field to the node type.
-    node_add_body_field($node_type);
-  }
-
-  $node_names = node_type_get_names();
-//   dd($node_names, '$node_names'); // for debug;
-
-  $field_name = 'approved';
-  $field = FieldStorageConfig::loadByName('node', $field_name);
-//   dd(empty($field) ? 'empty' : $field, 'field named ' . $field_name);
-
-  $entity_manager = \Drupal::entityManager();
-  $definitions = $entity_manager->getFieldStorageDefinitions('node');
-  $definition_names = array_keys($definitions);
-//   dd($definition_names, 'definition_names');
-
-  // Create field storage for the 'approved' base field.
-  if (isset($definitions[$field_name])) {
-//     dd($definitions[$field_name], "definitions[$field_name]");
-  }
-  else {
-//     dd("No definition for '$field_name'. Now creating ...");
-
-   // block_content.install has code just like this. What is different such that it works there? Maybe the field already exists?
-    $field_definition = BaseFieldDefinition::create('integer')
-      ->setLabel(ucfirst($field_name))
-      ->setDescription(t('Approved for publication'));
-//     dd($field_definition, '$field_definition'); // all ok.
-
-//    \Drupal::entityManager()->clearCachedDefinitions();
-//   $entity_manager->onFieldStorageDefinitionCreate($field_definition); // gives message: the '' entity type does not exist
-
-    $ins = ($field_definition instanceof BaseFieldDefinition);
-//     dd($ins, '$field_definition is instanceof BaseFieldDefinition?');
-
-    \Drupal::entityDefinitionUpdateManager()
-      ->installFieldStorageDefinition($field_name, 'node', 'scheduler_api_test', $field_definition);
-
-//    \Drupal::service('entity.definition_update_manager')->applyUpdates(); // removes 'Mismatched entity and/or field definitions The following changes were detected in the entity type and field definitions. Content Delete the APP3 + app3 field.' from status report
-  }
 }
 
 /**
- * Implements hook_install().
- * This is the original 7.x version left here temporarily for reference.
+ * Implements hook_uninstall().
  */
-function scheduler_test_7xinstall() {
-
-  $t = get_t();
-
-  // Ensure the scheduler_test node type is available.
-  node_types_rebuild();
-  $types = node_type_get_types();
-
-  // Attach a body field to the node type.
-  node_add_body_field($types['scheduler_test']);
-
-  // Create a field to attach to the node type.
-  $field = field_info_field('field_scheduler_test_approved');
-  if (empty($field)) {
-    $field = array(
-      'field_name' => 'field_scheduler_test_approved',
-      'type' => 'list_integer',
-      'entity_types' => array('node'),
-      'cardinality' => 2,
-      'settings' => array(
-        'allowed_values' => array(
-          1 => $t('Approved for publication by the CEO'),
-        ),
-      ),
-    );
-    $field = field_create_field($field);
-  }
-
-  $instance = field_info_instance('node', 'field_scheduler_test_approved', 'scheduler_test');
-  if (empty($instance)) {
-    $instance = array(
-      'bundle' => 'scheduler_test',
-      'display' => array(
-        'default' => array('type' => 'list_default'),
-        'teaser' => array('type' => 'hidden'),
-      ),
-      'entity_type' => 'node',
-      'field_name' => 'field_scheduler_test_approved',
-      'label' => 'Approved',
-      'widget' => array('type' => 'options_buttons'),
-    );
-    field_create_instance($instance);
-  }
+function scheduler_api_test_uninstall() {
+  // Delete the custom node type and other config items.
+  \Drupal::configFactory()->getEditable('node.type.scheduler_api_test')->delete();
+  \Drupal::configFactory()->getEditable('field.storage.node.field_approved')->delete();
+  \Drupal::configFactory()->getEditable('field.field.node.scheduler_api_test.field_approved')->delete();
+  \Drupal::configFactory()->getEditable('core.entity_form_display.node.scheduler_api_test.default')->delete();
+  \Drupal::configFactory()->getEditable('core.entity_view_display.node.scheduler_api_test.default')->delete();
+  // @todo Is there a better way to delete the config items on uninstall?
+  // Assumed this was automatic but it seems not. After manual uninstall the
+  // node type is still available, and re-install fails.
+  // Cannot re-install until these are removed.
 }
