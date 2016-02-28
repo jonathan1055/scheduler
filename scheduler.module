@@ -354,7 +354,7 @@ function scheduler_node_presave(EntityInterface $node) {
  * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_insert(EntityInterface $node) {
-  // Only insert into database if we need to (un)publish this node at some date.
+  /* Temporarily remove code to avoid error: Call to undefined function rules_invoke_event()
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     // Invoke the events to indicate that a new node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
@@ -366,6 +366,7 @@ function scheduler_node_insert(EntityInterface $node) {
       }
     }
   }
+  */
 }
 
 /**
@@ -376,6 +377,7 @@ function scheduler_node_insert(EntityInterface $node) {
  * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_update(EntityInterface $node) {
+  /* Temporarily remove code to avoid error: Call to undefined function rules_invoke_event()
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     // Invoke the events to indicate that an existing node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
@@ -387,6 +389,7 @@ function scheduler_node_update(EntityInterface $node) {
       }
     }
   }
+  */
 }
 
 /**
