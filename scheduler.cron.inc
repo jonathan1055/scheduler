@@ -81,7 +81,11 @@ function _scheduler_publish() {
 
     // Invoke the event to tell Rules that Scheduler has published this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
+      /*
+      TEMP remove call to undefined function rules_invoke_event until converted.
+      @see https://www.drupal.org/node/2651348 
       rules_invoke_event('scheduler_node_has_been_published_event', $node, $publish_on, $node->unpublish_on->value);
+      */
     }
 
     // Invoke scheduler API for modules to react after the node is published.
@@ -168,7 +172,11 @@ function _scheduler_unpublish() {
 
     // Invoke event to tell Rules that Scheduler has unpublished this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
+      /*
+      TEMP remove call to undefined function rules_invoke_event until converted.
+      @see https://www.drupal.org/node/2651348 
       rules_invoke_event('scheduler_node_has_been_unpublished_event', $node, $node->publish_on, $unpublish_on);
+      */
     }
 
     // Invoke scheduler API for modules to react after the node is unpublished.
