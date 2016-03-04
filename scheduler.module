@@ -182,6 +182,17 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $form['unpublish_on']['#access'] = $unpublishing_enabled;
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
+
+  if (!\Drupal::currentUser()->hasPermission('schedule publishing of nodes')) {
+    // Do not show the scheduler fields for users who do not have permission.
+    $form['scheduler_settings']['#access'] = FALSE;
+
+    // @todo Find a more elegant solution for bypassing the validation of
+    // scheduler fields when the user does not have permission.
+    // @see https://www.drupal.org/node/2651448
+    $form['publish_on']['widget'][0]['value']['#required'] = FALSE;
+    $form['unpublish_on']['widget'][0]['value']['#required'] = FALSE;
+  }
 }
 
 /**
