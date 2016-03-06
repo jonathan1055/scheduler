@@ -3,12 +3,10 @@
 /**
  * @file
  * Builds placeholder replacement tokens for node scheduler data.
- *
- * @todo This still needs to be converted to Drupal 8.
- * @see https://www.drupal.org/node/2644208
  */
 
 use Drupal\Component\Utility;
+use Drupal\Core\Render\BubbleableMetadata;
 
 /**
  * Implements hook_token_info().
@@ -31,7 +29,8 @@ function scheduler_token_info() {
 /**
  * Implements hook_tokens().
  */
-function scheduler_tokens($type, $tokens, array $data = array(), array $options = array()) {
+function scheduler_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
+  $token_service = \Drupal::token();
   $date_formatter = \Drupal::service('date.formatter');
   $language_code = isset($options['language']) ? $options['language']->language : NULL;
   $replacements = array();
@@ -55,11 +54,11 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
     }
 
     // Chained token replacement.
-    if (isset($node->publish_on->value) && $publish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-publish')) {
-      $replacements += token_generate('date', $publish_tokens, array('date' => $node->publish_on->value), $options);
+    if (isset($node->publish_on->value) && $publish_tokens = $token_service->findWithPrefix($tokens, 'scheduler-publish')) {
+      $replacements += $token_service->generate('date', $publish_tokens, array('date' => $node->publish_on->value), $options, $bubbleable_metadata);
     }
-    if (isset($node->unpublish_on->value) && $unpublish_tokens = \Drupal::token()->findWithPrefix($tokens, 'scheduler-unpublish')) {
-      $replacements += token_generate('date', $unpublish_tokens, array('date' => $node->unpublish_on->value), $options);
+    if (isset($node->unpublish_on->value) && $unpublish_tokens = $token_service->findWithPrefix($tokens, 'scheduler-unpublish')) {
+      $replacements += $token_service->generate('date', $unpublish_tokens, array('date' => $node->unpublish_on->value), $options, $bubbleable_metadata);
     }
   }
 

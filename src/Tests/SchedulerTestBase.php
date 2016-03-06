@@ -57,6 +57,7 @@ abstract class SchedulerTestBase extends WebTestBase {
     $this->adminUser = $this->drupalCreateUser([
       'administer nodes',
       'access content',
+      'access content overview',
       'create page content',
       'edit own page content',
       'delete own page content',
