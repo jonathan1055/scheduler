@@ -468,20 +468,12 @@ function scheduler_node_load($nodes, $types) {
  * Implements hook_node_view().
  */
 function scheduler_node_view($node, $view_mode = 'full', $langcode) {
-  // If the node is going to be unpublished then add this information to the
-  // header for googlebot. Only do this when viewing the full node (not teaser)
-  // on its own page and not in edit mode.
-  // @todo Replace $node->scheduler with $node->unpublish_on.
-  if ($view_mode == 'full' && !empty($node->scheduler['unpublish_on']) && node_is_page($node) && arg(2) != 'edit') {
-    $unavailable_after = date("d-M-Y H:i:s T", $node->scheduler['unpublish_on']);
-    $element = array(
-      '#tag' => 'meta',
-      '#attributes' => array(
-        'name' => 'googlebot',
-        'content' => 'unavailable_after: ' . $unavailable_after,
-      ),
-    );
-    drupal_add_html_head($element, 'scheduler_unavailable');
+  // If the node is going to be unpublished, then add this information to the
+  // header for search engines. Only do this when the current page is the
+  // full-page view of the node.
+  // @see https://googleblog.blogspot.be/2007/07/robots-exclusion-protocol-now-with-even.html
+  if ($view_mode == 'full' && !empty($node->unpublish_on) && node_is_page($node) && arg(2) != 'edit') {
+    drupal_add_http_header('X-Robots-Tag', 'unavailable_after: ' . date(DATE_RFC850, $node->unpublish_on));
   }
 }
 

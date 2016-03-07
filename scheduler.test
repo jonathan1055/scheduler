@@ -550,6 +550,40 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->drupalPost('node/' . $unpublished_node->nid . '/edit', array(), t('Delete'));
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
   }
+
+  /**
+   * Tests meta-information on scheduled nodes.
+   *
+   * When nodes are scheduled for unpublication, an X-Robots-Tag HTTP header is
+   * sent, alerting crawlers about when an item expires and should be removed
+   * from search results.
+   */
+  public function testMetaInformation() {
+    // Log in.
+    $this->drupalLogin($this->admin_user);
+
+    // Create a published node without scheduling.
+    $published_node = $this->drupalCreateNode(['type' => 'page', 'status' => 1]);
+    $this->drupalGet('node/' . $published_node->nid);
+
+    // Since we did not set an unpublish date, there should be no X-Robots-Tag
+    // header on the response.
+    $this->assertFalse($this->drupalGetHeader('X-Robots-Tag'), 'X-Robots-Tag is not present when no unpublish date is set.');
+
+    // Set a scheduler unpublish date on the node.
+    $unpublish_date = strtotime('+1 day');
+    $edit = array(
+      'unpublish_on' => format_date($unpublish_date, 'custom', 'Y-m-d H:i:s'),
+    );
+    $this->drupalPost('node/' . $published_node->nid . '/edit', $edit, t('Save'));
+
+    // The node page should now have an X-Robots-Tag header with an
+    // unavailable_after-directive and RFC850 date- and time-value.
+    $this->drupalGet('node/' . $published_node->nid);
+    $robots_tag = $this->drupalGetHeader('X-Robots-Tag');
+    $this->assertEqual($robots_tag, 'unavailable_after: ' . date(DATE_RFC850, $unpublish_date), 'X-Robots-Tag is present with correct timestamp derived from unpublish_on date.');
+  }
+
 }
 
 /**
