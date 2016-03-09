@@ -14,13 +14,6 @@ namespace Drupal\scheduler\Tests;
 class SchedulerValidationTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests the validation when editing a node.
    *
    * The 'required' checks and 'dates in the past' checks are handled in other

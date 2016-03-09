@@ -15,13 +15,6 @@ namespace Drupal\scheduler\Tests;
 class SchedulerDefaultTimeTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Test the default time functionality.
    */
   public function testDefaultTime() {

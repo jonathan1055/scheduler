@@ -17,13 +17,6 @@ use Drupal\node\Entity\NodeType;
 class SchedulerDeleteNodeTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests the deletion of a scheduled node.
    *
    * This tests if it is possible to delete a node that does not have a

@@ -14,13 +14,6 @@ namespace Drupal\scheduler\Tests;
 class SchedulerPermissionsTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests that users without permission do not see the scheduler date fields.
    */
   public function testUserPermissions() {
