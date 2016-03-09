@@ -316,13 +316,17 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_node_presave(EntityInterface $node) {
-  $date_formatter = \Drupal::service('date.formatter');
+  $entity = $node->type->entity;
+  // If the node type is not enabled for Scheduler then do nothing.
+  if (!$entity->getThirdPartySetting('scheduler', 'publish_enable', FALSE)) {
+    return;
+  };
+
   if ($node->publish_on->value > 0) {
     // Check that other modules allow the action on this node.
     $publication_allowed = _scheduler_allow($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
-    $entity = $node->type->entity;
     $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', SCHEDULER_DEFAULT_PUBLISH_PAST_DATE) == 'publish';
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
@@ -344,6 +348,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // message themselves explaining why publication is denied.
       if ($publication_allowed) {
         $date_format = \Drupal::config('scheduler.settings')->get('date_format');
+        $date_formatter = \Drupal::service('date.formatter');
         drupal_set_message(t('This post is unpublished and will be published @publish_time.',
           array('@publish_time' => $date_formatter->format($node->publish_on->value, 'custom', $date_format))), 'status', FALSE);
       }

@@ -12,6 +12,12 @@ use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
 
 /**
+ * Declare exception classes.
+ */
+class SchedulerNodeTypeNotEnabledException extends Exception {}
+class SchedulerMissingDateException extends Exception {}
+
+/**
  * Publish scheduled nodes.
  *
  * @return bool
@@ -25,6 +31,8 @@ function _scheduler_publish() {
   $query = \Drupal::entityQuery('node')
     ->condition('publish_on', 0, '>')
     ->condition('publish_on', REQUEST_TIME, '<=');
+  // @todo Change this query to exclude nodes which are not enabled for
+  // publishing. See https://www.drupal.org/node/2659824
   $nids = $query->execute();
 
   $action = 'publish';
@@ -35,8 +43,18 @@ function _scheduler_publish() {
   // Allow other modules to alter the list of nodes to be published.
   \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
+  $logger = \Drupal::logger('scheduler');
+  // @todo Use dependency injection for the logger when we have written the new
+  // service for scheduler API. See https://www.drupal.org/node/2651338
   $nodes = Node::loadMultiple($nids);
   foreach ($nodes as $nid => $node) {
+    // The API calls could return nodes of types which are not enabled for
+    // scheduled publishing. Do not process these.
+    if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', FALSE)) {
+      throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
+      continue;
+    }
+
     // Check that other modules allow the action on this node.
     if (!_scheduler_allow($node, $action)) {
       continue;
@@ -45,6 +63,15 @@ function _scheduler_publish() {
     // Invoke Scheduler API for modules to react before the node is published.
     // @todo For D8 move the 'pre' call to here.
     // See https://www.drupal.org/node/2311273
+
+    // If an API call has removed the date $node->set('changed', $publish_on)
+    // would fail, so trap this exception here and give a meaningful message.
+    if (empty($node->publish_on->value)) {
+      $field_definitions = \Drupal::entityManager()->getFieldDefinitions('node', $node->getType());
+      $field = (string)$field_definitions['publish_on']->getLabel();
+      throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $node->id(), $node->getTitle(), $field));
+      continue;
+    }
 
     // Update timestamps.
     $publish_on = $node->publish_on->value;
@@ -64,7 +91,7 @@ function _scheduler_publish() {
       ));
     }
     // Unset publish_on so the node will not get rescheduled by subsequent calls
-    // to $node->save(). Save the value for use when calling Rules.
+    // to $node->save().
     $node->publish_on->value = NULL;
 
     // Invoke scheduler API to allow modules to alter the node before it is
@@ -73,8 +100,15 @@ function _scheduler_publish() {
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
     // Log the fact that a scheduled publication is about to take place.
-    $view_link = $node->link(t('View'));
-    \Drupal::logger('scheduler')->notice('@type: scheduled publishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
+    $view_link = $node->link(t('View node'));
+    $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
+    $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
+    $logger_variables = array(
+      '@type' => node_get_type_label($node),
+      '%title' => $node->getTitle(),
+      'link' => $nodetype_link . ' ' . $view_link,
+    );
+    $logger->notice('@type: scheduled publishing of %title.', $logger_variables);
 
     // Use the actions system to publish the node.
     \Drupal::entityManager()->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
@@ -83,7 +117,7 @@ function _scheduler_publish() {
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
       /*
       TEMP remove call to undefined function rules_invoke_event until converted.
-      @see https://www.drupal.org/node/2651348 
+      @see https://www.drupal.org/node/2651348
       rules_invoke_event('scheduler_node_has_been_published_event', $node, $publish_on, $node->unpublish_on->value);
       */
     }
@@ -111,6 +145,8 @@ function _scheduler_unpublish() {
   $query = \Drupal::entityQuery('node')
     ->condition('unpublish_on', 0, '>')
     ->condition('unpublish_on', REQUEST_TIME, '<=');
+  // @todo Change this query to exclude nodes which are not enabled for
+  // unpublishing. See https://www.drupal.org/node/2659824
   $nids = $query->execute();
 
   $action = 'unpublish';
@@ -121,8 +157,18 @@ function _scheduler_unpublish() {
   // Allow other modules to alter the list of nodes to be unpublished.
   \Drupal::moduleHandler()->alter('scheduler_nid_list', $nids, $action);
 
+  $logger = \Drupal::logger('scheduler');
+  // @todo Use dependency injection for the logger when we have written the new
+  // service for scheduler API. See https://www.drupal.org/node/2651338
   $nodes = Node::loadMultiple($nids);
   foreach ($nodes as $nid => $node) {
+    // The API calls could return nodes of types which are not enabled for
+    // scheduled unpublishing. Do not process these.
+    if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE)) {
+      throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
+      continue;
+    }
+
     // Check that other modules allow the action on this node.
     if (!_scheduler_allow($node, $action)) {
       continue;
@@ -139,6 +185,15 @@ function _scheduler_unpublish() {
     // Invoke scheduler API for modules to react before the node is unpublished.
     // @todo For D8, move the 'pre' call to here.
     // See https://www.drupal.org/node/2311273
+
+    // If an API call has removed the date $node->set('changed', $unpublish_on)
+    // would fail, so trap this exception here and give a meaningful message.
+    if (empty($node->unpublish_on->value)) {
+      $field_definitions = \Drupal::entityManager()->getFieldDefinitions('node', $node->getType());
+      $field = (string)$field_definitions['unpublish_on']->getLabel();
+      throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $node->id(), $node->getTitle(), $field));
+      continue;
+    }
 
     // Update timestamps.
     $old_change_date = $node->getChangedTime();
@@ -164,8 +219,15 @@ function _scheduler_unpublish() {
     _scheduler_scheduler_api($node, 'pre_' . $action);
 
     // Log the fact that a scheduled unpublication is about to take place.
-    $view_link = $node->link(t('View'));
-    \Drupal::logger('scheduler')->notice('@type: scheduled unpublishing of %title.', array('@type' => $node->getType(), '%title' => $node->getTitle(), 'link' => $view_link));
+    $view_link = $node->link(t('View node'));
+    $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
+    $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
+    $logger_variables = array(
+      '@type' => node_get_type_label($node),
+      '%title' => $node->getTitle(),
+      'link' => $nodetype_link . ' ' . $view_link,
+    );
+    $logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
 
     // Use the actions system to publish the node.
     \Drupal::entityManager()->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
@@ -174,7 +236,7 @@ function _scheduler_unpublish() {
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
       /*
       TEMP remove call to undefined function rules_invoke_event until converted.
-      @see https://www.drupal.org/node/2651348 
+      @see https://www.drupal.org/node/2651348
       rules_invoke_event('scheduler_node_has_been_unpublished_event', $node, $node->publish_on, $unpublish_on);
       */
     }
