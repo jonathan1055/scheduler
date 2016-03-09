@@ -16,13 +16,6 @@ use Drupal\Component\Utility\SafeMarkup;
 class SchedulerPastDatesTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Test the different options for past publication dates.
    */
   public function testSchedulerPastDates() {
@@ -31,6 +24,10 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
 
     // Log in.
     $this->drupalLogin($this->adminUser);
+
+    // Ensure that neither of the scheduling dates are set to be required.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)
+      ->setThirdPartySetting('scheduler', 'unpublish_required', FALSE)->save();
 
     // Create an unpublished page node.
     $node = $this->drupalCreateNode(['type' => $this->nodetype->get('type'), 'status' => FALSE]);
@@ -42,6 +39,11 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
       'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
       'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
     ];
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
+    $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown by default when the publication date is in the past.');
+
+    // Test the 'error' behavior explicitly.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'error')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
 

@@ -17,13 +17,6 @@ use Drupal\node\Entity\NodeType;
 class SchedulerFieldsDisplayTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
    */
   public function testFieldsDisplay() {
@@ -39,7 +32,8 @@ class SchedulerFieldsDisplayTest extends SchedulerTestBase {
     $node_type->setThirdPartySetting('scheduler', 'fields_display_mode', 'fieldset')->save();
     $this->drupalGet('node/add/page');
     $this->assertFalse($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler dates are not shown in a vertical tab when they are configured to show as a fieldset.');
-    $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and not(@open = "open")]'), 'The scheduler dates are shown in a collapsed fieldset when they are configured to show as a fieldset.');
+    $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings"]'), 'The scheduler dates are shown in a fieldset when they are configured to show as a fieldset.');
+    $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and not(@open = "open")]'), 'The scheduler dates fieldset is collapsed by default.');
 
     // Check that the fieldset is expanded if either of the scheduling dates
     // are required.

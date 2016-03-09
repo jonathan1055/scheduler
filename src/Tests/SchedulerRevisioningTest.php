@@ -17,13 +17,6 @@ use Drupal\node\NodeInterface;
 class SchedulerRevisioningTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Simulates the scheduled (un)publication of a node.
    *
    * @param \Drupal\node\NodeInterface $node
@@ -107,24 +100,27 @@ class SchedulerRevisioningTest extends SchedulerTestBase {
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day');
     $settings = [
+      'type' => $this->nodetype->get('type'),
       'revision' => 0,
       'created' => $created,
     ];
     $node = $this->drupalCreateNode($settings);
 
+    // Ensure nodes with past dates will be scheduled not published immediately.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
+
     // First test scheduled publication with revisioning disabled by default.
     $node = $this->schedule($node);
-    $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was published with revisioning disabled.');
+    $this->assertRevisionCount($node->id(), 1, 'No new revision is created by default when a node is published.');
 
     // Test scheduled unpublication.
     $node = $this->schedule($node, 'unpublish');
-    $this->assertRevisionCount($node->id(), 1, 'No new revision was created when a node was unpublished with revisioning disabled.');
+    $this->assertRevisionCount($node->id(), 1, 'No new revision is created by default when a node is unpublished.');
 
     // Enable revisioning.
-    $entity = $node->type->entity;
-    $entity->setThirdPartySetting('scheduler', 'publish_revision', TRUE);
-    $entity->setThirdPartySetting('scheduler', 'unpublish_revision', TRUE);
-    $entity->save();
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_revision', TRUE)
+      ->setThirdPartySetting('scheduler', 'unpublish_revision', TRUE)
+      ->save();
 
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);

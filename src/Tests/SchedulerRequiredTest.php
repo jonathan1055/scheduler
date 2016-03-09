@@ -16,13 +16,6 @@ use Drupal\node\Entity\NodeType;
 class SchedulerRequiredTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests creating and editing nodes with required scheduling enabled.
    */
   public function testRequiredScheduling() {
@@ -33,6 +26,14 @@ class SchedulerRequiredTest extends SchedulerTestBase {
       // The 1-10 numbering used below matches the test cases described in
       // http://drupal.org/node/1198788#comment-7816119
       //
+      [
+        'id' => 0,
+        'required' => '',
+        'operation' => 'add',
+        'status' => 1,
+        'expected' => 'not required',
+        'message' => 'By default when a new node is created, the publish on and unpublish on dates are not required.',
+      ],
       // A. Test scenarios that require scheduled publishing.
       // When creating a new unpublished node it is required to enter a
       // publication date.
@@ -160,9 +161,11 @@ class SchedulerRequiredTest extends SchedulerTestBase {
 
     foreach ($test_cases as $test_case) {
       // Set required (un)publishing as stipulated by the test case.
-      $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish');
-      $node_type->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish');
-      $node_type->save();
+      if (!empty($test_case['required'])) {
+        $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish')
+          ->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish')
+          ->save();
+      }
 
       // To assist viewing and analysing the generated test result pages create
       // a text string showing all the test case parameters.

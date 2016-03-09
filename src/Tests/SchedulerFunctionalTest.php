@@ -14,13 +14,6 @@ namespace Drupal\scheduler\Tests;
 class SchedulerFunctionalTest extends SchedulerTestBase {
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-  }
-
-  /**
    * Tests basic scheduling of content.
    */
   public function testPublishingAndUnpublishing() {
@@ -32,7 +25,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     // Create node values. Set time to one hour in the future.
     $edit = [
-      'title[0][value]' => $this->randomMachineName(10),
+      'title[0][value]' => 'Publishing ' . $this->randomMachineName(10),
       'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'Y-m-d'),
       'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'H:i:s'),
       'promote[value]' => 1,
@@ -45,7 +38,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     unset($edit['publish_on[0][value][date]']);
     unset($edit['publish_on[0][value][time]']);
     // Need a new title for the new node, as we identify the node by title.
-    $edit['title[0][value]'] = $this->randomMachineName(10);
+    $edit['title[0][value]'] = 'Unpublishing ' . $this->randomMachineName(10);
     $this->helpTestScheduler($edit);
   }
 
@@ -60,6 +53,14 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $edit['body[0][value]'] = $body;
     $this->drupalLogin($this->adminUser);
     $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
+    // Verify that the node was created.
+    $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
+    $this->assertTrue($node, sprintf('Node for %s was created sucessfully.', $edit['title[0][value]']));
+    if (empty($node)) {
+      $this->assert(FALSE, t('Test halted because node was not created.'));
+      return;
+    }
+
     // Show the site front page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalLogout();
@@ -74,12 +75,6 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     }
 
     // Modify the scheduler field data to a time in the past, then run cron.
-    $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    if (empty($node)) {
-      $date_time = $edit[$key . '[0][value][date]'] . ' ' . $edit[$key . '[0][value][time]'];
-      $this->assert(FALSE, t('Node with %key = @date_time was not created.', ['%key' => $key, '@date_time' => $date_time]));
-      return;
-    }
     db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
 
     $this->cronRun();
