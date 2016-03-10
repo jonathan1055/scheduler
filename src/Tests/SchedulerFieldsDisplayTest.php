@@ -17,6 +17,12 @@ use Drupal\node\Entity\NodeType;
 class SchedulerFieldsDisplayTest extends SchedulerTestBase {
 
   /**
+   * SchedulerTestBase loads the standard modules.
+   * Additional module field_ui is required for the 'manage form display' test.
+   */
+  public static $modules = ['field_ui'];
+
+  /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
    */
   public function testFieldsDisplay() {
@@ -74,5 +80,32 @@ class SchedulerFieldsDisplayTest extends SchedulerTestBase {
     $node = $this->drupalCreateNode($options);
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler dates are shown in an expanded fieldset when an unpublish-on date already exists.');
+  }
+
+  /**
+   * Tests the settings entry in the content type form display.
+   * This test covers scheduler_entity_extra_field_info().
+   */
+  public function testManageFormDisplay() {
+
+    // Create a custom administrator user with permissions to use the field_ui
+    // module 'node form display' tab.
+    $this->adminUser = $this->drupalCreateUser([
+      'administer content types',
+      'administer node form display',
+    ]);
+    $this->drupalLogin($this->adminUser);
+
+    // Check that the weight input field is displayed when the content type is
+    // enabled for scheduling.
+    $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
+    $this->assertFieldByName('fields[scheduler_settings][weight]', '', 'The scheduler settings weight entry is shown when the content type is enabled for scheduling.');
+
+    // Check that the weight input field is not displayed when the content type
+    // is not enabled for scheduling.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
+      ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
+    $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
+    $this->assertNoFieldByName('fields[scheduler_settings][weight]', '', 'The scheduler settings weight entry is not shown when the content type is not enabled for scheduling.');
   }
 }

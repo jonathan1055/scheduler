@@ -458,6 +458,30 @@ function _scheduler_scheduler_api(NodeInterface $node, $action) {
 }
 
 /**
+ * Implements hook_entity_extra_field_info().
+ */
+function scheduler_entity_extra_field_info() {
+  // Expose the Scheduler group on the 'Manage Form Display' tab when editing a
+  // content type. This allows admins to adjust the weight of the group, and it
+  // works for vertical tabs and separate fieldsets.
+  $fields = array();
+  foreach (node_type_get_types() as $type) {
+    // @todo change the FALSE to SCHEDULER_DEFAULT_... when https://www.drupal.org/node/2633870 lands.
+    $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
+    $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+
+    if ($publishing_enabled || $unpublishing_enabled) {
+      $fields['node'][$type->get('type')]['form']['scheduler_settings'] = array(
+        'label' => t('Scheduler Dates'),
+        'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
+        'weight' => 20, // Default 20 puts this below the core fields.
+      );
+    }
+  }
+  return $fields;
+}
+
+/**
  * Prepares variables for node templates.
  *
  * Makes the publish_on and unpublish_on data available as theme variables.
