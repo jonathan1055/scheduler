@@ -50,6 +50,7 @@ function scheduler_uninstall() {
   // Keep variables in alphabetic order for easier maintenance and patching.
   $variables = array(
     'scheduler_allow_date_only',
+    'scheduler_cache_clear_all',
     'scheduler_date_format',
     'scheduler_date_only_format',
     'scheduler_default_time',

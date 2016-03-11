@@ -404,6 +404,12 @@ function _scheduler_lightweight_cron($form, &$form_state) {
     '#default_value' => variable_get('scheduler_lightweight_log', 1),
     '#description' => t("When this option is checked, Scheduler will write an entry to the log every time the lightweight cron process is started and completed. This is useful during set up and testing, but can result in a large number of log entries. Any actions performed during the lightweight cron run will always be logged regardless of this setting."),
   );
+  $form['scheduler_cron_settings']['scheduler_cache_clear_all'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Clear all expired block and page caches after publishing or unpublishing via cron.'),
+    '#default_value' => variable_get('scheduler_cache_clear_all', 0),
+    '#description' => t('If a node has been published or unpublished by Scheduler during a cron run, this option will clear the caches instead of relying on the Drupal core system cron task. Warning: This may have a detrimental effect on performance for large sites.'),
+  );
   $form['scheduler_cron_settings']['scheduler_lightweight_access_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Lightweight cron access key'),

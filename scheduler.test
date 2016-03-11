@@ -25,21 +25,29 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
 
   /**
    * Helper function for testScheduler(). Schedules content and asserts status.
+   *
+   * @param array $edit
+   *   Node data, as if it was sent from the edit form.
+   * @param bool $scheduler_cron_only
+   *   TRUE to only run Scheduler cron, FALSE to run default full Drupal cron.
    */
-  function helpTestScheduler($edit) {
+  function helpTestScheduler($edit, $scheduler_cron_only = FALSE) {
     // Add a page.
     $langcode = LANGUAGE_NONE;
+    $title = $this->randomName();
+    $edit["title"] = $title;
     $body = $this->randomName();
     $edit["body[$langcode][0][value]"] = $body;
     $this->drupalLogin($this->admin_user);
     $this->drupalPost('node/add/page', $edit, t('Save'));
-    // Show the site front page for an anonymous visitor, then assert that the
+    $node = $this->drupalGetNodeByTitle($title);
+    // Show the specific page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
     $this->drupalLogout();
-    $this->drupalGet('node');
+    $this->drupalGet("node/{$node->nid}");
     if (isset($edit['publish_on'])) {
       $key = 'publish_on';
-      $this->assertNoText($body, t('Node is unpublished'));
+      $this->assertResponse(403, t('Node is unpublished'));
     }
     else {
       $key = 'unpublish_on';
@@ -47,19 +55,25 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
     }
     // Verify that the scheduler table is not empty.
     $this->assertTrue(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is not empty');
-    // Modify the scheduler row to a time in the past, then run cron.
-    db_update('scheduler')->fields(array($key => time() - 1))->execute();
-    $this->cronRun();
+    // Modify the scheduler row to a time far enough in the past because
+    // scheduler_cron uses REQUEST_TIME and our timestamp has to be before that.
+    db_update('scheduler')->fields(array($key => time() - 3600))->execute();
+    if ($scheduler_cron_only) {
+      scheduler_cron();
+    }
+    else {
+      $this->cronRun();
+    }
     // Verify that the scheduler table is empty.
     $this->assertFalse(db_query_range('SELECT 1 FROM {scheduler}', 0, 1)->fetchField(), 'Scheduler table is empty');
-    // Show the site front page for an anonymous visitor, then assert that the
+    // Show the specific page for an anonymous visitor, then assert that the
     // node is correctly published or unpublished.
-    $this->drupalGet('node');
+    $this->drupalGet("node/{$node->nid}");
     if (isset($edit['publish_on'])) {
       $this->assertText($body, t('Node is published'));
     }
     else {
-      $this->assertNoText($body, t('Node is unpublished'));
+      $this->assertResponse(403, t('Node is unpublished'));
     }
   }
 
@@ -180,19 +194,43 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
   /**
    * Tests basic scheduling of content.
+   *
+   * @param bool $scheduler_cron_only
+   *   TRUE to only run Scheduler cron, FALSE to run default full Drupal cron.
    */
-  function testScheduler() {
+  function testScheduler($scheduler_cron_only = FALSE) {
     // Create node values. Set time to one hour in the future.
     $edit = array(
-      'title' => 'title',
       'publish_on' => format_date(time() + 3600, 'custom', 'Y-m-d H:i:s'),
       'status' => 1,
       'promote' => 1,
     );
-    $this->helpTestScheduler($edit);
+    // Test scheduled publishing.
+    $this->helpTestScheduler($edit, $scheduler_cron_only);
+    // Test scheduled unpublishing.
     $edit['unpublish_on'] = $edit['publish_on'];
     unset($edit['publish_on']);
-    $this->helpTestScheduler($edit);
+    $this->helpTestScheduler($edit, $scheduler_cron_only);
+  }
+
+  /**
+   * Tests scheduler when not all cron tasks are run during cron.
+   *
+   * Verify that we can set variable 'scheduler_cache_clear_all' so the page
+   * cache is still cleared.
+   *
+   * @uses testScheduler()
+   */
+  function testSchedulerWithOnlySchedulerCronAndAnonymousPageCache() {
+    // Cache pages for anonymous users.
+    variable_set('cache', 1);
+    // Instruct scheduler to clear caches itself, instead of relying on
+    // system_cron.
+    variable_set('scheduler_cache_clear_all', 1);
+    // Instruct the helper method to run only the scheduler cron.
+    $scheduler_cron_only = TRUE;
+
+    $this->testScheduler($scheduler_cron_only);
   }
 
   /**

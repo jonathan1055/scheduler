@@ -674,8 +674,15 @@ function scheduler_cron() {
   $scheduler_cron = &drupal_static(__FUNCTION__, FALSE);
   $scheduler_cron = TRUE;
 
-  _scheduler_publish();
-  _scheduler_unpublish();
+  // If the option is enabled clear caches if a node was published or
+  // unpublished, just like it would have been done if system_cron ran or the
+  // nodes were edited through the node edit form.
+  $nodes_published = _scheduler_publish();
+  $nodes_unpublished = _scheduler_unpublish();
+  if (variable_get('scheduler_cache_clear_all', 0) && ($nodes_published || $nodes_unpublished)) {
+    // Clear the page and block caches.
+    cache_clear_all();
+  }
 
   // Reset the static scheduler_cron flag.
   drupal_static_reset(__FUNCTION__);
