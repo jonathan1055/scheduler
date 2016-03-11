@@ -11,6 +11,12 @@
 function scheduler_views_data() {
   $tables['scheduler']['table']['group'] = t('Scheduler');
 
+  $tables['scheduler']['table']['base'] = array(
+    'field' => 'nid',
+    'title' => t('Scheduler'),
+    'help' => t('Scheduler table'),
+  );
+
   // Define how the Scheduler table is linked to the node table.
   $tables['scheduler']['table']['join']['node'] = array(
     'left_field' => 'nid',
