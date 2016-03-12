@@ -61,8 +61,7 @@ function _scheduler_publish() {
     }
 
     // Invoke Scheduler API for modules to react before the node is published.
-    // @todo For D8 move the 'pre' call to here.
-    // See https://www.drupal.org/node/2311273
+    _scheduler_scheduler_api($node, 'pre_' . $action);
 
     // If an API call has removed the date $node->set('changed', $publish_on)
     // would fail, so trap this exception here and give a meaningful message.
@@ -93,11 +92,6 @@ function _scheduler_publish() {
     // Unset publish_on so the node will not get rescheduled by subsequent calls
     // to $node->save().
     $node->publish_on->value = NULL;
-
-    // Invoke scheduler API to allow modules to alter the node before it is
-    // saved.
-    // @todo For D8, remove this from here.
-    _scheduler_scheduler_api($node, 'pre_' . $action);
 
     // Log the fact that a scheduled publication is about to take place.
     $view_link = $node->link(t('View node'));
@@ -183,8 +177,7 @@ function _scheduler_unpublish() {
     }
 
     // Invoke scheduler API for modules to react before the node is unpublished.
-    // @todo For D8, move the 'pre' call to here.
-    // See https://www.drupal.org/node/2311273
+    _scheduler_scheduler_api($node, 'pre_' . $action);
 
     // If an API call has removed the date $node->set('changed', $unpublish_on)
     // would fail, so trap this exception here and give a meaningful message.
@@ -213,11 +206,6 @@ function _scheduler_unpublish() {
     // calls to $node->save(). Save the value for use when calling Rules.
     $node->unpublish_on->value = NULL;
 
-    // Invoke scheduler API to allow modules to alter the node before it is
-    // saved.
-    // @todo For D8, remove this from here.
-    _scheduler_scheduler_api($node, 'pre_' . $action);
-
     // Log the fact that a scheduled unpublication is about to take place.
     $view_link = $node->link(t('View node'));
     $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
@@ -242,7 +230,7 @@ function _scheduler_unpublish() {
     }
 
     // Invoke scheduler API for modules to react after the node is unpublished.
-    _scheduler_scheduler_api($node, 'unpublish');
+    _scheduler_scheduler_api($node, $action);
 
     $result = TRUE;
   }
