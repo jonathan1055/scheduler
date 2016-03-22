@@ -2,7 +2,8 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.node.scheduler_api_test.field_approved
+    - field.field.node.scheduler_api_test.field_approved_publishing
+    - field.field.node.scheduler_api_test.field_approved_unpublishing
     - node.type.scheduler_api_test
   module:
     - user
@@ -11,7 +12,16 @@ targetEntityType: node
 bundle: scheduler_api_test
 mode: default
 content:
-  field_approved:
+  field_approved_publishing:
+    type: boolean
+    weight: 1
+    label: inline
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {  }
+  field_approved_unpublishing:
     type: boolean
     weight: 1
     label: inline

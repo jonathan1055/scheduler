@@ -6,19 +6,62 @@
  */
 
 /**
+ * Implements hook_scheduler_api().
+ */
+function scheduler_api_test_scheduler_api($node, $action) {
+  // @todo Add something here.
+}
+
+/**
+ * Implements hook_scheduler_nid_list().
+ */
+function scheduler_api_test_scheduler_nid_list($action) {
+  // @todo Add something here.
+  $nids = [];    
+  return $nids;
+}
+
+/**
+ * Implements hook_scheduler_nid_list_alter().
+ */
+function scheduler_api_test_scheduler_nid_list_alter($nids, $action) {
+  // @todo Add something here.
+  return $nids;
+}
+
+/**
  * Implements hook_scheduler_allow_publishing().
  */
 function scheduler_api_test_scheduler_allow_publishing($node) {
   // If there is no 'approved' field do nothing to change the result.
-  if (!isset($node->field_approved)) {
+  if (!isset($node->field_approved_publishing)) {
     $allowed = TRUE;
   }
   else {
-    // Only publish nodes that have the 'Approved' checkbox ticked.
-    $allowed = $node->field_approved->value;
+    // Only publish nodes that have the 'Approved for Publishing' checkbox ticked.
+    $allowed = $node->field_approved_publishing->value;
     // If publication is denied then inform the user why.
     if (!$allowed) {
-      drupal_set_message(t('The content can be scheduled, but will only be published after approval by the CEO.'), 'status', FALSE);
+      drupal_set_message(t('The content can be scheduled for publishing, but will not be published until approved by the CEO.'), 'status', FALSE);
+    }
+  }
+  return $allowed;
+}
+
+/**
+ * Implements hook_scheduler_allow_unpublishing().
+ */
+function scheduler_api_test_scheduler_allow_unpublishing($node) {
+  // If there is no 'approved' field do nothing to change the result.
+  if (!isset($node->field_approved_unpublishing)) {
+    $allowed = TRUE;
+  }
+  else {
+    // Only unpublish nodes that have the 'Approved for Unpublishing' checkbox ticked.
+    $allowed = $node->field_approved_unpublishing->value;
+    // If unpublication is denied then inform the user why.
+    if (!$allowed) {
+      drupal_set_message(t('The content can be scheduled for unpublishing, but will not be unpublished until approved by the CEO.'), 'status', FALSE);
     }
   }
   return $allowed;
