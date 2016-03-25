@@ -6,35 +6,120 @@
  */
 
 /**
- * Allows to prevent publication of a scheduled node.
+ * @addtogroup hooks
+ * @{
+ */
+
+/**
+ * Modules may implement this hook to react to the Scheduler operation being
+ * done on a node. The hook is invoked during cron processing and also from
+ * scheduler_node_presave().
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The scheduled node object that is being processed.
+ *
+ * @param string $action
+ *   $action determines what is being done to the node. The value will be
+ *   'pre_publish', 'publish', 'publish_immediately', 'pre_unpublish'
+ *   or 'unpublish'.
+ */
+function hook_scheduler_api($node, $action) {
+  switch ($action) {
+    case 'pre_publish' :
+      break;
+    case 'publish' :
+      break;
+    case 'publish_immediately' :
+      break;
+    case 'pre_unpublish' :
+      break;
+    case 'unpublish' :
+      break;
+    default:
+  }
+}
+
+/**
+ * Modules may implement this hook to add more node ids into the list to be
+ * processed in the current cron run. This hook is invoked during cron only.
+ *
+ * @param string $action
+ *   $action determines what is being done to the node.
+ *   The value will be 'publish' or 'unpublish'.
+ *
+ * @return array
+ *   Array of node ids to add to the existing list of nodes to be processed.
+ */
+function hook_scheduler_nid_list($action) {
+  $nids = array();
+  return $nids;
+}
+
+/**
+ * Modules may implement this hook to add or remove node ids from the list to be
+ * processed in the current cron run. This hook is invoked during cron only.
+ *
+ * @param array $nids
+ *   $nids is an array of node ids being processed.
+ *
+ * @param string $action
+ *   $action determines what is being done to the node.
+ *   The value will be 'publish' or 'unpublish'.
+ *
+ * @return array
+ *   The full array of node ids to process, adjusted as required.
+ */
+function hook_scheduler_nid_list_alter(&$nids, $action) {
+  return $nids;
+}
+
+/**
+ * Modules may implement this hook to prevent publication of a scheduled node.
+ *
+ * The node can be scheduled, and an attempt to publish it will be made during
+ * the first cron run after the publishing time. If this hook returns FALSE the
+ * node will not be published. Attempts at publishing will continue on each
+ * subsequent cron run until this hook returns TRUE.
  *
  * @param \Drupal\node\NodeInterface $node
  *   The scheduled node that is about to be published.
  *
  * @return bool
- *   FALSE if the node should not be published. TRUE otherwise.
+ *   TRUE if the node can be published, FALSE if it should not be published.
  */
 function hook_scheduler_allow_publishing(NodeInterface $node) {
-  // Prevent publication of nodes that do not have the 'Approved for publication
-  // by the CEO' checkbox ticked.
-  $allowed = !empty($node->field_approved->value);
+  // If there is no 'approved' field do nothing to change the result.
+  if (!isset($node->field_approved)) {
+    $allowed = TRUE;
+  }
+  else {
+    // Prevent publication of nodes that do not have the 'Approved for
+    // publication by the CEO' checkbox ticked.
+    $allowed = !empty($node->field_approved->value);
 
-  // If publication is denied then inform the user why.
-  if (!$allowed) {
-    drupal_set_message(t('The content will only be published after approval by the CEO.'), 'status', FALSE);
+    // If publication is denied then inform the user why. This message will be
+    // displayed during node edit and save.
+    if (!$allowed) {
+      drupal_set_message(t('The content will only be published after approval by the CEO.'), 'status', FALSE);
+    }
   }
 
   return $allowed;
 }
 
 /**
- * Allows to prevent unpublication of a scheduled node.
+ * Modules may implement this hook to prevent unpublication of a scheduled node.
+ *
+ * The node can be scheduled, and an attempt to unpublish it will be made during
+ * the first cron run after the unpublishing time. If this hook returns FALSE
+ * the node will not be unpublished. Attempts at unpublishing will continue on
+ * each subsequent cron run until this hook returns TRUE.
  *
  * @param \Drupal\node\NodeInterface $node
  *   The scheduled node that is about to be unpublished.
  *
  * @return bool
- *   FALSE if the node should not be unpublished. TRUE otherwise.
+ *   TRUE if the node can be unpublished, FALSE if it should not be unpublished.
  */
 function hook_scheduler_allow_unpublishing(NodeInterface $node) {
   $allowed = TRUE;
@@ -44,7 +129,8 @@ function hook_scheduler_allow_unpublishing(NodeInterface $node) {
   if ($node->getType() == 'competition' && $items = $node->field_competition_prizes->getValue()) {
     $allowed = (bool) count($items);
 
-    // If unpublication is denied then inform the user why.
+    // If unpublication is denied then inform the user why. This message will be
+    // displayed during node edit and save.
     if (!$allowed) {
       drupal_set_message(t('The competition will only be unpublished after all prizes have been claimed by the winners.'));
     }
@@ -52,3 +138,7 @@ function hook_scheduler_allow_unpublishing(NodeInterface $node) {
 
   return $allowed;
 }
+
+/**
+ * @} End of "addtogroup hooks".
+ */
