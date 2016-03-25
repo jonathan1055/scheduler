@@ -5,27 +5,96 @@
  * Hook implementations of the Scheduler API Test module.
  */
 
+use Drupal\node\Entity\Node;
+
 /**
  * Implements hook_scheduler_api().
  */
 function scheduler_api_test_scheduler_api($node, $action) {
-  // @todo Add something here.
+  // This hook allows modules to react to the Scheduler process being performed.
+  // It is invoked during cron processing and also from scheduler_node_presave().
+  // Use the standard 'sticky' and 'promote' fields as a simple way to test the
+  // processing. Use conditional checks on $node->isPublished() to make the
+  // tests stronger so that they will fail if the calls are in the wrong place.
+  switch ($action) {
+    case 'pre_publish' :
+      // Before publishing a node make it sticky.
+      if (!$node->isPublished()) $node->set('sticky', TRUE)->save();
+      break;
+    case 'publish' :
+      // After publishing a node promote to front page.
+      if ($node->isPublished()) $node->set('promote', TRUE)->save();
+      break;
+    case 'publish_immediately' :
+      // @todo Add test coverage for this scenario.
+      // Cannot use $node->set(..)->save() as that breaks the system!
+      break;
+    case 'pre_unpublish' :
+      // Before unpublishing a node make it unsticky.
+      if ($node->isPublished()) $node->set('sticky', FALSE)->save();
+      break;
+    case 'unpublish' :
+      // After unpublishing a node remove it from front page.
+      if (!$node->isPublished()) $node->set('promote', FALSE)->save();
+      break;
+    default:
+  }
 }
 
 /**
  * Implements hook_scheduler_nid_list().
  */
 function scheduler_api_test_scheduler_nid_list($action) {
-  // @todo Add something here.
-  $nids = [];    
+  $nids = [];
+
+  // Check to see what test nodes exist.
+  $query = \Drupal::entityQuery('node');
+  $nodes = Node::loadMultiple($query->execute());
+
+  foreach ($nodes as $nid => $node) {
+    // If publishing and this is the publish test node, set a date and add
+    // the node id to the list.
+    if ($action == 'publish' && $node->title->value == 'nid_list publish me') {
+      $node->set('publish_on', REQUEST_TIME)->save();
+      $nids[] = $nid;
+    }
+    // If unpublishing and this is the unpublish test node, set a date and add
+    // the node id to the list.
+    if ($action == 'unpublish' && $node->title->value == 'nid_list unpublish me') {
+      $node->set('unpublish_on', REQUEST_TIME)->save();
+      $nids[] = $nid;
+    }
+  }
   return $nids;
 }
 
 /**
  * Implements hook_scheduler_nid_list_alter().
  */
-function scheduler_api_test_scheduler_nid_list_alter($nids, $action) {
-  // @todo Add something here.
+function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
+  $query = \Drupal::entityQuery('node');
+  $nodes = Node::loadMultiple($query->execute());
+
+  foreach ($nodes as $nid => $node) {
+    if ($action == 'publish' && $node->title->value == 'nid_list_alter do not publish me') {
+      // Remove the node id.
+      $nids = array_diff($nids, [$nid]);
+    }
+    if ($action == 'publish' && $node->title->value == 'nid_list_alter publish me') {
+      // Set a publish_on date and add the node id.
+      $node->set('publish_on', REQUEST_TIME)->save();
+      $nids[] = $nid;
+    }
+    if ($action == 'unpublish' && $node->title->value == 'nid_list_alter do not unpublish me') {
+      // Remove the node id.
+      $nids = array_diff($nids, [$nid]);
+    }
+    if ($action == 'unpublish' && $node->title->value == 'nid_list_alter unpublish me') {
+      // Set an unpublish_on date and add the node id.
+      $node->set('unpublish_on', REQUEST_TIME)->save();
+      $nids[] = $nid;
+    }
+  }
   return $nids;
 }
 
@@ -33,12 +102,12 @@ function scheduler_api_test_scheduler_nid_list_alter($nids, $action) {
  * Implements hook_scheduler_allow_publishing().
  */
 function scheduler_api_test_scheduler_allow_publishing($node) {
-  // If there is no 'approved' field do nothing to change the result.
+  // If there is no 'Approved for Publishing' field then allow publishing.
   if (!isset($node->field_approved_publishing)) {
     $allowed = TRUE;
   }
   else {
-    // Only publish nodes that have the 'Approved for Publishing' checkbox ticked.
+    // Only publish nodes that have 'Approved for Publishing' set.
     $allowed = $node->field_approved_publishing->value;
     // If publication is denied then inform the user why.
     if (!$allowed) {
@@ -52,12 +121,12 @@ function scheduler_api_test_scheduler_allow_publishing($node) {
  * Implements hook_scheduler_allow_unpublishing().
  */
 function scheduler_api_test_scheduler_allow_unpublishing($node) {
-  // If there is no 'approved' field do nothing to change the result.
+  // If there is no 'Approved for Unpublishing' field then allow unpublishing.
   if (!isset($node->field_approved_unpublishing)) {
     $allowed = TRUE;
   }
   else {
-    // Only unpublish nodes that have the 'Approved for Unpublishing' checkbox ticked.
+    // Only unpublish nodes that have 'Approved for Unpublishing' set.
     $allowed = $node->field_approved_unpublishing->value;
     // If unpublication is denied then inform the user why.
     if (!$allowed) {
