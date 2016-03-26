@@ -19,7 +19,7 @@ class SchedulerUnpublishOnConstraintValidator extends ConstraintValidator {
    * {@inheritdoc}
    */
   public function validate($entity, Constraint $constraint) {
-    $scheduler_unpublish_required = $entity->getEntity()->type->entity->getThirdPartySetting('scheduler', 'unpublish_required');
+    $scheduler_unpublish_required = $entity->getEntity()->type->entity->getThirdPartySetting('scheduler', 'unpublish_required', SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED);
     $publish_on = $entity->getEntity()->publish_on->value;
     $unpublish_on = $entity->value;
 

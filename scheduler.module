@@ -17,6 +17,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
 
 // @todo Move constants into a class, so we do not pollute the global space,
 // and use them like this, for example: SchedulerApi::MY_CONSTANT.
+// @see https://www.drupal.org/node/2682579
 
 // The default format to use if no custom format has been configured.
 define('SCHEDULER_DATE_FORMAT', 'Y-m-d H:i:s');
@@ -35,9 +36,16 @@ define('SCHEDULER_TIME_LETTERS', 'hHgGisaA');
 
 // Specify defaults for the per-content-type settings. These should be used as
 // a consistent third parameter for calls to getThirdPartySetting().
-define('SCHEDULER_DEFAULT_PUBLISH_PAST_DATE', 'error');
-define('SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE', 'vertical_tab');
 define('SCHEDULER_DEFAULT_EXPAND_FIELDSET', 'when_required');
+define('SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE', 'vertical_tab');
+define('SCHEDULER_DEFAULT_PUBLISH_ENABLE', FALSE);
+define('SCHEDULER_DEFAULT_PUBLISH_PAST_DATE', 'error');
+define('SCHEDULER_DEFAULT_PUBLISH_REQUIRED', FALSE);
+define('SCHEDULER_DEFAULT_PUBLISH_REVISION', FALSE);
+define('SCHEDULER_DEFAULT_PUBLISH_TOUCH', FALSE);
+define('SCHEDULER_DEFAULT_UNPUBLISH_ENABLE', FALSE);
+define('SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED', FALSE);
+define('SCHEDULER_DEFAULT_UNPUBLISH_REVISION', FALSE);
 
 /**
  * Implements hook_help().
@@ -85,8 +93,8 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $date_formatter = \Drupal::service('date.formatter');
   /** @var \Drupal\node\NodeTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity()->type->entity;
-  $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
-  $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+  $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE);
+  $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE);
   $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'fields_display_mode', SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE) === 'vertical_tab';
 
   $date_format = \Drupal::config('scheduler.settings')->get('date_format');
@@ -99,13 +107,13 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
 
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
-  $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', FALSE)
+  $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', SCHEDULER_DEFAULT_PUBLISH_REQUIRED)
     && ($node->isNew() || (!$node->isPublished() && !empty($node->publish_on->value)));
 
   // An unpublish_on date is required if the content type option is set and the
   // node is being created or the current status is published or the node is
   // scheduled to be published.
-  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE) && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
+  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED) && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
 
   // If either publishing or unpublishing is enabled, provide a field group to
   // wrap the scheduling fields.
@@ -318,7 +326,7 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 function scheduler_node_presave(EntityInterface $node) {
   $entity = $node->type->entity;
   // If the node type is not enabled for Scheduler then do nothing.
-  if (!$entity->getThirdPartySetting('scheduler', 'publish_enable', FALSE)) {
+  if (!$entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
     return;
   };
 
@@ -331,7 +339,7 @@ function scheduler_node_presave(EntityInterface $node) {
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
       // If required, set the created date to match published date.
-      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', 0)) {
+      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH)) {
         $node->setCreatedTime($node->publish_on->value);
       }
       $node->publish_on->value = NULL;
@@ -466,9 +474,8 @@ function scheduler_entity_extra_field_info() {
   // works for vertical tabs and separate fieldsets.
   $fields = array();
   foreach (node_type_get_types() as $type) {
-    // @todo change the FALSE to SCHEDULER_DEFAULT_... when https://www.drupal.org/node/2633870 lands.
-    $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE);
-    $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE);
+    $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE);
+    $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE);
 
     if ($publishing_enabled || $unpublishing_enabled) {
       $fields['node'][$type->get('type')]['form']['scheduler_settings'] = array(
@@ -514,8 +521,8 @@ function scheduler_preprocess_node(&$variables) {
 function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundle_name) {
   // Scheduler module only works on nodes.
   if ($entity_type == 'node') {
-    $publishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'publish_enable', 0);
-    $unpublishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'unpublish_enable', 0);
+    $publishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE);
+    $unpublishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE);
 
     if ($publishing_enabled) {
       $targets['publish_on'] = array(

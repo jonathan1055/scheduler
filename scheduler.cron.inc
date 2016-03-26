@@ -50,7 +50,7 @@ function _scheduler_publish() {
   foreach ($nodes as $nid => $node) {
     // The API calls could return nodes of types which are not enabled for
     // scheduled publishing. Do not process these.
-    if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', FALSE)) {
+    if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
       throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
       continue;
     }
@@ -76,11 +76,11 @@ function _scheduler_publish() {
     $publish_on = $node->publish_on->value;
     $node->set('changed', $publish_on);
     $old_creation_date = $node->getCreatedTime();
-    if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', FALSE)) {
+    if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH)) {
       $node->setCreatedTime($publish_on);
     }
 
-    $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', FALSE);
+    $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', SCHEDULER_DEFAULT_PUBLISH_REVISION);
     if ($create_publishing_revision) {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.
@@ -158,7 +158,7 @@ function _scheduler_unpublish() {
   foreach ($nodes as $nid => $node) {
     // The API calls could return nodes of types which are not enabled for
     // scheduled unpublishing. Do not process these.
-    if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE)) {
+    if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
       throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
       continue;
     }
@@ -193,7 +193,7 @@ function _scheduler_unpublish() {
     $unpublish_on = $node->unpublish_on->value;
     $node->set('changed', $unpublish_on);
 
-    $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', FALSE);
+    $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', SCHEDULER_DEFAULT_UNPUBLISH_REVISION);
     if ($create_unpublishing_revision) {
       $node->setNewRevision();
       // Use a core date format to guarantee a time is included.

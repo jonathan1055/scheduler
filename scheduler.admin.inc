@@ -38,12 +38,12 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled publishing for this content type'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_enable', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE),
   );
   $form['scheduler']['publish']['scheduler_publish_touch'] = array(
     '#type' => 'checkbox',
     '#title' => t('Change content creation time to match the scheduled publish time'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_touch', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -53,7 +53,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled publishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_required', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_required', SCHEDULER_DEFAULT_PUBLISH_REQUIRED),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -63,7 +63,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on publishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', SCHEDULER_DEFAULT_PUBLISH_REVISION),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -102,12 +102,12 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled unpublishing for this content type'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_enable', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled unpublishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_required', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_required', SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
@@ -117,7 +117,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on unpublishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', FALSE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', SCHEDULER_DEFAULT_UNPUBLISH_REVISION),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
