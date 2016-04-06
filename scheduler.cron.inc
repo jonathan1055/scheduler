@@ -10,6 +10,8 @@
 
 use Drupal\Core\Url;
 use Drupal\node\Entity\Node;
+use Drupal\scheduler\Event\SchedulerHasPublishedThisNodeEvent;
+use Drupal\scheduler\Event\SchedulerHasUnpublishedThisNodeEvent;
 
 /**
  * Declare exception classes.
@@ -109,11 +111,9 @@ function _scheduler_publish() {
 
     // Invoke the event to tell Rules that Scheduler has published this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
-      /*
-      TEMP remove call to undefined function rules_invoke_event until converted.
-      @see https://www.drupal.org/node/2651348
-      rules_invoke_event('scheduler_node_has_been_published_event', $node, $publish_on, $node->unpublish_on->value);
-      */
+      $event_dispatcher = \Drupal::service('event_dispatcher');
+      $event = new SchedulerHasPublishedThisNodeEvent($node); // @todo 2nd param $publish_on may be needed as the date will no longer be on the node
+      $event_dispatcher->dispatch(SchedulerHasPublishedThisNodeEvent::EVENT_NAME, $event);
     }
 
     // Invoke scheduler API for modules to react after the node is published.
@@ -222,11 +222,9 @@ function _scheduler_unpublish() {
 
     // Invoke event to tell Rules that Scheduler has unpublished this node.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
-      /*
-      TEMP remove call to undefined function rules_invoke_event until converted.
-      @see https://www.drupal.org/node/2651348
-      rules_invoke_event('scheduler_node_has_been_unpublished_event', $node, $node->publish_on, $unpublish_on);
-      */
+      $event_dispatcher = \Drupal::service('event_dispatcher');
+      $event = new SchedulerHasUnpublishedThisNodeEvent($node); // @todo 2nd param $unpublish_on may be needed as the date will no longer be on the node
+      $event_dispatcher->dispatch(SchedulerHasUnpublishedThisNodeEvent::EVENT_NAME, $event);
     }
 
     // Invoke scheduler API for modules to react after the node is unpublished.

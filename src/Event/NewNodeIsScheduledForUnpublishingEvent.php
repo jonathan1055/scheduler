@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains \Drupal\scheduler\Event\NewNodeIsScheduledForUnpublishingEvent.
+ */
+
+namespace Drupal\scheduler\Event;
+
+use Symfony\Component\EventDispatcher\Event;
+
+/**
+ * Event that is fired when a newly created node is saved for the first time
+ * and it has a scheduled unpublishing date.
+ */
+class NewNodeIsScheduledForUnpublishingEvent extends Event {
+
+  const EVENT_NAME = 'scheduler_new_node_is_scheduled_for_unpublishing_event';
+
+  /**
+   * The node which is being scheduled and saved.
+   */
+  public $node;
+
+  /**
+   * Constructs the object.
+   *
+   * @param \Drupal\node\NodeInterface $node
+   *   The node which is being scheduled and saved.
+   */
+  public function __construct($node) {
+    $this->node = $node;
+  }
+
+}

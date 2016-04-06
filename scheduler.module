@@ -14,6 +14,10 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\scheduler\Event\NewNodeIsScheduledForPublishingEvent;
+use Drupal\scheduler\Event\NewNodeIsScheduledForUnpublishingEvent;
+use Drupal\scheduler\Event\ExistingNodeIsScheduledForPublishingEvent;
+use Drupal\scheduler\Event\ExistingNodeIsScheduledForUnpublishingEvent;
 
 // @todo Move constants into a class, so we do not pollute the global space,
 // and use them like this, for example: SchedulerApi::MY_CONSTANT.
@@ -372,19 +376,21 @@ function scheduler_node_presave(EntityInterface $node) {
  * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_insert(EntityInterface $node) {
-  /* Temporarily remove code to avoid error: Call to undefined function rules_invoke_event()
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     // Invoke the events to indicate that a new node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
+      $event_dispatcher = \Drupal::service('event_dispatcher');
       if (!empty($node->publish_on->value)) {
-        rules_invoke_event('scheduler_new_node_is_scheduled_for_publishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
+        // @todo: In 7.x we had the dates as parameters. These are available in Rules via node.publish_on.value so maybe we do not need the parms?
+        $event = new NewNodeIsScheduledForPublishingEvent($node); //, $node->publish_on->value, $node->unpublish_on->value);
+        $event_dispatcher->dispatch(NewNodeIsScheduledForPublishingEvent::EVENT_NAME, $event);
       }
       if (!empty($node->unpublish_on->value)) {
-        rules_invoke_event('scheduler_new_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
+        $event = new NewNodeIsScheduledForUnpublishingEvent($node); //, $node->publish_on->value, $node->unpublish_on->value);
+        $event_dispatcher->dispatch(NewNodeIsScheduledForUnpublishingEvent::EVENT_NAME, $event);
       }
     }
   }
-  */
 }
 
 /**
@@ -395,19 +401,20 @@ function scheduler_node_insert(EntityInterface $node) {
  * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_update(EntityInterface $node) {
-  /* Temporarily remove code to avoid error: Call to undefined function rules_invoke_event()
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
     // Invoke the events to indicate that an existing node has been scheduled.
     if (\Drupal::moduleHandler()->moduleExists('rules')) {
+      $event_dispatcher = \Drupal::service('event_dispatcher');
       if (!empty($node->publish_on->value)) {
-        rules_invoke_event('scheduler_existing_node_is_scheduled_for_publishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
+        $event = new ExistingNodeIsScheduledForPublishingEvent($node, ['node' => $node]); //, $node->publish_on->value, $node->unpublish_on->value);
+        $event_dispatcher->dispatch(ExistingNodeIsScheduledForPublishingEvent::EVENT_NAME, $event);
       }
       if (!empty($node->unpublish_on->value)) {
-        rules_invoke_event('scheduler_existing_node_is_scheduled_for_unpublishing_event', $node, $node->publish_on->value, $node->unpublish_on->value);
+        $event = new ExistingNodeIsScheduledForUnpublishingEvent($node); //, $node->publish_on->value, $node->unpublish_on->value);
+        $event_dispatcher->dispatch(ExistingNodeIsScheduledForUnpublishingEvent::EVENT_NAME, $event);
       }
     }
   }
-  */
 }
 
 /**
