@@ -31,22 +31,16 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     parent::setUp();
 
     // Load the custom node type and check it .
-    $this->custom_name = 'scheduler_api_test';
-    $this->custom_nodetype = NodeType::load($this->custom_name);
-    if ($this->custom_nodetype) {
-      $this->pass('Custom node type ' . $this->custom_name . ' "' . $this->custom_nodetype->get('name') . '"  created during install');
-      // Do not need to enable this node type for scheduler as that is already
-      // pre-configured in node.type.scheduler_api_test.yml
-    }
-    else {
-      $this->fail('*** Custom node type ' . $this->custom_name . ' does not exist. Testing abandoned ***');
-      return;
-    }
+    $this->customName = 'scheduler_api_test';
+    $this->customNodetype = NodeType::load($this->customName);
+    $this->assertNotNull($this->customNodetype, 'Custom node type "' . $this->customName . '"  was created during install');
+    // Do not need to enable this node type for scheduler as that is already
+    // pre-configured in node.type.scheduler_api_test.yml
 
     // Create a web user for this content type.
     $this->webUser = $this->drupalCreateUser([
-      'create ' . $this->custom_name . ' content',
-      'edit any ' . $this->custom_name . ' content',
+      'create ' . $this->customName . ' content',
+      'edit any ' . $this->customName . ' content',
       'schedule publishing of nodes',
     ]);
 
@@ -56,7 +50,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   }
 
   /**
-   * @covers hook_scheduler_allow_publishing() and hook_scheduler_allow_unpublishing()
+   * Covers hook_scheduler_allow_publishing() and hook_scheduler_allow_unpublishing()
    *
    * These hooks can allow or deny the (un)publication of individual nodes. This
    * test uses a content type which has checkboxes 'Approved for publication'
@@ -67,14 +61,9 @@ class SchedulerApiTestCase extends SchedulerTestBase {
    *   the correct messages are displayed.
    */
   public function testAllowedPublishingAndUnpublishing() {
-    if (empty($this->custom_nodetype)) {
-      $this->fail('*** Custom node type ' . $this->custom_name . ' does not exist. Testing abandoned ***');
-      return;
-    }
-
     // Check that the approved fields are shown on the node/add form.
     $this->drupalLogin($this->webUser);
-    $this->drupalGet('node/add/' . $this->custom_name);
+    $this->drupalGet('node/add/' . $this->customName);
     $this->assertFieldById('edit-field-approved-publishing-value', '', 'The "Approved for publishing" field is shown on the node form');
     $this->assertFieldById('edit-field-approved-unpublishing-value', '', 'The "Approved for unpublishing" field is shown on the node form');
 
@@ -96,7 +85,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
 
     // Turn on immediate publication of nodes with publication dates in the past
     // and repeat the tests. It is not needed to simulate cron runs here.
-    $this->custom_nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
+    $this->customNodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $node = $this->createUnapprovedNode('publish_on');
     $this->assertFalse($node->isPublished(), 'An unapproved node with a date in the past is not published immediately after saving.');
 
@@ -150,7 +139,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
       $date_field => strtotime('-1 day'),
       'field_approved_publishing' => 0,
       'field_approved_unpublishing' => 0,
-      'type' => $this->custom_name,
+      'type' => $this->customName,
     );
     return $this->drupalCreateNode($settings);
   }
@@ -172,7 +161,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   }
 
   /**
-   * @covers hook_scheduler_api($node, $action)
+   * Covers hook_scheduler_api($node, $action)
    *
    * This hook allows other modules to react to the Scheduler process being run.
    * The API test implementation of this hook alters the nodes 'promote' and
@@ -228,7 +217,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   }
 
   /**
-   * @covers hook_scheduler_nid_list($action)
+   * Covers hook_scheduler_nid_list($action)
    *
    * hook_scheduler_nid_list() allows other modules to add more node ids into
    * the list to be processed. In real scenarios, the third-party module would
@@ -265,7 +254,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
   }
 
   /**
-   * @covers hook_scheduler_nid_list_alter($action)
+   * Covers hook_scheduler_nid_list_alter($action)
    *
    * This hook allows other modules to add or remove node ids from the list to
    * be processed. As in testNidList() we make it simple by using the title text
