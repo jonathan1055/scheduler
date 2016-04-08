@@ -203,17 +203,18 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $this->assertFalse($node->isSticky(), 'After unpublishing, the node is not sticky.');
     $this->assertFalse($node->isPromoted(), 'After unpublishing, the node is not promoted.');
 
-    // Turn on immediate publication of a node with publish date in the past.
+    // Turn on immediate publication when a publish date is in the past.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $edit = [
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', REQUEST_TIME)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', REQUEST_TIME)),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
-    // @TODO: Add some assertions here to check that hook_scheduler_api has been
-    // run correctly for 'publish_immediately'. This requires the Test API
-    // module to be updated to cover this scenario.
-
+    $this->node_storage->resetCache(array($node->id()));
+    $node = $this->node_storage->load($node->id());
+    $this->assertTrue($node->isSticky(), 'After immediate publishing, the node is sticky.');
+    $this->assertTrue($node->isPromoted(), 'After immediate publishing, the node is promoted.');
+    $this->assertEqual($node->title->value, 'Published immediately', 'After immediate publishing, the node title is altered correctly.');
   }
 
   /**
