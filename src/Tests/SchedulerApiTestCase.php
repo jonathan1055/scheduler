@@ -75,9 +75,13 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $node = $this->node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An unapproved node is not published during cron processing.');
 
-    // Approve the node for publication, simulate a cron run and check that the
-    // node is now published.
+    // Create a node and approve it for publication, simulate a cron run and
+    // check that the node is published. This is a stronger test than simply
+    // approving the previously used node above, as we do not know what publish
+    // state that may be in after the cron run above.
+    $node = $this->createUnapprovedNode('publish_on');
     $this->approveNode($node->id(), 'field_approved_publishing');
+    $this->assertFalse($node->isPublished(), 'A new approved node is initially not published.');
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
@@ -112,9 +116,11 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $node = $this->node_storage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An unapproved node is not unpublished during cron processing.');
 
-    // Approve the node for unpublishing, simulate a cron run and check that
-    // the node is now unpublished.
+    // Create a node, then approve it for unpublishing, simulate a cron run and
+    // check that the node is now unpublished.
+    $node = $this->createUnapprovedNode('unpublish_on');
     $this->approveNode($node->id(), 'field_approved_unpublishing');
+    $this->assertTrue($node->isPublished(), 'A new approved node is initially published.');
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
