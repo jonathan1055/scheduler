@@ -195,32 +195,37 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
-    $this->assertTrue($node->isSticky(), 'After publishing, the node is sticky.');
-    $this->assertTrue($node->isPromoted(), 'After publishing, the node is promoted.');
+    $this->assertTrue($node->isSticky(), "API action 'PRE_PUBLISH' has changed the node to sticky.");
+    $this->assertTrue($node->isPromoted(), "API action 'PUBLISH' has changed the node to promoted.");
 
-    // Now set a date for unpublishing the node.
-    $node->set('unpublish_on', strtotime('-1 day'))->save();
+    // Now set a date for unpublishing the node. Ensure 'sticky' and 'promote'
+    // are set, so that the assertions are not affected by any failures above.
+    $node->set('unpublish_on', strtotime('-1 day'))
+      ->set('sticky', TRUE)->set('promote', TRUE)->save();
 
     // Run cron and check that hook_scheduler_api() has executed correctly, by
     // verifying that the node is not promoted and no longer sticky.
     scheduler_cron();
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
-    $this->assertFalse($node->isSticky(), 'After unpublishing, the node is not sticky.');
-    $this->assertFalse($node->isPromoted(), 'After unpublishing, the node is not promoted.');
+    $this->assertFalse($node->isSticky(), "API action 'PRE_UNPUBLISH' has changed the node to not sticky.");
+    $this->assertFalse($node->isPromoted(), "API action 'UNPUBLISH' has changed the node to not promoted.");
 
     // Turn on immediate publication when a publish date is in the past.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $edit = [
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', REQUEST_TIME)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', REQUEST_TIME)),
+      'promote[value]' => FALSE,
+      'sticky[value]' => FALSE,
     ];
+    // Edit the node and verify that the values have been altered as expected.
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
-    $this->assertTrue($node->isSticky(), 'After immediate publishing, the node is sticky.');
-    $this->assertTrue($node->isPromoted(), 'After immediate publishing, the node is promoted.');
-    $this->assertEqual($node->title->value, 'Published immediately', 'After immediate publishing, the node title is altered correctly.');
+    $this->assertTrue($node->isSticky(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to sticky.");
+    $this->assertTrue($node->isPromoted(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to promoted.");
+    $this->assertEqual($node->title->value, 'Published immediately', "API action 'PUBLISH_IMMEDIATELY' has changed the node title correctly.");
   }
 
   /**
