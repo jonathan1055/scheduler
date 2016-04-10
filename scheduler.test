@@ -24,6 +24,32 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
   protected $admin_user;
 
   /**
+   * Common settings and options.
+   */
+  function commonSettings() {
+
+    // Create a 'Basic Page' content type.
+    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
+
+    // Create an administrator user.
+    $this->admin_user = $this->drupalCreateUser(array(
+      'access content',
+      'administer scheduler',
+      'create page content',
+      'edit own page content',
+      'delete own page content',
+      'view own unpublished content',
+      'administer nodes',
+      'schedule publishing of nodes'
+    ));
+
+    // Add scheduler functionality to the page node type.
+    variable_set('scheduler_publish_enable_page', 1);
+    variable_set('scheduler_unpublish_enable_page', 1);
+    variable_set('scheduler_field_type', 'textfield');
+  }
+
+  /**
    * Helper function for testScheduler(). Schedules content and asserts status.
    *
    * @param array $edit
@@ -170,26 +196,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    */
   function setUp() {
     parent::setUp('scheduler');
-
-    // Create a 'Basic Page' content type.
-    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
-
-    // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array(
-      'access content',
-      'administer scheduler',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
-      'view own unpublished content',
-      'administer nodes',
-      'schedule publishing of nodes'
-    ));
-
-    // Add scheduler functionality to the page node type.
-    variable_set('scheduler_publish_enable_page', 1);
-    variable_set('scheduler_unpublish_enable_page', 1);
-    variable_set('scheduler_field_type', 'textfield');
+    parent::commonSettings();
   }
 
   /**
@@ -675,26 +682,7 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
    */
   function setUp() {
     parent::setUp('date', 'date_popup', 'scheduler');
-
-    // Create a 'Basic Page' content type.
-    $this->drupalCreateContentType(array('type' => 'page', 'name' => t('Basic page')));
-
-    // Create an administrator user.
-    $this->admin_user = $this->drupalCreateUser(array(
-      'access content',
-      'administer scheduler',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
-      'view own unpublished content',
-      'administer nodes',
-      'schedule publishing of nodes'
-    ));
-
-    // Add scheduler functionality to the page node type.
-    variable_set('scheduler_publish_enable_page', 1);
-    variable_set('scheduler_unpublish_enable_page', 1);
-    variable_set('scheduler_field_type', 'textfield');
+    parent::commonSettings();
   }
 
   /**
