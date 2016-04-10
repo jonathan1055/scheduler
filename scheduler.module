@@ -483,6 +483,12 @@ function scheduler_node_view($node, $view_mode = 'full', $langcode) {
 function scheduler_node_validate($node, $form, &$form_state) {
   if ($form_state['clicked_button']['#value'] == t('Delete')) {
     // Skip all validation when deleting the node.
+    if ($errors = form_get_errors()) {
+      // If there are already errors (from date_popup) remove them to allow
+      // deletion to proceed.
+      form_clear_error();
+      unset($_SESSION['messages']['error']);
+    };
     return;
   }
 
