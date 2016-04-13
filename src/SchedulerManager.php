@@ -75,8 +75,8 @@ class SchedulerManager {
    * @return bool
    *   TRUE if any node has been published, FALSE otherwise.
    *
-   * @throws \Drupal\scheduler\Plugin\Exception\SchedulerMissingDateException
-   * @throws \Drupal\scheduler\Plugin\Exception\SchedulerNodeTypeNotEnabledException
+   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
+   * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function publish() {
     $result = FALSE;
@@ -140,8 +140,8 @@ class SchedulerManager {
           '@date' => $this->dateFormatter->format($old_creation_date, 'short'),
         ));
       }
-      // Unset publish_on so the node will not get rescheduled by subsequent calls
-      // to $node->save().
+      // Unset publish_on so the node will not get rescheduled by subsequent
+      // calls to $node->save().
       $node->publish_on->value = NULL;
 
       // Log the fact that a scheduled publication is about to take place.
@@ -182,8 +182,8 @@ class SchedulerManager {
    * @return bool
    *   TRUE if any node has been unpublished, FALSE otherwise.
    *
-   * @throws \Drupal\scheduler\Plugin\Exception\SchedulerMissingDateException
-   * @throws \Drupal\scheduler\Plugin\Exception\SchedulerNodeTypeNotEnabledException
+   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
+   * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function unpublish() {
     $result = FALSE;
@@ -218,9 +218,10 @@ class SchedulerManager {
         continue;
       }
 
-      // Do not process the node if it has a publish_on time which is in the past,
-      // as this implies that scheduled publishing has been blocked by one of the
-      // API functions we provide. Hence unpublishing should be halted too.
+      // Do not process the node if it still has a publish_on time which is in
+      // the past, as this implies that scheduled publishing has been blocked by
+      // one of the hook functions we provide, and is still being blocked now
+      // that the unpublishing time has been reached.
       $publish_on = $node->publish_on->value;
       if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
         continue;
@@ -346,9 +347,9 @@ class SchedulerManager {
    * normal Drupal cron run. The difference is that only scheduler_cron() is
    * executed, no other modules hook_cron() functions are called.
    *
-   * This function is called from the external crontab job via url /scheduler/cron
-   * or it can be run interactively from the Scheduler configuration page at
-   * /admin/config/content/scheduler/cron.
+   * This function is called from the external crontab job via url
+   * /scheduler/cron/{access key} or it can be run interactively from the
+   * Scheduler configuration page at /admin/config/content/scheduler/cron.
    */
   public function runCron() {
     $log = $this->configFactory->get('scheduler.settings')->get('log');

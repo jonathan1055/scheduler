@@ -8,8 +8,10 @@
 namespace Drupal\scheduler\Exception;
 
 /**
- * Thrown by SchedulerManager.
+ * Defines an exception thrown when Scheduler attempts to publish or unpublish
+ * a node during cron but the node type is not enabled for Scheduler.
  *
- * @see SchedulerManager::publish()
+ * @see \Drupal\scheduler\SchedulerManager::publish()
+ * @see \Drupal\scheduler\SchedulerManager::unpublish()
  */
 class SchedulerNodeTypeNotEnabledException extends \Exception { }
