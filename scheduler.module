@@ -527,10 +527,17 @@ function scheduler_node_validate($node, $form, &$form_state) {
     form_set_error('unpublish_on', t("The 'unpublish on' date must be later than the 'publish on' date."));
   }
 
-  // The unpublish-on 'required' form attribute may not be set in some cases,
-  // but a value must be entered if also setting a publish-on date.
-  if (variable_get('scheduler_unpublish_required_' . $node->type) && !empty($node->publish_on) && empty($node->unpublish_on)) {
-    form_set_error('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
+  // The unpublish-on 'required' form attribute may not be set, but in some
+  // cases a value must still be entered.
+  if (variable_get('scheduler_unpublish_required_' . $node->type) && empty($node->unpublish_on)) {
+    // ... when also setting a publish-on date.
+    if (!empty($node->publish_on)) {
+      form_set_error('unpublish_on', t("If you set a 'publish-on' date then you must also set an 'unpublish-on' date."));
+    }
+    // ... or when publishing by directly ticking the published checkbox.
+    if ($form_state['values']['status']) {
+      form_set_error('unpublish_on', t("To publish this node you must also set an 'unpublish-on' date."));
+    }
   }
 }
 
