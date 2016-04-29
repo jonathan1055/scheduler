@@ -931,7 +931,7 @@ function scheduler_field_attach_prepare_translation_alter($entity, $context) {
  */
 function scheduler_date_popup_pre_validate_alter($element, $form_state, &$input) {
   // Provide a default time if this is enabled and the time field is empty.
-  if (variable_get('scheduler_allow_date_only', FALSE) && $element['#array_parents'][0] == 'scheduler_settings' && $input['date'] != '' && $input['time'] == '') {
+  if (variable_get('scheduler_allow_date_only', FALSE) && $element['#array_parents'][0] == 'scheduler_settings' && !empty($input['date']) && empty($input['time'])) {
     // Get the default time as a timestamp number.
     $default_time = strtotime(variable_get('scheduler_default_time', SCHEDULER_DEFAULT_TIME));
     // Set the time in the required format just as if the user had typed it.
