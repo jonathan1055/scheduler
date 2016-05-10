@@ -661,7 +661,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->drupalLogin($this->admin_user);
 
     // Create a published node without scheduling.
-    $published_node = $this->drupalCreateNode(['type' => 'page', 'status' => 1]);
+    $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1));
     $this->drupalGet('node/' . $published_node->nid);
 
     // Since we did not set an unpublish date, there should be no X-Robots-Tag
