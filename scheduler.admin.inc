@@ -230,7 +230,6 @@ function scheduler_get_date_only_format($format) {
  * @see scheduler_form_node_type_form_alter()
  */
 function _scheduler_form_node_type_form_alter(&$form, $form_state) {
-  drupal_add_css(drupal_get_path('module', 'scheduler') . '/scheduler.css');
   $form['scheduler'] = array(
     '#type' => 'fieldset',
     '#title' => t('Scheduler'),
