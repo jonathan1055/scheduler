@@ -26,8 +26,10 @@ function scheduler_api_test_scheduler_api($node, $action) {
       if ($node->isPublished()) $node->set('promote', TRUE)->save();
       break;
     case 'publish_immediately' :
-      // @todo Add test coverage for this scenario.
-      // Cannot use $node->set(..)->save() as that breaks the system!
+      // When publishing immediately set the node to sticky and promoted, and
+      // also change the title. Do not use ->save() as this breaks the system!
+      $node->set('sticky', TRUE)->set('promote', TRUE);
+      $node->title->value = 'Published immediately';
       break;
     case 'pre_unpublish' :
       // Before unpublishing a node make it unsticky.

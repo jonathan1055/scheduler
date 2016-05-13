@@ -239,40 +239,6 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
- * Checks whether a scheduled action on a node is allowed.
- *
- * This provides a way for other modules to prevent scheduled publishing or
- * unpublishing, by implementing hook_scheduler_allow_publishing() or
- * hook_scheduler_allow_unpublishing().
- *
- * @deprecated Will be moved to a service.
- *
- * @see https://www.drupal.org/node/2651338
- * @see hook_scheduler_allow_publishing()
- * @see hook_scheduler_allow_unpublishing()
- *
- * @param \Drupal\node\NodeInterface $node
- *   The node on which the action is to be performed.
- * @param string $action
- *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
- *
- * @return bool
- *   TRUE if the action is allowed, FALSE if not.
- */
-function _scheduler_allow(NodeInterface $node, $action) {
-  // Default to TRUE.
-  $result = TRUE;
-  // Check that other modules allow the action.
-  $hook = 'scheduler_allow_' . $action . 'ing';
-  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-    $function = $module . '_' . $hook;
-    $result &= $function($node);
-  }
-
-  return $result;
-}
-
-/**
  * Implements hook_ENTITY_TYPE_view() for node entities.
  */
 function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
@@ -336,7 +302,7 @@ function scheduler_node_presave(EntityInterface $node) {
 
   if ($node->publish_on->value > 0) {
     // Check that other modules allow the action on this node.
-    $publication_allowed = _scheduler_allow($node, 'publish');
+    $publication_allowed = \Drupal::service('scheduler.manager')->isAllowed($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
     $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', SCHEDULER_DEFAULT_PUBLISH_PAST_DATE) == 'publish';
@@ -421,17 +387,16 @@ function scheduler_node_update(EntityInterface $node) {
  * Implements hook_cron().
  */
 function scheduler_cron() {
-  // Load the cron functions file.
-  module_load_include('inc', 'scheduler', 'scheduler.cron');
-
   // Use drupal_static so that any function can find out if we are running
   // Scheduler cron. Set the default value to FALSE, then turn on the flag.
   // @see scheduler_cron_is_running()
   $scheduler_cron = &drupal_static(__FUNCTION__, FALSE);
   $scheduler_cron = TRUE;
 
-  _scheduler_publish();
-  _scheduler_unpublish();
+  /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $scheduler_manager->publish();
+  $scheduler_manager->unpublish();
 
   // Reset the static scheduler_cron flag.
   drupal_static_reset(__FUNCTION__);

@@ -22,11 +22,21 @@ class SchedulerUnpublishOnConstraintValidator extends ConstraintValidator {
     $scheduler_unpublish_required = $entity->getEntity()->type->entity->getThirdPartySetting('scheduler', 'unpublish_required', SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED);
     $publish_on = $entity->getEntity()->publish_on->value;
     $unpublish_on = $entity->value;
+    $status = $entity->getEntity()->status->value;
 
-    // The unpublish-on 'required' form attribute is not set in every case, but
-    // a value must be entered if also setting a publish-on date.
+    // When the 'required unpublishing' option is enabled the #required form
+    // attribute cannot set in every case. However a value must be entered if
+    // also setting a publish-on date.
     if ($scheduler_unpublish_required && !empty($publish_on) && empty($unpublish_on)) {
       $this->context->buildViolation($constraint->messageUnpublishOnRequiredIfPublishOnEntered)
+        ->atPath('unpublish_on')
+        ->addViolation();
+    }
+
+    // Similar to the above scenario, the unpublish-on date must be entered if
+    // the content is being published directly.
+    if ($scheduler_unpublish_required && $status && empty($unpublish_on)) {
+      $this->context->buildViolation($constraint->messageUnpublishOnRequiredIfPublishing)
         ->atPath('unpublish_on')
         ->addViolation();
     }

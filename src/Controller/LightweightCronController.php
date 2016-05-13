@@ -25,9 +25,7 @@ class LightweightCronController extends ControllerBase {
    *   RedirectResponse.
    */
   public function index() {
-    module_load_include('inc', 'scheduler', 'scheduler.cron');
-
-    _scheduler_run_cron();
+    \Drupal::service('scheduler.manager')->runCron();
 
     return new Response('', 204);
   }
