@@ -8,49 +8,6 @@
 use Drupal\node\Entity\Node;
 
 /**
- * Implements hook_scheduler_api().
- */
-function scheduler_api_test_scheduler_api($node, $action) {
-  // This hook allows modules to react to the Scheduler process being performed.
-  // It is invoked during cron processing and also from scheduler_node_presave().
-
-  if (strpos($node->title->value, 'API TEST') === FALSE) {
-    // Only process nodes where the title starts 'API TEST' to avoid unwanted
-    // side-effects on non-test nodes when this module is enabled interactively.
-    return;
-  }
-
-  // Use the standard 'sticky' and 'promote' fields as a simple way to test the
-  // processing. Use conditional checks on $node->isPublished() to make the
-  // tests stronger so that they will fail if the calls are in the wrong place.
-  switch ($action) {
-    case 'pre_publish' :
-      // Before publishing a node make it sticky.
-      if (!$node->isPublished()) $node->set('sticky', TRUE)->save();
-      break;
-    case 'publish' :
-      // After publishing a node promote to front page.
-      if ($node->isPublished()) $node->set('promote', TRUE)->save();
-      break;
-    case 'publish_immediately' :
-      // When publishing immediately set the node to sticky and promoted, and
-      // also change the title. Do not use ->save() as this breaks the system!
-      $node->set('sticky', TRUE)->set('promote', TRUE);
-      $node->title->value = 'Published immediately';
-      break;
-    case 'pre_unpublish' :
-      // Before unpublishing a node make it unsticky.
-      if ($node->isPublished()) $node->set('sticky', FALSE)->save();
-      break;
-    case 'unpublish' :
-      // After unpublishing a node remove it from front page.
-      if (!$node->isPublished()) $node->set('promote', FALSE)->save();
-      break;
-    default:
-  }
-}
-
-/**
  * Implements hook_scheduler_nid_list().
  */
 function scheduler_api_test_scheduler_nid_list($action) {

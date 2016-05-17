@@ -79,6 +79,9 @@ class SchedulerManager {
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function publish() {
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+    $dispatcher = \Drupal::service('event_dispatcher');
+
     $result = FALSE;
 
     // If the time now is greater than the time to publish a node, publish it.
@@ -111,8 +114,11 @@ class SchedulerManager {
         continue;
       }
 
-      // Invoke Scheduler API for modules to react before the node is published.
-      _scheduler_scheduler_api($node, 'pre_' . $action);
+      // Trigger the PRE_PUBLISH event so that modules can react before the node
+      // is published.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
+      $node = $event->getNode();
 
       // If an API call has removed the date $node->set('changed', $publish_on)
       // would fail, so trap this exception here and give a meaningful message.
@@ -167,8 +173,11 @@ class SchedulerManager {
         */
       }
 
-      // Invoke scheduler API for modules to react after the node is published.
-      _scheduler_scheduler_api($node, $action);
+      // Trigger the PUBLISH event so that modules can react after the node is
+      // published.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PUBLISH, $event);
+      $event->getNode()->save();
 
       $result = TRUE;
     }
@@ -186,6 +195,9 @@ class SchedulerManager {
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function unpublish() {
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+    $dispatcher =  \Drupal::service('event_dispatcher');
+
     $result = FALSE;
 
     // If the time is greater than the time to unpublish a node, unpublish it.
@@ -227,8 +239,11 @@ class SchedulerManager {
         continue;
       }
 
-      // Invoke scheduler API for modules to react before the node is unpublished.
-      _scheduler_scheduler_api($node, 'pre_' . $action);
+      // Trigger the PRE_UNPUBLISH event so that modules can react before the
+      // node is unpublished.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
+      $node = $event->getNode();
 
       // If an API call has removed the date $node->set('changed', $unpublish_on)
       // would fail, so trap this exception here and give a meaningful message.
@@ -280,8 +295,11 @@ class SchedulerManager {
         */
       }
 
-      // Invoke scheduler API for modules to react after the node is unpublished.
-      _scheduler_scheduler_api($node, $action);
+      // Trigger the UNPUBLISH event so that modules can react before the node
+      // is unpublished.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
+      $event->getNode()->save();
 
       $result = TRUE;
     }
