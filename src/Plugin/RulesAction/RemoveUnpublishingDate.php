@@ -39,7 +39,7 @@ class RemoveUnpublishingDate extends RulesActionBase {
   public function doExecute() {
     $node = $this->getContextValue('node');
     if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
-      $node->set('unpublish_on', NULL)->save;
+      $node->set('unpublish_on', NULL);
       scheduler_node_presave($node);
       scheduler_node_update($node);
     }

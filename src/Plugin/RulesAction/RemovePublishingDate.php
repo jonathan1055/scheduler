@@ -39,7 +39,7 @@ class RemovePublishingDate extends RulesActionBase {
   public function doExecute() {
     $node = $this->getContextValue('node');
     if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
-      $node->set('publish_on', NULL)->save;
+      $node->set('publish_on', NULL);
       scheduler_node_presave($node);
       scheduler_node_update($node);
     }
