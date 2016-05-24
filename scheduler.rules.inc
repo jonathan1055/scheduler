@@ -131,7 +131,8 @@ function scheduler_set_publish_date_action(Node $node, $date) {
   // hook_node_presave() and hook_node_update() will be executed anyway. But if
   // this action is being used to schedule a different node then we need to call
   // the functions directly here.
-  if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
+  $default_publish_enable = \Drupal::config('scheduler.settings')->get('default_publish_enable');
+  if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $default_publish_enable)) {
     $node->publish_on->value = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -152,7 +153,8 @@ function scheduler_set_publish_date_action(Node $node, $date) {
  *   The date for unpublishing, a unix timestamp integer.
  */
 function scheduler_set_unpublish_date_action(Node $node, $date) {
-  if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
+  $default_unpublish_enable = \Drupal::config('scheduler.settings')->get('default_unpublish_enable');
+  if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $default_unpublish_enable)) {
     $node->unpublish_on->value = $date;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -173,7 +175,8 @@ function scheduler_set_unpublish_date_action(Node $node, $date) {
  *   The node object from which to remove the publish_on date.
  */
 function scheduler_remove_publish_date_action(Node $node) {
-  if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
+  $default_publish_enable = \Drupal::config('scheduler.settings')->get('default_publish_enable');
+  if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $default_publish_enable)) {
     $node->publish_on->value = NULL;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -194,7 +197,8 @@ function scheduler_remove_publish_date_action(Node $node) {
  *   The node object from which to remove the unpublish_on date.
  */
 function scheduler_remove_unpublish_date_action(Node $node) {
-  if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
+  $default_unpublish_enable = \Drupal::config('scheduler.settings')->get('default_unpublish_enable');
+  if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $default_unpublish_enable)) {
     $node->unpublish_on->value = NULL;
     scheduler_node_presave($node);
     scheduler_node_update($node);
@@ -252,7 +256,8 @@ function scheduler_rules_condition_info() {
  *   TRUE if scheduled publishing is enabled for the node type, FALSE if not.
  */
 function scheduler_condition_publishing_is_enabled(Node $node) {
-  return ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE));
+  $default_publish_enable = \Drupal::config('scheduler.settings')->get('default_publish_enable');
+  return ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $default_publish_enable));
 }
 
 /**
@@ -264,7 +269,8 @@ function scheduler_condition_publishing_is_enabled(Node $node) {
  *   TRUE if scheduled unpublishing is enabled for the node type, FALSE if not.
  */
 function scheduler_condition_unpublishing_is_enabled(Node $node) {
-  return ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE));
+  $default_unpublish_enable = \Drupal::config('scheduler.settings')->get('default_unpublish_enable');
+  return ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $default_unpublish_enable));
 }
 
 /**

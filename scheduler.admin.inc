@@ -14,6 +14,8 @@ use Drupal\node\NodeTypeInterface;
  * @see scheduler_form_node_type_form_alter()
  */
 function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $form_state) {
+  $config = \Drupal::config('scheduler.settings');
+
   /** @var \Drupal\node\NodeTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
@@ -38,12 +40,12 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled publishing for this content type'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')),
   );
   $form['scheduler']['publish']['scheduler_publish_touch'] = array(
     '#type' => 'checkbox',
     '#title' => t('Change content creation time to match the scheduled publish time'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch')),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -53,7 +55,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled publishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_required', SCHEDULER_DEFAULT_PUBLISH_REQUIRED),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_required', $config->get('default_publish_required')),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -63,7 +65,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['scheduler_publish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on publishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', SCHEDULER_DEFAULT_PUBLISH_REVISION),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', $config->get('default_publish_revision')),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_publish_enable"]' => array('checked' => TRUE),
@@ -83,7 +85,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['publish']['advanced']['scheduler_publish_past_date'] = array(
     '#type' => 'radios',
     '#title' => t('Action to be taken for publication dates in the past'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date', SCHEDULER_DEFAULT_PUBLISH_PAST_DATE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')),
     '#options' => array(
       'error' => t('Display an error message - do not allow dates in the past'),
       'publish' => t('Publish the content immediately after saving'),
@@ -102,12 +104,12 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable scheduled unpublishing for this content type'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable')),
   );
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = array(
     '#type' => 'checkbox',
     '#title' => t('Require scheduled unpublishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_required', SCHEDULER_DEFAULT_UNPUBLISH_REQUIRED),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_required', $config->get('default_unpublish_required')),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
@@ -117,7 +119,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = array(
     '#type' => 'checkbox',
     '#title' => t('Create a new revision on unpublishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', SCHEDULER_DEFAULT_UNPUBLISH_REVISION),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', $config->get('default_unpublish_revision')),
     '#states' => array(
       'visible' => array(
         ':input[name="scheduler_unpublish_enable"]' => array('checked' => TRUE),
@@ -146,7 +148,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['node_edit_layout']['scheduler_fields_display_mode'] = array(
     '#type' => 'radios',
     '#title' => t('Display scheduling options as'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'fields_display_mode', SCHEDULER_DEFAULT_FIELDS_DISPLAY_MODE),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'fields_display_mode', $config->get('default_fields_display_mode')),
     '#options' => array(
       'vertical_tab' => t('Vertical tab'),
       'fieldset' => t('Separate fieldset'),
@@ -156,7 +158,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
   $form['scheduler']['node_edit_layout']['scheduler_expand_fieldset'] = array(
     '#type' => 'radios',
     '#title' => t('Expand fieldset or vertical tab'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', SCHEDULER_DEFAULT_EXPAND_FIELDSET),
+    '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', $config->get('default_expand_fieldset')),
     '#options' => array(
       'when_required' => t('Expand only when a scheduled date exists or when a date is required'),
       'always' => t('Always open the fieldset or vertical tab'),

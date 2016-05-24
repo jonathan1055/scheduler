@@ -104,7 +104,7 @@ class SchedulerManager {
     foreach ($nodes as $nid => $node) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled publishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
+      if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $this->setting('default_publish_enable'))) {
         throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
         continue;
       }
@@ -133,11 +133,11 @@ class SchedulerManager {
       $publish_on = $node->publish_on->value;
       $node->set('changed', $publish_on);
       $old_creation_date = $node->getCreatedTime();
-      if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH)) {
+      if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
         $node->setCreatedTime($publish_on);
       }
 
-      $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', SCHEDULER_DEFAULT_PUBLISH_REVISION);
+      $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', $this->setting('default_publish_revision'));
       if ($create_publishing_revision) {
         $node->setNewRevision();
         // Use a core date format to guarantee a time is included.
@@ -220,7 +220,7 @@ class SchedulerManager {
     foreach ($nodes as $nid => $node) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled unpublishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
+      if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
         throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
         continue;
       }
@@ -259,7 +259,7 @@ class SchedulerManager {
       $unpublish_on = $node->unpublish_on->value;
       $node->set('changed', $unpublish_on);
 
-      $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', SCHEDULER_DEFAULT_UNPUBLISH_REVISION);
+      $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
       if ($create_unpublishing_revision) {
         $node->setNewRevision();
         // Use a core date format to guarantee a time is included.
@@ -370,7 +370,7 @@ class SchedulerManager {
    * Scheduler configuration page at /admin/config/content/scheduler/cron.
    */
   public function runCron() {
-    $log = $this->configFactory->get('scheduler.settings')->get('log');
+    $log = $this->setting('log');
     if ($log) {
       $this->logger->notice('Lightweight cron run activated.');
     }
@@ -384,6 +384,18 @@ class SchedulerManager {
     if ($log) {
       $this->logger->notice('Lightweight cron run completed.', array('link' => \Drupal::l(t('settings'), Url::fromRoute('scheduler.cron_form'))));
     }
+  }
+
+  /**
+   * Helper method to access the settings of this module.
+   *
+   * @param string $key
+   *   The key of the configuration.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   */
+  protected function setting($key) {
+    return $this->configFactory->get('scheduler.settings')->get($key);
   }
 
 }
