@@ -81,6 +81,9 @@ class SchedulerManager {
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function publish() {
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+    $dispatcher = \Drupal::service('event_dispatcher');
+
     $result = FALSE;
 
     // If the time now is greater than the time to publish a node, publish it.
@@ -103,7 +106,7 @@ class SchedulerManager {
     foreach ($nodes as $nid => $node) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled publishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
+      if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $this->setting('default_publish_enable'))) {
         throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
         continue;
       }
@@ -113,8 +116,11 @@ class SchedulerManager {
         continue;
       }
 
-      // Invoke Scheduler API for modules to react before the node is published.
-      _scheduler_scheduler_api($node, 'pre_' . $action);
+      // Trigger the PRE_PUBLISH event so that modules can react before the node
+      // is published.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
+      $node = $event->getNode();
 
       // If an API call has removed the date $node->set('changed', $publish_on)
       // would fail, so trap this exception here and give a meaningful message.
@@ -129,11 +135,11 @@ class SchedulerManager {
       $publish_on = $node->publish_on->value;
       $node->set('changed', $publish_on);
       $old_creation_date = $node->getCreatedTime();
-      if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', SCHEDULER_DEFAULT_PUBLISH_TOUCH)) {
+      if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
         $node->setCreatedTime($publish_on);
       }
 
-      $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', SCHEDULER_DEFAULT_PUBLISH_REVISION);
+      $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', $this->setting('default_publish_revision'));
       if ($create_publishing_revision) {
         $node->setNewRevision();
         // Use a core date format to guarantee a time is included.
@@ -167,8 +173,11 @@ class SchedulerManager {
          $event_dispatcher->dispatch(SchedulerHasPublishedThisNodeEvent::EVENT_NAME, $event);
       }
 
-      // Invoke scheduler API for modules to react after the node is published.
-      _scheduler_scheduler_api($node, $action);
+      // Trigger the PUBLISH event so that modules can react after the node is
+      // published.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PUBLISH, $event);
+      $event->getNode()->save();
 
       $result = TRUE;
     }
@@ -186,6 +195,9 @@ class SchedulerManager {
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
    */
   public function unpublish() {
+    /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+    $dispatcher =  \Drupal::service('event_dispatcher');
+
     $result = FALSE;
 
     // If the time is greater than the time to unpublish a node, unpublish it.
@@ -208,7 +220,7 @@ class SchedulerManager {
     foreach ($nodes as $nid => $node) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled unpublishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE)) {
+      if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
         throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
         continue;
       }
@@ -227,8 +239,11 @@ class SchedulerManager {
         continue;
       }
 
-      // Invoke scheduler API for modules to react before the node is unpublished.
-      _scheduler_scheduler_api($node, 'pre_' . $action);
+      // Trigger the PRE_UNPUBLISH event so that modules can react before the
+      // node is unpublished.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
+      $node = $event->getNode();
 
       // If an API call has removed the date $node->set('changed', $unpublish_on)
       // would fail, so trap this exception here and give a meaningful message.
@@ -244,7 +259,7 @@ class SchedulerManager {
       $unpublish_on = $node->unpublish_on->value;
       $node->set('changed', $unpublish_on);
 
-      $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', SCHEDULER_DEFAULT_UNPUBLISH_REVISION);
+      $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
       if ($create_unpublishing_revision) {
         $node->setNewRevision();
         // Use a core date format to guarantee a time is included.
@@ -278,8 +293,11 @@ class SchedulerManager {
         $event_dispatcher->dispatch(SchedulerHasUnpublishedThisNodeEvent::EVENT_NAME, $event);
       }
 
-      // Invoke scheduler API for modules to react after the node is unpublished.
-      _scheduler_scheduler_api($node, $action);
+      // Trigger the UNPUBLISH event so that modules can react before the node
+      // is unpublished.
+      $event = new SchedulerEvent($node);
+      $dispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
+      $event->getNode()->save();
 
       $result = TRUE;
     }
@@ -350,7 +368,7 @@ class SchedulerManager {
    * Scheduler configuration page at /admin/config/content/scheduler/cron.
    */
   public function runCron() {
-    $log = $this->configFactory->get('scheduler.settings')->get('log');
+    $log = $this->setting('log');
     if ($log) {
       $this->logger->notice('Lightweight cron run activated.');
     }
@@ -364,6 +382,18 @@ class SchedulerManager {
     if ($log) {
       $this->logger->notice('Lightweight cron run completed.', array('link' => \Drupal::l(t('settings'), Url::fromRoute('scheduler.cron_form'))));
     }
+  }
+
+  /**
+   * Helper method to access the settings of this module.
+   *
+   * @param string $key
+   *   The key of the configuration.
+   *
+   * @return \Drupal\Core\Config\ImmutableConfig
+   */
+  protected function setting($key) {
+    return $this->configFactory->get('scheduler.settings')->get($key);
   }
 
 }

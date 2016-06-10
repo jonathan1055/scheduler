@@ -183,6 +183,7 @@ class SchedulerApiTestCase extends SchedulerTestBase {
       'type' => $this->nodetype->get('type'),
       'promote' => FALSE,
       'sticky' => FALSE,
+      'title' => 'API TEST node action',
     );
     $node = $this->drupalCreateNode($settings);
 
@@ -245,10 +246,10 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $type = $this->nodetype->get('type');
     // Node 1 is not published and has no publishing date set. The test API
     // module will add node 1 into the list to be published.
-    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'nid_list publish me']);
+    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list publish me']);
     // Node 2 is published and has no unpublishing date set. The test API module
     // will add node 2 into the list to be unpublished.
-    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'nid_list unpublish me']);
+    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list unpublish me']);
 
     // Before cron, check node 1 is unpublished and node 2 is published.
     $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
@@ -280,16 +281,16 @@ class SchedulerApiTestCase extends SchedulerTestBase {
     $type = $this->nodetype->get('type');
     // Node 1 is set for scheduled publishing, but will be removed by the test
     // API hook_nid_list_alter().
-    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'nid_list_alter do not publish me', 'publish_on' => strtotime('-1 day')]);
+    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list_alter do not publish me', 'publish_on' => strtotime('-1 day')]);
     // Node 2 is not published and has no publishing date set. The test API
     // module will add node 2 into the list to be published.
-    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'nid_list_alter publish me']);
+    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list_alter publish me']);
     // Node 3 is set for scheduled unpublishing, but will be removed by the test
     // API hook_nid_list_alter().
-    $node3 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'nid_list_alter do not unpublish me', 'unpublish_on' => strtotime('-1 day')]);
+    $node3 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list_alter do not unpublish me', 'unpublish_on' => strtotime('-1 day')]);
     // Node 4 is published and has no unpublishing date set. The test API module
     // will add node 4 into the list to be unpublished.
-    $node4 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'nid_list_alter unpublish me']);
+    $node4 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list_alter unpublish me']);
 
     // Check node 1 and 2 are unpublished and node 3 and 4 are published.
     $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');

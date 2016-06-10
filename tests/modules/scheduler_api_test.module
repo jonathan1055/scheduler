@@ -8,42 +8,6 @@
 use Drupal\node\Entity\Node;
 
 /**
- * Implements hook_scheduler_api().
- */
-function scheduler_api_test_scheduler_api($node, $action) {
-  // This hook allows modules to react to the Scheduler process being performed.
-  // It is invoked during cron processing and also from scheduler_node_presave().
-  // Use the standard 'sticky' and 'promote' fields as a simple way to test the
-  // processing. Use conditional checks on $node->isPublished() to make the
-  // tests stronger so that they will fail if the calls are in the wrong place.
-  switch ($action) {
-    case 'pre_publish' :
-      // Before publishing a node make it sticky.
-      if (!$node->isPublished()) $node->set('sticky', TRUE)->save();
-      break;
-    case 'publish' :
-      // After publishing a node promote to front page.
-      if ($node->isPublished()) $node->set('promote', TRUE)->save();
-      break;
-    case 'publish_immediately' :
-      // When publishing immediately set the node to sticky and promoted, and
-      // also change the title. Do not use ->save() as this breaks the system!
-      $node->set('sticky', TRUE)->set('promote', TRUE);
-      $node->title->value = 'Published immediately';
-      break;
-    case 'pre_unpublish' :
-      // Before unpublishing a node make it unsticky.
-      if ($node->isPublished()) $node->set('sticky', FALSE)->save();
-      break;
-    case 'unpublish' :
-      // After unpublishing a node remove it from front page.
-      if (!$node->isPublished()) $node->set('promote', FALSE)->save();
-      break;
-    default:
-  }
-}
-
-/**
  * Implements hook_scheduler_nid_list().
  */
 function scheduler_api_test_scheduler_nid_list($action) {
@@ -56,13 +20,13 @@ function scheduler_api_test_scheduler_nid_list($action) {
   foreach ($nodes as $nid => $node) {
     // If publishing and this is the publish test node, set a date and add
     // the node id to the list.
-    if ($action == 'publish' && $node->title->value == 'nid_list publish me') {
+    if ($action == 'publish' && $node->title->value == 'API TEST nid_list publish me') {
       $node->set('publish_on', REQUEST_TIME)->save();
       $nids[] = $nid;
     }
     // If unpublishing and this is the unpublish test node, set a date and add
     // the node id to the list.
-    if ($action == 'unpublish' && $node->title->value == 'nid_list unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list unpublish me') {
       $node->set('unpublish_on', REQUEST_TIME)->save();
       $nids[] = $nid;
     }
@@ -78,20 +42,20 @@ function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
   $nodes = Node::loadMultiple($query->execute());
 
   foreach ($nodes as $nid => $node) {
-    if ($action == 'publish' && $node->title->value == 'nid_list_alter do not publish me') {
+    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter do not publish me') {
       // Remove the node id.
       $nids = array_diff($nids, [$nid]);
     }
-    if ($action == 'publish' && $node->title->value == 'nid_list_alter publish me') {
+    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter publish me') {
       // Set a publish_on date and add the node id.
       $node->set('publish_on', REQUEST_TIME)->save();
       $nids[] = $nid;
     }
-    if ($action == 'unpublish' && $node->title->value == 'nid_list_alter do not unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter do not unpublish me') {
       // Remove the node id.
       $nids = array_diff($nids, [$nid]);
     }
-    if ($action == 'unpublish' && $node->title->value == 'nid_list_alter unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter unpublish me') {
       // Set an unpublish_on date and add the node id.
       $node->set('unpublish_on', REQUEST_TIME)->save();
       $nids[] = $nid;

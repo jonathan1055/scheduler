@@ -11,35 +11,6 @@
  */
 
 /**
- * Modules can implement hook_scheduler_api() to react to the Scheduler
- * operation being done on a node. The hook is invoked during cron processing
- * and also from scheduler_node_presave().
- *
- * @param \Drupal\node\NodeInterface $node
- *   The scheduled node object that is being processed.
- *
- * @param string $action
- *   $action determines what is being done to the node. The value will be
- *   'pre_publish', 'publish', 'publish_immediately', 'pre_unpublish'
- *   or 'unpublish'.
- */
-function hook_scheduler_api($node, $action) {
-  switch ($action) {
-    case 'pre_publish' :
-      break;
-    case 'publish' :
-      break;
-    case 'publish_immediately' :
-      break;
-    case 'pre_unpublish' :
-      break;
-    case 'unpublish' :
-      break;
-    default:
-  }
-}
-
-/**
  * Modules can implement hook_scheduler_nid_list() to add more node ids into the
  * list to be processed in the current cron run. This hook is invoked during
  * cron runs only.
