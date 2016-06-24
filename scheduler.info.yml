@@ -1,7 +1,8 @@
 name: Scheduler
 type: module
-description: 'Publish and unpublish content on specified dates and time.'
+description: 'Publish and unpublish content automatically on specified dates and times.'
 core: 8.x
+configure: scheduler.admin_form
 dependencies:
   - action
   - datetime
