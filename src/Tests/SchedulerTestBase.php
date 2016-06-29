@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerTestBase
- */
-
 namespace Drupal\scheduler\Tests;
 
 use Drupal\simpletest\WebTestBase;

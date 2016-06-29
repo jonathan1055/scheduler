@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerMetaInformationTest.
- */
-
 namespace Drupal\scheduler\Tests;
 
 /**

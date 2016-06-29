@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\Validation\Constraint\SchedulerUnpublishOnConstraint.
- */
-
 namespace Drupal\scheduler\Plugin\Validation\Constraint;
 
 use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;

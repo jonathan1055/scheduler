@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerPastDatesTest.
- */
 
 namespace Drupal\scheduler\Tests;
 

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Form\SchedulerCronForm.
- */
-
 namespace Drupal\scheduler\Form;
 
 use Drupal\Core\Extension\ModuleHandlerInterface;

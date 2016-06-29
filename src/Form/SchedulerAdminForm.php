@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Form\SchedulerAdminForm.
- */
-
 namespace Drupal\scheduler\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;

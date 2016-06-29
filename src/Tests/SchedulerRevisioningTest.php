@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerRevisioningTest
- */
-
 namespace Drupal\scheduler\Tests;
 
 use Drupal\node\NodeInterface;

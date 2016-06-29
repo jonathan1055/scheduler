@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\SchedulerEvent.
- */
-
 namespace Drupal\scheduler;
 
 use Drupal\Core\Entity\EntityInterface;

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler_api_test\EventSubscriber.
- */
-
 namespace Drupal\scheduler_api_test;
 
 use Drupal\node\Entity\Node;

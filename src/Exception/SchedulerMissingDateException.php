@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\scheduler\Exception\SchedulerMissingDateException.
- */
-
 namespace Drupal\scheduler\Exception;
 
 /**

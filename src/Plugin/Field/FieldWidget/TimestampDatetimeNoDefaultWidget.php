@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\Field\FieldWidget\TimestampDatetimeNoDefaultWidget.
- */
 
 namespace Drupal\scheduler\Plugin\Field\FieldWidget;
 

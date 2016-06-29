@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\SchedulerManager.
- */
-
 namespace Drupal\scheduler;
 
 use Drupal\Core\Config\ConfigFactory;
