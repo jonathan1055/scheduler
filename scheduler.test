@@ -766,27 +766,40 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 
     $langcode = LANGUAGE_NONE;
     foreach ($test_cases as $test_data) {
-      // Edit the node and set the body tokens to use the format being tested.
-      // The tokens will not be replaced automatically when the node is views,
-      // but using the body field is a convenient way to store the data.
-      $edit = array(
-        "body[$langcode][0][value]" => 'Publish on: [node:scheduler-publish' . $test_data['token_format'] . ']. Unpublish on: [node:scheduler-unpublish' . $test_data['token_format'] . '].',
-      );
-      $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
-      $this->drupalGet('node/' . $node->nid);
+      // With each of the test cases, test using both numeric and string input.
+      foreach (array('numeric', 'string') as $test_data['input_type']) {
+        if ($test_data['input_type'] == 'numeric') {
+          // Edit the node and set the body tokens to use the format being
+          // tested. The tokens are not replaced automatically when the node is
+          // viewed, but using the body is a convenient way to store the data.
+          $edit = array(
+            "body[$langcode][0][value]" => 'Publish on: [node:scheduler-publish' . $test_data['token_format'] . ']. Unpublish on: [node:scheduler-unpublish' . $test_data['token_format'] . '].',
+          );
+          $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+          $this->drupalGet('node/' . $node->nid);
+          // Refresh the node. Third parameter TRUE to reset cache.
+          $node = node_load($node->nid, NULL, TRUE);
+        }
+        else {
+          // Replicate the scheduler fields as if just input by a user during
+          // edit, before hook_node_presave() has been executed.
+          // @see https://www.drupal.org/node/2750467
+          $node->publish_on = format_date($publish_on_timestamp, 'custom', 'Y-m-d H:i:s');
+          $node->unpublish_on = format_date($unpublish_on_timestamp, 'custom', 'Y-m-d H:i:s');
+        }
 
-      // Refresh the node - 3rd param TRUE to reset cache.
-      $node = node_load($node->nid, NULL, TRUE);
-      $token_output = token_replace($node->body[$langcode][0]['value'], array('node' => $node));
+        // Get the node body value after tokens have been replaced.
+        $token_output = token_replace($node->body[$langcode][0]['value'], array('node' => $node));
 
-      // Create the expected text for the body.
-      $publish_on_date = format_date($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
-      $unpublish_on_date = format_date($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
-      $expected_output = 'Publish on: ' . $publish_on_date . '. Unpublish on: ' . $unpublish_on_date . '.';
+        // Create the expected text for the body.
+        $publish_on_date = format_date($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
+        $unpublish_on_date = format_date($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
+        $expected_output = 'Publish on: ' . $publish_on_date . '. Unpublish on: ' . $unpublish_on_date . '.';
 
-      // Check that the actual text matches the expected value.
-      $tested_format = $test_data['token_format'] ? '"' . $test_data['token_format'] . '"' : 'default';
-      $this->assertEqual($token_output, $expected_output, 'Scheduler tokens replaced correctly for ' . $tested_format . ' format.');
+        // Check that the actual text matches the expected value.
+        $tested_format = $test_data['token_format'] ? '"' . $test_data['token_format'] . '"' : 'default';
+        $this->assertEqual($token_output, $expected_output, 'Scheduler tokens replaced correctly for ' . $tested_format . ' format with ' . $test_data['input_type'] . ' input data.');
+      }
     }
   }
 }
