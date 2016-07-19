@@ -82,5 +82,5 @@ function scheduler_uninstall() {
   // Remove our base fields from the schema.
   \Drupal::service('entity.definition_update_manager')->applyUpdates();
   // Delete the scheduled content view.
-  \Drupal::configFactory()->getEditable('views.view.scheduled_content')->delete();
+  \Drupal::configFactory()->getEditable('views.view.scheduler_scheduled_content')->delete();
 }
