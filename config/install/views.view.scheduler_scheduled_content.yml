@@ -4,7 +4,7 @@ dependencies:
   module:
     - node
     - user
-id: scheduled_content
+id: scheduler_scheduled_content
 label: 'Scheduled content'
 module: node
 description: 'Find and manage scheduled content.'
@@ -692,7 +692,7 @@ display:
           entity_field: unpublish_on
           plugin_id: date
       sorts: {  }
-      title: Content
+      title: 'Scheduled Content'
       empty:
         area_text_custom:
           id: area_text_custom
@@ -755,8 +755,9 @@ display:
         menu_name: admin
         weight: -10
       display_extenders: {  }
+      display_description: 'Overview of all scheduled content, as a tab on main ''content admin'' page'
     display_plugin: page
-    display_title: Page
+    display_title: Overview
     id: page_1
     position: 1
     cache_metadata:
@@ -789,7 +790,7 @@ display:
         menu_name: admin
         weight: -10
       display_extenders: {  }
-      display_description: 'Scheduled content tab on user profile'
+      display_description: 'Scheduled content tab on user profile, showing just that user''s scheduled content'
       filters:
         status_extra:
           id: status_extra
