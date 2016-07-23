@@ -8,6 +8,6 @@ services:
     arguments: ['scheduler']
   access_checker.scheduler_content:
     class: Drupal\scheduler\Access\ScheduledListAccess
-    arguments: ['@current_user']
+    arguments: ['@current_route_match', '@current_user']
     tags:
       - { name: access_check }
