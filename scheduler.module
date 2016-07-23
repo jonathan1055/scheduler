@@ -500,3 +500,20 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
     $entity->$target = $timestamp;
   }
 }
+
+/**
+ * Returns all content types for which scheduler has been enabled.
+ *
+ * @param string $action
+ *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
+ *
+ * @return \Drupal\node\NodeTypeInterface[]
+ */
+function _scheduler_get_scheduler_enabled_node_types($action) {
+  $config = \Drupal::config('scheduler.settings');
+  $node_types = \Drupal\node\Entity\NodeType::loadMultiple();
+  return array_filter($node_types, function($bundle) use($action, $config) {
+    /* @var \Drupal\node\NodeTypeInterface $bundle */
+    return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
+  });
+}

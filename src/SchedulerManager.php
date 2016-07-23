@@ -78,16 +78,21 @@ class SchedulerManager {
     $dispatcher = \Drupal::service('event_dispatcher');
 
     $result = FALSE;
-
-    // If the time now is greater than the time to publish a node, publish it.
-    $query = \Drupal::entityQuery('node')
-      ->condition('publish_on', 0, '>')
-      ->condition('publish_on', REQUEST_TIME, '<=');
-    // @todo Change this query to exclude nodes which are not enabled for
-    // publishing. See https://www.drupal.org/node/2659824
-    $nids = $query->execute();
-
     $action = 'publish';
+
+    // Select all nodes of the types that are enabled for scheduled publishing
+    // and where publish_on is less than or equal to the current time.
+    $nids = [];
+    $scheduler_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types($action));
+    if (!empty($scheduler_enabled_types)) {
+      $query = \Drupal::entityQuery('node')
+        ->exists('publish_on')
+        ->condition('publish_on', REQUEST_TIME, '<=')
+        ->condition('type', $scheduler_enabled_types, 'IN')
+        ->sort('publish_on')
+        ->sort('nid');
+      $nids = $query->execute();
+    }
 
     // Allow other modules to add to the list of nodes to be published.
     $nids = array_unique(array_merge($nids, $this->nidList($action)));
@@ -194,16 +199,21 @@ class SchedulerManager {
     $dispatcher =  \Drupal::service('event_dispatcher');
 
     $result = FALSE;
-
-    // If the time is greater than the time to unpublish a node, unpublish it.
-    $query = \Drupal::entityQuery('node')
-      ->condition('unpublish_on', 0, '>')
-      ->condition('unpublish_on', REQUEST_TIME, '<=');
-    // @todo Change this query to exclude nodes which are not enabled for
-    // unpublishing. See https://www.drupal.org/node/2659824
-    $nids = $query->execute();
-
     $action = 'unpublish';
+
+    // Select all nodes of the types that are enabled for scheduled unpublishing
+    // and where unpublish_on is less than or equal to the current time.
+    $nids = [];
+    $scheduler_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types($action));
+    if (!empty($scheduler_enabled_types)) {
+      $query = \Drupal::entityQuery('node')
+        ->exists('unpublish_on')
+        ->condition('unpublish_on', REQUEST_TIME, '<=')
+        ->condition('type', $scheduler_enabled_types, 'IN')
+        ->sort('unpublish_on')
+        ->sort('nid');
+      $nids = $query->execute();
+    }
 
     // Allow other modules to add to the list of nodes to be unpublished.
     $nids = array_unique(array_merge($nids, $this->nidList($action)));
