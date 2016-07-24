@@ -82,12 +82,12 @@ display:
               empty_column: false
               responsive: ''
             name:
-              sortable: false
+              sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
-              responsive: priority-low
+              responsive: ''
             status:
               sortable: true
               default_sort_order: asc
@@ -597,11 +597,11 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
-          operator: '>'
+          operator: 'not empty'
           value:
             min: ''
             max: ''
-            value: '1970-01-01 00:00:00'
+            value: ''
             type: date
           group: 2
           exposed: false
@@ -644,11 +644,11 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
-          operator: '>'
+          operator: 'not empty'
           value:
             min: ''
             max: ''
-            value: '1970-01-01 00:00:00'
+            value: ''
             type: date
           group: 2
           exposed: false
@@ -726,7 +726,7 @@ display:
       cacheable: false
       max-age: 0
       tags: {  }
-  page_1:
+  overview:
     display_options:
       path: admin/content/scheduled
       menu:
@@ -746,8 +746,8 @@ display:
       display_extenders: {  }
       display_description: 'Overview of all scheduled content, as a tab on main ''content admin'' page'
     display_plugin: page
-    display_title: Overview
-    id: page_1
+    display_title: 'Content Overview'
+    id: overview
     position: 1
     cache_metadata:
       contexts:
@@ -825,7 +825,7 @@ display:
     display_plugin: page
     display_title: 'User profile tab'
     id: user_page
-    position: 1
+    position: 2
     cache_metadata:
       contexts:
         - 'languages:language_content'
