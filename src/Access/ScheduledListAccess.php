@@ -21,7 +21,7 @@ class ScheduledListAccess implements AccessCheckInterface {
   protected $routeMatch;
 
   /**
-   * Constructs the scheuled content access check.
+   * Constructs a ScheduledListAccess object.
    *
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
