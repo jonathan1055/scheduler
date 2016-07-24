@@ -481,8 +481,12 @@ function scheduler_node_view($node, $view_mode = 'full', $langcode) {
  * Implements hook_node_validate().
  */
 function scheduler_node_validate($node, $form, &$form_state) {
-  if ($form_state['clicked_button']['#value'] == t('Delete')) {
-    // Skip all validation when deleting the node.
+  // Skip all validation when deleting the node. To check if the delete button
+  // was clicked search for 'node_form_delete_submit' in the triggering_element
+  // #submit array. This is better than checking for the text 'Delete'.
+  // Use !== FALSE because the key returned will be 0.
+  // @see https://www.drupal.org/node/2723929
+  if (!empty($form_state['triggering_element']['#submit']) && array_search('node_form_delete_submit', $form_state['triggering_element']['#submit']) !== FALSE) {
     if ($errors = form_get_errors()) {
       // If there are already errors (from date_popup) remove them to allow
       // deletion to proceed.
