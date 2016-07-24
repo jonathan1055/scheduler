@@ -693,7 +693,7 @@ display:
           admin_label: ''
           empty: true
           tokenize: false
-          content: 'No scheduled content available.'
+          content: 'No scheduled content.'
           plugin_id: text_custom
       arguments: {  }
       relationships:
@@ -784,6 +784,7 @@ display:
         filter_groups: true
         arguments: false
         access: true
+        empty: false
       arguments:
         uid:
           id: uid
@@ -822,6 +823,18 @@ display:
           entity_type: node
           entity_field: uid
           plugin_id: numeric
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          empty: true
+          tokenize: true
+          content: 'No scheduled content for user {{ arguments.uid }}'
+          plugin_id: text_custom
     display_plugin: page
     display_title: 'User profile tab'
     id: user_page
