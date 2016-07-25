@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerDefaultTimeTest
- */
-
 namespace Drupal\scheduler\Tests;
 
 /**

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerDeleteNodeTest
- */
-
 namespace Drupal\scheduler\Tests;
 
 use Drupal\node\Entity\NodeType;

@@ -1,12 +1,9 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerRequiredTest.
- */
 
 namespace Drupal\scheduler\Tests;
 
 use Drupal\node\Entity\NodeType;
+use Drupal\Component\Utility\SafeMarkup;
 
 /**
  * Tests the options for scheduling dates to be required during add/edit.
@@ -216,16 +213,13 @@ class SchedulerRequiredTest extends SchedulerTestBase {
       // Check for the expected result.
       switch ($test_case['expected']) {
         case 'required':
-          $string = t('The %name date is required.', ['%name' => ucfirst($test_case['required']) . ' on']);
-          $this->assertRaw($string, $test_case['id'] . '. ' . $test_case['message']);
+          $string = sprintf('The %s date is required.', ucfirst($test_case['required']) . ' on');
+          $this->assertText($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
 
         case 'not required':
-          $string = '@type %title has been ' . ($test_case['operation'] == 'add' ? 'created' : 'updated') . '.';
-          $args = ['@type' => 'Basic page', '%title' => $title];
-          // @codingStandardsIgnoreStart
-          $this->assertRaw(t($string, $args), $test_case['id'] . '. ' . $test_case['message']);
-          // @codingStandardsIgnoreEnd
+          $string = sprintf('%s %s has been %s.', 'Basic page', SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
+          $this->assertText($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
       }
     }

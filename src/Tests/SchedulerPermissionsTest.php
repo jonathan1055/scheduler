@@ -1,10 +1,8 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerPermissionsTest.
- */
 
 namespace Drupal\scheduler\Tests;
+
+use Drupal\Component\Utility\SafeMarkup;
 
 /**
  * Tests the permissions of the Scheduler module.
@@ -43,12 +41,12 @@ class SchedulerPermissionsTest extends SchedulerTestBase {
     // Check that a new node can be saved and published.
     $title = $this->randomString(15);
     $this->drupalPostForm('node/add/' . $type, ['title[0][value]' => $title], t('Save and publish'));
-    $this->assertRaw(t('@type %title has been created.', array('@type' => $type, '%title' => $title)), 'A node can be created and published when the user does not have scheduler permissions.');
+    $this->assertText(sprintf('%s %s has been created.', $this->nodetype->get('name'), SafeMarkup::checkPlain($title)), 'A node can be created and published when the user does not have scheduler permissions.');
 
     // Check that a new node can be saved as unpublished.
     $title = $this->randomString(15);
     $this->drupalPostForm('node/add/' . $type, ['title[0][value]' => $title], t('Save as unpublished'));
-    $this->assertRaw(t('@type %title has been created.', array('@type' => $type, '%title' => $title)), 'A node can be created and saved as unpublished when the user does not have scheduler permissions.');
+    $this->assertText(sprintf('%s %s has been created.', $this->nodetype->get('name'), SafeMarkup::checkPlain($title)), 'A node can be created and saved as unpublished when the user does not have scheduler permissions.');
 
     // Set publishing and unpublishing to required, to make it a stronger test.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', TRUE)

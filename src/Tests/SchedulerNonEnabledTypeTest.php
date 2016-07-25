@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerNonEnabledTypeTest.
- */
 
 namespace Drupal\scheduler\Tests;
 

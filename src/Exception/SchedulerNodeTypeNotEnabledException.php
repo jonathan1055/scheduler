@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException.
- */
-
 namespace Drupal\scheduler\Exception;
 
 /**

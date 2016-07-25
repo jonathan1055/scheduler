@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerApiTestCase.
- */
-
 namespace Drupal\scheduler\Tests;
 
 use Drupal\node\Entity\NodeType;

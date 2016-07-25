@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerLightweightCronTest.
- */
 
 namespace Drupal\scheduler\Tests;
 

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Controller\LightweightCronController.
- */
-
 namespace Drupal\scheduler\Controller;
 
 use Drupal\Core\Access\AccessResult;

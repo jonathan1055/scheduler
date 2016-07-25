@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Contains \Drupal\scheduler\Tests\SchedulerTokenReplaceTest.
- */
 
 namespace Drupal\scheduler\Tests;
 

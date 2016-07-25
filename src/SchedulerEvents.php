@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\SchedulerEvents.
- */
-
 namespace Drupal\scheduler;
 
 /**
