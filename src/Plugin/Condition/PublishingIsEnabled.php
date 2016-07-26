@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\Condition\PublishingIsEnabled.
- */
-
 namespace Drupal\scheduler\Plugin\Condition;
 
 use Drupal\Core\Entity\EntityInterface;

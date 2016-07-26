@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\RulesAction\SetPublishingDate.
- */
-
 namespace Drupal\scheduler\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;

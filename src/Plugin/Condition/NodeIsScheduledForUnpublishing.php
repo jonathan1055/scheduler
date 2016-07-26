@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\Condition\NodeIsScheduledForUnpublishing.
- */
-
 namespace Drupal\scheduler\Plugin\Condition;
 
 use Drupal\Core\Entity\EntityInterface;

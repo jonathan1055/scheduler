@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\RulesAction\SetUnpublishingDate.
- */
-
 namespace Drupal\scheduler\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;

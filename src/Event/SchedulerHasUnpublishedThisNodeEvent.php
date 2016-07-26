@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Event\SchedulerHasUnpublishedThisNodeEvent.
- */
-
 namespace Drupal\scheduler\Event;
 
 use Symfony\Component\EventDispatcher\Event;

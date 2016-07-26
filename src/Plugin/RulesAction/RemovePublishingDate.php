@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler\Plugin\RulesAction\RemovePublishingDate.
- */
-
 namespace Drupal\scheduler\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;
