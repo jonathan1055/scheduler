@@ -35,7 +35,8 @@ class PublishingIsEnabled extends RulesConditionBase {
    */
   public function evaluate() {
     $node = $this->getContextValue('node');
-    return ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE));
+    $config = \Drupal::config('scheduler.settings');
+    return ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')));
   }
 
 }

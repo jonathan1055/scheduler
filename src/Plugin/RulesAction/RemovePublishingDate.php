@@ -38,7 +38,8 @@ class RemovePublishingDate extends RulesActionBase {
    */
   public function doExecute() {
     $node = $this->getContextValue('node');
-    if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', SCHEDULER_DEFAULT_PUBLISH_ENABLE)) {
+    $config = \Drupal::config('scheduler.settings');
+    if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'))) {
       $node->set('publish_on', NULL);
       scheduler_node_presave($node);
       scheduler_node_update($node);

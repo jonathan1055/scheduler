@@ -313,10 +313,6 @@ function scheduler_node_presave(EntityInterface $node) {
 
 /**
  * Implements hook_ENTITY_TYPE_insert() for node entities.
- *
- * @todo Still needs to be ported to Drupal 8.
- *
- * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_insert(EntityInterface $node) {
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {
@@ -338,10 +334,6 @@ function scheduler_node_insert(EntityInterface $node) {
 
 /**
  * Implements hook_ENTITY_TYPE_update() for node entities.
- *
- * @todo Still needs to be ported to Drupal 8.
- *
- * @see https://www.drupal.org/node/2651348
  */
 function scheduler_node_update(EntityInterface $node) {
   if (!empty($node->publish_on->value) || !empty($node->unpublish_on->value)) {

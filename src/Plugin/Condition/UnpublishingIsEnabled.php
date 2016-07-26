@@ -35,7 +35,8 @@ class UnpublishingIsEnabled extends RulesConditionBase {
    */
   public function evaluate() {
     $node = $this->getContextValue('node');
-    return ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', SCHEDULER_DEFAULT_UNPUBLISH_ENABLE));
+    $config = \Drupal::config('scheduler.settings');
+    return ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable')));
   }
 
 }
