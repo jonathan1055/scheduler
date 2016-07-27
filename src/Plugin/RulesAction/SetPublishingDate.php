@@ -19,7 +19,7 @@ use Drupal\Core\Url;
  *       label = @Translation("Node for scheduling"),
  *       description = @Translation("The node which is to have a scheduled publishing date set"),
  *     ),
- *     "date" = @ContextDefinition("integer",
+ *     "date" = @ContextDefinition("timestamp",
  *       label = @Translation("The date for publishing"),
  *       description = @Translation("The date when Scheduler will publish the node"),
  *     )
@@ -45,10 +45,9 @@ class SetPublishingDate extends RulesActionBase {
       // then hook_node_presave() and hook_node_update() will be executed
       // automatically. But if this action is being used to schedule a different
       // node then we need to call the functions directly here.
-      $node->set('publish_on', $date)->save;
+      $node->set('publish_on', $date);
       scheduler_node_presave($node);
       scheduler_node_update($node);
-      $node->set('publish_on', $date)->save;
     }
     else {
       $type_name = node_get_type_label($node);

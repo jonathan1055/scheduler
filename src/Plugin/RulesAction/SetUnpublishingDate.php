@@ -19,7 +19,7 @@ use Drupal\Core\Url;
  *       label = @Translation("Node for scheduling"),
  *       description = @Translation("The node which is to have a scheduled unpublishing date set"),
  *     ),
- *     "date" = @ContextDefinition("integer",
+ *     "date" = @ContextDefinition("timestamp",
  *       label = @Translation("The date for unpublishing"),
  *       description = @Translation("The date when Scheduler will unpublish the node"),
  *     )
@@ -45,7 +45,7 @@ class SetUnpublishingDate extends RulesActionBase {
       // then hook_node_presave() and hook_node_update() will be executed
       // automatically. But if this action is being used to schedule a different
       // node then we need to call the functions directly here.
-      $node->set('unpublish_on', $date)->save;
+      $node->set('unpublish_on', $date);
       scheduler_node_presave($node);
       scheduler_node_update($node);
     }
