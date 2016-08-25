@@ -37,9 +37,9 @@ abstract class SchedulerTestBase extends WebTestBase {
     // Create a 'Basic Page' content type.
     /** @var NodeTypeInterface $node_type */
     $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
-    ### @TODO Remove all NodeType::load('page') and use $this->nodetype
-    ### @TODO Remove all 'page' and use $this->nodetype->get('type')
-    ### @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
+    // @TODO Remove all NodeType::load('page') and use $this->nodetype
+    // @TODO Remove all 'page' and use $this->nodetype->get('type')
+    // @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
 
     // Add scheduler functionality to the node type.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
@@ -53,6 +53,7 @@ abstract class SchedulerTestBase extends WebTestBase {
       'administer nodes',
       'access content',
       'access content overview',
+      'administer site configuration',  // required for admin/reports/status
       'create page content',
       'edit own page content',
       'delete own page content',
