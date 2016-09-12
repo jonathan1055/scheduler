@@ -10,7 +10,7 @@ dependencies:
   - node
   - views
 test_dependencies:
-  - date
+  - rules
 libraries:
   - scheduler/admin
   - vertical-tabs
