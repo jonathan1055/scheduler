@@ -1,0 +1,7 @@
+name: Scheduler Rules Integration
+type: module
+description: 'Scheduler sub-module providing conditions, actions and events for use with the Rules module.'
+core: 8.x
+dependencies:
+  - rules
+  - scheduler

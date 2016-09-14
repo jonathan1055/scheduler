@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Event;
+namespace Drupal\scheduler_rules_integration\Event;
 
 use Symfony\Component\EventDispatcher\Event;
 

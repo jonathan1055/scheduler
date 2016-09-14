@@ -9,8 +9,6 @@ dependencies:
   - field
   - node
   - views
-test_dependencies:
-  - rules
 libraries:
   - scheduler/admin
   - vertical-tabs

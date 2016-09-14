@@ -5,13 +5,15 @@
  * Scheduler functions to provide default rules and components.
  */
 
+// @TODO Convert to 8.x, this is stil 7.x code
+
 /**
  * Implements hook_default_rules_configuration().
  *
  * @return
  *   An array of rules configurations with the configuration names as keys.
  */
-function scheduler_default_rules_configuration() {
+function scheduler_rules_integration_default_rules_configuration() {
   // Define two reaction rules which will be displayed on the 'Rules' tab. These
   // are initially inactive, but the user can enable them, and then modify the
   // values and/or add more conditions and actions.

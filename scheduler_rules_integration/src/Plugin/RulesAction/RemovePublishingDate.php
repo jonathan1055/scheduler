@@ -1,51 +1,41 @@
 <?php
 
-namespace Drupal\scheduler\Plugin\RulesAction;
+namespace Drupal\scheduler_rules_integration\Plugin\RulesAction;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\Core\Url;
 
+
 /**
- * Provides a 'Set date for scheduled publishing' action.
+ * Provides a 'Remove date for scheduled publishing' action.
  *
  * @RulesAction(
- *   id = "scheduler_set_publishing_date_action",
- *   label = @Translation("Set date for scheduled publishing"),
+ *   id = "scheduler_remove_publishing_date_action",
+ *   label = @Translation("Remove date for scheduled publishing"),
  *   category = @Translation("Scheduler"),
  *   context = {
  *     "node" = @ContextDefinition("entity:node",
- *       label = @Translation("Node for scheduling"),
- *       description = @Translation("The node which is to have a scheduled publishing date set"),
+ *       label = @Translation("Node"),
+ *       description = @Translation("The node from which to remove the scheduled publishing date"),
  *     ),
- *     "date" = @ContextDefinition("timestamp",
- *       label = @Translation("The date for publishing"),
- *       description = @Translation("The date when Scheduler will publish the node"),
- *     )
  *   }
  * )
  */
-class SetPublishingDate extends RulesActionBase {
+class RemovePublishingDate extends RulesActionBase {
 
   /**
-   * Set the publish_on date for the node.
+   * Remove the publish_on date from the node.
    *
    * @param \Drupal\node\Entity\Node $node
-   *   The node object to be scheduled for publishing.
-   * @param int $date
-   *   The date for publishing, a unix timestamp integer.
+   *   The node object from which the scheduled publishing date will be removed.
    */
   public function doExecute() {
     $node = $this->getContextValue('node');
-    $date = $this->getContextValue('date');
     $config = \Drupal::config('scheduler.settings');
     if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'))) {
-      // When this action is invoked and it operates on the node being editted
-      // then hook_node_presave() and hook_node_update() will be executed
-      // automatically. But if this action is being used to schedule a different
-      // node then we need to call the functions directly here.
-      $node->set('publish_on', $date);
+      $node->set('publish_on', NULL);
       scheduler_node_presave($node);
       scheduler_node_update($node);
     }

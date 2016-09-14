@@ -6,6 +6,9 @@ scheduler_new_node_is_scheduled_for_publishing_event:
       type: 'entity:node'
       label: 'Scheduled Content Node'
       description: 'The node object representing the scheduled content'
+# These parameters were in the 7.x version. May not be needed, but left here
+# for reference until decision is made.
+# @TODO Add the parameters or remove these commented lines. Sep 2016
 #    publish_on:
 #      type: 'integer'
 #      label: 'Scheduler Publish On date'

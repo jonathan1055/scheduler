@@ -11,8 +11,6 @@ use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Drupal\scheduler\Exception\SchedulerMissingDateException;
 use Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException;
-use Drupal\scheduler\Event\SchedulerHasPublishedThisNodeEvent;
-use Drupal\scheduler\Event\SchedulerHasUnpublishedThisNodeEvent;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -167,10 +165,8 @@ class SchedulerManager {
       $this->entityManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
 
       // Invoke the event to tell Rules that Scheduler has published this node.
-      if ($this->moduleHandler->moduleExists('rules')) {
-         $event_dispatcher = \Drupal::service('event_dispatcher');
-         $event = new SchedulerHasPublishedThisNodeEvent($node); // @todo 2nd param $publish_on may be needed as the date will no longer be on the node
-         $event_dispatcher->dispatch(SchedulerHasPublishedThisNodeEvent::EVENT_NAME, $event);
+      if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
+        _scheduler_rules_integration_dispatch_cron_event($node, 'publish');
       }
 
       // Trigger the PUBLISH event so that modules can react after the node is
@@ -292,10 +288,8 @@ class SchedulerManager {
       $this->entityManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
 
       // Invoke event to tell Rules that Scheduler has unpublished this node.
-      if ($this->moduleHandler->moduleExists('rules')) {
-        $event_dispatcher = \Drupal::service('event_dispatcher');
-        $event = new SchedulerHasUnpublishedThisNodeEvent($node); // @todo 2nd param $unpublish_on may be needed as the date will no longer be on the node
-        $event_dispatcher->dispatch(SchedulerHasUnpublishedThisNodeEvent::EVENT_NAME, $event);
+      if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
+        _scheduler_rules_integration_dispatch_cron_event($node, 'unpublish');
       }
 
       // Trigger the UNPUBLISH event so that modules can react before the node

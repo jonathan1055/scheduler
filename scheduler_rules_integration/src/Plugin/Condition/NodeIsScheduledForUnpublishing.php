@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Plugin\Condition;
+namespace Drupal\scheduler_rules_integration\Plugin\Condition;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
