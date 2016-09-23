@@ -91,6 +91,9 @@ class SchedulerManager {
         ->condition('type', $scheduler_enabled_types, 'IN')
         ->sort('publish_on')
         ->sort('nid');
+      // Disable access checks for this query.
+      // @see https://www.drupal.org/node/2700209
+      $query->accessCheck(FALSE);
       $nids = $query->execute();
     }
 
@@ -208,6 +211,9 @@ class SchedulerManager {
         ->condition('type', $scheduler_enabled_types, 'IN')
         ->sort('unpublish_on')
         ->sort('nid');
+      // Disable access checks for this query.
+      // @see https://www.drupal.org/node/2700209
+      $query->accessCheck(FALSE);
       $nids = $query->execute();
     }
 

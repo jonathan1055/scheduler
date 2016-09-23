@@ -53,6 +53,7 @@ abstract class SchedulerTestBase extends WebTestBase {
       'administer nodes',
       'access content',
       'access content overview',
+      'access site reports',            // required for admin/reports/dblog
       'administer site configuration',  // required for admin/reports/status
       'create page content',
       'edit own page content',
