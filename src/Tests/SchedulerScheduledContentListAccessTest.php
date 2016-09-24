@@ -10,7 +10,7 @@ namespace Drupal\scheduler\Tests;
 class SchedulerScheduledContentListAccessTest extends SchedulerTestBase {
 
   /**
-   * Additional modules required. SchedulerTestBase loads 'node' and 'scheduler'
+   * Additional modules required.
    */
   public static $modules = ['views'];
 

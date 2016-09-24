@@ -17,9 +17,9 @@ abstract class SchedulerTestBase extends WebTestBase {
   protected $profile = 'testing';
 
   /**
-   * The modules to be loaded for these tests.
+   * The standard modules to be loaded for all tests.
    */
-  public static $modules = ['node', 'scheduler'];
+  public static $modules = ['scheduler'];
 
   /**
    * A user with administration rights.

@@ -12,7 +12,6 @@ use Drupal\node\Entity\NodeType;
 class SchedulerFieldsDisplayTest extends SchedulerTestBase {
 
   /**
-   * SchedulerTestBase loads the standard modules.
    * Additional module field_ui is required for the 'manage form display' test.
    */
   public static $modules = ['field_ui'];

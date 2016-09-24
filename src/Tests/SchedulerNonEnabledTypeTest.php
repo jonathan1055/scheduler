@@ -11,7 +11,7 @@ namespace Drupal\scheduler\Tests;
 class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
 
   /**
-   * Additional modules required. SchedulerTestBase loads the standard modules.
+   * Additional modules required.
    */
   public static $modules = ['dblog'];
 

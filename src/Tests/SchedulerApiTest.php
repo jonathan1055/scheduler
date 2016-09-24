@@ -12,7 +12,7 @@ use Drupal\node\Entity\NodeType;
 class SchedulerApiTestCase extends SchedulerTestBase {
 
   /**
-   * The additional modules to be loaded for this test.
+   * Additional modules required.
    */
   public static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
   // @todo 'menu_ui' is in the exported node.type definition, and 'path' is in
