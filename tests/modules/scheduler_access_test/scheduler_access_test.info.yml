@@ -1,4 +1,4 @@
-name: 'Scheduler Access Test'
+name: 'Scheduler Node Access Test'
 type: module
 description: 'Support module for Scheduler restricted node access testing.'
 package: Testing
