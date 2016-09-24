@@ -9,7 +9,7 @@ use Drupal\node\Entity\NodeType;
  *
  * @group scheduler
  */
-class SchedulerApiTestCase extends SchedulerTestBase {
+class SchedulerApiTest extends SchedulerTestBase {
 
   /**
    * Additional modules required.

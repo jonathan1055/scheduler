@@ -1,4 +1,4 @@
-name: 'Scheduler API testing'
+name: 'Scheduler API Test'
 type: module
 description: 'Support module for Scheduler API-related testing.'
 package: Testing
