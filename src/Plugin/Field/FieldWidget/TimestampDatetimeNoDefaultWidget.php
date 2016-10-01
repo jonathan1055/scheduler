@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @FieldWidget(
  *   id = "datetime_timestamp_no_default",
- *   label = @Translation("Datetime Timestamp with no default"),
+ *   label = @Translation("Datetime Timestamp for Scheduler"),
  *   description = @Translation("An optional datetime field. Does not provide a default time if left blank. Defined by Scheduler module."),
  *   field_types = {
  *     "timestamp",
