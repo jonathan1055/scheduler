@@ -14,15 +14,21 @@ class SchedulerDefaultTimeTest extends SchedulerTestBase {
    */
   public function testDefaultTime() {
     $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/status'); // Show the timecheck report.
 
     // Check that the correct default time is added to the scheduled date.
     // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
-    // Use the string '6:30' not '06:30:00' to test the flexible input.
     $this->seconds = 23400;
+    // If the test happens to be run at a time when '+1 day' puts the calculated
+    // publishing date into a different daylight-saving period then formatted
+    // time can be an hour different. To avoid these failures we use a fixed
+    // string when asserting the message and looking for field values.
+    // @see https://www.drupal.org/node/2809627
+    $this->seconds_formatted = '06:30:00';
     $edit = array(
       'date_format' => 'Y-m-d H:i:s',
       'allow_date_only' => TRUE,
-      'default_time' => '6:30',
+      'default_time' => '6:30', // Use '6:30' not '06:30:00' to test flexibility.
     );
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertDefaultTime();
@@ -74,7 +80,7 @@ class SchedulerDefaultTimeTest extends SchedulerTestBase {
     $this->assertNoText($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 
     // Check that the publish-on information is shown after saving.
-    $publish_time = date('Y-m-d H:i:s', strtotime('tomorrow', REQUEST_TIME) + $this->seconds);
+    $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $this->seconds_formatted;
     $args = array('@publish_time' => $publish_time);
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', $args), 'The user is informed that the content will be published on the requested date, on the default time.');
 
@@ -83,8 +89,7 @@ class SchedulerDefaultTimeTest extends SchedulerTestBase {
     if ($node = $this->drupalGetNodeByTitle($edit['title[0][value]'])) {
       $this->drupalGet('node/' . $node->id() . '/edit');
     }
-    $time_text = format_date(strtotime('tomorrow', REQUEST_TIME) + $this->seconds, 'custom', 'H:i:s');
-    $this->assertFieldByName('publish_on[0][value][time]', $time_text, 'The default time offset has been added to the date field when scheduling content for publication.');
-    $this->assertFieldByName('unpublish_on[0][value][time]', $time_text, 'The default time offset has been added to the date field when scheduling content for unpublication.');
+    $this->assertFieldByName('publish_on[0][value][time]', $this->seconds_formatted, 'The default time offset has been added to the date field when scheduling content for publication.');
+    $this->assertFieldByName('unpublish_on[0][value][time]', $this->seconds_formatted, 'The default time offset has been added to the date field when scheduling content for unpublication.');
   }
 }
