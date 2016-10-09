@@ -3,3 +3,5 @@ type: module
 description: 'Support module for Scheduler restricted node access testing.'
 package: Testing
 core: 8.x
+dependencies:
+  - scheduler
