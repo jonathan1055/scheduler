@@ -5,6 +5,8 @@
  * Installation file for Scheduler module.
  */
 
+use \Drupal\Core\Url;
+
 /**
  * Implements hook_requirements().
  */
@@ -31,8 +33,8 @@ function scheduler_requirements($phase) {
       '%date_default_timezone' => $date_default_timezone,
       '%date_default_offset' => $date_formatter->format($now, 'custom', 'P', $date_default_timezone),
       '%date_default_code' => $date_formatter->format($now, 'custom', 'T', $date_default_timezone),
-      '@account_edit' => \Drupal::url('entity.user.edit_form', ['user' => $user->id()]),
-      '@admin_regional_settings' => \Drupal::url('system.regional_settings'),
+      '@account_edit' => Url::fromRoute('entity.user.edit_form', ['user' => $user->id()])->toString(),
+      '@admin_regional_settings' => Url::fromRoute('system.regional_settings')->toString(),
     ];
 
     $descriptions = [
