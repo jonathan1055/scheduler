@@ -4,5 +4,6 @@ description: 'Support module for Scheduler API-related testing.'
 package: Testing
 core: 8.x
 dependencies:
+  - scheduler
   - options
 # @TODO. 'list' does not exist in 8.x Check that we still need 'options'

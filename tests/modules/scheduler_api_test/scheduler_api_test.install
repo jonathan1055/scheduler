@@ -29,16 +29,6 @@ function scheduler_api_test_uninstall() {
   $nids = $nids_query->fetchCol();
   entity_delete_multiple('node', $nids);
 
-  // Delete the custom node type and other config items.
-  \Drupal::configFactory()->getEditable('node.type.scheduler_api_test')->delete();
-  \Drupal::configFactory()->getEditable('field.storage.node.field_approved_publishing')->delete();
-  \Drupal::configFactory()->getEditable('field.storage.node.field_approved_unpublishing')->delete();
-  \Drupal::configFactory()->getEditable('field.field.node.scheduler_api_test.field_approved_publishing')->delete();
-  \Drupal::configFactory()->getEditable('field.field.node.scheduler_api_test.field_approved_unpublishing')->delete();
-  \Drupal::configFactory()->getEditable('core.entity_form_display.node.scheduler_api_test.default')->delete();
-  \Drupal::configFactory()->getEditable('core.entity_view_display.node.scheduler_api_test.default')->delete();
-  // @todo Is there a better way to delete the config items on uninstall?
-  // Assumed this was automatic but it seems not. After manual uninstall the
-  // node type is still available, and re-install fails.
-  // Cannot re-install until these are removed.
+  // The content type, custom fields and storage are deleted automatically by
+  // having 'enforced: module: - scheduler_api_test' in the /install/*.yml files
 }

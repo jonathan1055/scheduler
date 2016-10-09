@@ -4,6 +4,9 @@ dependencies:
   module:
     - menu_ui
     - scheduler
+  enforced:
+    module:
+      - scheduler_api_test
 third_party_settings:
   menu_ui:
     available_menus:

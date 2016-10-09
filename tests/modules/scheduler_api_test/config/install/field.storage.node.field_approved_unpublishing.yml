@@ -3,6 +3,9 @@ status: true
 dependencies:
   module:
     - node
+  enforced:
+    module:
+      - scheduler_api_test
 id: node.field_approved_unpublishing
 field_name: field_approved_unpublishing
 entity_type: node
