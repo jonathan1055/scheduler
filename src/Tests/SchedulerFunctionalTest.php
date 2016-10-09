@@ -71,7 +71,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     }
 
     // Modify the scheduler field data to a time in the past, then run cron.
+    // @TODO change this to node_save()
     db_update('node_field_data')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
+    db_update('node_field_revision')->fields(array($key => time() - 1))->condition('nid', $node->id())->execute();
+    $this->nodeStorage->resetCache([$node->id()]);
 
     $this->cronRun();
     // Show the site front page for an anonymous visitor, then assert that the

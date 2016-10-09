@@ -19,7 +19,7 @@ abstract class SchedulerTestBase extends WebTestBase {
   /**
    * The standard modules to be loaded for all tests.
    */
-  public static $modules = ['scheduler'];
+  public static $modules = ['scheduler', 'dblog'];
 
   /**
    * A user with administration rights.
@@ -27,6 +27,13 @@ abstract class SchedulerTestBase extends WebTestBase {
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $adminUser;
+
+  /**
+   * The node storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $nodeStorage;
 
   /**
    * {@inheritdoc}
@@ -45,6 +52,9 @@ abstract class SchedulerTestBase extends WebTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
+
+    // Define nodeStorage for use in many tests.
+    $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
 
     // Create an administrator user having the main admin permissions, full
     // rights on the 'page' content type and all of the Scheduler permissions.
