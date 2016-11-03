@@ -34,13 +34,15 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
     // Create an administrator user.
     $this->admin_user = $this->drupalCreateUser(array(
       'access content',
-      'administer scheduler',
-      'create page content',
-      'edit own page content',
-      'delete own page content',
-      'view own unpublished content',
+      'access site reports',            // required for admin/reports/dblog
       'administer nodes',
-      'schedule publishing of nodes'
+      'administer scheduler',
+      'administer site configuration',  // required for admin/reports/status
+      'create page content',
+      'delete own page content',
+      'edit own page content',
+      'schedule publishing of nodes',
+      'view own unpublished content',
     ));
 
     // Add scheduler functionality to the page node type.
@@ -118,7 +120,7 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
   function schedule($node, $action = 'publish') {
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
-    $node->{$action . '_on'} = strtotime('-1 day');
+    $node->{$action . '_on'} = strtotime('-1 day', REQUEST_TIME);
     node_save($node);
     scheduler_cron();
     return node_load($node->nid, NULL, TRUE);
@@ -195,7 +197,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * {@inheritdoc}
    */
   function setUp() {
-    parent::setUp('scheduler');
+    parent::setUp('scheduler', 'dblog');
     parent::commonSettings();
   }
 
@@ -254,7 +256,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // enters a publication date that is in the past.
     $edit = array(
       'title' => $this->randomName(),
-      'publish_on' => format_date(strtotime('-1 day'), 'custom', 'Y-m-d H:i:s'),
+      'publish_on' => format_date(strtotime('-1 day', REQUEST_TIME), 'custom', 'Y-m-d H:i:s'),
     );
     $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown when the publication date is in the past and the "error" behavior is chosen.');
@@ -293,7 +295,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    */
   public function testRevisioning() {
     // Create a scheduled node that is not automatically revisioned.
-    $created = strtotime('-2 day');
+    $created = strtotime('-2 day', REQUEST_TIME);
     $settings = array(
       'revision' => 0,
       'created' => $created,
@@ -516,7 +518,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
           'title' => $title,
           'type' => 'page',
           'status' => $test_case['status'],
-          'publish_on' => !empty($test_case['scheduled']) ? strtotime('+ 1 day') : 0,
+          'publish_on' => !empty($test_case['scheduled']) ? strtotime('+ 1 day', REQUEST_TIME) : 0,
         );
         $node = $this->drupalCreateNode($options);
       }
@@ -634,8 +636,8 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     variable_set('scheduler_unpublish_required_page', FALSE);
 
     // Create nodes with publish_on and unpublish_on dates in the past.
-    $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1, 'unpublish_on' => strtotime('- 2 day')));
-    $unpublished_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 0, 'publish_on' => strtotime('- 2 day')));
+    $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1, 'unpublish_on' => strtotime('- 2 day', REQUEST_TIME)));
+    $unpublished_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 0, 'publish_on' => strtotime('- 2 day', REQUEST_TIME)));
 
     // Attempt to delete the published node and check for no validation error.
     $this->drupalPost('node/' . $published_node->nid . '/edit', array(), t('Delete'));
@@ -669,7 +671,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertFalse($this->drupalGetHeader('X-Robots-Tag'), 'X-Robots-Tag is not present when no unpublish date is set.');
 
     // Set a scheduler unpublish date on the node.
-    $unpublish_date = strtotime('+1 day');
+    $unpublish_date = strtotime('+1 day', REQUEST_TIME);
     $edit = array(
       'unpublish_on' => format_date($unpublish_date, 'custom', 'Y-m-d H:i:s'),
     );
@@ -801,6 +803,41 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
         $this->assertEqual($token_output, $expected_output, 'Scheduler tokens replaced correctly for ' . $tested_format . ' format with ' . $test_data['input_type'] . ' input data.');
       }
     }
+  }
+
+  /**
+   * Tests the 'touch' option to update the created date during publishing.
+   */
+  public function testAlterCreationDate() {
+    // Ensure nodes with past dates will be scheduled not published immediately.
+    variable_set('scheduler_publish_past_date_page', 'schedule');
+
+    // Create a node with a 'created' date two days in the past.
+    $created = strtotime('-2 day', REQUEST_TIME);
+    $settings = array(
+      'type' => 'page',
+      'created' => $created,
+      'status' => FALSE,
+    );
+    $node = $this->drupalCreateNode($settings);
+    // Check that the node is not published.
+    $this->assertFalse($node->status, 'Before cron, the node is not published.');
+
+    // Schedule the node for publishing and run cron.
+    $node = $this->schedule($node, 'publish');
+    // Get the created date from the node and check that it has not changed.
+    $this->assertTrue($node->status, 'After cron, the node has been published.');
+    $created_after_cron = $node->created;
+    $this->assertEqual($created, $created_after_cron, 'The node creation date is not changed by default.');
+
+    // Set option to change the created date to match the publish_on date.
+    variable_set('scheduler_publish_touch_page', TRUE);
+
+    // Schedule the node again and run cron.
+    $node = $this->schedule($node, 'publish');
+    // Check that the created date has changed to match the publish_on date.
+    $created_after_cron = $node->created;
+    $this->assertEqual(strtotime('-1 day', REQUEST_TIME), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
   }
 }
 
