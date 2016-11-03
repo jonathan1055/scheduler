@@ -24,15 +24,13 @@ class SchedulerRevisioningTest extends SchedulerTestBase {
    *   The updated node, after scheduled (un)publication via a cron run.
    */
   protected function schedule(NodeInterface $node, $action = 'publish') {
-    $node_storage = $this->container->get('entity.manager')->getStorage('node');
-
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
-    $node->{$action . '_on'} = strtotime('-1 day');
+    $node->{$action . '_on'} = strtotime('-1 day', REQUEST_TIME);
     $node->save();
     scheduler_cron();
-    $node_storage->resetCache(array($node->id()));
-    return $node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    return $this->nodeStorage->load($node->id());
   }
 
   /**
@@ -93,7 +91,7 @@ class SchedulerRevisioningTest extends SchedulerTestBase {
    */
   public function testRevisioning() {
     // Create a scheduled node that is not automatically revisioned.
-    $created = strtotime('-2 day');
+    $created = strtotime('-2 day', REQUEST_TIME);
     $settings = [
       'type' => $this->nodetype->get('type'),
       'revision' => 0,
@@ -120,19 +118,53 @@ class SchedulerRevisioningTest extends SchedulerTestBase {
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);
     $this->assertRevisionCount($node->id(), 2, 'A new revision was created when revisioning is enabled.');
-    $expected_message = t('Node published by Scheduler on @now. Previous creation date was @date.', [
-      '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
-      '@date' => \Drupal::service('date.formatter')->format($created, 'short'),
-    ]);
+    $expected_message = sprintf('Node published by Scheduler on %s. Previous creation date was %s.',
+      \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+      \Drupal::service('date.formatter')->format($created, 'short'));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
 
     // Test scheduled unpublication with revisioning enabled.
     $node = $this->schedule($node, 'unpublish');
     $this->assertRevisionCount($node->id(), 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
-    $expected_message = t('Node unpublished by Scheduler on @now. Previous change date was @date.', [
-      '@now' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
-      '@date' => \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
-    ]);
+    $expected_message = sprintf('Node unpublished by Scheduler on %s. Previous change date was %s.',
+      \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'),
+      \Drupal::service('date.formatter')->format(REQUEST_TIME, 'short'));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
+  }
+
+  /**
+   * Tests the 'touch' option to alter the node created date during publishing.
+   */
+  public function testAlterCreationDate() {
+    // Ensure nodes with past dates will be scheduled not published immediately.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
+
+    // Create a node with a 'created' date two days in the past.
+    $created = strtotime('-2 day', REQUEST_TIME);
+    $settings = [
+      'type' => $this->nodetype->get('type'),
+      'created' => $created,
+      'status' => FALSE,
+    ];
+    $node = $this->drupalCreateNode($settings);
+    // Show that the node is not published.
+    $this->assertFalse($node->isPublished(), 'The node is not published.');
+
+    // Schedule the node for publishing and run cron.
+    $node = $this->schedule($node, 'publish');
+    // Get the created date from the node and check that it has not changed.
+    $created_after_cron = $node->created->value;
+    $this->assertTrue($node->isPublished(), 'The node has been published.');
+    $this->assertEqual($created, $created_after_cron, 'The node creation date is not changed by default.');
+
+    // Set option to change the created date to match the publish_on date.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_touch', TRUE)->save();
+
+    // Schedule the node again and run cron.
+    $node = $this->schedule($node, 'publish');
+    // Check that the created date has changed to match the publish_on date.
+    $created_after_cron = $node->created->value;
+    $this->assertEqual(strtotime('-1 day', REQUEST_TIME), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
+
   }
 }
