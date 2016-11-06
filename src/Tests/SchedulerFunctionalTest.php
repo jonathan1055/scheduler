@@ -53,7 +53,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertTrue($node, sprintf('Node for %s was created sucessfully.', $edit['title[0][value]']));
     if (empty($node)) {
-      $this->assert(FALSE, t('Test halted because node was not created.'));
+      $this->assert(FALSE, 'Test halted because node was not created.');
       return;
     }
 
@@ -63,11 +63,11 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->drupalGet('node');
     if (isset($edit['publish_on[0][value][date]'])) {
       $key = 'publish_on';
-      $this->assertNoText($body, t('Node is unpublished before Cron'));
+      $this->assertNoText($body, 'Node is unpublished before Cron');
     }
     else {
       $key = 'unpublish_on';
-      $this->assertText($body, t('Node is published before Cron'));
+      $this->assertText($body, 'Node is published before Cron');
     }
 
     // Modify the scheduler field data to a time in the past, then run cron.
@@ -81,10 +81,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // node is correctly published or unpublished.
     $this->drupalGet('node');
     if (isset($edit['publish_on[0][value][date]'])) {
-      $this->assertText($body, t('Node is published after Cron'));
+      $this->assertText($body, 'Node is published after Cron');
     }
     else {
-      $this->assertNoText($body, t('Node is unpublished after Cron'));
+      $this->assertNoText($body, 'Node is unpublished after Cron');
     }
   }
 }

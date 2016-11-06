@@ -31,7 +31,7 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
     $edit = [
-      'title[0][value]' => t('Past') . ' ' . $this->randomString(10),
+      'title[0][value]' => 'Past ' . $this->randomString(10),
       'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
       'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
     ];
@@ -80,7 +80,7 @@ class SchedulerPastDatesTest extends SchedulerTestBase {
 
     // Check that an Unpublish date in the past fails validation.
     $edit = [
-      'title[0][value]' => t('Unpublish in the past') . ' ' . $this->randomString(10),
+      'title[0][value]' => 'Unpublish in the past ' . $this->randomString(10),
       'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'Y-m-d'),
       'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'H:i:s'),
     ];

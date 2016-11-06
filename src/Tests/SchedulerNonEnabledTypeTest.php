@@ -23,7 +23,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
 
     // Create a 'Not for scheduler' content type.
     $this->contentName = 'not_for_scheduler';
-    $this->contentType = $this->drupalCreateContentType(['type' => $this->contentName, 'name' => t('Not for Scheduler')]);
+    $this->contentType = $this->drupalCreateContentType(['type' => $this->contentName, 'name' => 'Not for Scheduler']);
 
     // Create an administrator user.
     $this->adminUser = $this->drupalCreateUser([

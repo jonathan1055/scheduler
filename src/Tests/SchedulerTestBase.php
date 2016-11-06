@@ -43,7 +43,7 @@ abstract class SchedulerTestBase extends WebTestBase {
 
     // Create a 'Basic Page' content type.
     /** @var NodeTypeInterface $node_type */
-    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => t('Basic page')]);
+    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
     // @TODO Remove all NodeType::load('page') and use $this->nodetype
     // @TODO Remove all 'page' and use $this->nodetype->get('type')
     // @TODO Remove all 'Basic page' and use $this->nodetype->get('name')

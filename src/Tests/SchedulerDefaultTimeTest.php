@@ -59,7 +59,7 @@ class SchedulerDefaultTimeTest extends SchedulerTestBase {
 
     // Test if entering a time is required.
     $edit = array(
-      'title[0][value]' => t('No time') . ' ' . $this->randomString(15),
+      'title[0][value]' => 'No time ' . $this->randomString(15),
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
       'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
     );
