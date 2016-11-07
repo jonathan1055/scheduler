@@ -78,6 +78,11 @@ function scheduler_api_test_scheduler_allow_publishing($node) {
     // If publication is denied then inform the user why.
     if (!$allowed) {
       drupal_set_message(t('The content can be scheduled for publishing, but will not be published until approved by the CEO.'), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this.
+      if ($node->publish_on->value <= REQUEST_TIME) {
+        \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved by the CEO.', ['%title' => $node->title->value]);
+      }
     }
   }
   return $allowed;
@@ -97,6 +102,11 @@ function scheduler_api_test_scheduler_allow_unpublishing($node) {
     // If unpublication is denied then inform the user why.
     if (!$allowed) {
       drupal_set_message(t('The content can be scheduled for unpublishing, but will not be unpublished until approved by the CEO.'), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this.
+      if ($node->unpublish_on->value <= REQUEST_TIME) {
+        \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved by the CEO.', ['%title' => $node->title->value]);
+      }
     }
   }
   return $allowed;

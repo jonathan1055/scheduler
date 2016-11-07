@@ -62,6 +62,16 @@ class SchedulerApiTest extends SchedulerTestBase {
     $this->assertFieldById('edit-field-approved-publishing-value', '', 'The "Approved for publishing" field is shown on the node form');
     $this->assertFieldById('edit-field-approved-unpublishing-value', '', 'The "Approved for unpublishing" field is shown on the node form');
 
+    // Check that the message is shown when scheduling a node for publishing
+    // which is not yet allowed to be published.
+    $edit = [
+      'title[0][value]' => 'Set publish-on date without approval',
+      'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
+      'publish_on[0][value][time]' => date('H:i:s', time() + 3),
+    ];
+    $this->drupalPostForm('node/add/' . $this->customName, $edit, t('Save'));
+    $this->assertText('The content can be scheduled for publishing, but will not be published until approved by the CEO.', 'The message is shown when scheduling a node which is not yet allowed to be published.');
+
     // Create a node that is scheduled but not approved for publication. Then
     // simulate a cron run, and check that the node is still not published.
     $node = $this->createUnapprovedNode('publish_on');
@@ -103,6 +113,17 @@ class SchedulerApiTest extends SchedulerTestBase {
 
     // Test approval for unpublishing. This is simpler than the test sequence
     // for publishing, because the past date 'publish' option is not applicable.
+
+    // Check that the message is shown when scheduling a node for unpublishing
+    // which is not yet allowed to be unpublished.
+    $edit = [
+      'title[0][value]' => 'Set unpublish-on date without approval',
+      'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
+      'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
+    ];
+    $this->drupalPostForm('node/add/' . $this->customName, $edit, t('Save'));
+    $this->assertText('The content can be scheduled for unpublishing, but will not be unpublished until approved by the CEO.', 'The message is shown when scheduling a node which is not yet allowed to be unpublished.');
+
     // Create a node that is scheduled but not approved for unpublication. Then
     // simulate a cron run, and check that the node is still published.
     $node = $this->createUnapprovedNode('unpublish_on');
@@ -120,6 +141,10 @@ class SchedulerApiTest extends SchedulerTestBase {
     $this->node_storage->resetCache(array($node->id()));
     $node = $this->node_storage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An approved node is unpublished during cron processing.');
+
+    // Show the dblog messages.
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/dblog');
   }
 
   /**
