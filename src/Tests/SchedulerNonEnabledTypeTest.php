@@ -142,9 +142,6 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
-    // Get node storage for use in checkNonEnabledTypes()
-    $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
-
     // The case when both options are enabled is covered in the main tests. Here
     // we need to check each of the other combinations, to ensure that the
     // settings work independently.

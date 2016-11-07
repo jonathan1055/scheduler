@@ -22,7 +22,6 @@ class SchedulerRulesActionsTest extends SchedulerTestBase {
   public function setUp() {
     parent::setUp();
 
-    $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
     $this->rulesStorage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
 

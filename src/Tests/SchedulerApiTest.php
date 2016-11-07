@@ -39,9 +39,6 @@ class SchedulerApiTest extends SchedulerTestBase {
       'schedule publishing of nodes',
     ]);
 
-    // Create node_storage property.
-    $this->node_storage = $this->container->get('entity.manager')->getStorage('node');
-
   }
 
   /**
@@ -76,8 +73,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     // simulate a cron run, and check that the node is still not published.
     $node = $this->createUnapprovedNode('publish_on');
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An unapproved node is not published during cron processing.');
 
     // Create a node and approve it for publication, simulate a cron run and
@@ -88,8 +85,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     $this->approveNode($node->id(), 'field_approved_publishing');
     $this->assertFalse($node->isPublished(), 'A new approved node is initially not published.');
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node is published during cron processing.');
 
     // Turn on immediate publication of nodes with publication dates in the past
@@ -100,15 +97,15 @@ class SchedulerApiTest extends SchedulerTestBase {
 
     // Check that the node can be approved and published programatically.
     $this->approveNode($node->id(), 'field_approved_publishing');
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately via $node->set()->save().');
 
     // Check that a node can be approved and published via edit form.
     $node = $this->createUnapprovedNode('publish_on');
     $this->drupalPostForm('node/' . $node->id() . '/edit', ['field_approved_publishing[value]' => '1'], t('Save'));
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately after saving via edit form.');
 
     // Test approval for unpublishing. This is simpler than the test sequence
@@ -128,8 +125,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     // simulate a cron run, and check that the node is still published.
     $node = $this->createUnapprovedNode('unpublish_on');
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An unapproved node is not unpublished during cron processing.');
 
     // Create a node, then approve it for unpublishing, simulate a cron run and
@@ -138,8 +135,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     $this->approveNode($node->id(), 'field_approved_unpublishing');
     $this->assertTrue($node->isPublished(), 'A new approved node is initially published.');
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An approved node is unpublished during cron processing.');
 
     // Show the dblog messages.
@@ -181,8 +178,8 @@ class SchedulerApiTest extends SchedulerTestBase {
    *   'field_approved_unpublishing'.
    */
   protected function approveNode($nid, $field_name) {
-    $this->node_storage->resetCache(array($nid));
-    $node = $this->node_storage->load($nid);
+    $this->nodeStorage->resetCache(array($nid));
+    $node = $this->nodeStorage->load($nid);
     $node->set($field_name, TRUE)->save();
   }
 
@@ -214,8 +211,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     // Run cron and check that hook_scheduler_api() has executed correctly, by
     // verifying that the node has become promoted and is sticky.
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), "API action 'PRE_PUBLISH' has changed the node to sticky.");
     $this->assertTrue($node->isPromoted(), "API action 'PUBLISH' has changed the node to promoted.");
 
@@ -227,8 +224,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     // Run cron and check that hook_scheduler_api() has executed correctly, by
     // verifying that the node is not promoted and no longer sticky.
     scheduler_cron();
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isSticky(), "API action 'PRE_UNPUBLISH' has changed the node to not sticky.");
     $this->assertFalse($node->isPromoted(), "API action 'UNPUBLISH' has changed the node to not promoted.");
 
@@ -242,8 +239,8 @@ class SchedulerApiTest extends SchedulerTestBase {
     ];
     // Edit the node and verify that the values have been altered as expected.
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
-    $this->node_storage->resetCache(array($node->id()));
-    $node = $this->node_storage->load($node->id());
+    $this->nodeStorage->resetCache(array($node->id()));
+    $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to sticky.");
     $this->assertTrue($node->isPromoted(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to promoted.");
     $this->assertEqual($node->title->value, 'Published immediately', "API action 'PUBLISH_IMMEDIATELY' has changed the node title correctly.");
@@ -277,9 +274,9 @@ class SchedulerApiTest extends SchedulerTestBase {
 
     // Run cron and refresh the nodes.
     scheduler_cron();
-    $this->node_storage->resetCache();
-    $node1 = $this->node_storage->load($node1->id());
-    $node2 = $this->node_storage->load($node2->id());
+    $this->nodeStorage->resetCache();
+    $node1 = $this->nodeStorage->load($node1->id());
+    $node2 = $this->nodeStorage->load($node2->id());
 
     // Check node 1 is published and node 2 is unpublished.
     $this->assertTrue($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is published.');
@@ -320,11 +317,11 @@ class SchedulerApiTest extends SchedulerTestBase {
 
     // Run cron and refresh the nodes.
     scheduler_cron();
-    $this->node_storage->resetCache();
-    $node1 = $this->node_storage->load($node1->id());
-    $node2 = $this->node_storage->load($node2->id());
-    $node3 = $this->node_storage->load($node3->id());
-    $node4 = $this->node_storage->load($node4->id());
+    $this->nodeStorage->resetCache();
+    $node1 = $this->nodeStorage->load($node1->id());
+    $node2 = $this->nodeStorage->load($node2->id());
+    $node3 = $this->nodeStorage->load($node3->id());
+    $node4 = $this->nodeStorage->load($node4->id());
 
     // Check node 2 and 3 are published and node 1 and 4 are unpublished.
     $this->assertFalse($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is still unpublished.');

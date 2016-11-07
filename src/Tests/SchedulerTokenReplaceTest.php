@@ -14,7 +14,6 @@ class SchedulerTokenReplaceTest extends SchedulerTestBase {
    */
   function testSchedulerTokenReplacement() {
     $this->drupalLogin($this->adminUser);
-    $node_storage = $this->container->get('entity.manager')->getStorage('node');
     $date_formatter = \Drupal::service('date.formatter');
 
     // Define timestamps for consistent use when repeated throughout this test.
@@ -49,8 +48,8 @@ class SchedulerTokenReplaceTest extends SchedulerTestBase {
       $this->drupalGet('node/' . $node->id());
 
       // Refresh the node and get the body output value.
-      $node_storage->resetCache(array($node->id()));
-      $node = $node_storage->load($node->id());
+      $this->nodeStorage->resetCache(array($node->id()));
+      $node = $this->nodeStorage->load($node->id());
       $body_output = \Drupal::token()->replace($node->body->value, array('node' => $node));
 
       // Create the expected text for the body.

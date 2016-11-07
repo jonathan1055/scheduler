@@ -20,7 +20,6 @@ class SchedulerNodeAccessTest extends SchedulerTestBase {
    */
   public function setUp() {
     parent::setUp();
-    $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
     // scheduler_access_test_install() sets node_access_needs_rebuild(TRUE) and
     // this works when testing the module interactively, but during simpletest
     // the node access table is not rebuilt. Hence do that here explicitly here.
