@@ -153,13 +153,12 @@ class SchedulerRequiredTest extends SchedulerTestBase {
       ],
     ];
 
-    $node_type = NodeType::load('page');
     $fields = \Drupal::entityManager()->getFieldDefinitions('node', 'page');
 
     foreach ($test_cases as $test_case) {
       // Set required (un)publishing as stipulated by the test case.
       if (!empty($test_case['required'])) {
-        $node_type->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish')
+        $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', $test_case['required'] == 'publish')
           ->setThirdPartySetting('scheduler', 'unpublish_required', $test_case['required'] == 'unpublish')
           ->save();
       }
@@ -218,7 +217,7 @@ class SchedulerRequiredTest extends SchedulerTestBase {
           break;
 
         case 'not required':
-          $string = sprintf('%s %s has been %s.', 'Basic page', SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
+          $string = sprintf('%s %s has been %s.', $this->nodetype->get('name'), SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
           $this->assertText($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
       }

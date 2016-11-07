@@ -29,6 +29,20 @@ abstract class SchedulerTestBase extends WebTestBase {
   protected $adminUser;
 
   /**
+   * The name of the content type created for testing
+   *
+   * @var string
+   */
+  protected $type;
+
+  /**
+   * The node type.
+   *
+   * @var \Drupal\node\Entity\NodeType
+   */
+  protected $nodetype;
+
+  /**
    * The node storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -41,12 +55,11 @@ abstract class SchedulerTestBase extends WebTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Create a 'Basic Page' content type.
-    /** @var NodeTypeInterface $node_type */
-    $this->nodetype = $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
-    // @TODO Remove all NodeType::load('page') and use $this->nodetype
-    // @TODO Remove all 'page' and use $this->nodetype->get('type')
-    // @TODO Remove all 'Basic page' and use $this->nodetype->get('name')
+    // Create a 'Basic Page' content type, with 'page' as the identifier.
+    $this->type = 'page';
+    // @TODO Remove all 'page' and use $this->type
+    /** @var NodeTypeInterface $nodetype */
+    $this->nodetype = $this->drupalCreateContentType(['type' => $this->type, 'name' => 'Basic page']);
 
     // Add scheduler functionality to the node type.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
@@ -54,6 +67,7 @@ abstract class SchedulerTestBase extends WebTestBase {
       ->save();
 
     // Define nodeStorage for use in many tests.
+    /** @var EntityStorageInterface $nodeStorage */
     $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
 
     // Create an administrator user having the main admin permissions, full
@@ -65,9 +79,9 @@ abstract class SchedulerTestBase extends WebTestBase {
       'access content overview',
       'access site reports',            // required for admin/reports/dblog
       'administer site configuration',  // required for admin/reports/status
-      'create page content',
-      'edit own page content',
-      'delete own page content',
+      "create $this->type content",
+      "edit own $this->type content",
+      "delete own $this->type content",
       'view own unpublished content',
       'administer scheduler',
       'schedule publishing of nodes',
