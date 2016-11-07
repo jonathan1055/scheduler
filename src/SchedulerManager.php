@@ -344,6 +344,9 @@ class SchedulerManager {
   /**
    * Gather node IDs for all nodes that need to be $action'ed.
    *
+   * Modules can implement hook_scheduler_nid_list($action) and return an array
+   * of node ids which will be added to the existing list.
+   *
    * @param string $action
    *   The action being performed, either "publish" or "unpublish".
    *
