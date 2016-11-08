@@ -839,6 +839,33 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $created_after_cron = $node->created;
     $this->assertEqual(strtotime('-1 day', REQUEST_TIME), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
   }
+
+  /**
+   * Test scheduler lightweight cron runs.
+   */
+  function testLightweightCronRun() {
+    // Run the lightweight cron anonymously without any cron key.
+    $this->drupalGet('scheduler/cron');
+    $this->assertResponse(200, 'With no cron key (default) scheduler/cron returns "200 OK"');
+
+    // Generate and set a cron key.
+    $cron_key = substr(md5(rand()), 0, 20);
+    variable_set('scheduler_lightweight_access_key', $cron_key);
+    debug($cron_key, '$cron_key');
+
+    // Run the lightweight cron without any cron key.
+    $this->drupalGet('scheduler/cron');
+    $this->assertResponse(403, 'After creating a cron key scheduler/cron returns "403 Not Authorized"');
+
+    // Run the lightweight cron anonymously with a random (wrong) cron key.
+    $this->drupalGet('scheduler/cron/' . substr(md5(rand()), 0, 20));
+    $this->assertResponse(403, 'scheduler/cron/{wrong key} returns "403 Not Authorized"');
+
+    // Run the lightweight cron anonymously with the valid cron key.
+    $this->drupalGet('scheduler/cron/' . $cron_key);
+    $this->assertResponse(200, 'scheduler/cron/{correct key} returns "200 OK"');
+  }
+
 }
 
 /**
