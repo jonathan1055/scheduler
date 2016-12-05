@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests the components of the Scheduler interface which use the Date module.
  *
- * @group scheduler
+ * @group scheduler btb
  */
-class SchedulerDefaultTimeTest extends SchedulerTestBase {
+class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
   /**
    * Test the default time functionality.
@@ -31,6 +31,8 @@ class SchedulerDefaultTimeTest extends SchedulerTestBase {
       'default_time' => '6:30', // Use '6:30' not '06:30:00' to test flexibility.
     );
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
+    // @TODO Function assertDefaultTime() is only called once. Is there any
+    // benefit in having it separate? Why not move the code back into here?
     $this->assertDefaultTime();
 
     // Check that it is not possible to enter a date format without a time if
