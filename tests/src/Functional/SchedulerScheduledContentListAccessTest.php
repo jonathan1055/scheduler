@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests access to the scheduled content overview page and user tab.
  *
  * @group scheduler
  */
-class SchedulerScheduledContentListAccessTest extends SchedulerTestBase {
+class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.

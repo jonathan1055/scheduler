@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Generates text using placeholders to check scheduler token replacement.
  *
  * @group scheduler
  */
-class SchedulerTokenReplaceTest extends SchedulerTestBase {
+class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
 
   /**
    * Creates a node, then tests the tokens generated from it.

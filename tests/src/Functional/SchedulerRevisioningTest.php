@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\NodeInterface;
 
@@ -9,7 +9,7 @@ use Drupal\node\NodeInterface;
  *
  * @group scheduler
  */
-class SchedulerRevisioningTest extends SchedulerTestBase {
+class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
 
   /**
    * Simulates the scheduled (un)publication of a node.

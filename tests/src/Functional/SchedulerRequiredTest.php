@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\Entity\NodeType;
 use Drupal\Component\Utility\SafeMarkup;
@@ -10,7 +10,7 @@ use Drupal\Component\Utility\SafeMarkup;
  *
  * @group scheduler
  */
-class SchedulerRequiredTest extends SchedulerTestBase {
+class SchedulerRequiredTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests creating and editing nodes with required scheduling enabled.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\Component\Utility\SafeMarkup;
 
@@ -9,7 +9,7 @@ use Drupal\Component\Utility\SafeMarkup;
  *
  * @group scheduler
  */
-class SchedulerPermissionsTest extends SchedulerTestBase {
+class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests that users without permission do not see the scheduler date fields.
@@ -30,8 +30,8 @@ class SchedulerPermissionsTest extends SchedulerTestBase {
 
     // Check that neither of the fields are displayed when creating a node.
     $this->drupalGet('node/add/' . $type);
-    $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown for users who do not have permission to schedule content');
-    $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
+    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown for users who do not have permission to schedule content');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
 
     // Initially run tests when publishing and unpublishing are not required.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)

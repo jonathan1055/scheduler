@@ -7,7 +7,7 @@ use Drupal\node\Entity\NodeType;
 /**
  * Tests the display of the date entry fields (vertical tab, fieldset).
  *
- * @group scheduler btb
+ * @group scheduler
  */
 class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 

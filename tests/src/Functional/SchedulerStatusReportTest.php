@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests the Scheduler section of the status report.
  *
  * @group scheduler
  */
-class SchedulerStatusReportTest extends SchedulerTestBase {
+class SchedulerStatusReportTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests that the Scheduler Time Check report is shown.
