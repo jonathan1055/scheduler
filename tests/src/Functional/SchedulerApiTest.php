@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\Entity\NodeType;
 
@@ -9,7 +9,7 @@ use Drupal\node\Entity\NodeType;
  *
  * @group scheduler
  */
-class SchedulerApiTest extends SchedulerTestBase {
+class SchedulerApiTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.

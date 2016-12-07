@@ -1,15 +1,15 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\Entity\NodeType;
 
 /**
- * Tests the components of the Scheduler interface which use the Date module.
+ * Tests the display of the date entry fields (vertical tab, fieldset).
  *
- * @group scheduler
+ * @group scheduler btb
  */
-class SchedulerFieldsDisplayTest extends SchedulerTestBase {
+class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional module field_ui is required for the 'manage form display' test.
@@ -89,15 +89,15 @@ class SchedulerFieldsDisplayTest extends SchedulerTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Check that the weight input field is displayed when the content type is
-    // enabled for scheduling.
+    // enabled for scheduling. This field still exists even with tabledrag on.
     $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
-    $this->assertFieldByName('fields[scheduler_settings][weight]', '', 'The scheduler settings weight entry is shown when the content type is enabled for scheduling.');
+    $this->assertFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is shown when the content type is enabled for scheduling.');
 
     // Check that the weight input field is not displayed when the content type
     // is not enabled for scheduling.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
     $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
-    $this->assertNoFieldByName('fields[scheduler_settings][weight]', '', 'The scheduler settings weight entry is not shown when the content type is not enabled for scheduling.');
+    $this->assertNoFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is not shown when the content type is not enabled for scheduling.');
   }
 }

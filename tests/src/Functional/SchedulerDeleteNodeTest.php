@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\Entity\NodeType;
 
@@ -10,7 +10,7 @@ use Drupal\node\Entity\NodeType;
  *
  * @group scheduler
  */
-class SchedulerDeleteNodeTest extends SchedulerTestBase {
+class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests the deletion of a scheduled node.

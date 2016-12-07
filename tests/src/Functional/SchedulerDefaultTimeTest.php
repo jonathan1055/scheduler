@@ -5,7 +5,7 @@ namespace Drupal\Tests\scheduler\Functional;
 /**
  * Tests the components of the Scheduler interface which use the Date module.
  *
- * @group scheduler btb
+ * @group scheduler
  */
 class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
