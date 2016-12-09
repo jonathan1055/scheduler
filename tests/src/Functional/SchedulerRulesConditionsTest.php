@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\rules\Context\ContextConfig;
 
@@ -9,7 +9,7 @@ use Drupal\rules\Context\ContextConfig;
  *
  * @group scheduler
  */
-class SchedulerRulesConditionsTest extends SchedulerTestBase {
+class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
@@ -122,6 +122,9 @@ class SchedulerRulesConditionsTest extends SchedulerTestBase {
 
     // Turn off scheduled publishing for the node type and check the rules.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)->save();
+    // Flushing the caches was not required when using WebTestBase but is needed
+    // after converting to BrowserTestBase.
+    drupal_flush_all_caches();
     $this->drupalGet('node/' . $this->node->id());
     $this->assertNoText($message1, '"' . $message1 . '" is not shown');
     $this->assertText($message2, '"' . $message2 . '" is shown');
@@ -130,6 +133,7 @@ class SchedulerRulesConditionsTest extends SchedulerTestBase {
 
     // Turn off scheduled unpublishing for the node type and the check again.
     $this->nodetype->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
+    drupal_flush_all_caches();
     $this->drupalGet('node/' . $this->node->id());
     $this->assertNoText($message1, '"' . $message1 . '" is not shown');
     $this->assertNoText($message2, '"' . $message2 . '" is not shown');
