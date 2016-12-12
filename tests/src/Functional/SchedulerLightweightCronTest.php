@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\Core\Url;
 
@@ -9,7 +9,7 @@ use Drupal\Core\Url;
  *
  * @group scheduler
  */
-class SchedulerLightweightCronTest extends SchedulerTestBase {
+class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
 
   /**
    * {@inheritdoc}
@@ -51,14 +51,14 @@ class SchedulerLightweightCronTest extends SchedulerTestBase {
     // Check that the cron key has an initial value, created during install.
     $this->drupalGet($this->routeCronForm);
     $key_xpath = $this->xpath('//input[@id="edit-lightweight-access-key"]/@value');
-    $key = (string)$key_xpath[0];
+    $key = $key_xpath[0]->getText();
     $this->assertTrue(!empty($key), 'Default lightweight cron key field is not empty');
     $this->assertTrue(strlen($key) == 20, 'Default lightweight cron key string length is 20');
 
     // Check that a new random key can be generated.
     $this->drupalPostForm($this->routeCronForm, [], t('Generate new random key'));
     $new_key_xpath = $this->xpath('//input[@id="edit-lightweight-access-key"]/@value');
-    $new_key = (string)$new_key_xpath[0];
+    $new_key = $new_key_xpath[0]->getText();
     $this->assertTrue(!empty($new_key), 'Lightweight cron key field is not empty after generating new key');
     $this->assertTrue(strlen($new_key) == 20, 'New lightweight cron key string length is 20');
     $this->assertNotEqual($key, $new_key, 'Lightweight cron key has changed.');

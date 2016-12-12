@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests that Scheduler has full access to the scheduled nodes, even those
@@ -8,7 +8,7 @@ namespace Drupal\scheduler\Tests;
  *
  * @group scheduler
  */
-class SchedulerNodeAccessTest extends SchedulerTestBase {
+class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.

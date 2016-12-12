@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests the modules primary function - publishing and unpublishing content.
  *
  * @group scheduler
  */
-class SchedulerFunctionalTest extends SchedulerTestBase {
+class SchedulerFunctionalTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests basic scheduling of content.

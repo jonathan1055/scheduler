@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
  * Tests a content type which is not enabled for scheduled publishing and
@@ -8,7 +8,7 @@ namespace Drupal\scheduler\Tests;
  *
  * @group scheduler
  */
-class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
+class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
@@ -65,17 +65,17 @@ class SchedulerNonEnabledTypeTest extends SchedulerTestBase {
     $title = $info . ' (' . $run_number . 'a)';
     $this->drupalGet('node/add/' . $this->contentName);
     if ($publishing_enabled) {
-      $this->assertFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is shown - ' . $title);
+      $this->assertFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is shown - ' . $title);
     }
     else {
-      $this->assertNoFieldByName('publish_on[0][value][date]', '', 'The Publish-on field is not shown - ' . $title);
+      $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - ' . $title);
     }
 
     if ($unpublishing_enabled) {
-      $this->assertFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is shown - ' . $title);
+      $this->assertFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is shown - ' . $title);
     }
     else {
-      $this->assertNoFieldByName('unpublish_on[0][value][date]', '', 'The Unpublish-on field is not shown - ' . $title);
+      $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - ' . $title);
     }
 
     // Create an unpublished node with a publishing date, which mimics what

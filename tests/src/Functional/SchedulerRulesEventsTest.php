@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler\Tests;
+namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\rules\Context\ContextConfig;
 
@@ -9,7 +9,7 @@ use Drupal\rules\Context\ContextConfig;
  *
  * @group scheduler
  */
-class SchedulerRulesEventsTest extends SchedulerTestBase {
+class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.

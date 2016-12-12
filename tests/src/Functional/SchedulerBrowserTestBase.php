@@ -91,4 +91,14 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     ]);
   }
 
+  /**
+   * Replicate the standard cronRun function to allow the Scheduler tests that
+   * use this to be converted from WebTestBase to BrowserTestBase.
+   *
+   * @TODO Delete this function after it has been added to BrowserTestBase.
+   * @see  https://www.drupal.org/node/2795037
+   */
+  function cronRun() {
+    $this->drupalGet('cron/' . \Drupal::state()->get('system.cron_key'));
+  }
 }
