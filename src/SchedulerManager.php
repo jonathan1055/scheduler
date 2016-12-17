@@ -103,82 +103,102 @@ class SchedulerManager {
     // Allow other modules to alter the list of nodes to be published.
     $this->moduleHandler->alter('scheduler_nid_list', $nids, $action);
 
+    // In 8.x the entity translations are all associated with one node id
+    // unlike 7.x where each translation was a separate node. This means that
+    // the list of node ids returned above may have some translations that need
+    // processing now and others that do not.
     $nodes = Node::loadMultiple($nids);
-    foreach ($nodes as $nid => $node) {
+    foreach ($nodes as $nid => $node_multilingual) {
+
       // The API calls could return nodes of types which are not enabled for
-      // scheduled publishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $this->setting('default_publish_enable'))) {
-        throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
+      // scheduled publishing, so do not process these. This check can be done
+      // once, here, as the setting will be the same for all translations.
+      if (!$node_multilingual->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $this->setting('default_publish_enable'))) {
+        throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $node_multilingual->id(), $node_multilingual->getTitle(), node_get_type_label($node_multilingual)));
         continue;
       }
 
-      // Check that other modules allow the action on this node.
-      if (!$this->isAllowed($node, $action)) {
-        continue;
+      $languages = $node_multilingual->getTranslationLanguages();
+      foreach ($languages as $language) {
+        // The object returned by getTranslation() behaves the same as a $node.
+        $node = $node_multilingual->getTranslation($language->getId());
+
+        // If the current translation does not have a publish on value, or it is
+        // later than the date we are processing then move on to the next.
+        $publish_on = $node->publish_on->value;
+        if (empty($publish_on) || $publish_on > REQUEST_TIME) {
+          continue;
+        }
+
+        // Check that other modules allow the action on this node.
+        if (!$this->isAllowed($node, $action)) {
+          continue;
+        }
+
+        // If an API call has removed the date $node->set('changed', $publish_on)
+        // would fail, so trap this exception here and give a meaningful message.
+        // @TODO This exception will never be thrown due to the empty(publish_on)
+        // check above to cater for translations. Remove this exception?
+        if (empty($node->publish_on->value)) {
+          $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
+          $field = (string)$field_definitions['publish_on']->getLabel();
+          throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $node->id(), $node->getTitle(), $field));
+          continue;
+        }
+
+        // Trigger the PRE_PUBLISH event so that modules can react before the
+        // node is published.
+        $event = new SchedulerEvent($node);
+        $dispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
+        $node = $event->getNode();
+
+        // Update timestamps.
+        $node->set('changed', $publish_on);
+        $old_creation_date = $node->getCreatedTime();
+        if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
+          $node->setCreatedTime($publish_on);
+        }
+
+        $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', $this->setting('default_publish_revision'));
+        if ($create_publishing_revision) {
+          $node->setNewRevision();
+          // Use a core date format to guarantee a time is included.
+          $node->revision_log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
+            '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
+            '@date' => $this->dateFormatter->format($old_creation_date, 'short'),
+          ));
+        }
+        // Unset publish_on so the node will not get rescheduled by subsequent
+        // calls to $node->save().
+        $node->publish_on->value = NULL;
+
+        // Log the fact that a scheduled publication is about to take place.
+        $view_link = $node->link(t('View node'));
+        $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
+        $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
+        $logger_variables = array(
+          '@type' => node_get_type_label($node),
+          '%title' => $node->getTitle(),
+          'link' => $nodetype_link . ' ' . $view_link,
+        );
+        $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
+
+        // Use the actions system to publish the node.
+        $this->entityManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
+
+        // Invoke the event to tell Rules that Scheduler has published this node.
+        if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
+          _scheduler_rules_integration_dispatch_cron_event($node, 'publish');
+        }
+
+        // Trigger the PUBLISH event so that modules can react after the node is
+        // published.
+        $event = new SchedulerEvent($node);
+        $dispatcher->dispatch(SchedulerEvents::PUBLISH, $event);
+        $event->getNode()->save();
+
+        $result = TRUE;
       }
-
-      // Trigger the PRE_PUBLISH event so that modules can react before the node
-      // is published.
-      $event = new SchedulerEvent($node);
-      $dispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
-      $node = $event->getNode();
-
-      // If an API call has removed the date $node->set('changed', $publish_on)
-      // would fail, so trap this exception here and give a meaningful message.
-      if (empty($node->publish_on->value)) {
-        $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
-        $field = (string)$field_definitions['publish_on']->getLabel();
-        throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $node->id(), $node->getTitle(), $field));
-        continue;
-      }
-
-      // Update timestamps.
-      $publish_on = $node->publish_on->value;
-      $node->set('changed', $publish_on);
-      $old_creation_date = $node->getCreatedTime();
-      if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
-        $node->setCreatedTime($publish_on);
-      }
-
-      $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', $this->setting('default_publish_revision'));
-      if ($create_publishing_revision) {
-        $node->setNewRevision();
-        // Use a core date format to guarantee a time is included.
-        $node->revision_log = t('Node published by Scheduler on @now. Previous creation date was @date.', array(
-          '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
-          '@date' => $this->dateFormatter->format($old_creation_date, 'short'),
-        ));
-      }
-      // Unset publish_on so the node will not get rescheduled by subsequent
-      // calls to $node->save().
-      $node->publish_on->value = NULL;
-
-      // Log the fact that a scheduled publication is about to take place.
-      $view_link = $node->link(t('View node'));
-      $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
-      $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
-      $logger_variables = array(
-        '@type' => node_get_type_label($node),
-        '%title' => $node->getTitle(),
-        'link' => $nodetype_link . ' ' . $view_link,
-      );
-      $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
-
-      // Use the actions system to publish the node.
-      $this->entityManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
-
-      // Invoke the event to tell Rules that Scheduler has published this node.
-      if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-        _scheduler_rules_integration_dispatch_cron_event($node, 'publish');
-      }
-
-      // Trigger the PUBLISH event so that modules can react after the node is
-      // published.
-      $event = new SchedulerEvent($node);
-      $dispatcher->dispatch(SchedulerEvents::PUBLISH, $event);
-      $event->getNode()->save();
-
-      $result = TRUE;
     }
 
     return $result;
@@ -224,87 +244,101 @@ class SchedulerManager {
     $this->moduleHandler->alter('scheduler_nid_list', $nids, $action);
 
     $nodes = Node::loadMultiple($nids);
-    foreach ($nodes as $nid => $node) {
+    foreach ($nodes as $nid => $node_multilingual) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled unpublishing. Do not process these.
-      if (!$node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-        throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node->id(), $node->getTitle(), node_get_type_label($node)));
+      if (!$node_multilingual->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
+        throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node_multilingual->id(), $node_multilingual->getTitle(), node_get_type_label($node_multilingual)));
         continue;
       }
 
-      // Check that other modules allow the action on this node.
-      if (!$this->isAllowed($node, $action)) {
-        continue;
+      $languages = $node_multilingual->getTranslationLanguages();
+      foreach ($languages as $language) {
+        // The object returned by getTranslation() behaves the same as a $node.
+        $node = $node_multilingual->getTranslation($language->getId());
+
+        // If the current translation does not have an unpublish on value, or it
+        // is later than the date we are processing then move on to the next.
+        $unpublish_on = $node->unpublish_on->value;
+        if (empty($unpublish_on) || $unpublish_on > REQUEST_TIME) {
+          continue;
+        }
+
+        // Do not process the node if it still has a publish_on time which is in
+        // the past, as this implies that scheduled publishing has been blocked
+        // by one of the hook functions we provide, and is still being blocked
+        // now that the unpublishing time has been reached.
+        $publish_on = $node->publish_on->value;
+        if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
+          continue;
+        }
+
+        // Check that other modules allow the action on this node.
+        if (!$this->isAllowed($node, $action)) {
+          continue;
+        }
+
+        // If an API call has removed the date $node->set('changed', $unpublish_on)
+        // would fail, so trap this exception here and give a meaningful message.
+        // @TODO This exception will never be thrown due to the empty(unpublish_on)
+        // check above to cater for translations. Remove this exception?
+        if (empty($unpublish_on)) {
+          $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
+          $field = (string)$field_definitions['unpublish_on']->getLabel();
+          throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $node->id(), $node->getTitle(), $field));
+          continue;
+        }
+
+        // Trigger the PRE_UNPUBLISH event so that modules can react before the
+        // node is unpublished.
+        $event = new SchedulerEvent($node);
+        $dispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
+        $node = $event->getNode();
+
+        // Update timestamps.
+        $old_change_date = $node->getChangedTime();
+        $node->set('changed', $unpublish_on);
+
+        $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
+        if ($create_unpublishing_revision) {
+          $node->setNewRevision();
+          // Use a core date format to guarantee a time is included.
+          $node->revision_log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
+            '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
+            '@date' => $this->dateFormatter->format($old_change_date, 'short'),
+          ));
+        }
+        // Unset unpublish_on so the node will not get rescheduled by subsequent
+        // calls to $node->save(). Save the value for use when calling Rules.
+        $node->unpublish_on->value = NULL;
+
+        // Log the fact that a scheduled unpublication is about to take place.
+        $view_link = $node->link(t('View node'));
+        $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
+        $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
+        $logger_variables = array(
+          '@type' => node_get_type_label($node),
+          '%title' => $node->getTitle(),
+          'link' => $nodetype_link . ' ' . $view_link,
+        );
+        $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
+
+        // Use the actions system to publish the node.
+        $this->entityManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
+
+        // Invoke event to tell Rules that Scheduler has unpublished this node.
+        if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
+          _scheduler_rules_integration_dispatch_cron_event($node, 'unpublish');
+        }
+
+        // Trigger the UNPUBLISH event so that modules can react before the node
+        // is unpublished.
+        $event = new SchedulerEvent($node);
+        $dispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
+        $event->getNode()->save();
+
+        $result = TRUE;
       }
-
-      // Do not process the node if it still has a publish_on time which is in
-      // the past, as this implies that scheduled publishing has been blocked by
-      // one of the hook functions we provide, and is still being blocked now
-      // that the unpublishing time has been reached.
-      $publish_on = $node->publish_on->value;
-      if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
-        continue;
-      }
-
-      // Trigger the PRE_UNPUBLISH event so that modules can react before the
-      // node is unpublished.
-      $event = new SchedulerEvent($node);
-      $dispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
-      $node = $event->getNode();
-
-      // If an API call has removed the date $node->set('changed', $unpublish_on)
-      // would fail, so trap this exception here and give a meaningful message.
-      if (empty($node->unpublish_on->value)) {
-        $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
-        $field = (string)$field_definitions['unpublish_on']->getLabel();
-        throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $node->id(), $node->getTitle(), $field));
-        continue;
-      }
-
-      // Update timestamps.
-      $old_change_date = $node->getChangedTime();
-      $unpublish_on = $node->unpublish_on->value;
-      $node->set('changed', $unpublish_on);
-
-      $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
-      if ($create_unpublishing_revision) {
-        $node->setNewRevision();
-        // Use a core date format to guarantee a time is included.
-        $node->revision_log = t('Node unpublished by Scheduler on @now. Previous change date was @date.', array(
-          '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
-          '@date' => $this->dateFormatter->format($old_change_date, 'short'),
-        ));
-      }
-      // Unset unpublish_on so the node will not get rescheduled by subsequent
-      // calls to $node->save(). Save the value for use when calling Rules.
-      $node->unpublish_on->value = NULL;
-
-      // Log the fact that a scheduled unpublication is about to take place.
-      $view_link = $node->link(t('View node'));
-      $nodetype_url = Url::fromRoute('entity.node_type.edit_form', array('node_type' => $node->getType()));
-      $nodetype_link = \Drupal::l(node_get_type_label($node) . ' ' . t('settings'), $nodetype_url);
-      $logger_variables = array(
-        '@type' => node_get_type_label($node),
-        '%title' => $node->getTitle(),
-        'link' => $nodetype_link . ' ' . $view_link,
-      );
-      $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
-
-      // Use the actions system to publish the node.
-      $this->entityManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
-
-      // Invoke event to tell Rules that Scheduler has unpublished this node.
-      if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-        _scheduler_rules_integration_dispatch_cron_event($node, 'unpublish');
-      }
-
-      // Trigger the UNPUBLISH event so that modules can react before the node
-      // is unpublished.
-      $event = new SchedulerEvent($node);
-      $dispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
-      $event->getNode()->save();
-
-      $result = TRUE;
     }
 
     return $result;
