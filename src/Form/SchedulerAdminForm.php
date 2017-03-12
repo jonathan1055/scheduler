@@ -141,6 +141,21 @@ class SchedulerAdminForm extends ConfigFormBase {
       ]));
     };
 
+    // The format must have a date part.
+    $date_only_format = $this->getDateOnlyFormat($form_state->getValue(['date_format']));
+    if ($date_only_format == '') {
+      $form_state->setErrorByName('date_format', $this->t('You must enter a valid date part for the format. Use the letters %date_letters', [
+        '%date_letters' => $this->setting('date_letters'),
+      ]));
+    }
+
+    // Check that either the date format has a time part or the date-only option
+    // is turned on.
+    $time_only_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
+    if ($time_only_format == '' && !$form_state->getValue(['allow_date_only'])) {
+      $form_state->setErrorByName('date_format', $this->t('You must either include a time within the date format or enable the date-only option.'));
+    }
+
     // If date-only is enabled then check if a valid default time was entered.
     // Leading zeros and seconds can be omitted, eg. 6:30 is considered valid.
     if ($form_state->getValue(['allow_date_only'])) {
@@ -155,12 +170,6 @@ class SchedulerAdminForm extends ConfigFormBase {
       }
     }
 
-    // Check that either the date format has a time part or the date-only option
-    // is turned on.
-    $time_format = $this->getTimeOnlyFormat($form_state->getValue(['date_format']));
-    if ($time_format == '' && !$form_state->getValue(['allow_date_only'])) {
-      $form_state->setErrorByName('date_format', $this->t('You must either include a time within the date format or enable the date-only option.'));
-    }
   }
 
   /**

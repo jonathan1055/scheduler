@@ -38,12 +38,19 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertText(sprintf('The date part of the Scheduler format is %s. There is no time part', 'Y/m/d'), 'The save message correctly shows the date part with no time part.');
 
-    // Try to save with an invalid date format.
+    // Try to save with an invalid date format letters.
     $edit = array(
       'date_format' => 'd/m/ZY XH:i',
     );
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertText(sprintf('You may only use the letters %s for the date and %s for the time. Remove the extra characters %s', $config->get('date_letters'), $config->get('time_letters'), 'Z X'), 'The correct error message is shown when invalid letters are entered.');
+
+    // Try to save with no date part.
+    $edit = array(
+      'date_format' => 'H:i:s',
+    );
+    $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
+    $this->assertText(sprintf('You must enter a valid date part for the format. Use the letters %s', $config->get('date_letters')), 'The correct error message is shown when no date part is entered.');
   }
 
 }
