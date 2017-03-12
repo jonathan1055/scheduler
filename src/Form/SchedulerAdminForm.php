@@ -33,6 +33,8 @@ class SchedulerAdminForm extends ConfigFormBase {
    *
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date formatter service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
    */
   public function __construct(DateFormatterInterface $date_formatter, ConfigFactoryInterface $config_factory) {
     parent::__construct($config_factory);
@@ -70,7 +72,9 @@ class SchedulerAdminForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $date_format = $this->setting('date_format');
-    $now = $this->t('Example: %date', ['%date' => $this->dateFormatter->format(REQUEST_TIME, 'custom', $date_format)]);
+    $now = $this->t('Example: %date', [
+      '%date' => $this->dateFormatter->format(REQUEST_TIME, 'custom', $date_format),
+    ]);
     $url = Url::fromUri('http://php.net/manual/en/function.date.php');
     $form['date_format'] = [
       '#type' => 'textfield',
@@ -130,10 +134,10 @@ class SchedulerAdminForm extends ConfigFormBase {
     // letters.
     $no_punctuation = preg_replace('/[^\w+]/', '', $form_state->getValue(['date_format']));
     if (preg_match_all('/[^' . $this->setting('date_letters') . $this->setting('time_letters') . ']/', $no_punctuation, $extra)) {
-      $form_state->setErrorByName('date_format', $this->t('You may only use the letters $date_letters for the date and $time_letters for the time. Remove the extra characters $extra', [
-        '$date_letters' => $this->setting('date_letters'),
-        '$time_letters' => $this->setting('time_letters'),
-        '$extra' => implode(' ', $extra[0]),
+      $form_state->setErrorByName('date_format', $this->t('You may only use the letters %date_letters for the date and %time_letters for the time. Remove the extra characters %extra', [
+        '%date_letters' => $this->setting('date_letters'),
+        '%time_letters' => $this->setting('time_letters'),
+        '%extra' => implode(' ', $extra[0]),
       ]));
     };
 
@@ -231,6 +235,7 @@ class SchedulerAdminForm extends ConfigFormBase {
    *   The key of the configuration.
    *
    * @return \Drupal\Core\Config\ImmutableConfig
+   *   The value of the config setting equested.
    */
   protected function setting($key) {
     return $this->configFactory->get('scheduler.settings')->get($key);
