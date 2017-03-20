@@ -104,7 +104,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
       '#title' => t('Scheduling options'),
       '#open' => $expand_details,
       '#weight' => 35,
-      '#attributes' => ['class' => array('scheduler-form')],
+      '#attributes' => ['class' => ['scheduler-form']],
       '#optional' => FALSE,
     ];
 
