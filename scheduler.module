@@ -11,9 +11,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\node\NodeInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\node\Entity\NodeType;
 use Drupal\scheduler\SchedulerEvent;
 use Drupal\scheduler\SchedulerEvents;
 
@@ -26,12 +26,14 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.scheduler':
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
-      $output .= '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', array('@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt')) . '</p>';
+      $output .= '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', ['@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt']) . '</p>';
       break;
+
     case 'scheduler.admin_form':
-      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', array('@link' => Url::fromRoute('entity.node_type.collection')->toString())) . '</br>';
+      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', ['@link' => Url::fromRoute('entity.node_type.collection')->toString()]) . '</br>';
       $output .= t('The options and settings below are common to all content types.') . '</p>';
       break;
+
     case 'scheduler.cron_form':
       $base_url = $GLOBALS['base_url'];
       $access_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
@@ -42,13 +44,14 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       $output .= '<p>' . t('or') . '</p>';
       $output .= '<code>* * * * * curl -s -o /dev/null "' . $cron_url . '"</code><br/><br/>';
       break;
+
     default:
   }
   return $output;
 }
 
 /**
- * Implements hook_form_node_type_form_alter().
+ * Implements hook_form_FORM_ID_alter() for node_type_form().
  */
 function scheduler_form_node_type_form_alter(array &$form, FormStateInterface $form_state) {
   // Load the real code only when needed.
@@ -57,7 +60,7 @@ function scheduler_form_node_type_form_alter(array &$form, FormStateInterface $f
 }
 
 /**
- * Implements hook_form_BASE_FORM_ID_alter() for node_form.
+ * Implements hook_form_FORM_ID_alter() for node_form().
  */
 function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) {
   $config = \Drupal::config('scheduler.settings');
@@ -96,16 +99,14 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
     // Create the group for the fields.
-    $form['scheduler_settings'] = array(
+    $form['scheduler_settings'] = [
       '#type' => 'details',
       '#title' => t('Scheduling options'),
       '#open' => $expand_details,
       '#weight' => 35,
-      '#attributes' => array(
-        'class' => array('scheduler-form'),
-      ),
+      '#attributes' => ['class' => array('scheduler-form')],
       '#optional' => FALSE,
-    );
+    ];
 
     // Attach the fields to group.
     $form['unpublish_on']['#group'] = 'scheduler_settings';
@@ -121,26 +122,26 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   }
 
   // Define the descriptions depending on whether the time can be skipped.
-  $descriptions = array();
+  $descriptions = [];
   if ($date_only_allowed && ($date_only_format != $date_format)) {
-    $descriptions['format'] = t('Format: %date_only_format or %standard_format.', array(
+    $descriptions['format'] = t('Format: %date_only_format or %standard_format.', [
       '%date_only_format' => $date_formatter->format(time(), 'custom', $date_only_format),
       '%standard_format' => $date_formatter->format(time(), 'custom', $date_format),
-    ));
+    ]);
   }
   else {
-    $descriptions['format'] = t('Format: %standard_format.', array(
+    $descriptions['format'] = t('Format: %standard_format.', [
       '%standard_format' => $date_formatter->format(time(), 'custom', $date_format),
-    ));
+    ]);
   }
 
   // Show the default time so users know what they will get if they do not enter
   // a time.
   if ($date_only_allowed) {
     $default_time = strtotime($config->get('default_time'));
-    $descriptions['default'] = t('The default time is @default_time.', array(
+    $descriptions['default'] = t('The default time is @default_time.', [
       '@default_time' => $date_formatter->format($default_time, 'custom', $time_only_format),
-    ));
+    ]);
   }
 
   if (!$publishing_required) {
@@ -241,18 +242,18 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
   if (!empty($node->publish_on->value) && !is_numeric($node->publish_on->value)) {
     $publishtime = $node->publish_on->value;
     if ($publishtime === FALSE) {
-      $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time",
-        array('%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format))
-      ));
+      $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", [
+        '%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format),
+      ]));
     }
   }
 
   if (!empty($node->unpublish_on->value) && !is_numeric($node->unpublish_on->value)) {
     $unpublishtime = $node->unpublish_on->value;
     if ($unpublishtime === FALSE) {
-      $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time",
-        array('%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format))
-      ));
+      $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", [
+        '%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format),
+      ]));
     }
   }
 }
@@ -300,8 +301,9 @@ function scheduler_node_presave(EntityInterface $node) {
       if ($publication_allowed) {
         $date_format = $config->get('date_format');
         $date_formatter = \Drupal::service('date.formatter');
-        drupal_set_message(t('This post is unpublished and will be published @publish_time.',
-          array('@publish_time' => $date_formatter->format($node->publish_on->value, 'custom', $date_format))), 'status', FALSE);
+        drupal_set_message(t('This post is unpublished and will be published @publish_time.', [
+          '@publish_time' => $date_formatter->format($node->publish_on->value, 'custom', $date_format),
+        ]), 'status', FALSE);
       }
     }
   }
@@ -317,7 +319,7 @@ function scheduler_node_presave(EntityInterface $node) {
  * Implements hook_ENTITY_TYPE_insert() for node entities.
  */
 function scheduler_node_insert(EntityInterface $node) {
-  // Removed RULES code but keep the function. There will be code added here later.
+  // Removed RULES code but keep the function. There may be code to add here.
   // @TODO remove this comment when done. JSS Sep 2016.
 }
 
@@ -325,8 +327,9 @@ function scheduler_node_insert(EntityInterface $node) {
  * Implements hook_ENTITY_TYPE_update() for node entities.
  */
 function scheduler_node_update(EntityInterface $node) {
-  // Removed RULES code but keep the function. There will be code added here later.
-  // This function is currently called by actions SetPublishingDate and SetUnpublishingDate.
+  // Removed RULES code but keep the function. There may be code to add here.
+  // This function is currently called by actions SetPublishingDate and
+  // SetUnpublishingDate.
   // @TODO remove this comment when done. JSS Sep 2016.
 }
 
@@ -371,17 +374,18 @@ function scheduler_entity_extra_field_info() {
   // Expose the Scheduler group on the 'Manage Form Display' tab when editing a
   // content type. This allows admins to adjust the weight of the group, and it
   // works for vertical tabs and separate fieldsets.
-  $fields = array();
+  $fields = [];
   foreach (node_type_get_types() as $type) {
     $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
     $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
     if ($publishing_enabled || $unpublishing_enabled) {
-      $fields['node'][$type->get('type')]['form']['scheduler_settings'] = array(
+      // Weight 20 puts this below the core fields by default.
+      $fields['node'][$type->get('type')]['form']['scheduler_settings'] = [
         'label' => t('Scheduler Dates'),
         'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
-        'weight' => 20, // Default 20 puts this below the core fields.
-      );
+        'weight' => 20,
+      ];
     }
   }
   return $fields;
@@ -426,18 +430,18 @@ function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundl
     $unpublishing_enabled = $entity_type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
     if ($publishing_enabled) {
-      $targets['publish_on'] = array(
+      $targets['publish_on'] = [
         'name' => t('Scheduler: publish on'),
         'description' => t('The date when the Scheduler module will publish the node.'),
         'callback' => 'scheduler_feeds_set_target',
-      );
+      ];
     }
     if ($unpublishing_enabled) {
-      $targets['unpublish_on'] = array(
+      $targets['unpublish_on'] = [
         'name' => t('Scheduler: unpublish on'),
         'description' => t('The date when the Scheduler module will unpublish the node.'),
         'callback' => 'scheduler_feeds_set_target',
-      );
+      ];
     }
   }
 }
@@ -460,12 +464,12 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
     if (!$timestamp = strtotime($value)) {
       throw new FeedsValidationException(
         // Throw an exception if the date format was not recognized.
-        t('Value %value for @source could not be converted to a valid %target date.', array(
+        t('Value %value for @source could not be converted to a valid %target date.', [
           '@source' => $mapping['source'],
           '%value' => $value,
           '%target' => $target,
-        )
-      ));
+        ])
+      );
     }
   }
   else {
@@ -485,11 +489,12 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
  *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
  *
  * @return \Drupal\node\NodeTypeInterface[]
+ *   Array of NodeTypeInterface objects
  */
 function _scheduler_get_scheduler_enabled_node_types($action) {
   $config = \Drupal::config('scheduler.settings');
-  $node_types = \Drupal\node\Entity\NodeType::loadMultiple();
-  return array_filter($node_types, function($bundle) use($action, $config) {
+  $node_types = NodeType::loadMultiple();
+  return array_filter($node_types, function ($bundle) use ($action, $config) {
     /* @var \Drupal\node\NodeTypeInterface $bundle */
     return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
   });
