@@ -2,24 +2,24 @@
 
 /**
  * @file
- * Drush commands for Scheduler
+ * Drush commands for Scheduler.
  */
 
 /**
  * Implements hook_drush_command().
  */
 function scheduler_drush_command() {
-  $items = array();
+  $items = [];
 
-  $items['scheduler-cron'] = array(
+  $items['scheduler-cron'] = [
     'description' => 'Lighweight cron to process scheduler tasks.',
-    'core' => array('8+'),
-    'aliases' => array('sch-cron'),
+    'core' => ['8+'],
+    'aliases' => ['sch-cron'],
     'category' => 'scheduler',
-    'options' => array(
+    'options' => [
       'nomsg' => 'to avoid the "cron completed" message being written to the terminal.',
-    ),
-  );
+    ],
+  ];
 
   return $items;
 }

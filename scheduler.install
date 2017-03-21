@@ -5,13 +5,13 @@
  * Installation file for Scheduler module.
  */
 
-use \Drupal\Core\Url;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_requirements().
  */
 function scheduler_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
 
   // Report server internal clock.
   if ($phase === 'runtime') {
@@ -51,15 +51,17 @@ function scheduler_requirements($phase) {
       $descriptions[] = t('Your local time is %localtime (%daylight_saving). This is not configurable by you.', $t_options);
     }
 
-    $requirements['scheduler_timecheck'] = array(
+    $requirements['scheduler_timecheck'] = [
       'title' => t('Time Check'),
-      'value' => t('Server time: @utc', ['@utc' => $date_formatter->format($now, 'custom', 'jS F Y, H:i:s P', 'GMT')]),
-      'description' => array(
+      'value' => t('Server time: @utc', [
+        '@utc' => $date_formatter->format($now, 'custom', 'jS F Y, H:i:s P', 'GMT'),
+      ]),
+      'description' => [
         '#type' => 'inline_template',
         '#template' => '{{ description|raw }}',
-        '#context' => array('description' => implode('<br />', $descriptions)),
-      ),
-    );
+        '#context' => ['description' => implode('<br />', $descriptions)],
+      ],
+    ];
   }
 
   return $requirements;
@@ -71,7 +73,7 @@ function scheduler_requirements($phase) {
 function scheduler_install() {
   // Add our base fields to the schema.
   \Drupal::service('entity.definition_update_manager')->applyUpdates();
-  // Set cron access key value, as this is now required in SchedulerCronForm
+  // Set cron access key value, as this is now required in SchedulerCronForm.
   $config = \Drupal::service('config.factory')->getEditable('scheduler.settings');
   $config->set('lightweight_cron_access_key', substr(md5(rand()), 0, 20))
     ->save();
