@@ -53,7 +53,8 @@ INSTALLATION
 CONFIGURATION
 -------------
 
- * Configure user permissions via Administration » People » Permissions
+ * Configure user permissions via
+     Administration » People » Permissions
      URL: /admin/people/permissions#module-scheduler
 
    - View scheduled content list
@@ -73,7 +74,8 @@ CONFIGURATION
      This permission allows the user to alter all Scheduler settings. It should
      therefore only be given to trusted admin roles.
 
- * Configure the Scheduler options via Administration » Configuration » Content Authoring
+ * Configure the Scheduler global options via
+     Administration » Configuration » Content Authoring
      URL: /admin/config/content/scheduler
 
    - Basic settings for date format, allowing date only, setting default time.
@@ -81,7 +83,8 @@ CONFIGURATION
    - Lightweight Cron, which gives sites admins the granularity to run
      Scheduler's functions only, on more frequent crontab jobs.
 
-   - Many settings are per content type, Administration » Structure » Content Types » Edit
+ * Configure the Scheduler settings per content type via
+     Administration » Structure » Content Types » Edit
      URL: /admin/structure/types
 
 

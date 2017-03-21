@@ -11,50 +11,53 @@
  */
 
 /**
- * Modules can implement hook_scheduler_nid_list() to add more node ids into the
- * list to be processed in the current cron run. This hook is invoked during
- * cron runs only.
+ * Hook function to add node ids to the list being processed.
+ *
+ * This hook allows modules to add more node ids into the list being processed
+ * in the current cron run. It is invoked during cron runs only. This function
+ * is retained for backwards compatibility but is superceded by the more
+ * flexible hook_scheduler_nid_list_alter().
  *
  * @param string $action
- *   $action determines what is being done to the node.
- *   The value will be 'publish' or 'unpublish'.
+ *   The action being done to the node - 'publish' or 'unpublish'.
  *
  * @return array
  *   Array of node ids to add to the existing list of nodes to be processed.
  */
 function hook_scheduler_nid_list($action) {
-  $nids = array();
-  // Do some processing to add new node ids and dates.
+  $nids = [];
+  // Do some processing to add new node ids into $nids.
   return $nids;
 }
 
 /**
- * Modules can implement hook_scheduler_nid_list_alter() to add or remove node
- * ids from the list to be processed in the current cron run. This hook is
- * invoked during cron runs only.
+ * Hook function to manipulate the list of nodes being processed.
+ *
+ * This hook allows modules to add or remove node ids from the list being
+ * processed in the current cron run. It is invoked during cron runs only. It
+ * can do everything that hook_scheduler_nid_list() does, plus more.
  *
  * @param array $nids
- *   $nids is an array of node ids being processed.
- *
+ *   An array of node ids being processed.
  * @param string $action
- *   $action determines what is being done to the node.
- *   The value will be 'publish' or 'unpublish'.
+ *   The action being done to the node - 'publish' or 'unpublish'.
  *
  * @return array
  *   The full array of node ids to process, adjusted as required.
  */
-function hook_scheduler_nid_list_alter(&$nids, $action) {
+function hook_scheduler_nid_list_alter(array &$nids, $action) {
+  // Do some processing to add or remove node ids.
   return $nids;
 }
 
 /**
- * Modules can implement hook_scheduler_allow_publishing() to prevent
- * publication of a scheduled node.
+ * Hook function to deny or allow a node to be published.
  *
- * The node can be scheduled, and an attempt to publish it will be made during
- * the first cron run after the publishing time. If this hook returns FALSE the
- * node will not be published. Attempts at publishing will continue on each
- * subsequent cron run until this hook returns TRUE.
+ * This hook gives modules the ability to prevent publication of a node at the
+ * scheduled time. The node may be scheduled, and an attempt to publish it will
+ * be made during the first cron run after the publishing time. If this hook
+ * returns FALSE the node will not be published. Attempts at publishing will
+ * continue on each subsequent cron run until this hook returns TRUE.
  *
  * @param \Drupal\node\NodeInterface $node
  *   The scheduled node that is about to be published.
@@ -83,13 +86,13 @@ function hook_scheduler_allow_publishing(NodeInterface $node) {
 }
 
 /**
- * Modules can implement hook_scheduler_allow_unpublishing() to prevent
- * unpublication of a scheduled node.
+ * Hook function to deny or allow a node to be unpublished.
  *
- * The node can be scheduled, and an attempt to unpublish it will be made during
- * the first cron run after the unpublishing time. If this hook returns FALSE
- * the node will not be unpublished. Attempts at unpublishing will continue on
- * each subsequent cron run until this hook returns TRUE.
+ * This hook gives modules the ability to prevent unpblication of a node at the
+ * scheduled time. The node may be scheduled, and an attempt to unpublish it
+ * will be made during the first cron run after the unpublishing time. If this
+ * hook returns FALSE the node will not be unpublished. Attempts at unpublishing
+ * will continue on each subsequent cron run until this hook returns TRUE.
  *
  * @param \Drupal\node\NodeInterface $node
  *   The scheduled node that is about to be unpublished.
