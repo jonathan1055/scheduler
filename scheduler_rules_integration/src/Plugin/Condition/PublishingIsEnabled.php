@@ -2,8 +2,6 @@
 
 namespace Drupal\scheduler_rules_integration\Plugin\Condition;
 
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\rules\Core\RulesConditionBase;
 
 /**
@@ -25,8 +23,9 @@ class PublishingIsEnabled extends RulesConditionBase {
   /**
    * Determines whether scheduled publishing is enabled for this node type.
    *
-   * @return
-   *   TRUE if scheduled publishing is enabled for the node type, FALSE if not.
+   * @return bool
+   *   TRUE if scheduled publishing is enabled for the content type of this
+   *   node.
    */
   public function evaluate() {
     $node = $this->getContextValue('node');

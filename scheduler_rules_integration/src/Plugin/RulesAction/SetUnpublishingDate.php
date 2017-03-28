@@ -2,8 +2,6 @@
 
 namespace Drupal\scheduler_rules_integration\Plugin\RulesAction;
 
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\Core\Url;
 
@@ -30,11 +28,6 @@ class SetUnpublishingDate extends RulesActionBase {
 
   /**
    * Set the unpublish_on date for the node.
-   *
-   * @param \Drupal\node\Entity\Node $node
-   *   The node object to be scheduled for unpublishing.
-   * @param int $date
-   *   The date for publishing, a unix timestamp integer.
    */
   public function doExecute() {
     $node = $this->getContextValue('node');
@@ -51,7 +44,12 @@ class SetUnpublishingDate extends RulesActionBase {
     }
     else {
       $type_name = node_get_type_label($node);
-      \Drupal::logger('scheduler')->warning('Rules: Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', array('%type' => $type_name, 'link' => \Drupal::l(t('@type settings', array('@type' => $type_name)), new Url('entity.node_type.edit_form', ['node_type' => $node->getType()]))));
+      $arguments = [
+        '%type' => $type_name,
+        'link' => \Drupal::l(t('@type settings', ['@type' => $type_name]), new Url('entity.node_type.edit_form', ['node_type' => $node->getType()])),
+      ];
+      \Drupal::logger('scheduler')->warning('Scheduler rules action "Set unpublishing date" - Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', $arguments);
     }
   }
+
 }

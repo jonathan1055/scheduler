@@ -2,10 +2,13 @@
 
 namespace Drupal\scheduler_rules_integration\Event;
 
+use Drupal\node\NodeInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
- * Event that is fired when Scheduler publishes a node.
+ * A node is unpublished by Scheduler.
+ *
+ * This event is fired when Scheduler unpublishes a node via cron.
  */
 class SchedulerHasUnpublishedThisNodeEvent extends Event {
 
@@ -13,6 +16,8 @@ class SchedulerHasUnpublishedThisNodeEvent extends Event {
 
   /**
    * The node which has been processed..
+   *
+   * @var Drupal\node\NodeInterface
    */
   public $node;
 
@@ -22,7 +27,7 @@ class SchedulerHasUnpublishedThisNodeEvent extends Event {
    * @param \Drupal\node\NodeInterface $node
    *   The node which has been unpublished by Scheduler.
    */
-  public function __construct($node) {
+  public function __construct(NodeInterface $node) {
     $this->node = $node;
   }
 

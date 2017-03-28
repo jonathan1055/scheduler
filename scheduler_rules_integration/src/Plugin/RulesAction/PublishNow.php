@@ -24,9 +24,6 @@ class PublishNow extends RulesActionBase {
   /**
    * Set the node status to Published.
    *
-   * @param \Drupal\node\Entity\Node $node
-   *   The node object which will be set to Published.
-   *
    * This action should really be provided by Rules or by Core, but it is not
    * yet done (as of Aug 2016). Scheduler users need this action so we provide
    * it here. It could be removed later when Rules or Core includes it.
@@ -35,4 +32,5 @@ class PublishNow extends RulesActionBase {
     $node = $this->getContextValue('node');
     $node->setPublished(TRUE);
   }
+
 }
