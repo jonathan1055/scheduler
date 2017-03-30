@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\content_translation\ContentTranslationManager;
 use Drupal\language\Entity\ConfigurableLanguage;
 
 /**
@@ -14,6 +13,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
    */
   public static $modules = ['content_translation'];
 
@@ -24,18 +25,26 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     parent::setUp();
 
     // Create a user with the required translation permissions.
+    // 'administer languages' for url admin/config/regional/content-language.
+    // 'administer content translation' to show the list of content fields at
+    // url admin/config/regional/content-language.
+    // 'create content translations' for the 'translations' tab on node pages
+    // url node/*/translations.
+    // 'translate any entity' for the 'add translation' link on the translations
+    // page, url node/*/translations/add/.
     $this->translatorUser = $this->drupalCreateUser([
-      'administer languages',            // for admin/config/regional/content-language
-      'administer content translation',  // to show the list of content fields on admin/config/regional/content-language
-      'create content translations',     // for the 'translations' tab on node pages, node/*/translations
-      'translate any entity',            // for the 'add translation' link on translations page, node/*/translations/add/
+      'administer languages',
+      'administer content translation',
+      'create content translations',
+      'translate any entity',
     ]);
 
     // Get the additional role already assigned to the scheduler admin user
     // created in SchedulerBrowserTestBase and add this role to the translator
     // user, to avoid switching between users throughout this test.
     $admin_roles = $this->adminUser->getRoles();
-    $this->translatorUser->addRole($admin_roles[1]); // 0 is 'authenticated'
+    // Key 0 is 'authenticated' role.
+    $this->translatorUser->addRole($admin_roles[1]);
     $this->translatorUser->save();
     $this->drupalLogin($this->translatorUser);
 
@@ -47,7 +56,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     $this->ctm->setEnabled('node', $this->type, TRUE);
 
     // Make three additional languages available.
-    $this->langcodes = ['am', 'bg', 'ca']; // Do not add 'en' here.
+    // Do not add 'en' here.
+    $this->langcodes = ['am', 'bg', 'ca'];
     ConfigurableLanguage::createFromLangcode($this->langcodes[0])->save();
     ConfigurableLanguage::createFromLangcode($this->langcodes[1])->save();
     ConfigurableLanguage::createFromLangcode($this->langcodes[2])->save();
@@ -63,8 +73,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Helper function to assert the published status of the original content and
-   * all the translations.
+   * Helper function to assert the published status of translations.
    *
    * @param int $nid
    *   The node id of the node to check.
@@ -82,12 +91,12 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
 
     foreach ($st as $key => $status) {
       if ($key == 0) {
-        // key 0 is the original, so we just check $node.
+        // Key 0 is the original, so we just check $node.
         $this->assertEqual($node->isPublished(), $status,
           sprintf('%s: The original content (%s) is %s', $description, $this->languages[$key]['name'], ($status ? 'published' : 'unpublished')));
       }
       else {
-        // key > 0 are the translations, which we get using the Content
+        // Key > 0 are the translations, which we get using the Content
         // Translation Manager getTranslationMetadata() function.
         $trans = $this->ctm->getTranslationMetadata($node->getTranslation($this->languages[$key]['code']));
         $trans = $node->getTranslation($this->languages[$key]['code']);
@@ -102,7 +111,6 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataPublishingTranslations()
    */
-
   public function testPublishingTranslations($publish_on_translatable, $unpublish_on_translatable, array $expected_status_values_before, array $expected_status_values_after) {
 
     // Set publish_on to be translatable and unpublish_on not translatable.
@@ -112,7 +120,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
       'edit-settings-node-page-fields-publish-on' => $publish_on_translatable,
       'edit-settings-node-page-fields-unpublish-on' => $unpublish_on_translatable,
     ];
-    $this->submitForm($settings, 'Save configuration'); // shows the updates, so no need for second get.
+    // Shows the updates, so no need for second get.
+    $this->submitForm($settings, 'Save configuration');
 
     // Create a node. This will known as the 'original' before any translations.
     // It is unpublished with no scheduled date.
@@ -151,14 +160,16 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     ];
     $this->submitForm($edit, 'Save and publish');
 
-    $this->drupalGet($this->languages[0]['code'] . '/node/' . $node->id() . '/translations'); // for debug
-    $this->drupalGet('admin/content/scheduled'); // debug
+    // For info only.
+    $this->drupalGet($this->languages[0]['code'] . '/node/' . $node->id() . '/translations');
+    $this->drupalGet('admin/content/scheduled');
 
     // Check the status of all four pieces of content before running cron.
     $this->checkStatus($node->id(), 'Before cron', $expected_status_values_before);
-
     $this->cronRun();
-    $this->drupalGet('admin/content/scheduled'); // debug
+
+    // For info only.
+    $this->drupalGet('admin/content/scheduled');
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/reports/dblog');
     $this->drupalGet($this->languages[0]['code'] . '/node/' . $node->id() . '/translations');
@@ -180,12 +191,26 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
    */
   public function dataPublishingTranslations() {
     return [
-      'publish_on translatable' => [TRUE, FALSE, array(FALSE, TRUE, FALSE, FALSE), array(FALSE, TRUE, FALSE, TRUE)],
-      // @TODO Fix the module code before committing the 'publish_on not translatable' test
-//       'publish_on not translatable' => [FALSE, FALSE, array(FALSE, FALSE, FALSE, FALSE), array(TRUE, TRUE, TRUE, TRUE)], // should be
-//       'publish_on not translatable' => [FALSE, FALSE, array(FALSE, TRUE, FALSE, FALSE), array(TRUE, TRUE, FALSE, FALSE)], // actual before and after
-//       'publish_on not translatable' => [FALSE, FALSE, array(FALSE, TRUE, FALSE, FALSE), array(TRUE, TRUE, TRUE, TRUE)], // actual before, but expected values after
+      'publish_on translatable' => [
+        TRUE,
+        FALSE,
+        [FALSE, TRUE, FALSE, FALSE],
+        [FALSE, TRUE, FALSE, TRUE],
+      ],
     ];
+    /*
+    @TODO Fix module code before committing the 'publish_on not translatable'
+    test
+    // should be
+    'publish_on not translatable' => [FALSE, FALSE,
+    array(FALSE, FALSE, FALSE, FALSE), array(TRUE, TRUE, TRUE, TRUE)],
+    // actual before and after
+    'publish_on not translatable' => [FALSE, FALSE,
+    array(FALSE, TRUE, FALSE, FALSE), array(TRUE, TRUE, FALSE, FALSE)],
+    // actual before, but expected values after
+    'publish_on not translatable' => [FALSE, FALSE,
+    array(FALSE, TRUE, FALSE, FALSE), array(TRUE, TRUE, TRUE, TRUE)],
+     */
   }
 
 }

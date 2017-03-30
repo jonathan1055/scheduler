@@ -31,8 +31,8 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     // Set a scheduler unpublish date on the node.
     $unpublish_date = strtotime('+1 day');
     $edit = [
-      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format($unpublish_date, 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
-      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format($unpublish_date, 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format($unpublish_date, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format($unpublish_date, 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $published_node->id() . '/edit', $edit, t('Save and keep published'));
 

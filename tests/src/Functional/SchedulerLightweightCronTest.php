@@ -23,7 +23,7 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
   /**
    * Test scheduler lightweight cron runs.
    */
-  function testLightweightCronRun() {
+  public function testLightweightCronRun() {
     // Run scheduler lightweight cron anonymously without any cron key.
     $this->drupalGet('scheduler/cron');
     $this->assertResponse(404, 'scheduler/cron with no cron key returns "404 Not Found"');

@@ -14,7 +14,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
    */
   public function testDefaultTime() {
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/reports/status'); // Show the timecheck report.
+    // Show the timecheck report.
+    $this->drupalGet('admin/reports/status');
 
     // Check that the correct default time is added to the scheduled date.
     // For testing we use an offset of 6 hours 30 minutes (23400 seconds).
@@ -25,11 +26,12 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // string when asserting the message and looking for field values.
     // @see https://www.drupal.org/node/2809627
     $this->seconds_formatted = '06:30:00';
-    $edit = array(
+    $edit = [
       'date_format' => 'Y-m-d H:i:s',
       'allow_date_only' => TRUE,
-      'default_time' => '6:30', // Use '6:30' not '06:30:00' to test flexibility.
-    );
+    // Use '6:30' not '06:30:00' to test flexibility.
+      'default_time' => '6:30',
+    ];
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     // @TODO Function assertDefaultTime() is only called once. Is there any
     // benefit in having it separate? Why not move the code back into here?
@@ -37,10 +39,10 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
     // Check that it is not possible to enter a date format without a time if
     // the 'date only' option is not enabled.
-    $edit = array(
+    $edit = [
       'date_format' => 'Y-m-d',
       'allow_date_only' => FALSE,
-    );
+    ];
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertRaw(t('You must either include a time within the date format or enable the date-only option.'), 'It is not possible to enter a date format without a time if the "date only" option is not enabled.');
   }
@@ -57,24 +59,23 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $unpublish_validation_message = "The Unpublish on date is invalid. Please enter a date in the format";
 
     // First test with the "date only" functionality disabled.
-    $this->drupalPostForm('admin/config/content/scheduler', array('allow_date_only' => FALSE), t('Save configuration'));
+    $this->drupalPostForm('admin/config/content/scheduler', ['allow_date_only' => FALSE], t('Save configuration'));
 
     // Test if entering a time is required.
-    $edit = array(
+    $edit = [
       'title[0][value]' => 'No time ' . $this->randomString(15),
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
       'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
-    );
+    ];
     // @todo Use \Drupal::service('date.formatter') instead of calling date()
     // and format_date()
-
     // Create a node and check that the expected error messages are shown.
     $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
     $this->assertText($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
     $this->assertText($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
 
     // Allow the user to enter only a date.
-    $this->drupalPostForm('admin/config/content/scheduler', array('allow_date_only' => TRUE), t('Save configuration'));
+    $this->drupalPostForm('admin/config/content/scheduler', ['allow_date_only' => TRUE], t('Save configuration'));
 
     // Create a node and check that the expected error messages are not shown.
     $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
@@ -83,7 +84,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
     // Check that the publish-on information is shown after saving.
     $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $this->seconds_formatted;
-    $args = array('@publish_time' => $publish_time);
+    $args = ['@publish_time' => $publish_time];
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', $args), 'The user is informed that the content will be published on the requested date, on the default time.');
 
     // Check that the default time has been added to the scheduler form on edit.
@@ -94,4 +95,5 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->assertFieldByName('publish_on[0][value][time]', $this->seconds_formatted, 'The default time offset has been added to the date field when scheduling content for publication.');
     $this->assertFieldByName('unpublish_on[0][value][time]', $this->seconds_formatted, 'The default time offset has been added to the date field when scheduling content for unpublication.');
   }
+
 }

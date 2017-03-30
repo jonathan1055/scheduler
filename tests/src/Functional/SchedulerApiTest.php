@@ -13,11 +13,14 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
+   *
+   * @TODO 'menu_ui' is in the exported node.type definition, and 'path' is in
+   * the entity_form_display. Could these be removed from the config files and
+   * then not needed here?
    */
   public static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
-  // @todo 'menu_ui' is in the exported node.type definition, and 'path' is in
-  // the entity_form_display. Could these be removed from the config files and
-  // then not needed here?
 
   /**
    * {@inheritdoc}
@@ -25,12 +28,13 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Load the custom node type and check it .
+    // Load the custom node type. It will be enabled for Scheduler automatically
+    // as that is pre-configured in node.type.scheduler_api_test.yml.
     $this->customName = 'scheduler_api_test';
     $this->customNodetype = NodeType::load($this->customName);
+
+    // Check that the custom node type has loaded OK.
     $this->assertNotNull($this->customNodetype, 'Custom node type "' . $this->customName . '"  was created during install');
-    // Do not need to enable this node type for scheduler as that is already
-    // pre-configured in node.type.scheduler_api_test.yml
 
     // Create a web user for this content type.
     $this->webUser = $this->drupalCreateUser([
@@ -42,22 +46,20 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers hook_scheduler_allow_publishing() and hook_scheduler_allow_unpublishing()
+   * Covers hook_scheduler_allow_publishing()
    *
-   * These hooks can allow or deny the (un)publication of individual nodes. This
-   * test uses a content type which has checkboxes 'Approved for publication'
-   * and 'Approved for unpublication'. The node may only be published or
-   * unpublished if the appropriate checkbox is ticked.
+   * This hook can allow or deny the publishing of individual nodes. This test
+   * uses the customised content type which has checkboxes 'Approved for
+   * publication' and 'Approved for unpublication'.
    *
    * @todo Create and update the nodes through the interface so we can check if
    *   the correct messages are displayed.
    */
-  public function testAllowedPublishingAndUnpublishing() {
-    // Check that the approved fields are shown on the node/add form.
+  public function testAllowedPublishing() {
     $this->drupalLogin($this->webUser);
+    // Check the 'approved for publishing' field is shown on the node form.
     $this->drupalGet('node/add/' . $this->customName);
     $this->assertFieldById('edit-field-approved-publishing-value', '', 'The "Approved for publishing" field is shown on the node form');
-    $this->assertFieldById('edit-field-approved-unpublishing-value', '', 'The "Approved for unpublishing" field is shown on the node form');
 
     // Check that the message is shown when scheduling a node for publishing
     // which is not yet allowed to be published.
@@ -73,7 +75,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // simulate a cron run, and check that the node is still not published.
     $node = $this->createUnapprovedNode('publish_on');
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An unapproved node is not published during cron processing.');
 
@@ -85,7 +87,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->approveNode($node->id(), 'field_approved_publishing');
     $this->assertFalse($node->isPublished(), 'A new approved node is initially not published.');
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node is published during cron processing.');
 
@@ -97,19 +99,34 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
 
     // Check that the node can be approved and published programatically.
     $this->approveNode($node->id(), 'field_approved_publishing');
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately via $node->set()->save().');
 
     // Check that a node can be approved and published via edit form.
     $node = $this->createUnapprovedNode('publish_on');
     $this->drupalPostForm('node/' . $node->id() . '/edit', ['field_approved_publishing[value]' => '1'], t('Save'));
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately after saving via edit form.');
 
-    // Test approval for unpublishing. This is simpler than the test sequence
-    // for publishing, because the past date 'publish' option is not applicable.
+    // Show the dblog messages.
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/dblog');
+  }
+
+  /**
+   * Covers hook_scheduler_allow_unpublishing()
+   *
+   * This hook can allow or deny the unpublishing of individual nodes. This test
+   * is simpler than the test sequence for allowed publishing, because the past
+   * date 'publish' option is not applicable.
+   */
+  public function testAllowedUnpublishing() {
+    $this->drupalLogin($this->webUser);
+    // Check the 'approved for unpublishing' field is shown on the node form.
+    $this->drupalGet('node/add/' . $this->customName);
+    $this->assertFieldById('edit-field-approved-unpublishing-value', '', 'The "Approved for unpublishing" field is shown on the node form');
 
     // Check that the message is shown when scheduling a node for unpublishing
     // which is not yet allowed to be unpublished.
@@ -125,7 +142,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // simulate a cron run, and check that the node is still published.
     $node = $this->createUnapprovedNode('unpublish_on');
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An unapproved node is not unpublished during cron processing.');
 
@@ -135,7 +152,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->approveNode($node->id(), 'field_approved_unpublishing');
     $this->assertTrue($node->isPublished(), 'A new approved node is initially published.');
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'An approved node is unpublished during cron processing.');
 
@@ -157,13 +174,13 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    *   A node object.
    */
   protected function createUnapprovedNode($date_field) {
-    $settings = array(
+    $settings = [
       'status' => ($date_field == 'unpublish_on'),
       $date_field => strtotime('-1 day'),
       'field_approved_publishing' => 0,
       'field_approved_unpublishing' => 0,
       'type' => $this->customName,
-    );
+    ];
     return $this->drupalCreateNode($settings);
   }
 
@@ -172,13 +189,12 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    *
    * @param int $nid
    *   The id of the node to approve.
-   *
    * @param string $field_name
    *   The name of the field to set, either 'field_approved_publishing' or
    *   'field_approved_unpublishing'.
    */
   protected function approveNode($nid, $field_name) {
-    $this->nodeStorage->resetCache(array($nid));
+    $this->nodeStorage->resetCache([$nid]);
     $node = $this->nodeStorage->load($nid);
     $node->set($field_name, TRUE)->save();
   }
@@ -195,13 +211,13 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
 
     // Create a test node. Having the 'approved' fields here would complicate
     // the tests, so use the ordinary 'page' type.
-    $settings = array(
+    $settings = [
       'publish_on' => strtotime('-1 day'),
       'type' => $this->nodetype->get('type'),
       'promote' => FALSE,
       'sticky' => FALSE,
       'title' => 'API TEST node action',
-    );
+    ];
     $node = $this->drupalCreateNode($settings);
 
     // Check that the 'sticky' and 'promote' fields are off for the new node.
@@ -211,7 +227,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Run cron and check that hook_scheduler_api() has executed correctly, by
     // verifying that the node has become promoted and is sticky.
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), "API action 'PRE_PUBLISH' has changed the node to sticky.");
     $this->assertTrue($node->isPromoted(), "API action 'PUBLISH' has changed the node to promoted.");
@@ -224,7 +240,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Run cron and check that hook_scheduler_api() has executed correctly, by
     // verifying that the node is not promoted and no longer sticky.
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isSticky(), "API action 'PRE_UNPUBLISH' has changed the node to not sticky.");
     $this->assertFalse($node->isPromoted(), "API action 'UNPUBLISH' has changed the node to not promoted.");
@@ -239,7 +255,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     ];
     // Edit the node and verify that the values have been altered as expected.
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to sticky.");
     $this->assertTrue($node->isPromoted(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to promoted.");
@@ -249,7 +265,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   /**
    * Covers hook_scheduler_nid_list($action)
    *
-   * hook_scheduler_nid_list() allows other modules to add more node ids into
+   * Hook_scheduler_nid_list() allows other modules to add more node ids into
    * the list to be processed. In real scenarios, the third-party module would
    * likely have more complex data structures and/or tables from which to
    * identify nodes to add. In this test, to keep it simple, we identify nodes
@@ -263,10 +279,18 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $type = $this->nodetype->get('type');
     // Node 1 is not published and has no publishing date set. The test API
     // module will add node 1 into the list to be published.
-    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list publish me']);
+    $node1 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list publish me',
+    ]);
     // Node 2 is published and has no unpublishing date set. The test API module
     // will add node 2 into the list to be unpublished.
-    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list unpublish me']);
+    $node2 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list unpublish me',
+    ]);
 
     // Before cron, check node 1 is unpublished and node 2 is published.
     $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
@@ -298,16 +322,37 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $type = $this->nodetype->get('type');
     // Node 1 is set for scheduled publishing, but will be removed by the test
     // API hook_nid_list_alter().
-    $node1 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list_alter do not publish me', 'publish_on' => strtotime('-1 day')]);
+    $node1 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list_alter do not publish me',
+      'publish_on' => strtotime('-1 day'),
+    ]);
+
     // Node 2 is not published and has no publishing date set. The test API
     // module will add node 2 into the list to be published.
-    $node2 = $this->drupalCreateNode(['type' => $type, 'status' => FALSE, 'title' => 'API TEST nid_list_alter publish me']);
+    $node2 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list_alter publish me',
+    ]);
+
     // Node 3 is set for scheduled unpublishing, but will be removed by the test
     // API hook_nid_list_alter().
-    $node3 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list_alter do not unpublish me', 'unpublish_on' => strtotime('-1 day')]);
+    $node3 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list_alter do not unpublish me',
+      'unpublish_on' => strtotime('-1 day'),
+    ]);
+
     // Node 4 is published and has no unpublishing date set. The test API module
     // will add node 4 into the list to be unpublished.
-    $node4 = $this->drupalCreateNode(['type' => $type, 'status' => TRUE, 'title' => 'API TEST nid_list_alter unpublish me']);
+    $node4 = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list_alter unpublish me',
+    ]);
 
     // Check node 1 and 2 are unpublished and node 3 and 4 are published.
     $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
@@ -329,4 +374,5 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->assertTrue($node3->isPublished(), 'After cron, node 3 "' . $node3->title->value . '" is still published.');
     $this->assertFalse($node4->isPublished(), 'After cron, node 4 "' . $node4->title->value . '" is unpublished.');
   }
+
 }

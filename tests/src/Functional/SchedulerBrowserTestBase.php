@@ -20,6 +20,8 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
 
   /**
    * The standard modules to be loaded for all tests.
+   *
+   * @var array
    */
   public static $modules = ['scheduler', 'dblog'];
 
@@ -31,7 +33,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $adminUser;
 
   /**
-   * The name of the content type created for testing
+   * The name of the content type created for testing.
    *
    * @var string
    */
@@ -75,12 +77,14 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     // Create an administrator user having the main admin permissions, full
     // rights on the 'page' content type and all of the Scheduler permissions.
     // Users with reduced permissions are created in the tests that need them.
+    // 'access site reports' is required for admin/reports/dblog.
+    // 'administer site configuration' is required for admin/reports/status.
     $this->adminUser = $this->drupalCreateUser([
       'administer nodes',
       'access content',
       'access content overview',
-      'access site reports',            // required for admin/reports/dblog
-      'administer site configuration',  // required for admin/reports/status
+      'access site reports',
+      'administer site configuration',
       "create $this->type content",
       "edit own $this->type content",
       "delete own $this->type content",
@@ -92,13 +96,16 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   }
 
   /**
-   * Replicate the standard cronRun function to allow the Scheduler tests that
-   * use this to be converted from WebTestBase to BrowserTestBase.
+   * Run standard Drupal cron.
+   *
+   * This replicates the standard cronRun function to allow the Scheduler tests
+   * that use this to be converted from WebTestBase to BrowserTestBase.
    *
    * @TODO Delete this function after it has been added to BrowserTestBase.
-   * @see  https://www.drupal.org/node/2795037
+   * @see https://www.drupal.org/node/2795037
    */
-  function cronRun() {
+  public function cronRun() {
     $this->drupalGet('cron/' . \Drupal::state()->get('system.cron_key'));
   }
+
 }

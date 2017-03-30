@@ -13,6 +13,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional module field_ui is required for the 'manage form display' test.
+   *
+   * @var array
    */
   public static $modules = ['field_ui'];
 
@@ -76,6 +78,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests the settings entry in the content type form display.
+   *
    * This test covers scheduler_entity_extra_field_info().
    */
   public function testManageFormDisplay() {
@@ -100,4 +103,5 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
     $this->assertNoFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is not shown when the content type is not enabled for scheduling.');
   }
+
 }

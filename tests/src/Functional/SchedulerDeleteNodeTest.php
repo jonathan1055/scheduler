@@ -5,8 +5,10 @@ namespace Drupal\Tests\scheduler\Functional;
 use Drupal\node\Entity\NodeType;
 
 /**
- * Tests how the deletion of a node interacts with the Scheduler 'required'
- * options and scheduled dates in the past.
+ * Tests deletion of a node enabled for Scheduler.
+ *
+ * This checks how the deletion of a node interacts with the Scheduler
+ * 'required' options and scheduled dates in the past.
  *
  * @group scheduler
  */
@@ -19,10 +21,11 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
-    // 1. Test if it is possible to delete a node that does not have a
-    // publication date set, when scheduled publishing is required, and likewise
-    // for unpublishing.
-    // @see https://drupal.org/node/1614880
+    /*
+    Test if it is possible to delete a node that does not have a publication
+    date set, when scheduled publishing is required. Likewise for unpublishing.
+    @see https://drupal.org/node/1614880
+     */
 
     // Create a published and an unpublished node, both without scheduled dates.
     $type = $this->nodetype->get('type');
@@ -40,6 +43,7 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     // test than simply getting the 'node/<id>/delete' link directly.
     $this->drupalGet('node/' . $published_node->id() . '/edit');
     $this->clickLink('Delete');
+
     // The text 'error message' is used in a header h2 html tag which is
     // normally made hidden from browsers but will be in the page source.
     // It is also good when testing for the absense of something to also test
@@ -52,13 +56,23 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     $this->assertNoRaw(t('Error message'), 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
     $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
 
-    // 2. Test that nodes can be deleted with no validation errors if the
-    // dates are in the past.
-    // @see http://drupal.org/node/2627370
+    /*
+    Test that nodes can be deleted with no validation errors if the dates are in
+    the past.
+    @see http://drupal.org/node/2627370
+     */
 
     // Create nodes with publish_on and unpublish_on dates in the past.
-    $published_node = $this->drupalCreateNode(['type' => $type, 'status' => 1, 'unpublish_on' => strtotime('- 2 day')]);
-    $unpublished_node = $this->drupalCreateNode(['type' => $type, 'status' => 0, 'publish_on' => strtotime('- 2 day')]);
+    $published_node = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => TRUE,
+      'unpublish_on' => strtotime('- 2 day'),
+    ]);
+    $unpublished_node = $this->drupalCreateNode([
+      'type' => $type,
+      'status' => FALSE,
+      'publish_on' => strtotime('- 2 day'),
+    ]);
 
     // Turn off required publishing and unpublishing.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)
@@ -78,4 +92,5 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     $this->assertRaw(t('Are you sure you want to delete the content'), 'The deletion warning message is shown immediately when trying to delete a node with a publish date in the past.');
 
   }
+
 }
