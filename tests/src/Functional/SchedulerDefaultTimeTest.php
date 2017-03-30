@@ -55,8 +55,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // REQUEST_TIME, which can be one or more seconds in the past. Best we can
     // do is check the fixed part of the message as it is when passed to t() in
     // Datetime::validateDatetime. This will only work in English.
-    $publish_validation_message = "The Publish on date is invalid. Please enter a date in the format";
-    $unpublish_validation_message = "The Unpublish on date is invalid. Please enter a date in the format";
+    $publish_validation_message = 'The Publish on date is invalid. Please enter a date in the format';
+    $unpublish_validation_message = 'The Unpublish on date is invalid. Please enter a date in the format';
 
     // First test with the "date only" functionality disabled.
     $this->drupalPostForm('admin/config/content/scheduler', ['allow_date_only' => FALSE], t('Save configuration'));

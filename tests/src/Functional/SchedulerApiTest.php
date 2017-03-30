@@ -229,8 +229,8 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isSticky(), "API action 'PRE_PUBLISH' has changed the node to sticky.");
-    $this->assertTrue($node->isPromoted(), "API action 'PUBLISH' has changed the node to promoted.");
+    $this->assertTrue($node->isSticky(), 'API action "PRE_PUBLISH" has changed the node to sticky.');
+    $this->assertTrue($node->isPromoted(), 'API action "PUBLISH" has changed the node to promoted.');
 
     // Now set a date for unpublishing the node. Ensure 'sticky' and 'promote'
     // are set, so that the assertions are not affected by any failures above.
@@ -242,8 +242,8 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
-    $this->assertFalse($node->isSticky(), "API action 'PRE_UNPUBLISH' has changed the node to not sticky.");
-    $this->assertFalse($node->isPromoted(), "API action 'UNPUBLISH' has changed the node to not promoted.");
+    $this->assertFalse($node->isSticky(), 'API action "PRE_UNPUBLISH" has changed the node to not sticky.');
+    $this->assertFalse($node->isPromoted(), 'API action "UNPUBLISH" has changed the node to not promoted.');
 
     // Turn on immediate publication when a publish date is in the past.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
@@ -257,9 +257,9 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isSticky(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to sticky.");
-    $this->assertTrue($node->isPromoted(), "API action 'PUBLISH_IMMEDIATELY' has changed the node to promoted.");
-    $this->assertEqual($node->title->value, 'Published immediately', "API action 'PUBLISH_IMMEDIATELY' has changed the node title correctly.");
+    $this->assertTrue($node->isSticky(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to sticky.');
+    $this->assertTrue($node->isPromoted(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to promoted.');
+    $this->assertEqual($node->title->value, 'Published immediately', 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
   }
 
   /**
@@ -320,6 +320,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Create test nodes. Use the ordinary 'page' type for this test, as having
     // the 'approved' fields here would unnecessarily complicate the processing.
     $type = $this->nodetype->get('type');
+
     // Node 1 is set for scheduled publishing, but will be removed by the test
     // API hook_nid_list_alter().
     $node1 = $this->drupalCreateNode([

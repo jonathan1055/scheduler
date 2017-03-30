@@ -30,11 +30,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     // The values in the arrays give the function names below.
-    $events[SchedulerEvents::PRE_PUBLISH][] = ['testPrePublish'];
-    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['testPreUnpublish'];
-    $events[SchedulerEvents::PUBLISH][] = ['publish'];
-    $events[SchedulerEvents::UNPUBLISH][] = ['unpublish'];
-    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['publishImmediately'];
+    $events[SchedulerEvents::PRE_PUBLISH][] = ['apiTestPrePublish'];
+    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['apiTestPreUnpublish'];
+    $events[SchedulerEvents::PUBLISH][] = ['apiTestPublish'];
+    $events[SchedulerEvents::UNPUBLISH][] = ['apiTestUnpublish'];
+    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['apiTestPublishImmediately'];
     return $events;
   }
 
@@ -44,7 +44,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    *   The scheduler event.
    */
-  public function testPrePublish(SchedulerEvent $event) {
+  public function apiTestPrePublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // Before publishing a node make it sticky.
@@ -60,7 +60,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    *   The scheduler event.
    */
-  public function testPreUnpublish(SchedulerEvent $event) {
+  public function apiTestPreUnpublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
@@ -76,7 +76,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    *   The scheduler event.
    */
-  public function publish(SchedulerEvent $event) {
+  public function apiTestPublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // After publishing a node promote it to the front page.
@@ -92,7 +92,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    *   The scheduler event.
    */
-  public function unpublish(SchedulerEvent $event) {
+  public function apiTestUnpublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // After unpublishing a node remove it from the front page.
@@ -108,7 +108,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    *   The scheduler event.
    */
-  public function publishImmediately(SchedulerEvent $event) {
+  public function apiTestPublishImmediately(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // When publishing immediately set the node to sticky and promoted, and
