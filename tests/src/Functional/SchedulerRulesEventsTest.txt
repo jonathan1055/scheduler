@@ -1,13 +1,12 @@
 <?php
-// Feb 2017. This Rules test file has been temporarily renamed from .php to .txt
-// to stop it being run, because the tests fail due to Rules code problems.
-// These tests will be reinstated when Rules is fixed.
-// See Scheduler issue https://www.drupal.org/node/2851618
-// and Rules issue https://www.drupal.org/node/2854481.
-// @TODO Rename this file and delete this comment.
 
 namespace Drupal\Tests\scheduler\Functional;
 
+// This file has been renamed from .php to .txt to stop it being run, because
+// the tests fail due to Rules code problems. These tests will be reinstated
+// when Rules is fixed. See Scheduler issue https://www.drupal.org/node/2851618
+// and Rules issue https://www.drupal.org/node/2854481.
+// @TODO Revert the filename and delete this comment when Rules module runs OK.
 use Drupal\rules\Context\ContextConfig;
 
 /**
@@ -19,8 +18,10 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
    */
-  public static $modules = ['scheduler_rules_integration', 'dblog'];
+  public static $modules = ['scheduler_rules_integration'];
 
   /**
    * {@inheritdoc}
@@ -45,21 +46,21 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
   public function testRulesEvents() {
 
     // Create six reaction rules, one for each event that Scheduler triggers.
-    $rule_data = array(
+    $rule_data = [
       1 => ['scheduler_new_node_is_scheduled_for_publishing_event', 'A new node is created and is scheduled for publishing.'],
       2 => ['scheduler_existing_node_is_scheduled_for_publishing_event', 'An existing node is saved and is scheduled for publishing.'],
       3 => ['scheduler_has_published_this_node_event', 'Scheduler has published this node during cron.'],
       4 => ['scheduler_new_node_is_scheduled_for_unpublishing_event', 'A new node is created and is scheduled for unpublishing.'],
       5 => ['scheduler_existing_node_is_scheduled_for_unpublishing_event', 'An existing node is saved and is scheduled for unpublishing.'],
       6 => ['scheduler_has_unpublished_this_node_event', 'Scheduler has unpublished this node during cron.'],
-    );
+    ];
     foreach ($rule_data as $i => $data) {
       list($event_name, $description) = $data;
       $rule[$i] = $this->expressionManager->createRule();
       $message[$i] = 'RULES message ' . $i . '. ' . $description;
       $rule[$i]->addAction('rules_system_message', ContextConfig::create()
-          ->setValue('message', $message[$i])
-          ->setValue('type', 'status')
+        ->setValue('message', $message[$i])
+        ->setValue('type', 'status')
         );
       $config_entity = $this->rulesStorage->create([
         'id' => 'rule' . $i,
@@ -218,7 +219,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
 
     // Delay to ensure that the dates are now in the past so that the node will
-    // be processed during cron, and assert that events 3, 5 and 6 are triggered.
+    // be processed during cron, and assert that events 3, 5 & 6 are triggered.
     sleep(6);
     $this->cronRun();
     $this->drupalGet('admin/reports/dblog');
@@ -230,4 +231,5 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->assertText($message[6], '"' . $message[6] . '" IS shown');
 
   }
+
 }

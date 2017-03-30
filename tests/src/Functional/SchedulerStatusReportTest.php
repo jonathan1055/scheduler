@@ -26,6 +26,6 @@ class SchedulerStatusReportTest extends SchedulerBrowserTestBase {
     $account_edit = \Drupal::url('entity.user.edit_form', ['user' => $this->adminUser->id()]);
     $this->assertLink('user account');
     $this->assertLinkByHref($account_edit);
-
   }
+
 }

@@ -56,7 +56,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     // @TODO Add tests when scheduled publishing and unpublishing are required.
     // Cannot be done until we make a decision on what 'required'  means.
     // @see https://www.drupal.org/node/2707411
-    // "Conflict between 'required publishing' and not having scheduler permission"
-
+    // "Conflict between 'required publishing' and not having scheduler
+    // permission"
   }
+
 }

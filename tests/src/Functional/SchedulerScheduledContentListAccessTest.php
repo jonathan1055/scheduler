@@ -11,6 +11,8 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
    */
   public static $modules = ['views'];
 
@@ -32,10 +34,34 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     $this->schedulerManager = $this->drupalCreateUser(array_merge($base_permissions, ['view scheduled content']));
 
     // Create nodes scheduled for publishing and for unpublishing.
-    $this->node1 = $this->drupalCreateNode(['title' => 'Node created by Scheduler User for publishing', 'uid' => $this->schedulerUser->id(), 'status' => FALSE, 'type' => $type, 'publish_on' => strtotime('+1 week')]);
-    $this->node2 = $this->drupalCreateNode(['title' => 'Node created by Scheduler User for unpublishing', 'uid' => $this->schedulerUser->id(), 'status' => TRUE, 'type' => $type, 'unpublish_on' => strtotime('+1 week')]);
-    $this->node3 = $this->drupalCreateNode(['title' => 'Node created by Scheduler Manager for publishing', 'uid' => $this->schedulerManager->id(), 'status' => FALSE, 'type' => $type, 'publish_on' => strtotime('+1 week')]);
-    $this->node4 = $this->drupalCreateNode(['title' => 'Node created by Scheduler Manager for unpublishing', 'uid' => $this->schedulerManager->id(), 'status' => TRUE, 'type' => $type, 'unpublish_on' => strtotime('+1 week')]);
+    $this->node1 = $this->drupalCreateNode([
+      'title' => 'Node created by Scheduler User for publishing',
+      'uid' => $this->schedulerUser->id(),
+      'status' => FALSE,
+      'type' => $type,
+      'publish_on' => strtotime('+1 week'),
+    ]);
+    $this->node2 = $this->drupalCreateNode([
+      'title' => 'Node created by Scheduler User for unpublishing',
+      'uid' => $this->schedulerUser->id(),
+      'status' => TRUE,
+      'type' => $type,
+      'unpublish_on' => strtotime('+1 week'),
+    ]);
+    $this->node3 = $this->drupalCreateNode([
+      'title' => 'Node created by Scheduler Manager for publishing',
+      'uid' => $this->schedulerManager->id(),
+      'status' => FALSE,
+      'type' => $type,
+      'publish_on' => strtotime('+1 week'),
+    ]);
+    $this->node4 = $this->drupalCreateNode([
+      'title' => 'Node created by Scheduler Manager for unpublishing',
+      'uid' => $this->schedulerManager->id(),
+      'status' => TRUE,
+      'type' => $type,
+      'unpublish_on' => strtotime('+1 week'),
+    ]);
   }
 
   /**
@@ -61,7 +87,7 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     $this->assertText('Node created by Scheduler User for unpublishing');
     $this->assertNoText('Node created by Scheduler Manager for unpublishing');
 
-    // Access another users scheduled content tab as "Scheduler User"
+    // Access another users scheduled content tab as "Scheduler User".
     $this->drupalGet("user/{$this->schedulerManager->id()}/scheduled");
     $this->assertResponse(403, '"Scheduler User" cannot access the scheduled content user tab for "Scheduler Manager"');
 

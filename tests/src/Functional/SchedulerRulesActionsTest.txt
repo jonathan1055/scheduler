@@ -1,13 +1,12 @@
 <?php
-// Feb 2017. This Rules test file has been temporarily renamed from .php to .txt
-// to stop it being run, because the tests fail due to Rules code problems.
-// These tests will be reinstated when Rules is fixed.
-// See Scheduler issue https://www.drupal.org/node/2851618
-// and Rules issue https://www.drupal.org/node/2854481.
-// @TODO Rename this file and delete this comment.
 
 namespace Drupal\Tests\scheduler\Functional;
 
+// This file has been renamed from .php to .txt to stop it being run, because
+// the tests fail due to Rules code problems. These tests will be reinstated
+// when Rules is fixed. See Scheduler issue https://www.drupal.org/node/2851618
+// and Rules issue https://www.drupal.org/node/2854481.
+// @TODO Revert the filename and delete this comment when Rules module runs OK.
 use Drupal\rules\Context\ContextConfig;
 
 /**
@@ -19,6 +18,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
    */
   public static $modules = ['scheduler_rules_integration'];
 
@@ -283,4 +284,5 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertFalse($node->isPublished(), 'Node is now unpublished for title: "' . $node->title->value . '".');
   }
+
 }

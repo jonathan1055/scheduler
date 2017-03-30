@@ -3,17 +3,11 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 /**
- * Tests a content type which is not enabled for scheduled publishing and
- * unpublishing.
+ * Tests a content type which is not enabled for scheduling.
  *
  * @group scheduler
  */
 class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
-
-  /**
-   * Additional modules required.
-   */
-  public static $modules = ['dblog'];
 
   /**
    * {@inheritdoc}
@@ -50,12 +44,12 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
     // Create title to show what combinations are being tested. Store base info
     // then add secondary details.
-    $details = array(
+    $details = [
       1 => 'by default',
       2 => 'after disabling both settings',
       3 => 'after enabling publishing only',
       4 => 'after enabling unpublishing only',
-    );
+    ];
     $info = $run_number >= 2 ?
       'Publishing ' . ($publishing_enabled ? 'enabled' : 'not enabled')
       . ', Unpublishing ' . ($unpublishing_enabled ? 'enabled' : 'not enabled') . ', ' . $details[$run_number]
@@ -86,7 +80,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'title' => $title,
       'status' => 0,
       'type' => $this->contentName,
-      'publish_on' => REQUEST_TIME -2,
+      'publish_on' => REQUEST_TIME - 2,
     ];
     $node = $this->drupalCreateNode($edit);
 
@@ -113,7 +107,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'title' => $title,
       'status' => 1,
       'type' => $this->contentName,
-      'unpublish_on' => REQUEST_TIME -1,
+      'unpublish_on' => REQUEST_TIME - 1,
     ];
     $node = $this->drupalCreateNode($edit);
 
@@ -137,14 +131,14 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests that a non-enabled node type cannot be scheduled.
+   *
+   * The case when both options are enabled is covered in the main tests. Here
+   * we need to check each of the other combinations, to ensure that the
+   * settings work independently.
    */
   public function testNonEnabledNodeType() {
     // Log in.
     $this->drupalLogin($this->adminUser);
-
-    // The case when both options are enabled is covered in the main tests. Here
-    // we need to check each of the other combinations, to ensure that the
-    // settings work independently.
 
     // 1. By default check that the scheduler date fields are not displayed.
     $this->checkNonEnabledTypes(FALSE, FALSE, 1);

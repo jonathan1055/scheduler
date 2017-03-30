@@ -176,7 +176,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       // If the test case requires editing a node, we need to create one first.
       if ($test_case['operation'] == 'edit') {
         // Note: The key names in the $options parameter for drupalCreateNode()
-        // are the plain field names i.e. 'title' not title[0][value]
+        // are the plain field names i.e. 'title' not title[0][value].
         $options = [
           'title' => $title,
           'type' => 'page',
@@ -223,5 +223,5 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       }
     }
   }
-}
 
+}

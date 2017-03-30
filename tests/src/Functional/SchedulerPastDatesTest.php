@@ -29,8 +29,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // enters a publication date that is in the past.
     $edit = [
       'title[0][value]' => 'Past ' . $this->randomString(10),
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'), ### @TODO should use default date part from config, not hardcode
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'), ### @TODO should use default time part from config, not hardcode
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown by default when the publication date is in the past.');
@@ -58,7 +58,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // published on the next cron run.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep published'));
-    $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]']; ### @TODO should use date format from config
+    $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]'];
     $this->assertNoText(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText(sprintf('%s %s has been updated.', $this->nodetype->get('name'), SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText(t('This post is unpublished and will be published @publish_time.', ['@publish_time' => $publish_time]), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
@@ -84,4 +84,5 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
     $this->assertRaw(t("The 'unpublish on' date must be in the future"), 'An error message is shown when the unpublish date is in the past.');
   }
+
 }

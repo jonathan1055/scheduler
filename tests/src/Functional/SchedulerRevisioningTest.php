@@ -29,7 +29,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $node->{$action . '_on'} = strtotime('-1 day', REQUEST_TIME);
     $node->save();
     scheduler_cron();
-    $this->nodeStorage->resetCache(array($node->id()));
+    $this->nodeStorage->resetCache([$node->id()]);
     return $this->nodeStorage->load($node->id());
   }
 
@@ -51,7 +51,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
   protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
     // Retrieve the latest revision log message for this node.
     $log_message = db_select('node_revision', 'r')
-      ->fields('r', array('revision_log'))
+      ->fields('r', ['revision_log'])
       ->condition('nid', $nid)
       ->orderBy('vid', 'DESC')
       ->range(0, 1)
@@ -165,6 +165,6 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     // Check that the created date has changed to match the publish_on date.
     $created_after_cron = $node->created->value;
     $this->assertEqual(strtotime('-1 day', REQUEST_TIME), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
-
   }
+
 }

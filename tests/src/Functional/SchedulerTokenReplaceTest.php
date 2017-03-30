@@ -12,7 +12,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
   /**
    * Creates a node, then tests the tokens generated from it.
    */
-  function testSchedulerTokenReplacement() {
+  public function testSchedulerTokenReplacement() {
     $this->drupalLogin($this->adminUser);
     $date_formatter = \Drupal::service('date.formatter');
 
@@ -21,23 +21,27 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
     $unpublish_on_timestamp = REQUEST_TIME + 7200;
 
     // Create an unpublished page with scheduled dates.
-    $settings = [
+    $node = $this->drupalCreateNode([
       'type' => 'page',
       'status' => FALSE,
       'publish_on' => $publish_on_timestamp,
       'unpublish_on' => $unpublish_on_timestamp,
-    ];
-    $node = $this->drupalCreateNode($settings);
+    ]);
     // Show that the node is scheduled.
     $this->drupalGet('admin/content/scheduled');
 
     // Create array of test case data.
-    $test_cases = array(
+    // @TODO Convert this test to use @dataProvider instead of array and loop?
+    $test_cases = [
       ['token_format' => '', 'date_format' => 'medium', 'custom' => ''],
-      ['token_format' => ':long', 'date_format' => 'long','custom' => ''],
+      ['token_format' => ':long', 'date_format' => 'long', 'custom' => ''],
       ['token_format' => ':raw', 'date_format' => 'custom', 'custom' => 'U'],
-      ['token_format' => ':custom:jS F g:ia e O', 'date_format' => 'custom', 'custom' => 'jS F g:ia e O'],
-    );
+      [
+        'token_format' => ':custom:jS F g:ia e O',
+        'date_format' => 'custom',
+        'custom' => 'jS F g:ia e O',
+      ],
+    ];
 
     foreach ($test_cases as $test_data) {
       // Edit the node and set the body tokens to use the format being tested.
@@ -48,9 +52,9 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
       $this->drupalGet('node/' . $node->id());
 
       // Refresh the node and get the body output value.
-      $this->nodeStorage->resetCache(array($node->id()));
+      $this->nodeStorage->resetCache([$node->id()]);
       $node = $this->nodeStorage->load($node->id());
-      $body_output = \Drupal::token()->replace($node->body->value, array('node' => $node));
+      $body_output = \Drupal::token()->replace($node->body->value, ['node' => $node]);
 
       // Create the expected text for the body.
       $publish_on_date = $date_formatter->format($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
@@ -60,4 +64,5 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
       $this->assertEqual($body_output, $expected_output, 'Scheduler tokens replaced correctly for ' . $test_data['token_format'] . ' format.');
     }
   }
+
 }

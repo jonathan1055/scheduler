@@ -3,8 +3,10 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 /**
- * Tests that Scheduler has full access to the scheduled nodes, even those
- * restricted by custom node access definitions.
+ * Tests that Scheduler cron has full access to the scheduled nodes.
+ *
+ * This test uses an additional test module 'scheduler_access_test' which uses
+ * a custom node access definition to deny viewing of all nodes.
  *
  * @group scheduler
  */
@@ -12,8 +14,10 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
+   *
+   * @var array
    */
-  public static $modules = ['dblog', 'scheduler_access_test'];
+  public static $modules = ['scheduler_access_test'];
 
   /**
    * {@inheritdoc}
@@ -28,19 +32,27 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests Scheduler cron functionality when access to the nodes is denied.
-   *
-   * The test module scheduler_access_test denies access to all nodes.
    */
   public function testNodeAccess() {
 
     // Get the internal name of the content type.
     $type = $this->nodetype->get('type');
 
-    // Create data test publishing then unpublishing via loop.
-    $test_data = array(
-      'publish_on' => ['status' => FALSE, 'before' => 'unpublished', 'after' => 'published'],
-      'unpublish_on' => ['status' => TRUE, 'before' => 'published', 'after' => 'unpublished'],
-    );
+    // Create data to test publishing then unpublishing via loop.
+    // @TODO Convert this test to use a @dataProvider function instead of this
+    // array and the loop.
+    $test_data = [
+      'publish_on' => [
+        'status' => FALSE,
+        'before' => 'unpublished',
+        'after' => 'published',
+      ],
+      'unpublish_on' => [
+        'status' => TRUE,
+        'before' => 'published',
+        'after' => 'unpublished',
+      ],
+    ];
 
     foreach ($test_data as $field => $data) {
       // Create a node with the required scheduler date.
@@ -48,7 +60,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
         'type' => $type,
         'status' => $data['status'],
         'title' => 'Test node to be ' . $data['after'],
-        $field => REQUEST_TIME + 1
+        $field => REQUEST_TIME + 1,
       ];
       $node = $this->drupalCreateNode($settings);
       $this->drupalGet('node/' . $node->id());
@@ -74,6 +86,6 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/reports/dblog');
     $this->assertText('scheduled publishing', '"Scheduled publishing" message is shown in the dblog');
     $this->assertText('scheduled unpublishing', '"Scheduled unpublishing" message is shown in the dblog');
-
   }
+
 }

@@ -35,7 +35,6 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     $this->assertRaw(t("If you set a 'publish on' date then you must also set an 'unpublish on' date."), 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
     $this->assertNoRaw(t('@type %title has been updated.', ['@type' => $this->nodetype->get('name'), '%title' => SafeMarkup::checkPlain($node->title->value)]), 'The node has not been saved.');
 
-
     // Create an unpublished page node, then edit the node and check that if the
     // status is changed to published, then an unpublish-on date is also needed.
     $node = $this->drupalCreateNode(['type' => $type, 'status' => FALSE]);
@@ -56,4 +55,5 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     $this->assertRaw(t("The 'unpublish on' date must be later than the 'publish on' date."), 'Validation prevents entering an unpublish-on date which is earlier than the publish-on date.');
     $this->assertNoRaw(t('@type %title has been updated.', ['@type' => $this->nodetype->get('name'), '%title' => SafeMarkup::checkPlain($node->title->value)]), 'The node has not been saved.');
   }
+
 }
