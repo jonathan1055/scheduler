@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Installation file for Scheduler Access Test module.
+ */
+
+/**
  * Implements hook_install().
  */
 function scheduler_access_test_install() {

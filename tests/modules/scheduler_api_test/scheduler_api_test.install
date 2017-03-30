@@ -6,12 +6,6 @@
  */
 
 /**
- * Implements hook_install().
- */
-function scheduler_api_test_install() {
-}
-
-/**
  * Implements hook_uninstall().
  *
  * Although not strictly necessary for testing, it is good practice to tidy up
@@ -23,12 +17,13 @@ function scheduler_api_test_uninstall() {
 
   // Delete any content that may have been created for the custom node type.
   $nids_query = db_select('node', 'n')
-    ->fields('n', array('nid'))
+    ->fields('n', ['nid'])
     ->condition('n.type', ['scheduler_api_test'], 'IN')
     ->execute();
   $nids = $nids_query->fetchCol();
   entity_delete_multiple('node', $nids);
 
   // The content type, custom fields and storage are deleted automatically by
-  // having 'enforced: module: - scheduler_api_test' in the /install/*.yml files
+  // having 'enforced: module: - scheduler_api_test' in the
+  // config/install/*.yml files.
 }

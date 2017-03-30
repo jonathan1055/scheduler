@@ -2,7 +2,6 @@
 
 namespace Drupal\scheduler_api_test;
 
-use Drupal\node\Entity\Node;
 use Drupal\scheduler\SchedulerEvent;
 use Drupal\scheduler\SchedulerEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,12 +26,26 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class EventSubscriber implements EventSubscriberInterface {
 
   /**
+   * {@inheritdoc}
+   */
+  public static function getSubscribedEvents() {
+    // The values in the arrays give the function names below.
+    $events[SchedulerEvents::PRE_PUBLISH][] = ['testPrePublish'];
+    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['testPreUnpublish'];
+    $events[SchedulerEvents::PUBLISH][] = ['publish'];
+    $events[SchedulerEvents::UNPUBLISH][] = ['unpublish'];
+    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['publishImmediately'];
+    return $events;
+  }
+
+  /**
    * Operations to perform before Scheduler publishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
    */
-  public function prePublish(SchedulerEvent $event) {
-    /** @var Node $node */
+  public function testPrePublish(SchedulerEvent $event) {
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // Before publishing a node make it sticky.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
@@ -45,9 +58,10 @@ class EventSubscriber implements EventSubscriberInterface {
    * Operations to perform before Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
    */
-  public function preUnpublish(SchedulerEvent $event) {
-    /** @var Node $node */
+  public function testPreUnpublish(SchedulerEvent $event) {
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       // Before unpublishing a node make it unsticky.
@@ -60,9 +74,10 @@ class EventSubscriber implements EventSubscriberInterface {
    * Operations to perform after Scheduler publishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
    */
   public function publish(SchedulerEvent $event) {
-    /** @var Node $node */
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // After publishing a node promote it to the front page.
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
@@ -75,9 +90,10 @@ class EventSubscriber implements EventSubscriberInterface {
    * Operations to perform after Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
    */
   public function unpublish(SchedulerEvent $event) {
-    /** @var Node $node */
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // After unpublishing a node remove it from the front page.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
@@ -87,13 +103,13 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Operations to perform after Scheduler publishes a node immediately not via
-   * cron.
+   * Operations after Scheduler publishes a node immediately not via cron.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
    */
   public function publishImmediately(SchedulerEvent $event) {
-    /** @var Node $node */
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
     // When publishing immediately set the node to sticky and promoted, and
     // also change the title.
@@ -103,20 +119,6 @@ class EventSubscriber implements EventSubscriberInterface {
         ->setSticky(TRUE);
       $event->setNode($node);
     }
-  }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  static function getSubscribedEvents() {
-    // The values in the arrays give the function names above.
-    $events[SchedulerEvents::PRE_UNPUBLISH][] = array('preUnpublish');
-    $events[SchedulerEvents::PRE_PUBLISH][] = array('prePublish');
-    $events[SchedulerEvents::PUBLISH][] = array('publish');
-    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = array('publishImmediately');
-    $events[SchedulerEvents::UNPUBLISH][] = array('unpublish');
-    return $events;
   }
 
 }
