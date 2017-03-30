@@ -24,4 +24,5 @@ class SchedulerPublishOnConstraintValidator extends ConstraintValidator {
         ->addViolation();
     }
   }
+
 }

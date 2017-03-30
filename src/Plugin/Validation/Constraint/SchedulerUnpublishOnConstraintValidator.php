@@ -53,6 +53,6 @@ class SchedulerUnpublishOnConstraintValidator extends ConstraintValidator {
         ->atPath('unpublish_on')
         ->addViolation();
     }
-
   }
+
 }

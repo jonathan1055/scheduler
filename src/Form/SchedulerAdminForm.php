@@ -76,6 +76,8 @@ class SchedulerAdminForm extends ConfigFormBase {
       '%date' => $this->dateFormatter->format(REQUEST_TIME, 'custom', $date_format),
     ]);
     $url = Url::fromUri('http://php.net/manual/en/function.date.php');
+    // @TODO: \Drupal calls should be avoided in classes.
+    // Replace \Drupal::l with dependency injection?
     $form['date_format'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Date format'),

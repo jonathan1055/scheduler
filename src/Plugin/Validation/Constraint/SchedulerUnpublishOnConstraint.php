@@ -27,7 +27,7 @@ class SchedulerUnpublishOnConstraint extends CompositeConstraintBase {
    *
    * @var string
    */
-  public $messageUnpublishOnRequiredIfPublishing  = "Either you must set an 'unpublish on' date or save this node as unpublished.";
+  public $messageUnpublishOnRequiredIfPublishing = "Either you must set an 'unpublish on' date or save this node as unpublished.";
 
   /**
    * Message shown when unpublish_on is not in the future.

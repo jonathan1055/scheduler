@@ -4,11 +4,11 @@ description: 'Publish and unpublish content automatically on specified dates and
 core: 8.x
 configure: scheduler.admin_form
 dependencies:
-  - action
-  - datetime
-  - field
-  - node
-  - views
+  - drupal:action
+  - drupal:datetime
+  - drupal:field
+  - drupal:node
+  - drupal:views
 libraries:
   - scheduler/admin
   - vertical-tabs

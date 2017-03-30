@@ -20,6 +20,8 @@ class LightweightCronController extends ControllerBase {
    *   RedirectResponse.
    */
   public function index() {
+    // @TODO: \Drupal calls should be avoided in classes.
+    // Replace \Drupal::service with dependency injection?
     \Drupal::service('scheduler.manager')->runCron();
 
     return new Response('', 204);
@@ -35,7 +37,8 @@ class LightweightCronController extends ControllerBase {
    *   The access result.
    */
   public function access($cron_key) {
-
+    // @TODO: \Drupal calls should be avoided in classes.
+    // Replace \Drupal::config with dependency injection?
     $valid_cron_key = \Drupal::config('scheduler.settings')
       ->get('lightweight_cron_access_key');
     return AccessResult::allowedIf($valid_cron_key == $cron_key);

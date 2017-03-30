@@ -34,12 +34,12 @@ class TimestampDatetimeNoDefaultWidget extends TimestampDatetimeWidget {
     // However the widget is generic and may be used elsewhere in future.
     $date_format = DateFormat::load('html_date')->getPattern();
     $time_format = DateFormat::load('html_time')->getPattern();
-    $element['value']['#description'] = $this->t('Format: %format. Leave blank for no date.', array('%format' => Datetime::formatExample($date_format . ' ' . $time_format)));
+    $element['value']['#description'] = $this->t('Format: %format. Leave blank for no date.', ['%format' => Datetime::formatExample($date_format . ' ' . $time_format)]);
 
     // Set the callback function to allow interception of the submitted user
     // input and add the default time if needed. It is too late to try this in
     // function massageFormValues as the validation has already been done.
-    $element['value']['#value_callback'] = array($this, 'valueCallback');
+    $element['value']['#value_callback'] = [$this, 'valueCallback'];
     return $element;
   }
 

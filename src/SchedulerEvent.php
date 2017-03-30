@@ -13,15 +13,15 @@ class SchedulerEvent extends Event {
   /**
    * Node object.
    *
-   * @var EntityInterface $node
+   * @var Drupal\Core\Entity\EntityInterface
    */
   protected $node;
 
   /**
    * Constructs a scheduler event object.
    *
-   * @param \Drupal\Core\Entity\EntityInterface
-   *   Node object.
+   * @param \Drupal\Core\Entity\EntityInterface $node
+   *   The node object that caused the event to fire.
    */
   public function __construct(EntityInterface $node) {
     $this->node = $node;
@@ -41,6 +41,7 @@ class SchedulerEvent extends Event {
    * Sets the node object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $node
+   *   The node object that caused the event to fire.
    */
   public function setNode(EntityInterface $node) {
     $this->node = $node;
