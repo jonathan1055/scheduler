@@ -25,3 +25,14 @@ scheduler.lightweight_cron:
     no_cache: TRUE
   requirements:
     _custom_access: '\Drupal\scheduler\Controller\LightweightCronController::access'
+
+# entity.node_type.form_display should be in core node.routing.yml
+# @todo remove this when added to core
+# @see https://www.drupal.org/node/2848213 - scheduler issue
+# @see https://www.drupal.org/node/2865983 - core issue
+entity.node_type.form_display:
+  path: '/admin/structure/types/manage/{node_type}/form-display'
+  defaults:
+    _entity_form: 'node_type.edit'
+  requirements:
+    _permission: 'administer content types'

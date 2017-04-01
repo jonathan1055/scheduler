@@ -173,6 +173,30 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     $form['publish_on']['widget'][0]['value']['#required'] = FALSE;
     $form['unpublish_on']['widget'][0]['value']['#required'] = FALSE;
   }
+
+  // Check which widget type is set for the scheduler fields, and give a warning
+  // if the wrong one has been set and provide a hint and link to fix it.
+  $storage_form_display = $form_state->getStorage()['form_display'];
+  $content = $storage_form_display->get('content');
+  $pluginDefinitions = $storage_form_display->get('pluginManager')->getDefinitions();
+  $correct_widget_id = 'datetime_timestamp_no_default';
+  foreach (['publish_on' => $publishing_enabled, 'unpublish_on' => $unpublishing_enabled] as $field => $enabled) {
+    $actual_widget_id = $content[$field]['type'];
+    if ($enabled && $actual_widget_id != $correct_widget_id) {
+      // The route to the node_type form display is not included in core
+      // node.routing.yml, hence entity.node_type.form_display is defined in
+      // scheduler.routing.yml temporarily.
+      // @todo Remove from scheduler.routing.yml when added to core
+      // @see https://www.drupal.org/node/2848213 - scheduler issue
+      // @see https://www.drupal.org/node/2865983 - core issue
+      drupal_set_message(t('The widget for field %field is incorrectly set to %wrong. This should be changed to %correct by an admin user via <a href="@link">content type form display</a>', [
+        '%field' => (string) $form[$field]['widget']['#title'],
+        '%correct' => (string) $pluginDefinitions[$correct_widget_id]['label'],
+        '%wrong' => (string) $pluginDefinitions[$actual_widget_id]['label'],
+        '@link' => Url::fromRoute('entity.node_type.form_display', ['node_type' => $type->get('type')])->toString(),
+      ]), 'warning', FALSE);
+    }
+  }
 }
 
 /**
