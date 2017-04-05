@@ -22,10 +22,9 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
   public function setUp() {
     parent::setUp();
 
-    $type = $this->nodetype->get('type');
     $base_permissions = [
       'access content',
-      'create ' . $type . ' content',
+      'create ' . $this->type . ' content',
       'view own unpublished content',
     ];
 
@@ -38,28 +37,28 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
       'title' => 'Node created by Scheduler User for publishing',
       'uid' => $this->schedulerUser->id(),
       'status' => FALSE,
-      'type' => $type,
+      'type' => $this->type,
       'publish_on' => strtotime('+1 week'),
     ]);
     $this->node2 = $this->drupalCreateNode([
       'title' => 'Node created by Scheduler User for unpublishing',
       'uid' => $this->schedulerUser->id(),
       'status' => TRUE,
-      'type' => $type,
+      'type' => $this->type,
       'unpublish_on' => strtotime('+1 week'),
     ]);
     $this->node3 = $this->drupalCreateNode([
       'title' => 'Node created by Scheduler Manager for publishing',
       'uid' => $this->schedulerManager->id(),
       'status' => FALSE,
-      'type' => $type,
+      'type' => $this->type,
       'publish_on' => strtotime('+1 week'),
     ]);
     $this->node4 = $this->drupalCreateNode([
       'title' => 'Node created by Scheduler Manager for unpublishing',
       'uid' => $this->schedulerManager->id(),
       'status' => TRUE,
-      'type' => $type,
+      'type' => $this->type,
       'unpublish_on' => strtotime('+1 week'),
     ]);
   }

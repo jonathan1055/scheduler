@@ -35,9 +35,6 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
    */
   public function testNodeAccess() {
 
-    // Get the internal name of the content type.
-    $type = $this->nodetype->get('type');
-
     // Create data to test publishing then unpublishing via loop.
     // @TODO Convert this test to use a @dataProvider function instead of this
     // array and the loop.
@@ -57,7 +54,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
     foreach ($test_data as $field => $data) {
       // Create a node with the required scheduler date.
       $settings = [
-        'type' => $type,
+        'type' => $this->type,
         'status' => $data['status'],
         'title' => 'Test node to be ' . $data['after'],
         $field => REQUEST_TIME + 1,

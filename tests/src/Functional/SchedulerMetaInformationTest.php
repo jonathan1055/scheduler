@@ -21,7 +21,10 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Create a published node without scheduling.
-    $published_node = $this->drupalCreateNode(['type' => 'page', 'status' => 1]);
+    $published_node = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => TRUE,
+    ]);
     $this->drupalGet('node/' . $published_node->id());
 
     // Since we did not set an unpublish date, there should be no X-Robots-Tag

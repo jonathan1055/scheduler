@@ -71,8 +71,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     }
 
     $this->drupalLogin($this->adminUser);
-    // Get the internal name of the content type.
-    $type = $this->nodetype->get('type');
 
     // Create a node without any scheduled dates, using node/add/ not
     // drupalCreateNode(), and check that no events are triggered.
@@ -80,7 +78,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Test for no events',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $type, $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save and publish'));
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
@@ -109,7 +107,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $type, $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save and publish'));
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertText($message[1], '"' . $message[1] . '" IS shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
@@ -151,7 +149,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $type, $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save and publish'));
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
@@ -195,7 +193,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 4),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $type, $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save and publish'));
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertText($message[1], '"' . $message[1] . '" IS shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');

@@ -22,7 +22,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
 
     // Create an unpublished page with scheduled dates.
     $node = $this->drupalCreateNode([
-      'type' => 'page',
+      'type' => $this->type,
       'status' => FALSE,
       'publish_on' => $publish_on_timestamp,
       'unpublish_on' => $unpublish_on_timestamp,

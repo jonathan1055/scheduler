@@ -33,11 +33,18 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $adminUser;
 
   /**
-   * The name of the content type created for testing.
+   * The internal name of the standard content type created for testing.
    *
    * @var string
    */
   protected $type;
+
+  /**
+   * The readable name of the standard content type created for testing.
+   *
+   * @var string
+   */
+  protected $typeName;
 
   /**
    * The node type.
@@ -60,10 +67,16 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     parent::setUp();
 
     // Create a 'Basic Page' content type, with 'page' as the identifier.
+    // The test files should use $this->type and $this->typeName and not use
+    // $this->nodetype->get('type') or $this->nodetype->get('name'), nor have
+    // the hard-coded strings 'page' and 'Basic page'.
     $this->type = 'page';
-    // @TODO Remove all 'page' and use $this->type
+    $this->typeName = 'Basic page';
     /** @var NodeTypeInterface $nodetype */
-    $this->nodetype = $this->drupalCreateContentType(['type' => $this->type, 'name' => 'Basic page']);
+    $this->nodetype = $this->drupalCreateContentType([
+      'type' => $this->type,
+      'name' => $this->typeName,
+    ]);
 
     // Add scheduler functionality to the node type.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
@@ -102,6 +115,10 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
    * that use this to be converted from WebTestBase to BrowserTestBase.
    *
    * @TODO Delete this function after it has been added to BrowserTestBase.
+   *
+   * Update Jan 2017: cronRun() has been committed to core 8.4 and 8.3 but will
+   * not be added to 8.2. Therefore we still need it here whilst we are using
+   * 8.2 for testing.
    * @see https://www.drupal.org/node/2795037
    */
   public function cronRun() {

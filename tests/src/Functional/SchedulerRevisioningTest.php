@@ -93,7 +93,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day', REQUEST_TIME);
     $settings = [
-      'type' => $this->nodetype->get('type'),
+      'type' => $this->type,
       'revision' => 0,
       'created' => $created,
     ];
@@ -142,7 +142,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     // Create a node with a 'created' date two days in the past.
     $created = strtotime('-2 day', REQUEST_TIME);
     $settings = [
-      'type' => $this->nodetype->get('type'),
+      'type' => $this->type,
       'created' => $created,
       'status' => FALSE,
     ];

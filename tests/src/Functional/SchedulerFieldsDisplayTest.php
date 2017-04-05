@@ -58,7 +58,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'expand_fieldset', 'when_required')->save();
     $options = [
       'title' => 'Contains Publish-on date ' . $this->randomMachineName(10),
-      'type' => 'page',
+      'type' => $this->type,
       'publish_on' => strtotime('+1 day'),
     ];
     $node = $this->drupalCreateNode($options);
@@ -68,7 +68,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     // Check that the fieldset is expanded if the node has an unpublish-on date.
     $options = [
       'title' => 'Contains Unpublish-on date ' . $this->randomMachineName(10),
-      'type' => 'page',
+      'type' => $this->type,
       'unpublish_on' => strtotime('+1 day'),
     ];
     $node = $this->drupalCreateNode($options);
@@ -93,14 +93,14 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
     // Check that the weight input field is displayed when the content type is
     // enabled for scheduling. This field still exists even with tabledrag on.
-    $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
+    $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
     $this->assertFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is shown when the content type is enabled for scheduling.');
 
     // Check that the weight input field is not displayed when the content type
     // is not enabled for scheduling.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
-    $this->drupalGet('admin/structure/types/manage/' . $this->nodetype->get('type') . '/form-display');
+    $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
     $this->assertNoFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is not shown when the content type is not enabled for scheduling.');
   }
 

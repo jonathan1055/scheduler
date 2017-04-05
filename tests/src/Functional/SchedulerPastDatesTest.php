@@ -23,7 +23,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_required', FALSE)->save();
 
     // Create an unpublished page node.
-    $node = $this->drupalCreateNode(['type' => $this->nodetype->get('type'), 'status' => FALSE]);
+    $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
 
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
@@ -44,7 +44,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and publish'));
     $this->assertNoText(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
-    $this->assertText(sprintf('%s %s has been updated.', $this->nodetype->get('name'), SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
+    $this->assertText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
     // Reload the changed node and check that it is published.
     $this->nodeStorage->resetCache([$node->id()]);
@@ -60,7 +60,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep published'));
     $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]'];
     $this->assertNoText(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertText(sprintf('%s %s has been updated.', $this->nodetype->get('name'), SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText(t('This post is unpublished and will be published @publish_time.', ['@publish_time' => $publish_time]), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
     // Reload the node and check that it is unpublished but scheduled correctly.

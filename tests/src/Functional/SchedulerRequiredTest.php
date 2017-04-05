@@ -153,7 +153,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       ],
     ];
 
-    $fields = \Drupal::entityManager()->getFieldDefinitions('node', 'page');
+    $fields = \Drupal::entityManager()->getFieldDefinitions('node', $this->type);
 
     foreach ($test_cases as $test_case) {
       // Set required (un)publishing as stipulated by the test case.
@@ -179,7 +179,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
         // are the plain field names i.e. 'title' not title[0][value].
         $options = [
           'title' => $title,
-          'type' => 'page',
+          'type' => $this->type,
           'status' => $test_case['status'],
           'publish_on' => !empty($test_case['scheduled']) ? strtotime('+1 day') : NULL,
         ];
@@ -190,7 +190,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       }
       else {
         // Set the default status, used when testing creation of the new node.
-        $fields['status']->getConfig('page')
+        $fields['status']->getConfig($this->type)
           ->setDefaultValue($test_case['status'])
           ->save();
         // Define the path and button to use for creating the node.
@@ -217,7 +217,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
           break;
 
         case 'not required':
-          $string = sprintf('%s %s has been %s.', $this->nodetype->get('name'), SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
+          $string = sprintf('%s %s has been %s.', $this->typeName, SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
           $this->assertText($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
       }

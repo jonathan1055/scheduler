@@ -210,10 +210,10 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Create a test node. Having the 'approved' fields here would complicate
-    // the tests, so use the ordinary 'page' type.
+    // the tests, so use the ordinary page type.
     $settings = [
       'publish_on' => strtotime('-1 day'),
-      'type' => $this->nodetype->get('type'),
+      'type' => $this->type,
       'promote' => FALSE,
       'sticky' => FALSE,
       'title' => 'API TEST node action',
@@ -274,20 +274,19 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   public function testNidList() {
     $this->drupalLogin($this->adminUser);
 
-    // Create test nodes. Use the ordinary 'page' type for this test, as having
+    // Create test nodes. Use the ordinary page type for this test, as having
     // the 'approved' fields here would unnecessarily complicate the processing.
-    $type = $this->nodetype->get('type');
     // Node 1 is not published and has no publishing date set. The test API
     // module will add node 1 into the list to be published.
     $node1 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => FALSE,
       'title' => 'API TEST nid_list publish me',
     ]);
     // Node 2 is published and has no unpublishing date set. The test API module
     // will add node 2 into the list to be unpublished.
     $node2 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => TRUE,
       'title' => 'API TEST nid_list unpublish me',
     ]);
@@ -317,14 +316,12 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   public function testNidListAlter() {
     $this->drupalLogin($this->adminUser);
 
-    // Create test nodes. Use the ordinary 'page' type for this test, as having
+    // Create test nodes. Use the ordinary page type for this test, as having
     // the 'approved' fields here would unnecessarily complicate the processing.
-    $type = $this->nodetype->get('type');
-
     // Node 1 is set for scheduled publishing, but will be removed by the test
     // API hook_nid_list_alter().
     $node1 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => FALSE,
       'title' => 'API TEST nid_list_alter do not publish me',
       'publish_on' => strtotime('-1 day'),
@@ -333,7 +330,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Node 2 is not published and has no publishing date set. The test API
     // module will add node 2 into the list to be published.
     $node2 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => FALSE,
       'title' => 'API TEST nid_list_alter publish me',
     ]);
@@ -341,7 +338,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Node 3 is set for scheduled unpublishing, but will be removed by the test
     // API hook_nid_list_alter().
     $node3 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => TRUE,
       'title' => 'API TEST nid_list_alter do not unpublish me',
       'unpublish_on' => strtotime('-1 day'),
@@ -350,7 +347,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Node 4 is published and has no unpublishing date set. The test API module
     // will add node 4 into the list to be unpublished.
     $node4 = $this->drupalCreateNode([
-      'type' => $type,
+      'type' => $this->type,
       'status' => TRUE,
       'title' => 'API TEST nid_list_alter unpublish me',
     ]);

@@ -33,10 +33,9 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
 
     // Create a published page node.
-    $type = $this->nodetype->get('type');
     $this->node = $this->drupalCreateNode([
       'title' => 'Initial Test Node',
-      'type' => $type,
+      'type' => $this->type,
       'uid' => $this->adminUser->id(),
       'status' => TRUE,
     ]);
