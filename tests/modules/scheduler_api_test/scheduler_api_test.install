@@ -16,7 +16,7 @@
 function scheduler_api_test_uninstall() {
 
   // Delete any content that may have been created for the custom node type.
-  $nids_query = db_select('node', 'n')
+  $nids_query = \Drupal::database()->select('node', 'n')
     ->fields('n', ['nid'])
     ->condition('n.type', ['scheduler_api_test'], 'IN')
     ->execute();

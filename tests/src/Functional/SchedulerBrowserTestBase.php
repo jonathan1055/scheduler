@@ -61,6 +61,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $nodeStorage;
 
   /**
+   * The Database Connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $database;
+
+  /**
    * {@inheritdoc}
    */
   public function setUp() {
@@ -106,6 +113,10 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
       'schedule publishing of nodes',
       'view scheduled content',
     ]);
+
+    // Store the database connection for re-use in the actual tests.
+    $this->database = $this->container->get('database');
+
   }
 
   /**

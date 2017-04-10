@@ -72,8 +72,8 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
 
     // Modify the scheduler field data to a time in the past, then run cron.
     // @TODO change this to node_save()
-    db_update('node_field_data')->fields([$key => time() - 1])->condition('nid', $node->id())->execute();
-    db_update('node_field_revision')->fields([$key => time() - 1])->condition('nid', $node->id())->execute();
+    $this->database->update('node_field_data')->fields([$key => time() - 1])->condition('nid', $node->id())->execute();
+    $this->database->update('node_field_revision')->fields([$key => time() - 1])->condition('nid', $node->id())->execute();
     $this->nodeStorage->resetCache([$node->id()]);
 
     $this->cronRun();

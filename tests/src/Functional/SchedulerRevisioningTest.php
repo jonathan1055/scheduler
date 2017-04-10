@@ -50,7 +50,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    */
   protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
     // Retrieve the latest revision log message for this node.
-    $log_message = db_select('node_revision', 'r')
+    $log_message = $this->database->select('node_revision', 'r')
       ->fields('r', ['revision_log'])
       ->condition('nid', $nid)
       ->orderBy('vid', 'DESC')
@@ -77,7 +77,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
-    $count = db_select('node_revision', 'r')
+    $count = \Drupal::database()->select('node_revision', 'r')
       ->condition('nid', $nid)
       ->countQuery()
       ->execute()
