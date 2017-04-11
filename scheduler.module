@@ -64,12 +64,18 @@ function scheduler_form_node_type_form_alter(array &$form, FormStateInterface $f
  */
 function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) {
   $config = \Drupal::config('scheduler.settings');
-  $date_formatter = \Drupal::service('date.formatter');
   /** @var \Drupal\node\NodeTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity()->type->entity;
   $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
   $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
-  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'fields_display_mode', $config->get('default_fields_display_mode')) === 'vertical_tab';
+
+  // If neither publishing nor unpublishing are enabled for this node type then
+  // the only thing to do is remove the fields from the form, then exit.
+  if (!$publishing_enabled && !$unpublishing_enabled) {
+    unset($form['publish_on']);
+    unset($form['unpublish_on']);
+    return;
+  }
 
   $date_format = $config->get('date_format');
   $date_only_format = $config->get('date_only_format');
@@ -89,39 +95,38 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // scheduled to be published.
   $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', $config->get('default_unpublish_required')) && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
 
-  // If either publishing or unpublishing is enabled, provide a field group to
-  // wrap the scheduling fields.
-  if ($publishing_enabled || $unpublishing_enabled) {
-    // Expand the fieldset if publishing or unpublishing is required, if a date
-    // already exists or the fieldset is configured to be always expanded.
-    $has_data = !empty($node->publish_on->value) || !empty($node->unpublish_on->value);
-    $always_expand = $type->getThirdPartySetting('scheduler', 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
-    $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
+  // Create a 'details' field group to wrap the scheduling fields, and expand it
+  // if publishing or unpublishing is required, if a date already exists or the
+  // fieldset is configured to be always expanded.
+  $has_data = !empty($node->publish_on->value) || !empty($node->unpublish_on->value);
+  $always_expand = $type->getThirdPartySetting('scheduler', 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
+  $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
-    // Create the group for the fields.
-    $form['scheduler_settings'] = [
-      '#type' => 'details',
-      '#title' => t('Scheduling options'),
-      '#open' => $expand_details,
-      '#weight' => 35,
-      '#attributes' => ['class' => ['scheduler-form']],
-      '#optional' => FALSE,
-    ];
+  // Create the group for the fields.
+  $form['scheduler_settings'] = [
+    '#type' => 'details',
+    '#title' => t('Scheduling options'),
+    '#open' => $expand_details,
+    '#weight' => 35,
+    '#attributes' => ['class' => ['scheduler-form']],
+    '#optional' => FALSE,
+  ];
 
-    // Attach the fields to group.
-    $form['unpublish_on']['#group'] = 'scheduler_settings';
-    $form['publish_on']['#group'] = 'scheduler_settings';
+  // Attach the fields to group.
+  $form['unpublish_on']['#group'] = 'scheduler_settings';
+  $form['publish_on']['#group'] = 'scheduler_settings';
 
-    // Show the field group as a vertical tab if this option is enabled.
-    if ($use_vertical_tabs) {
-      $form['scheduler_settings']['#group'] = 'advanced';
+  // Show the field group as a vertical tab if this option is enabled.
+  $use_vertical_tabs = $type->getThirdPartySetting('scheduler', 'fields_display_mode', $config->get('default_fields_display_mode')) === 'vertical_tab';
+  if ($use_vertical_tabs) {
+    $form['scheduler_settings']['#group'] = 'advanced';
 
-      // Attach the javascript for the vertical tabs.
-      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/vertical-tabs';
-    }
+    // Attach the javascript for the vertical tabs.
+    $form['scheduler_settings']['#attached']['library'][] = 'scheduler/vertical-tabs';
   }
 
   // Define the descriptions depending on whether the time can be skipped.
+  $date_formatter = \Drupal::service('date.formatter');
   $descriptions = [];
   if ($date_only_allowed && ($date_only_format != $date_format)) {
     $descriptions['format'] = t('Format: %date_only_format or %standard_format.', [
