@@ -24,7 +24,6 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Publishing ' . $this->randomMachineName(10),
       'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'Y-m-d'),
       'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'H:i:s'),
-      'promote[value]' => 1,
     ];
     $this->helpTestScheduler($edit);
 
@@ -47,8 +46,8 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
     $body = $this->randomMachineName(30);
 
     $edit['body[0][value]'] = $body;
-    $this->drupalLogin($this->adminUser);
-    $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
+    $this->drupalLogin($this->schedulerUser);
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
     // Verify that the node was created.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertTrue($node, sprintf('Node for %s was created sucessfully.', $edit['title[0][value]']));
@@ -57,17 +56,14 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
       return;
     }
 
-    // Show the site front page for an anonymous visitor, then assert that the
-    // node is correctly published or unpublished.
-    $this->drupalLogout();
-    $this->drupalGet('node');
+    // Assert that the node is correctly published or unpublished.
     if (isset($edit['publish_on[0][value][date]'])) {
       $key = 'publish_on';
-      $this->assertNoText($body, 'Node is unpublished before Cron');
+      $this->assertFalse($node->isPublished(), 'Node is unpublished before Cron');
     }
     else {
       $key = 'unpublish_on';
-      $this->assertText($body, 'Node is published before Cron');
+      $this->assertTrue($node->isPublished(), 'Node is published before Cron');
     }
 
     // Modify the scheduler field data to a time in the past, then run cron.
@@ -77,14 +73,14 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
 
     $this->cronRun();
-    // Show the site front page for an anonymous visitor, then assert that the
-    // node is correctly published or unpublished.
-    $this->drupalGet('node');
+
+    // Assert that the node is correctly published or unpublished.
+    $node = $this->nodeStorage->load($node->id());
     if (isset($edit['publish_on[0][value][date]'])) {
-      $this->assertText($body, 'Node is published after Cron');
+      $this->assertTrue($node->isPublished(), 'Node is published after Cron');
     }
     else {
-      $this->assertNoText($body, 'Node is unpublished after Cron');
+      $this->assertFalse($node->isPublished(), 'Node is unpublished after Cron');
     }
   }
 

@@ -207,7 +207,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    * 'sticky' settings.
    */
   public function testApiNodeAction() {
-    $this->drupalLogin($this->adminUser);
+    $this->drupalLogin($this->schedulerUser);
 
     // Create a test node. Having the 'approved' fields here would complicate
     // the tests, so use the ordinary page type.
@@ -247,14 +247,18 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
 
     // Turn on immediate publication when a publish date is in the past.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
+
+    // Ensure 'sticky' and 'promote' are not set, so that the assertions are not
+    // affected by any failures above.
+    $node->set('sticky', FALSE)->set('promote', FALSE)->save();
+
+    // Edit the node and set a publish-on date in the past.
     $edit = [
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', REQUEST_TIME)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', REQUEST_TIME)),
-      'promote[value]' => FALSE,
-      'sticky[value]' => FALSE,
     ];
-    // Edit the node and verify that the values have been altered as expected.
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save and keep unpublished'));
+    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
+    // Verify that the values have been altered as expected.
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to sticky.');
@@ -272,7 +276,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    * by the text of the title.
    */
   public function testNidList() {
-    $this->drupalLogin($this->adminUser);
+    $this->drupalLogin($this->schedulerUser);
 
     // Create test nodes. Use the ordinary page type for this test, as having
     // the 'approved' fields here would unnecessarily complicate the processing.
@@ -314,7 +318,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    * to identify which nodes to act on.
    */
   public function testNidListAlter() {
-    $this->drupalLogin($this->adminUser);
+    $this->drupalLogin($this->schedulerUser);
 
     // Create test nodes. Use the ordinary page type for this test, as having
     // the 'approved' fields here would unnecessarily complicate the processing.
