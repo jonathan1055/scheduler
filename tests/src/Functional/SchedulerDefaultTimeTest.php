@@ -26,16 +26,17 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // string when asserting the message and looking for field values.
     // @see https://www.drupal.org/node/2809627
     $this->seconds_formatted = '06:30:00';
+    // In $edit use '6:30' not '06:30:00' to test flexibility.
     $edit = [
       'date_format' => 'Y-m-d H:i:s',
       'allow_date_only' => TRUE,
-    // Use '6:30' not '06:30:00' to test flexibility.
       'default_time' => '6:30',
     ];
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
-    // @TODO Function assertDefaultTime() is only called once. Is there any
-    // benefit in having it separate? Why not move the code back into here?
-    $this->assertDefaultTime();
+
+    // Verify that the values have been saved correctly.
+    $this->assertTrue($this->config('scheduler.settings')->get('allow_date_only'), 'The config setting for allow_date_only is stored correctly.');
+    $this->assertEqual($this->config('scheduler.settings')->get('default_time'), $this->seconds_formatted, 'The config setting for default_time is stored correctly.');
 
     // Check that it is not possible to enter a date format without a time if
     // the 'date only' option is not enabled.
@@ -45,21 +46,28 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertRaw(t('You must either include a time within the date format or enable the date-only option.'), 'It is not possible to enter a date format without a time if the "date only" option is not enabled.');
+
+    // @TODO Function assertDefaultTime() is only called once. Is there any
+    // benefit in having it separate? Why not move the code back into here?
+    $this->assertDefaultTime();
+
   }
 
   /**
    * Asserts that the default time works as expected.
    */
   protected function assertDefaultTime() {
+    $this->drupalLogin($this->schedulerUser);
+
     // We cannot easily test the exact validation messages as they contain the
     // REQUEST_TIME, which can be one or more seconds in the past. Best we can
     // do is check the fixed part of the message as it is when passed to t() in
     // Datetime::validateDatetime. This will only work in English.
-    $publish_validation_message = 'The Publish on date is invalid. Please enter a date in the format';
-    $unpublish_validation_message = 'The Unpublish on date is invalid. Please enter a date in the format';
+    $publish_validation_message = 'The Publish on date is invalid.';
+    $unpublish_validation_message = 'The Unpublish on date is invalid.';
 
     // First test with the "date only" functionality disabled.
-    $this->drupalPostForm('admin/config/content/scheduler', ['allow_date_only' => FALSE], t('Save configuration'));
+    $this->config('scheduler.settings')->set('allow_date_only', FALSE)->save();
 
     // Test if entering a time is required.
     $edit = [
@@ -70,15 +78,15 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // @todo Use \Drupal::service('date.formatter') instead of calling date()
     // and format_date()
     // Create a node and check that the expected error messages are shown.
-    $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
     $this->assertText($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
     $this->assertText($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
 
-    // Allow the user to enter only a date.
-    $this->drupalPostForm('admin/config/content/scheduler', ['allow_date_only' => TRUE], t('Save configuration'));
+    // Allow the user to enter only a date with no time.
+    $this->config('scheduler.settings')->set('allow_date_only', TRUE)->save();
 
     // Create a node and check that the expected error messages are not shown.
-    $this->drupalPostForm('node/add/page', $edit, t('Save and publish'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
     $this->assertNoText($publish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
     $this->assertNoText($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 
