@@ -7,7 +7,6 @@ dependencies:
   - drupal:action
   - drupal:datetime
   - drupal:field
-  - drupal:field_ui
   - drupal:node
   - drupal:views
 libraries:
