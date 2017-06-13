@@ -71,7 +71,6 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->config('scheduler.settings')->set('allow_date_only', FALSE)->save();
 
     // Test that entering a time is required.
-    // @todo Use \Drupal::service('date.formatter') instead of calling date()
     $edit = [
       'title[0][value]' => 'No time ' . $this->randomString(15),
       'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('+1 day', REQUEST_TIME), 'custom', 'Y-m-d'),
