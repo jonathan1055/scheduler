@@ -47,16 +47,17 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
     $this->assertRaw(t('You must either include a time within the date format or enable the date-only option.'), 'It is not possible to enter a date format without a time if the "date only" option is not enabled.');
 
-    // @TODO Function assertDefaultTime() is only called once. Is there any
-    // benefit in having it separate? Why not move the code back into here?
-    $this->assertDefaultTime();
+    // Try to save an invalid time value.
+    $edit = [
+      'allow_date_only' => TRUE,
+      'default_time' => '123',
+    ];
+    $this->drupalPostForm('admin/config/content/scheduler', $edit, t('Save configuration'));
+    // Verify that an error is displayed and the value has not been saved.
+    $this->assertEqual($this->config('scheduler.settings')->get('default_time'), $this->seconds_formatted, 'The config setting for default_time has not changed.');
+    $this->assertText('The default time should be in the format HH:MM:SS', 'When an invalid default time is entered the correct error message is displayed.');
 
-  }
-
-  /**
-   * Asserts that the default time works as expected.
-   */
-  protected function assertDefaultTime() {
+    // Check that the default time works correctly for a user creating content.
     $this->drupalLogin($this->schedulerUser);
 
     // We cannot easily test the exact validation messages as they contain the
@@ -69,26 +70,25 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // First test with the "date only" functionality disabled.
     $this->config('scheduler.settings')->set('allow_date_only', FALSE)->save();
 
-    // Test if entering a time is required.
+    // Test that entering a time is required.
+    // @todo Use \Drupal::service('date.formatter') instead of calling date()
     $edit = [
       'title[0][value]' => 'No time ' . $this->randomString(15),
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
-      'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('+1 day', REQUEST_TIME), 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('+2 day', REQUEST_TIME), 'custom', 'Y-m-d'),
     ];
-    // @todo Use \Drupal::service('date.formatter') instead of calling date()
-    // and format_date()
     // Create a node and check that the expected error messages are shown.
     $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
-    $this->assertText($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
-    $this->assertText($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
+    $this->assertSession()->pageTextContains($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
+    $this->assertSession()->pageTextContains($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
 
     // Allow the user to enter only a date with no time.
     $this->config('scheduler.settings')->set('allow_date_only', TRUE)->save();
 
     // Create a node and check that the expected error messages are not shown.
     $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
-    $this->assertNoText($publish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
-    $this->assertNoText($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
+    $this->assertSession()->pageTextNotContains($publish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
+    $this->assertSession()->pageTextNotContains($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 
     // Check that the publish-on information is shown after saving.
     $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $this->seconds_formatted;
@@ -96,7 +96,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->assertRaw(t('This post is unpublished and will be published @publish_time.', $args), 'The user is informed that the content will be published on the requested date, on the default time.');
 
     // Check that the default time has been added to the scheduler form on edit.
-    // Protect in case the node was not created. The tests will fail anyway.
+    // Protect in case the node was not created. The checks will still fail.
     if ($node = $this->drupalGetNodeByTitle($edit['title[0][value]'])) {
       $this->drupalGet('node/' . $node->id() . '/edit');
     }
