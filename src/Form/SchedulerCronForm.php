@@ -147,7 +147,7 @@ class SchedulerCronForm extends ConfigFormBase {
    *   The current state of the form.
    */
   public function runLightweightCron(array &$form, FormStateInterface $form_state) {
-    $this->schedulerManager->runCron();
+    $this->schedulerManager->runLightweightCron();
 
     if ($this->moduleHandler->moduleExists('dblog')) {
       $url = Url::fromRoute('dblog.overview')->toString();
