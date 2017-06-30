@@ -69,7 +69,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
     $this->drupalPostForm('node/add/' . $this->customName, $edit, t('Save'));
-    $this->assertText('The content can be scheduled for publishing, but will not be published until approved by the CEO.', 'The message is shown when scheduling a node which is not yet allowed to be published.');
+    $this->assertText('is scheduled for publishing, but will not be published until approved.', 'The message is shown when scheduling a node which is not yet allowed to be published.');
 
     // Create a node that is scheduled but not approved for publication. Then
     // simulate a cron run, and check that the node is still not published.
@@ -136,7 +136,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
     $this->drupalPostForm('node/add/' . $this->customName, $edit, t('Save'));
-    $this->assertText('The content can be scheduled for unpublishing, but will not be unpublished until approved by the CEO.', 'The message is shown when scheduling a node which is not yet allowed to be unpublished.');
+    $this->assertText('is scheduled for unpublishing, but will not be unpublished until approved.', 'The message is shown when scheduling a node which is not yet allowed to be unpublished.');
 
     // Create a node that is scheduled but not approved for unpublication. Then
     // simulate a cron run, and check that the node is still published.
