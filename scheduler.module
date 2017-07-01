@@ -301,6 +301,12 @@ function scheduler_node_presave(EntityInterface $node) {
     $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
 
     if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
+      // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
+      // before the node has been published.
+      $event = new SchedulerEvent($node);
+      \Drupal::service('event_dispatcher')->dispatch(SchedulerEvents::PRE_PUBLISH_IMMEDIATELY, $event);
+      $node = $event->getNode();
+
       // If required, set the created date to match published date.
       if ($entity->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch'))) {
         $node->setCreatedTime($node->publish_on->value);

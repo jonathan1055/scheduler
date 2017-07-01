@@ -200,11 +200,11 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers hook_scheduler_api($node, $action)
+   * Covers six events.
    *
-   * This hook allows other modules to react to the Scheduler process being run.
-   * The API test implementation of this hook alters the nodes 'promote' and
-   * 'sticky' settings.
+   * The events allow other modules to react to the Scheduler process being run.
+   * The API test implementations of the event listeners alter the nodes
+   * 'promote' and 'sticky' settings and changes the title.
    */
   public function testApiNodeAction() {
     $this->drupalLogin($this->schedulerUser);
@@ -261,7 +261,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     // Verify that the values have been altered as expected.
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isSticky(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to sticky.');
+    $this->assertTrue($node->isSticky(), 'API action "PRE_PUBLISH_IMMEDIATELY" has changed the node to sticky.');
     $this->assertTrue($node->isPromoted(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to promoted.');
     $this->assertEqual($node->title->value, 'Published immediately', 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
   }
