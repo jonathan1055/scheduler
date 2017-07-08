@@ -9,6 +9,8 @@ dependencies:
   - drupal:field
   - drupal:node
   - drupal:views
+test_dependencies:
+  - devel:devel_generate
 libraries:
   - scheduler/admin
   - vertical-tabs
