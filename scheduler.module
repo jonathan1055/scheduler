@@ -200,6 +200,62 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for devel_generate_form_content.
+ */
+function scheduler_form_devel_generate_form_content_alter(array &$form, FormStateInterface $form_state) {
+  // Add an extra column to the node_types table to show which type are enabled
+  // for scheduled publishing and unpublishing.
+  $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
+  $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
+
+  $form['node_types']['#header']['scheduler'] = t('Scheduler settings');
+
+  foreach (array_keys($form['node_types']['#options']) as $type) {
+    $items = [];
+    if (in_array($type, $publishing_enabled_types)) {
+      $items[] = t('Enabled for publishing');
+    }
+    if (in_array($type, $unpublishing_enabled_types)) {
+      $items[] = t('Enabled for unpublishing');
+    }
+    if (empty($items)) {
+      $scheduler_settings = t('None');
+    }
+    else {
+      $scheduler_settings = [
+        'data' => [
+          '#theme' => 'item_list',
+          '#items' => $items,
+        ],
+      ];
+    }
+    $form['node_types']['#options'][$type]['scheduler'] = $scheduler_settings;
+  }
+
+  // Add form items to specify what proportion of generated nodes should have a
+  // publish-on and unpublish-on date assigned. See hook_node_presave() for the
+  // code which sets the node values.
+  $form['scheduler_publishing'] = [
+    '#type' => 'number',
+    '#title' => t('Publishing date for Scheduler'),
+    '#description' => t('Enter the percentage of randomly selected Scheduler-enabled nodes to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at node creation date, up to a time in the future matching the same span as selected above for node creation date.'),
+    '#default_value' => 50,
+    '#required' => TRUE,
+    '#min' => 0,
+    '#max' => 100,
+  ];
+  $form['scheduler_unpublishing'] = [
+    '#type' => 'number',
+    '#title' => t('Unpublishing date for Scheduler'),
+    '#description' => t('Enter the percentage of randomly selected Scheduler-enabled nodes to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of node creation date and publish-on date, up to a time in the future matching the same span as selected above for node creation date.'),
+    '#default_value' => 50,
+    '#required' => TRUE,
+    '#min' => 0,
+    '#max' => 100,
+  ];
+}
+
+/**
  * Implements hook_entity_base_field_info().
  */
 function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
@@ -287,6 +343,39 @@ function scheduler_node_validate($node, array $form, FormStateInterface $form_st
 function scheduler_node_presave(EntityInterface $node) {
   $config = \Drupal::config('scheduler.settings');
   $entity = $node->type->entity;
+
+  // If this node is being created via Devel Generate then set values for the
+  // publish_on and unpublish_on dates as specified in the devel_generate form.
+  if (isset($node->devel_generate)) {
+    static $publishing_enabled_types;
+    static $unpublishing_enabled_types;
+    static $publishing_percent;
+    static $unpublishing_percent;
+    static $time_range;
+
+    if (!isset($publishing_enabled_types)) {
+      $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
+      $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
+      $publishing_percent = $node->devel_generate['scheduler_publishing'];
+      $unpublishing_percent = $node->devel_generate['scheduler_unpublishing'];
+      // Reuse the selected 'node creation' time range for our future date span.
+      $time_range = $node->devel_generate['time_range'];
+    }
+    if ($publishing_percent && in_array($node->getType(), $publishing_enabled_types)) {
+      if (rand(1, 100) <= $publishing_percent) {
+        // Randomly assign a publish_on value in the range starting with the
+        // created date and up to the selected time range in the future.
+        $node->set('publish_on', rand($node->created->value + 1, REQUEST_TIME + $time_range));
+      }
+    }
+    if ($unpublishing_percent && in_array($node->getType(), $unpublishing_enabled_types)) {
+      if (rand(1, 100) <= $unpublishing_percent) {
+        // Randomly assign an unpublish_on value in the range from the later of
+        // created date/publish_on date up to the time range in the future.
+        $node->set('unpublish_on', rand(max($node->created->value, $node->publish_on->value), REQUEST_TIME + $time_range));
+      }
+    }
+  }
 
   // If the node type is not enabled for Scheduler then do nothing.
   if (!$entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'))) {
