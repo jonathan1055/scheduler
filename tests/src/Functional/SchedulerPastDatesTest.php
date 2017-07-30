@@ -29,8 +29,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // enters a publication date that is in the past.
     $edit = [
       'title[0][value]' => 'Past ' . $this->randomString(10),
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day'), 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', REQUEST_TIME), 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', REQUEST_TIME), 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertRaw(t("The 'publish on' date must be in the future"), 'An error message is shown by default when the publication date is in the past.');
@@ -58,16 +58,15 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // published on the next cron run.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
-    $publish_time = $edit['publish_on[0][value][date]'] . ' ' . $edit['publish_on[0][value][time]'];
     $this->assertNoText(t("The 'publish on' date must be in the future"), 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertText(t('This post is unpublished and will be published @publish_time.', ['@publish_time' => $publish_time]), 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
+    $this->assertText('will be published', 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
     // Reload the node and check that it is unpublished but scheduled correctly.
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEqual(\Drupal::service('date.formatter')->format($node->publish_on->value, 'custom', 'Y-m-d H:i:s'), $publish_time, 'The node is scheduled for the required date');
+    $this->assertEqual($node->publish_on->value, strtotime('-1 day', REQUEST_TIME), 'The node has the correct publish_on date stored.');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();

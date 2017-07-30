@@ -77,9 +77,6 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     return;
   }
 
-  $date_format = $config->get('date_format');
-  $date_only_format = $config->get('date_only_format');
-  $time_only_format = $config->get('time_only_format');
   $date_only_allowed = $config->get('allow_date_only');
 
   /* @var $node \Drupal\node\NodeInterface */
@@ -128,25 +125,17 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // Define the descriptions depending on whether the time can be skipped.
   $date_formatter = \Drupal::service('date.formatter');
   $descriptions = [];
-  if ($date_only_allowed && ($date_only_format != $date_format)) {
-    $descriptions['format'] = t('Format: %date_only_format or %standard_format.', [
-      '%date_only_format' => $date_formatter->format(time(), 'custom', $date_only_format),
-      '%standard_format' => $date_formatter->format(time(), 'custom', $date_format),
+  if ($date_only_allowed) {
+    $descriptions['format'] = t('Enter a date. The time part is optional.');
+    // Show the default time so users know what they will get if they do not
+    // enter a time.
+    $default_time = strtotime($config->get('default_time'));
+    $descriptions['default'] = t('The default time is @default_time.', [
+      '@default_time' => $date_formatter->format($default_time, 'custom', 'H:i:s'),
     ]);
   }
   else {
-    $descriptions['format'] = t('Format: %standard_format.', [
-      '%standard_format' => $date_formatter->format(time(), 'custom', $date_format),
-    ]);
-  }
-
-  // Show the default time so users know what they will get if they do not enter
-  // a time.
-  if ($date_only_allowed) {
-    $default_time = strtotime($config->get('default_time'));
-    $descriptions['default'] = t('The default time is @default_time.', [
-      '@default_time' => $date_formatter->format($default_time, 'custom', $time_only_format),
-    ]);
+    $descriptions['format'] = t('Enter a date and time.');
   }
 
   if (!$publishing_required) {
@@ -301,43 +290,6 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
 }
 
 /**
- * Implements hook_node_validate().
- *
- * @deprecated hook_node_validate() and hook_node_submit() have been removed.
- *
- * @see https://www.drupal.org/node/2420295
- * @see https://www.drupal.org/node/2490570
- * @see https://www.drupal.org/node/2490578
- */
-function scheduler_node_validate($node, array $form, FormStateInterface $form_state) {
-  // Adjust the entered times for timezone consideration. Note, we must check
-  // to see if the value is numeric. If it is, assume we have already done the
-  // strtotime conversion. This prevents us running strtotime on a value we have
-  // already converted. This is needed because Drupal 6 removed 'submit' and
-  // added 'presave' and all this happens at different times.
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
-  $date_formatter = \Drupal::service('date.formatter');
-
-  if (!empty($node->publish_on->value) && !is_numeric($node->publish_on->value)) {
-    $publishtime = $node->publish_on->value;
-    if ($publishtime === FALSE) {
-      $form_state->setErrorByName('publish_on', t("The 'publish on' value does not match the expected format of %time", [
-        '%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format),
-      ]));
-    }
-  }
-
-  if (!empty($node->unpublish_on->value) && !is_numeric($node->unpublish_on->value)) {
-    $unpublishtime = $node->unpublish_on->value;
-    if ($unpublishtime === FALSE) {
-      $form_state->setErrorByName('unpublish_on', t("The 'unpublish on' value does not match the expected format of %time", [
-        '%time' => $date_formatter->format(REQUEST_TIME, 'custom', $date_format),
-      ]));
-    }
-  }
-}
-
-/**
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_node_presave(EntityInterface $node) {
@@ -417,10 +369,9 @@ function scheduler_node_presave(EntityInterface $node) {
       // been prevented by other modules. Those modules have to display a
       // message themselves explaining why publication is denied.
       if ($publication_allowed) {
-        $date_format = $config->get('date_format');
         $date_formatter = \Drupal::service('date.formatter');
         drupal_set_message(t('This post is unpublished and will be published @publish_time.', [
-          '@publish_time' => $date_formatter->format($node->publish_on->value, 'custom', $date_format),
+          '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
         ]), 'status', FALSE);
       }
     }
@@ -529,12 +480,11 @@ function scheduler_preprocess_node(&$variables) {
   $date_formatter = \Drupal::service('date.formatter');
   /* @var $node \Drupal\node\NodeInterface */
   $node = $variables['node'];
-  $date_format = \Drupal::config('scheduler.settings')->get('date_format');
   if (!empty($node->publish_on->value) && $node->publish_on->value && is_numeric($node->publish_on->value)) {
-    $variables['publish_on'] = $date_formatter->format($node->publish_on->value, 'custom', $date_format);
+    $variables['publish_on'] = $date_formatter->format($node->publish_on->value, 'long');
   }
   if (!empty($node->unpublish_on->value) && $node->unpublish_on->value && is_numeric($node->unpublish_on->value)) {
-    $variables['unpublish_on'] = $date_formatter->format($node->unpublish_on->value, 'custom', $date_format);
+    $variables['unpublish_on'] = $date_formatter->format($node->unpublish_on->value, 'long');
   }
 }
 
