@@ -2,11 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-// This file has been renamed from .php to .txt to stop it being run, because
-// the tests fail due to Rules code problems. These tests will be reinstated
-// when Rules is fixed. See Scheduler issue https://www.drupal.org/node/2851618
-// and Rules issue https://www.drupal.org/node/2854481.
-// @TODO Revert the filename and delete this comment when Rules module runs OK.
 use Drupal\rules\Context\ContextConfig;
 
 /**
