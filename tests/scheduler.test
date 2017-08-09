@@ -42,6 +42,7 @@ abstract class SchedulerTestBase extends DrupalWebTestCase {
       'delete own page content',
       'edit own page content',
       'schedule publishing of nodes',
+      'view scheduled content',         // required for admin/content/scheduler
       'view own unpublished content',
     ));
 
@@ -1014,4 +1015,181 @@ class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
       $this->$assert('Error message', $message);
     }
   }
+
+}
+
+/**
+ * Tests Schedulers interaction with the Rules module.
+ */
+class SchedulerRulesTest extends SchedulerTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Scheduler and Rules Integration',
+      'description' => 'Tests the Rules actions and conditions provided by Scheduler.',
+      'group' => 'Scheduler',
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp('scheduler', 'dblog', 'rules');
+    parent::commonSettings();
+
+    // Create a published node.
+    $this->node = $this->drupalCreateNode(array(
+      'title' => 'Initial Test Node',
+      'type' => 'page',
+      'uid' => $this->admin_user->uid,
+      'status' => TRUE,
+    ));
+  }
+
+  /**
+   * Tests four actions which set and remove the Scheduler dates.
+   */
+  public function testRulesActions() {
+    $this->drupalLogin($this->admin_user);
+    $node = $this->node;
+
+    $message1 = 'RULE 1. Set Publish-on date.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_presave')
+      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node')))
+      ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 1')))
+      ->action(rules_action('scheduler_set_publish_date_action', array('data:select' => 'node:node', 'date' => REQUEST_TIME + 1800)))
+      ->action('drupal_message', array('message' => $message1));
+    // Check access and integrity, then save the rule.
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_1', $message1);
+
+    $message2 = 'RULE 2. Remove Publish-on date.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node')))
+      ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 2')))
+      ->action(rules_action('scheduler_remove_publish_date_action', array('data:select' => 'node:node')))
+      ->action('node_publish')
+      ->action('drupal_message', array('message' => $message2));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_2', $message2);
+
+    $message3 = 'RULE 3. Set Unpublish-on date.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_presave')
+      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node')))
+      ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 3')))
+      ->action(rules_action('scheduler_set_unpublish_date_action', array('data:select' => 'node:node', 'date' => REQUEST_TIME + 1800)))
+      ->action('drupal_message', array('message' => $message3));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_3', $message3);
+
+    $message4 = 'RULE 4. Remove Unpublish-on date.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node')))
+      ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 4')))
+      ->action(rules_action('scheduler_remove_unpublish_date_action', array('data:select' => 'node:node')))
+      ->action('drupal_message', array('message' => $message4));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_4', $message4);
+
+    // Force immediate cache clearing so we can test the rule *now*.
+    rules_clear_cache(TRUE);
+
+    // Edit node without changing title, then reload the node.
+    $this->drupalPost('node/' . $node->nid . '/edit', array(), t('Save'));
+    $node = node_load($node->nid, NULL, TRUE);
+
+    // Check that neither of the rules are triggered, no publish and unpublish
+    // dates are set and the status is still published.
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    $this->assertTrue(empty($node->publish_on), 'Node is not scheduled for publishing.');
+    $this->assertTrue(empty($node->unpublish_on), 'Node is not scheduled for unpublishing.');
+    $this->assertTrue($node->status, 'Node remains published for title: "' . $node->title . '".');
+
+    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('admin/content/scheduler');
+
+    // Edit the node, triggering rule 1, then reload the node.
+    $this->drupalPost('node/' . $node->nid . '/edit', array('title' => 'Rule 1'), t('Save'));
+    $node = node_load($node->nid, NULL, TRUE);
+
+    // Check that only rule 1 is triggered.
+    $this->assertText($message1, '"' . $message1 . '" is shown');
+    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    // Check that a publishing date has been set and status is now unpublished.
+    $this->assertTrue(!empty($node->publish_on), 'Node is scheduled for publishing.');
+    $this->assertTrue(empty($node->unpublish_on), 'Node is not scheduled for unpublishing.');
+    $this->assertFalse($node->status, 'Node is now unpublished for title: "' . $node->title . '".');
+
+    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('admin/content/scheduler');
+
+    // Edit the node, triggering rule 2, then reload the node.
+    $this->drupalPost('node/' . $node->nid . '/edit', array('title' => 'Rule 2'), t('Save'));
+    $node = node_load($node->nid, NULL, TRUE);
+
+    // Check that only rule 2 is triggered.
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertText($message2, '"' . $message2 . '" is shown');
+    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    // Check that the publishing date has been removed.
+    $this->assertTrue(empty($node->publish_on), 'Node is not scheduled for publishing.');
+    $this->assertTrue(empty($node->unpublish_on), 'Node is not scheduled for unpublishing.');
+    $this->assertTrue($node->status, 'Node is now published for title: "' . $node->title . '".');
+
+    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('admin/content/scheduler');
+
+    // Edit the node, triggering rule 3, then reload the node.
+    $this->drupalPost('node/' . $node->nid . '/edit', array('title' => 'Rule 3'), t('Save'));
+    $node = node_load($node->nid, NULL, TRUE);
+
+    // Check that only rule 3 is triggered.
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $this->assertText($message3, '"' . $message3 . '" is shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    // Check that an unpublishing date has been set.
+    $this->assertTrue(empty($node->publish_on), 'Node is not scheduled for publishing.');
+    $this->assertTrue(!empty($node->unpublish_on), 'Node is scheduled for unpublishing.');
+    $this->assertTrue($node->status, 'Node remains published for title: "' . $node->title . '".');
+
+    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('admin/content/scheduler');
+
+    // Edit the node, triggering rule 4, then reload the node.
+    $this->drupalPost('node/' . $node->nid . '/edit', array('title' => 'Rule 4'), t('Save'));
+    $node = node_load($node->nid, NULL, TRUE);
+
+    // Check that only rule 4 is triggered.
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $this->assertText($message4, '"' . $message4 . '" is shown');
+    // Check that the unpublishing date has been removed.
+    $this->assertTrue(empty($node->publish_on), 'Node is not scheduled for publishing.');
+    $this->assertTrue(empty($node->unpublish_on), 'Node is not scheduled for unpublishing.');
+    $this->assertTrue($node->status, 'Node remains published for title: "' . $node->title . '".');
+
+    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('admin/content/scheduler');
+  }
+
 }
