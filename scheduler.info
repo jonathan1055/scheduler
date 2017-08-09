@@ -9,3 +9,4 @@ files[] = scheduler_handler_field_scheduler_countdown.inc
 files[] = tests/scheduler.test
 files[] = tests/scheduler_api.test
 test_dependencies[] = date
+test_dependencies[] = rules
