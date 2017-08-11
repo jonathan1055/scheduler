@@ -194,7 +194,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
   public static function getInfo() {
     return array(
       'name' => 'Scheduler functionality',
-      'description' => 'Publish/unpublish on time.',
+      'description' => 'Tests the Scheduler functions which do not require other modules.',
       'group' => 'Scheduler',
     );
   }
@@ -213,7 +213,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    * @param bool $scheduler_cron_only
    *   TRUE to only run Scheduler cron, FALSE to run default full Drupal cron.
    */
-  public function testScheduler($scheduler_cron_only = FALSE) {
+  public function testBasicScheduling($scheduler_cron_only = FALSE) {
     // Create node values. Set time to one hour in the future.
     $edit = array(
       'publish_on' => format_date(time() + 3600, 'custom', 'Y-m-d H:i:s'),
@@ -236,7 +236,7 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
    *
    * @uses testScheduler()
    */
-  public function testSchedulerWithOnlySchedulerCronAndAnonymousPageCache() {
+  public function testBasicSchedulingWithOnlySchedulerCron() {
     // Cache pages for anonymous users.
     variable_set('cache', 1);
     // Instruct scheduler to clear caches itself, instead of relying on
@@ -245,13 +245,13 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Instruct the helper method to run only the scheduler cron.
     $scheduler_cron_only = TRUE;
 
-    $this->testScheduler($scheduler_cron_only);
+    $this->testBasicScheduling($scheduler_cron_only);
   }
 
   /**
    * Test the different options for past publication dates.
    */
-  public function testSchedulerPastDates() {
+  public function testPastDates() {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
@@ -600,10 +600,12 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     // Log in.
     $this->drupalLogin($this->adminUser);
 
-    // 1. Test if it is possible to delete a node that does not have a
-    // publication date set, when scheduled publishing is required, and likewise
-    // for unpublishing.
-    // @see https://drupal.org/node/1614880
+    /* 1. Test if it is possible to delete a node that does not have a
+    publication date set, when scheduled publishing is required, and likewise
+    for unpublishing.
+    @see https://drupal.org/node/1614880
+     */
+
     // Create a published and an unpublished node, both without scheduling.
     $published_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 1));
     $unpublished_node = $this->drupalCreateNode(array('type' => 'page', 'status' => 0));
@@ -625,12 +627,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
     $this->assertText('Are you sure you want to delete', 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
 
-    // 2. Test that nodes can be deleted with no validation errors if the
-    // dates are in the past.
-    // @see http://drupal.org/node/2627370
-    // Turn off required publishing and unpublishing.
-    variable_set('scheduler_publish_required_page', FALSE);
-    variable_set('scheduler_unpublish_required_page', FALSE);
+    /* 2. Test that nodes can be deleted with no validation errors if the dates
+    are in the past.
+    @see http://drupal.org/node/2627370
+     */
 
     // Create nodes with publish_on and unpublish_on dates in the past.
     $values = array(
@@ -638,22 +638,22 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       'status' => TRUE,
       'unpublish_on' => strtotime('- 2 day', REQUEST_TIME),
     );
-    $published_node = $this->drupalCreateNode($values);
+    $published_node_past = $this->drupalCreateNode($values);
 
     $values = array(
       'type' => 'page',
       'status' => FALSE,
       'publish_on' => strtotime('- 2 day', REQUEST_TIME),
     );
-    $published_node = $this->drupalCreateNode($values);
+    $unpublished_node_past = $this->drupalCreateNode($values);
 
     // Attempt to delete the published node and check for no validation error.
-    $this->drupalPost('node/' . $published_node->nid . '/edit', array(), t('Delete'));
+    $this->drupalPost('node/' . $published_node_past->nid . '/edit', array(), t('Delete'));
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete a node with an unpublish date in the past.');
     $this->assertText('Are you sure you want to delete', 'The deletion warning message is shown immediately when trying to delete a node with an unpublish date in the past.');
 
     // Attempt to delete the unpublished node and check for no validation error.
-    $this->drupalPost('node/' . $unpublished_node->nid . '/edit', array(), t('Delete'));
+    $this->drupalPost('node/' . $unpublished_node_past->nid . '/edit', array(), t('Delete'));
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete a node with a publish date in the past.');
     $this->assertText('Are you sure you want to delete', 'The deletion warning message is shown immediately when trying to delete a node with a publish date in the past.');
 
@@ -897,15 +897,15 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
 /**
  * Tests the components of the scheduler interface which use the date module.
  */
-class SchedulerDateCombinedFunctionalTest extends SchedulerTestBase {
+class SchedulerDateModuleTest extends SchedulerTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
-      'name' => 'Scheduler date functionalities',
-      'description' => 'Scheduler functionalities which require the date module.',
+      'name' => 'Scheduler and Date module',
+      'description' => 'Tests the functionality which needs the Date module.',
       'group' => 'Scheduler',
     );
   }
