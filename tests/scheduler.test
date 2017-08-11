@@ -1071,7 +1071,7 @@ class SchedulerRulesTest extends SchedulerTestBase {
   }
 
   /**
-   * Tests four actions which set and remove the Scheduler dates.
+   * Tests the four actions which set and remove the Scheduler dates.
    */
   public function testRulesActions() {
     $this->drupalLogin($this->adminUser);
@@ -1080,7 +1080,6 @@ class SchedulerRulesTest extends SchedulerTestBase {
     $message1 = 'RULE 1. Set Publish-on date.';
     $rule = rules_reaction_rule();
     $rule->event('node_presave')
-      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node')))
       ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 1')))
       ->action(rules_action('scheduler_set_publish_date_action', array('data:select' => 'node:node', 'date' => REQUEST_TIME + 1800)))
       ->action('drupal_message', array('message' => $message1));
@@ -1092,7 +1091,6 @@ class SchedulerRulesTest extends SchedulerTestBase {
     $message2 = 'RULE 2. Remove Publish-on date.';
     $rule = rules_reaction_rule();
     $rule->event('node_update')
-      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node')))
       ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 2')))
       ->action(rules_action('scheduler_remove_publish_date_action', array('data:select' => 'node:node')))
       ->action('node_publish')
@@ -1104,7 +1102,6 @@ class SchedulerRulesTest extends SchedulerTestBase {
     $message3 = 'RULE 3. Set Unpublish-on date.';
     $rule = rules_reaction_rule();
     $rule->event('node_presave')
-      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node')))
       ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 3')))
       ->action(rules_action('scheduler_set_unpublish_date_action', array('data:select' => 'node:node', 'date' => REQUEST_TIME + 1800)))
       ->action('drupal_message', array('message' => $message3));
@@ -1115,16 +1112,12 @@ class SchedulerRulesTest extends SchedulerTestBase {
     $message4 = 'RULE 4. Remove Unpublish-on date.';
     $rule = rules_reaction_rule();
     $rule->event('node_update')
-      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node')))
       ->condition(rules_condition('data_is', array('data:select' => 'node:title', 'value' => 'Rule 4')))
       ->action(rules_action('scheduler_remove_unpublish_date_action', array('data:select' => 'node:node')))
       ->action('drupal_message', array('message' => $message4));
     $rule->access();
     $rule->integrityCheck();
     $rule->save('rule_id_4', $message4);
-
-    // Force immediate cache clearing so we can test the rule *now*.
-    rules_clear_cache(TRUE);
 
     // Edit node without changing title, then reload the node.
     $this->drupalPost('node/' . $node->nid . '/edit', array(), t('Save'));
@@ -1210,6 +1203,169 @@ class SchedulerRulesTest extends SchedulerTestBase {
 
     $this->drupalGet('admin/reports/dblog');
     $this->drupalGet('admin/content/scheduler');
+  }
+
+  /**
+   * Tests the two conditions for a content type being enabled for scheduling.
+   */
+  public function testRulesConditionsNodetypeEnabled() {
+    $this->drupalLogin($this->adminUser);
+    $node = $this->node;
+
+    // Create a reaction rule to display a message when viewing a node of a type
+    // that is enabled for scheduled publishing.
+    // "viewing content" actually means "viewing PUBLISHED content".
+    $message1 = 'RULE 1. This node type is enabled for scheduled publishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_view')
+      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node')))
+      ->action('drupal_message', array('message' => $message1));
+    // Check access and integrity, then save the rule.
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_1', $message1);
+
+    // Create a reaction rule to display a message when viewing a node of a type
+    // that is enabled for scheduled unpublishing.
+    $message2 = 'RULE 2. This node type is enabled for scheduled unpublishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_view')
+      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node')))
+      ->action('drupal_message', array('message' => $message2));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_2', $message2);
+
+    // Create a reaction rule to display a message when viewing a node of a type
+    // that is NOT enabled for scheduled publishing.
+    $message3 = 'RULE 3. This node type is not enabled for scheduled publishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_view')
+      ->condition(rules_condition('scheduler_condition_publishing_is_enabled', array('data:select' => 'node:node'))->negate())
+      ->action('drupal_message', array('message' => $message3));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_3', $message3);
+
+    // Create a reaction rule to display a message when viewing a node of a type
+    // that is not enabled for scheduled unpublishing.
+    $message4 = 'RULE 4. This node type is not enabled for scheduled unpublishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_view')
+      ->condition(rules_condition('scheduler_condition_unpublishing_is_enabled', array('data:select' => 'node:node'))->negate())
+      ->action('drupal_message', array('message' => $message4));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_4', $message4);
+
+    // View the node and check the default position - that the node type is
+    // enabled for both publishing and unpublishing.
+    $this->drupalGet('node/' . $node->nid);
+    $this->assertText($message1, '"' . $message1 . '" is shown');
+    $this->assertText($message2, '"' . $message2 . '" is shown');
+    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+
+    // Turn off scheduled publishing for the node type and check the rules.
+    variable_set('scheduler_publish_enable_page', FALSE);
+    $this->drupalGet('node/' . $node->nid);
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertText($message2, '"' . $message2 . '" is shown');
+    $this->assertText($message3, '"' . $message3 . '" is shown');
+    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+
+    // Turn off scheduled unpublishing for the node type and the check again.
+    variable_set('scheduler_unpublish_enable_page', FALSE);
+    $this->drupalGet('node/' . $node->nid);
+    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $this->assertText($message3, '"' . $message3 . '" is shown');
+    $this->assertText($message4, '"' . $message4 . '" is shown');
+  }
+
+  /**
+   * Tests the two conditions for whether a node is scheduled.
+   */
+  public function testRulesConditionsNodeIsScheduled() {
+    $this->drupalLogin($this->adminUser);
+    $node = $this->node;
+
+    // Create a reaction rule to display a message when a node is updated and
+    // is not scheduled for publishing.
+    $message5 = 'RULE 5. This content is not scheduled for publishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_node_is_scheduled_for_publishing', array('data:select' => 'node:node'))->negate())
+      ->action('drupal_message', array('message' => $message5));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_5', $message5);
+
+    // Create a reaction rule to display a message when a node is updated and
+    // is not scheduled for unpublishing.
+    $message6 = 'RULE 6. This content is not scheduled for unpublishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_node_is_scheduled_for_unpublishing', array('data:select' => 'node:node'))->negate())
+      ->action('drupal_message', array('message' => $message6));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_6', $message6);
+
+    // Create a reaction rule to display a message when a node is updated and
+    // is scheduled for publishing.
+    $message7 = 'RULE 7. This content is scheduled for publishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_node_is_scheduled_for_publishing', array('data:select' => 'node:node')))
+      ->action('drupal_message', array('message' => $message7));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_7', $message7);
+
+    // Create a reaction rule to display a message when a node is updated and
+    // is scheduled for unpublishing.
+    $message8 = 'RULE 8. This content is scheduled for unpublishing.';
+    $rule = rules_reaction_rule();
+    $rule->event('node_update')
+      ->condition(rules_condition('scheduler_condition_node_is_scheduled_for_unpublishing', array('data:select' => 'node:node')))
+      ->action('drupal_message', array('message' => $message8));
+    $rule->access();
+    $rule->integrityCheck();
+    $rule->save('rule_id_8', $message8);
+
+    // Edit the node but do not enter any scheduling dates.
+    $this->drupalPost('node/' . $node->nid . '/edit', array(), t('Save'));
+
+    // Check that the conditions have been met or not as expceted.
+    $this->assertText($message5, '"' . $message5 . '" is shown');
+    $this->assertText($message6, '"' . $message6 . '" is shown');
+    $this->assertNoText($message7, '"' . $message7 . '" is not shown');
+    $this->assertNoText($message8, '"' . $message8 . '" is not shown');
+
+    // Edit the node and set a publish_on date.
+    $edit = array(
+      'publish_on' => date('Y-m-d H:i:s', strtotime('+1 day', REQUEST_TIME)),
+    );
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+
+    // Check that the conditions have been met (or not) as expected.
+    $this->assertNoText($message5, '"' . $message5 . '" is not shown');
+    $this->assertText($message6, '"' . $message6 . '" is shown');
+    $this->assertText($message7, '"' . $message7 . '" is shown');
+    $this->assertNoText($message8, '"' . $message8 . '" is not shown');
+
+    // Edit the node and set an unpublish_on date.
+    $edit = array(
+      'unpublish_on' => date('Y-m-d H:i:s', strtotime('+2 day', REQUEST_TIME)),
+    );
+    $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
+
+    // Check that the conditions have been met (or not) as expected.
+    $this->assertNoText($message5, '"' . $message5 . '" is not shown');
+    $this->assertNoText($message6, '"' . $message6 . '" is not shown');
+    $this->assertText($message7, '"' . $message7 . '" is shown');
+    $this->assertText($message8, '"' . $message8 . '" is shown');
   }
 
 }
