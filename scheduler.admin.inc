@@ -9,7 +9,9 @@
  * Form constructor for the main admin form for configuring Scheduler.
  */
 function scheduler_admin() {
-  $now = t('Example: %date', array('%date' => format_date(REQUEST_TIME, 'custom', variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT))));
+  $now = t('Example: %date', array(
+    '%date' => format_date(REQUEST_TIME, 'custom', variable_get('scheduler_date_format', SCHEDULER_DATE_FORMAT)),
+  ));
   $form['scheduler_date_format'] = array(
     '#type' => 'textfield',
     '#title' => t('Date format'),
@@ -21,7 +23,7 @@ function scheduler_admin() {
     '#description' => t('The format for entering scheduled dates and times. For the date use the letters !date_letters and for the time use !time_letters. See !url for more details.', array(
       '!date_letters' => SCHEDULER_DATE_LETTERS,
       '!time_letters' => SCHEDULER_TIME_LETTERS,
-      '!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php')
+      '!url' => l(t('the PHP date() function'), 'http://www.php.net/manual/en/function.date.php'),
     )),
   );
 
@@ -45,14 +47,14 @@ function scheduler_admin() {
   // Variable 'date_popup_timepicker' holds the type of timepicker selected.
   $timepicker_enabled = (variable_get('date_popup_timepicker', '') != 'none');
   $options = array('@date_popup_config' => url('admin/config/date/date_popup'));
-  $description = t('Restrict the time entry to specific minute increments.') . ' '
-    . ($timepicker_enabled
+  $description[] = t('Restrict the time entry to specific minute increments.');
+  $description[] = ($timepicker_enabled
     ? t('The timepicker type can be selected via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options)
     : t('The timepicker is not enabled - turn it on via the <a href="@date_popup_config">Date Popup configuration page</a>.', $options));
   $form['scheduler_date_popup_minute_increment'] = array(
     '#type' => 'textfield',
     '#title' => t('Date Popup minute increment'),
-    '#description' => $description,
+    '#description' => implode(' ', $description),
     '#field_suffix' => t('minutes'),
     '#size' => 2,
     '#maxlength' => 2,
@@ -386,9 +388,10 @@ function _scheduler_form_node_type_form_alter(&$form, $form_state) {
  */
 function _scheduler_lightweight_cron($form, &$form_state) {
   $form = array();
+  $prefix_text = t("You can test Scheduler's lightweight cron process interactively");
   $form['scheduler_cron'] = array(
     '#type' => 'submit',
-    '#prefix' => '<div class="container-inline">' . t("You can test Scheduler's lightweight cron process interactively") . ': ',
+    '#prefix' => '<div class="container-inline">' . $prefix_text . ': ',
     '#value' => t("Run Scheduler's lightweight cron now"),
     '#submit' => array('_scheduler_lightweight_cron_submit'),
     '#suffix' => "</div>\n",
@@ -466,7 +469,7 @@ function _scheduler_timecheck() {
  *
  * @ingroup themeable
  */
-function theme_scheduler_timecheck($variables) {
+function theme_scheduler_timecheck(array $variables) {
   global $user;
 
   $now = $variables['now'];
@@ -487,9 +490,10 @@ function theme_scheduler_timecheck($variables) {
     '@admin_regional_settings' => url('admin/config/regional/settings'),
   );
 
-  $output = '<h4>' . t('Time check') . '</h4>'
-    . '<p>' . t('Your server\'s time is @utc. In most cases this should match <a href="https://www.google.com/search?q=Greenwich%20Mean%20Time">Greenwich Mean Time (GMT) / Coordinated Universal Time (UTC)</a>', $t_options) . '</p>'
-    . '<p>' . t('The website default timezone is @date_default_timezone (@date_default_code) which is offset from GMT by @date_default_offset hours. This timezone can be <a href="@admin_regional_settings">changed by admin users</a> with the appropriate access.', $t_options) . '</p>';
+  $output = '<h4>' . t('Time check')
+    . '</h4><p>' . t('Your server\'s time is @utc. In most cases this should match <a href="https://www.google.com/search?q=Greenwich%20Mean%20Time">Greenwich Mean Time (GMT) / Coordinated Universal Time (UTC)</a>', $t_options)
+    . '</p><p>' . t('The website default timezone is @date_default_timezone (@date_default_code) which is offset from GMT by @date_default_offset hours. This timezone can be <a href="@admin_regional_settings">changed by admin users</a> with the appropriate access.', $t_options)
+    . '</p>';
 
   if (variable_get('configurable_timezones', 1)) {
     $output .= '<p>' . t('Your local time is @localtime (@daylight_saving). You can change this via your <a href="@user_account">user account</a>.', $t_options) . '</p>';
@@ -512,16 +516,15 @@ function theme_scheduler_timecheck($variables) {
  * admin/content/scheduler. It is also shown on the 'My account' page
  * user/{uid}/scheduler if the user has permission to schedule content.
  *
- * @param string
+ * @param string $show
  *   'user_only' if viewing a user page, NULL otherwise.
- *
- * @param int
+ * @param int $uid
  *   The uid when viewing a user page, NULL otherwise.
  *
  * @return array
  *   A render array for a page containing a list of nodes.
  */
-function scheduler_list() {
+function scheduler_list($show, $uid) {
   $header = array(
     array(
       'data' => t('Title'),
@@ -570,11 +573,10 @@ function scheduler_list() {
   // the nodes owned by that user. If the current user is viewing another users'
   // profile and they do not have 'administer nodes' permission then it won't
   // even get this far, as the tab will not be accessible.
-  $args = func_get_args();
-  if ($args[0] == 'user_only') {
-    $query->condition('n.uid', $args[1], '=');
+  if ($show == 'user_only') {
+    $query->condition('n.uid', $uid, '=');
     // Get user account for use later.
-    $user = user_load($args[1]);
+    $user = user_load($uid);
   }
   $query = $query->extend('TableSort')->orderByHeader($header);
   $result = $query->execute();
@@ -627,7 +629,7 @@ function scheduler_list() {
     '#theme' => 'table',
     '#header' => $header,
     '#rows' => $rows,
-    '#empty' => ($args[0] == 'user_only') ? t('There are no scheduled nodes for @username.', array('@username' => $user->name)) : t('There are no scheduled nodes.'),
+    '#empty' => ($show == 'user_only') ? t('There are no scheduled nodes for @username.', array('@username' => $user->name)) : t('There are no scheduled nodes.'),
   );
   return $build;
 }
