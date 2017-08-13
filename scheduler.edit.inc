@@ -27,7 +27,7 @@ function _scheduler_form_alter(&$form, $form_state) {
   // If this is a preview then get the values from the form, not the
   // database.
   if (isset($form_state['values']['op']) && $form_state['values']['op'] == t('Preview')) {
-    $defaults = new StdClass;
+    $defaults = new StdClass();
     $defaults->publish_on = $publishing_enabled ? $form_state['values']['publish_on'] : NULL;
     $defaults->unpublish_on = $unpublishing_enabled ? $form_state['values']['unpublish_on'] : NULL;
   }
@@ -40,7 +40,7 @@ function _scheduler_form_alter(&$form, $form_state) {
   }
   else {
     // Initialise standard values.
-    $defaults = new StdClass;
+    $defaults = new StdClass();
     // Respect presets added by functions like
     // scheduler_field_attach_prepare_translation_alter().
     $defaults->publish_on = isset($node->publish_on) ? $node->publish_on : NULL;
@@ -178,7 +178,7 @@ function _scheduler_form_alter(&$form, $form_state) {
 /**
  * Callback function for the Scheduler date entry elements.
  */
-function scheduler_date_value_callback(&$element, $input = FALSE, &$form_state) {
+function scheduler_date_value_callback(&$element, $input, &$form_state) {
   // When processing a delete operation the user should not be forced to enter a
   // date. Hence set the scheduler date element's #required attribute to FALSE.
   // Test the input operation against $form_state['values']['delete'] as this

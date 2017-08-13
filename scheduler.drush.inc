@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Drush commands for Scheduler
+ * Drush commands for Scheduler.
  */
 
 /**
