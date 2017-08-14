@@ -28,10 +28,11 @@ function scheduler_views_data() {
 
   // Define how the node table is linked to the Scheduler table. This is needed
   // when 'scheduler' is the base table, to give access to the node fields.
+  // Type = 'inner' will exclude any bad data rows in the scheduler table.
   $tables['node']['table']['join']['scheduler'] = array(
     'left_field' => 'nid',
     'field' => 'nid',
-    'type' => 'inner', // to exclude any bad data rows in the scheduler table.
+    'type' => 'inner',
   );
 
   // Describe the two fields in the Scheduler database table.

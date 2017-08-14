@@ -58,11 +58,13 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
             $replacements[$original] = format_date($publish_on, 'medium', '', NULL, $language_code);
           }
           break;
+
         case 'scheduler-unpublish':
           if (!empty($unpublish_on)) {
             $replacements[$original] = format_date($unpublish_on, 'medium', '', NULL, $language_code);
           }
           break;
+
         default:
       }
     }
