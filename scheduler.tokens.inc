@@ -31,6 +31,12 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
   $replacements = array();
 
   if ($type == 'node' && !empty($data['node'])) {
+
+    // Initialise the two field variables. The syntax ${$field} = NULL inside
+    // the foreach loop does work but we get warnings for Drupal Coding Practice
+    // that the variables are not initialised, hence do it simply here instead.
+    $publish_on = $unpublish_on = NULL;
+
     // Usually the tokens are generated on saved node data, where the scheduler
     // fields are numeric timestamps. However, if the tokens are required during
     // the process of saving a node before hook_node_presave() has been executed
@@ -38,13 +44,12 @@ function scheduler_tokens($type, $tokens, array $data = array(), array $options 
     // @see https://www.drupal.org/node/2750467
     $node = $data['node'];
     foreach (array('publish_on', 'unpublish_on') as $field) {
-      if (empty($node->$field)) {
-        ${$field} = NULL;
-      }
-      elseif (is_numeric($node->$field)) {
+      if (is_numeric($node->$field)) {
+        // We want the numeric value.
         ${$field} = $node->$field;
       }
-      else {
+      elseif (!empty($node->$field)) {
+        // Convert the text to a numeric value.
         ${$field} = _scheduler_strtotime($node->$field);
       }
     }

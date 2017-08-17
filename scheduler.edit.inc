@@ -181,9 +181,15 @@ function _scheduler_form_alter(&$form, $form_state) {
 function scheduler_date_value_callback(&$element, $input, &$form_state) {
   // When processing a delete operation the user should not be forced to enter a
   // date. Hence set the scheduler date element's #required attribute to FALSE.
-  // Test the input operation against $form_state['values']['delete'] as this
-  // will match the value of the Delete button even if translated.
-  if (isset($form_state['input']['op']) && isset($form_state['values']['delete']) && $form_state['input']['op'] == $form_state['values']['delete']) {
+  // Test the 'triggering_element' value against $form_state['values']['delete']
+  // as this will match Delete button even if the text is translated.
+  // @see https://www.drupal.org/node/1614880
+  if (isset($form_state['triggering_element']['#value']) && isset($form_state['values']['delete']) && $form_state['triggering_element']['#value'] == $form_state['values']['delete']) {
+    // At some point between October 2013 and August 2017 this code became
+    // unnecessary. Nodes can now be deleted when 'required' is set and when no
+    // date is entered, even without setting #required to FALSE here. It may be
+    // due to a core change between 7.23 and 7.56? Leave this line as-is just
+    // for safety.
     $element['#required'] = FALSE;
   }
   // If using date popup then process the callback that would have been done had
