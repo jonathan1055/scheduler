@@ -793,21 +793,19 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
       ),
     );
 
-    $langcode = LANGUAGE_NONE;
     foreach ($test_cases as $test_data) {
+      // Define a variable containing the template of tokens to be replaced.
+      // The template is not held in the node body, as that is confusing when
+      // viewing the test debug, becuase the tokens will not be replaced unless
+      // a text format for tokens is added. That is unnecessary for the tests.
+      $template = 'Publish on: [node:scheduler-publish' . $test_data['token_format'] . ']. Unpublish on: [node:scheduler-unpublish' . $test_data['token_format'] . '].';
       // With each of the test cases, test using both numeric and string input.
       foreach (array('numeric', 'string') as $test_data['input_type']) {
         if ($test_data['input_type'] == 'numeric') {
-          // Edit the node and set the body tokens to use the format being
-          // tested. The tokens are not replaced automatically when the node is
-          // viewed, but using the body is a convenient way to store the data.
-          $edit = array(
-            "body[$langcode][0][value]" => 'Publish on: [node:scheduler-publish' . $test_data['token_format'] . ']. Unpublish on: [node:scheduler-unpublish' . $test_data['token_format'] . '].',
-          );
-          $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
-          $this->drupalGet('node/' . $node->nid);
-          // Refresh the node. Third parameter TRUE to reset cache.
-          $node = node_load($node->nid, NULL, TRUE);
+          // Set the node fields to numeric timestanps, as they will be in the
+          // final stored node, after hook_node_presave() has been executed.
+          $node->publish_on = $publish_on_timestamp;
+          $node->unpublish_on = $unpublish_on_timestamp;
         }
         else {
           // Replicate the scheduler fields as if just input by a user during
@@ -817,10 +815,10 @@ class SchedulerFunctionalTest extends SchedulerTestBase {
           $node->unpublish_on = format_date($unpublish_on_timestamp, 'custom', 'Y-m-d H:i:s');
         }
 
-        // Get the node body value after tokens have been replaced.
-        $token_output = token_replace($node->body[$langcode][0]['value'], array('node' => $node));
+        // Get the output value after tokens have been replaced.
+        $token_output = token_replace($template, array('node' => $node));
 
-        // Create the expected text for the body.
+        // Create the expected text.
         $publish_on_date = format_date($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
         $unpublish_on_date = format_date($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
         $expected_output = 'Publish on: ' . $publish_on_date . '. Unpublish on: ' . $unpublish_on_date . '.';
