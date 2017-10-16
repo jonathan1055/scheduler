@@ -26,7 +26,10 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.scheduler':
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
-      $output .= '<p>' . t('You can read more in the <a href="@readme">readme.txt</a> file.', ['@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.txt']) . '</p>';
+      $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
+        '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
+        '@project' => 'https://drupal.org/project/scheduler',
+      ]) . '</p>';
       break;
 
     case 'scheduler.admin_form':
