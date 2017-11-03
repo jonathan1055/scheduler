@@ -9,6 +9,8 @@
 
   <!-- Use 's' to print the full sniff name in the report. -->
   <arg value="s"/>
+  <arg value="-colors"/>
+  <arg name="report-width" value="130"/>
 
   <rule ref="Drupal.Files.TxtFileLineLength.TooLong">
     <!-- Do not run this sniff on README.md as the file has long markup lines.
