@@ -342,7 +342,7 @@ function scheduler_node_presave(EntityInterface $node) {
   // If the node type is enabled for scheduled publishing and has a publish_on
   // date then check if publishing is allowed and if the content needs to be
   // published immediately.
-  if ($entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')) && $node->publish_on->value > 0) {
+  if ($entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')) && !empty($node->publish_on->value)) {
     // Check that other modules allow the action on this node.
     $publication_allowed = \Drupal::service('scheduler.manager')->isAllowed($node, 'publish');
 
