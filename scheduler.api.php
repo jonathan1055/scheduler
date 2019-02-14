@@ -78,7 +78,7 @@ function hook_scheduler_allow_publishing(NodeInterface $node) {
     // If publication is denied then inform the user why. This message will be
     // displayed during node edit and save.
     if (!$allowed) {
-      drupal_set_message(t('The content will only be published after approval by the CEO.'), 'status', FALSE);
+      \Drupal::messenger()->addMessage(t('The content will only be published after approval by the CEO.'), 'status', FALSE);
     }
   }
 
@@ -111,7 +111,7 @@ function hook_scheduler_allow_unpublishing(NodeInterface $node) {
     // If unpublication is denied then inform the user why. This message will be
     // displayed during node edit and save.
     if (!$allowed) {
-      drupal_set_message(t('The competition will only be unpublished after all prizes have been claimed by the winners.'));
+      \Drupal::messenger()->addMessage(t('The competition will only be unpublished after all prizes have been claimed by the winners.'));
     }
   }
 

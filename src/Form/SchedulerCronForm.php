@@ -158,9 +158,7 @@ class SchedulerCronForm extends ConfigFormBase {
       // overview does not exist. Show a simple status message.
       $message = $this->t('Lightweight cron run completed.');
     }
-    // @todo Replace drupal_set_message() with an injectable service in 8.1.x.
-    // @see https://www.drupal.org/node/2278383
-    drupal_set_message($message);
+    $this->messenger()->addMessage($message);
   }
 
 }
