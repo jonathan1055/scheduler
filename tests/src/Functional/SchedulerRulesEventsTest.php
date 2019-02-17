@@ -52,6 +52,11 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       5 => ['scheduler_existing_node_is_scheduled_for_unpublishing_event', 'An existing node is saved and is scheduled for unpublishing.'],
       6 => ['scheduler_has_unpublished_this_node_event', 'Scheduler has unpublished this node during cron.'],
     ];
+    // PHPCS throws a false-positive 'variable $var is undefined' message when
+    // the variable is defined by list( ) syntax. To avoid the unwanted warnings
+    // we can wrap the section with @codingStandardsIgnoreStart and IgnoreEnd.
+    // @see https://www.drupal.org/project/coder/issues/2876245
+    // @codingStandardsIgnoreStart
     foreach ($rule_data as $i => list($event_name, $description)) {
       $rule[$i] = $this->expressionManager->createRule();
       $message[$i] = 'RULES message ' . $i . '. ' . $description;
@@ -66,6 +71,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       ]);
       $config_entity->save();
     }
+    // @codingStandardsIgnoreEnd
 
     $this->drupalLogin($this->schedulerUser);
 
