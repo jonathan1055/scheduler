@@ -79,11 +79,11 @@ script:
   # Change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
 
-  # Check for coding standards. First list all the sniffs to be used.
-  - $DRUPAL_ROOT/vendor/bin/phpcs -e
-
-  # Show the coding standards violations in detail.
+  # Check for coding standards. First show the violations in detail.
   - $DRUPAL_ROOT/vendor/bin/phpcs --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1
 
   # Run again to give a summary and total count.
   - $DRUPAL_ROOT/vendor/bin/phpcs --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 --report=summary
+
+  # Finally list all the sniffs that were used.
+  - $DRUPAL_ROOT/vendor/bin/phpcs -e
