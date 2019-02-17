@@ -49,13 +49,13 @@ before_script:
   - DRUPAL_ROOT=$(pwd)
   - echo $DRUPAL_ROOT
 
-  # Make a directory for module and copy the built source into it.
+  # Make a directory for our module and copy the built source into it.
   - mkdir $DRUPAL_ROOT/modules/$MODULE
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
   # Install dependencies.
   - travis_retry git clone --branch 8.x-3.x --depth 1 https://github.com/fago/rules.git modules/rules
-  - travis_retry git clone --branch 8.x-1.x --depth 1 http://git.drupal.org/project/devel.git modules/devel
+  - travis_retry git clone --branch 8.x-2.x --depth 1 http://git.drupal.org/project/devel.git modules/devel
   - travis_retry git clone --branch 8.x-1.x --depth 1 http://git.drupal.org/project/typed_data.git modules/typed_data
 
   # Run composer install for Drupal 8.1 and up. We need an up-to-date composer
