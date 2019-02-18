@@ -44,13 +44,13 @@ class LightweightCronController extends ControllerBase {
   /**
    * Index.
    *
-   * @return \Symfony\Component\HttpFoundation\RedirectResponse
-   *   RedirectResponse.
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The http response.
    */
   public function index() {
     $this->schedulerManager->runLightweightCron();
 
-    return new Response('', 204);
+    return new Response('', Response::HTTP_NO_CONTENT);
   }
 
   /**

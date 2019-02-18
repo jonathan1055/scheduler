@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\node\Entity\NodeType;
-
 /**
  * Tests the display of the date entry fields (vertical tab, fieldset).
  *

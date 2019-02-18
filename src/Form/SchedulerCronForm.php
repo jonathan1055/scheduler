@@ -2,6 +2,7 @@
 
 namespace Drupal\scheduler\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -24,19 +25,22 @@ class SchedulerCronForm extends ConfigFormBase {
   /**
    * The scheduler manager service.
    *
-   * @var Drupal\scheduler\SchedulerManager
+   * @var \Drupal\scheduler\SchedulerManager
    */
   protected $schedulerManager;
 
   /**
    * Creates a SchedulerCronForm instance.
    *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The factory for configuration objects.
    * @var \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
-   * @var Drupal\scheduler\SchedulerManager $scheduler_manager
+   * @var \Drupal\scheduler\SchedulerManager $scheduler_manager
    *   The scheduler manager service.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, SchedulerManager $scheduler_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, SchedulerManager $scheduler_manager) {
+    parent::__construct($config_factory);
     $this->moduleHandler = $module_handler;
     $this->schedulerManager = $scheduler_manager;
   }
@@ -45,7 +49,11 @@ class SchedulerCronForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('module_handler'), $container->get('scheduler.manager'));
+    return new static(
+      $container->get('config.factory'),
+      $container->get('module_handler'),
+      $container->get('scheduler.manager')
+    );
   }
 
   /**

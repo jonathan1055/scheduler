@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\node\Entity\NodeType;
 use Drupal\Component\Utility\SafeMarkup;
 
 /**

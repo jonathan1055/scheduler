@@ -99,7 +99,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
 
     // Define nodeStorage for use in many tests.
     /** @var EntityStorageInterface $nodeStorage */
-    $this->nodeStorage = $this->container->get('entity.manager')->getStorage('node');
+    $this->nodeStorage = $this->container->get('entity_type.manager')->getStorage('node');
 
     // Create an administrator user having the main admin permissions, full
     // rights on the 'page' content type and all of the Scheduler permissions.

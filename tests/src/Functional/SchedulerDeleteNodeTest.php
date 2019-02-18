@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\node\Entity\NodeType;
-
 /**
  * Tests deletion of nodes enabled for Scheduler.
  *

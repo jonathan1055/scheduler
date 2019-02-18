@@ -4,7 +4,7 @@ namespace Drupal\scheduler;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -44,11 +44,11 @@ class SchedulerManager {
   protected $moduleHandler;
 
   /**
-   * Entity Manager service object.
+   * Entity Type Manager service object.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * Config Factory service object.
@@ -67,11 +67,11 @@ class SchedulerManager {
   /**
    * Constructs a SchedulerManager object.
    */
-  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityManagerInterface $entityManager, ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher) {
+  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher) {
     $this->dateFormatter = $dateFormatter;
     $this->logger = $logger;
     $this->moduleHandler = $moduleHandler;
-    $this->entityManager = $entityManager;
+    $this->entityTypeManager = $entityTypeManager;
     $this->configFactory = $configFactory;
     $this->eventDispatcher = $eventDispatcher;
   }
@@ -94,7 +94,7 @@ class SchedulerManager {
     $nids = [];
     $scheduler_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types($action));
     if (!empty($scheduler_enabled_types)) {
-      $query = $this->entityManager->getStorage('node')->getQuery()
+      $query = $this->entityTypeManager->getStorage('node')->getQuery()
         ->exists('publish_on')
         ->condition('publish_on', REQUEST_TIME, '<=')
         ->condition('type', $scheduler_enabled_types, 'IN')
@@ -117,7 +117,7 @@ class SchedulerManager {
     // the list of node ids returned above may have some translations that need
     // processing now and others that do not.
     /** @var \Drupal\node\NodeInterface[] $nodes */
-    $nodes = $this->entityManager->getStorage('node')->loadMultiple($nids);
+    $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
     foreach ($nodes as $node_multilingual) {
 
       // The API calls could return nodes of types which are not enabled for
@@ -150,7 +150,7 @@ class SchedulerManager {
         // @TODO This will now never be thrown due to the empty(publish_on)
         // check above to cater for translations. Remove this exception?
         if (empty($node->publish_on->value)) {
-          $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
+          $field_definitions = $this->entityTypeManager->getFieldDefinitions('node', $node->getType());
           $field = (string) $field_definitions['publish_on']->getLabel();
           throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $node->id(), $node->getTitle(), $field));
         }
@@ -184,7 +184,7 @@ class SchedulerManager {
 
         // Log the fact that a scheduled publication is about to take place.
         $view_link = $node->toLink($this->t('View node'));
-        $node_type = $this->entityManager->getStorage('node_type')->load($node->bundle());
+        $node_type = $this->entityTypeManager->getStorage('node_type')->load($node->bundle());
         $node_type_link = $node_type->toLink($this->t('@label settings', ['@label' => $node_type->label()]), 'edit-form');
         $logger_variables = [
           '@type' => $node_type->label(),
@@ -194,7 +194,7 @@ class SchedulerManager {
         $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
 
         // Use the actions system to publish the node.
-        $this->entityManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
+        $this->entityTypeManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
 
         // Invoke the event to tell Rules that Scheduler has published the node.
         if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
@@ -232,7 +232,7 @@ class SchedulerManager {
     $nids = [];
     $scheduler_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types($action));
     if (!empty($scheduler_enabled_types)) {
-      $query = $this->entityManager->getStorage('node')->getQuery()
+      $query = $this->entityTypeManager->getStorage('node')->getQuery()
         ->exists('unpublish_on')
         ->condition('unpublish_on', REQUEST_TIME, '<=')
         ->condition('type', $scheduler_enabled_types, 'IN')
@@ -251,7 +251,7 @@ class SchedulerManager {
     $this->moduleHandler->alter('scheduler_nid_list', $nids, $action);
 
     /** @var \Drupal\node\NodeInterface[] $nodes */
-    $nodes = $this->entityManager->getStorage('node')->loadMultiple($nids);
+    $nodes = $this->entityTypeManager->getStorage('node')->loadMultiple($nids);
     foreach ($nodes as $node_multilingual) {
       // The API calls could return nodes of types which are not enabled for
       // scheduled unpublishing. Do not process these.
@@ -291,7 +291,7 @@ class SchedulerManager {
         // @TODO This will now never be thrown due to the empty(unpublish_on)
         // check above to cater for translations. Remove this exception?
         if (empty($unpublish_on)) {
-          $field_definitions = $this->entityManager->getFieldDefinitions('node', $node->getType());
+          $field_definitions = $this->entityTypeManager->getFieldDefinitions('node', $node->getType());
           $field = (string) $field_definitions['unpublish_on']->getLabel();
           throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $node->id(), $node->getTitle(), $field));
         }
@@ -322,7 +322,7 @@ class SchedulerManager {
 
         // Log the fact that a scheduled unpublication is about to take place.
         $view_link = $node->toLink($this->t('View node'));
-        $node_type = $this->entityManager->getStorage('node_type')->load($node->bundle());
+        $node_type = $this->entityTypeManager->getStorage('node_type')->load($node->bundle());
         $node_type_link = $node_type->toLink($this->t('@label settings', ['@label' => $node_type->label()]), 'edit-form');
         $logger_variables = [
           '@type' => $node_type->label(),
@@ -332,7 +332,7 @@ class SchedulerManager {
         $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
 
         // Use the actions system to publish the node.
-        $this->entityManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
+        $this->entityTypeManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
 
         // Invoke event to tell Rules that Scheduler has unpublished this node.
         if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
