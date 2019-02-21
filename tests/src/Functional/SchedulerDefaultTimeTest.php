@@ -60,8 +60,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // Check that the scheduled information is shown after saving.
     $publish_time = strtotime('+1 day midnight', REQUEST_TIME) + $seconds;
     $unpublish_time = strtotime('+2 day midnight', REQUEST_TIME) + $seconds;
-    $args = ['@publish_time' => $date_formatter->format($publish_time, 'long')];
-    $this->assertRaw(t('This post is unpublished and will be published @publish_time.', $args), 'The user is informed that the content will be published on the requested date, on the default time.');
+    $this->assertText(sprintf('This post is unpublished and will be published %s', $date_formatter->format($publish_time, 'long')), 'The user is informed that the content will be published on the requested date, on the default time.');
 
     // Protect in case the node was not created.
     if ($node = $this->drupalGetNodeByTitle($edit['title[0][value]'])) {
