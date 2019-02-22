@@ -153,7 +153,8 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       ],
     ];
 
-    $fields = \Drupal::entityManager()->getFieldDefinitions('node', $this->type);
+    $fields = $this->container->get('entity_field.manager')
+      ->getFieldDefinitions('node', $this->type);
 
     foreach ($test_cases as $test_case) {
       // Set required (un)publishing as stipulated by the test case.
