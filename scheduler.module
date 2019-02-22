@@ -361,7 +361,7 @@ function scheduler_node_presave(EntityInterface $node) {
         $node->setCreatedTime($node->publish_on->value);
       }
       $node->publish_on->value = NULL;
-      $node->setPublished(TRUE);
+      $node->setPublished();
 
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
       // the node has been published.
@@ -371,7 +371,7 @@ function scheduler_node_presave(EntityInterface $node) {
     }
     else {
       // Ensure the node is unpublished as it will be published by cron later.
-      $node->setPublished(FALSE);
+      $node->setUnpublished();
 
       // Only inform the user that the node is scheduled if publication has not
       // been prevented by other modules. Those modules have to display a
