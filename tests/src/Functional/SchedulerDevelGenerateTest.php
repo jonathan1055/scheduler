@@ -61,14 +61,14 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    */
   protected function countScheduledNodes($type, $field, $num_nodes, $num_scheduled, $time_range = NULL) {
     // Check that the expected number of nodes have been created.
-    $count = \Drupal::entityQuery('node')
+    $count = $this->nodeStorage->getQuery()
       ->condition('type', $type)
       ->count()
       ->execute();
     $this->assertEqual($count, $num_nodes, sprintf('The expected number of %s is %s, found %s', $type, $num_nodes, $count));
 
     // Check that the expected number of nodes have been scheduled.
-    $count = \Drupal::entityQuery('node')
+    $count = $this->nodeStorage->getQuery()
       ->condition('type', $type)
       ->exists($field)
       ->count()
@@ -85,7 +85,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       $min = REQUEST_TIME - $time_range;
       $max = time() + $time_range;
 
-      $query = \Drupal::entityQueryAggregate('node');
+      $query = $this->nodeStorage->getAggregateQuery();
       $result = $query
         ->condition('type', $type)
         ->aggregate($field, 'min')
