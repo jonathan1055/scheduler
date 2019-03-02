@@ -23,12 +23,12 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->adminUser);
 
     // Check that the dates are shown in a vertical tab by default.
-    $this->drupalGet('node/add/page');
+    $this->drupalGet('node/add/' . $this->type);
     $this->assertTrue($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'By default the scheduler dates are shown in a vertical tab.');
 
     // Check that the dates are shown as a fieldset when configured to do so.
     $this->nodetype->setThirdPartySetting('scheduler', 'fields_display_mode', 'fieldset')->save();
-    $this->drupalGet('node/add/page');
+    $this->drupalGet('node/add/' . $this->type);
     $this->assertFalse($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler dates are not shown in a vertical tab when they are configured to show as a fieldset.');
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings"]'), 'The scheduler dates are shown in a fieldset when they are configured to show as a fieldset.');
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and not(@open = "open")]'), 'The scheduler dates fieldset is collapsed by default.');
@@ -36,19 +36,19 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     // Check that the fieldset is expanded if either of the scheduling dates
     // are required.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', TRUE)->save();
-    $this->drupalGet('node/add/page');
+    $this->drupalGet('node/add/' . $this->type);
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler dates are shown in an expanded fieldset when the publish-on date is required.');
 
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
-    $this->drupalGet('node/add/page');
+    $this->drupalGet('node/add/' . $this->type);
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler dates are shown in an expanded fieldset when the unpublish-on date is required.');
 
     // Check that the fieldset is expanded if the 'always' option is set.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'expand_fieldset', 'always')->save();
-    $this->drupalGet('node/add/page');
+    $this->drupalGet('node/add/' . $this->type);
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler dates are shown in an expanded fieldset when the option to always expand is turned on.');
 
     // Check that the fieldset is expanded if the node already has a publish-on
@@ -83,11 +83,11 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
     // Create a custom administrator user with permissions to use the field_ui
     // module 'node form display' tab.
-    $this->adminUser = $this->drupalCreateUser([
+    $this->adminUser2 = $this->drupalCreateUser([
       'administer content types',
       'administer node form display',
     ]);
-    $this->drupalLogin($this->adminUser);
+    $this->drupalLogin($this->adminUser2);
 
     // Check that the weight input field is displayed when the content type is
     // enabled for scheduling. This field still exists even with tabledrag on.

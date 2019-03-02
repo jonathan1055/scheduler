@@ -117,9 +117,9 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     // parameters passed in.
     $this->drupalGet('admin/config/regional/content-language');
     $settings = [
-      'edit-settings-node-page-settings-language-language-alterable' => TRUE,
-      'edit-settings-node-page-fields-publish-on' => $publish_on_translatable,
-      'edit-settings-node-page-fields-unpublish-on' => $unpublish_on_translatable,
+      'edit-settings-node-' . $this->type . '-settings-language-language-alterable' => TRUE,
+      'edit-settings-node-' . $this->type . '-fields-publish-on' => $publish_on_translatable,
+      'edit-settings-node-' . $this->type . '-fields-unpublish-on' => $unpublish_on_translatable,
     ];
     // The submit shows the updated values, so no need for second get.
     $this->submitForm($settings, 'Save configuration');

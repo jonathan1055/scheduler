@@ -80,12 +80,12 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Create a 'Basic Page' content type, with 'page' as the identifier.
-    // The test files should use $this->type and $this->typeName and not use
-    // $this->nodetype->get('type') or $this->nodetype->get('name'), nor have
-    // the hard-coded strings 'page' and 'Basic page'.
-    $this->type = 'page';
-    $this->typeName = 'Basic page';
+    // Create a 'Test Page' content type, with 'testpage' as the identifier.
+    // The tests should use $this->type and $this->typeName and not use
+    // $this->nodetype->get('name') or $this->nodetype->get('type'), nor have
+    // the hard-coded strings 'Test Page' or 'testpage'.
+    $this->type = 'testpage';
+    $this->typeName = 'Test Page';
     /** @var NodeTypeInterface $nodetype */
     $this->nodetype = $this->drupalCreateContentType([
       'type' => $this->type,
@@ -102,14 +102,14 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     $this->nodeStorage = $this->container->get('entity_type.manager')->getStorage('node');
 
     // Create an administrator user having the main admin permissions, full
-    // rights on the 'page' content type and all of the Scheduler permissions.
+    // rights on the test content type and all of the Scheduler permissions.
     // 'access site reports' is required for admin/reports/dblog.
     // 'administer site configuration' is required for admin/reports/status.
     $this->adminUser = $this->drupalCreateUser([
-      'administer nodes',
       'access content',
       'access content overview',
       'access site reports',
+      'administer nodes',
       'administer site configuration',
       'create ' . $this->type . ' content',
       'edit own ' . $this->type . ' content',
