@@ -80,10 +80,10 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   public function setUp() {
     parent::setUp();
 
-    // Create a 'Test Page' content type, with 'testpage' as the identifier.
+    // Create a test content type with id 'testpage' and name 'Test Page'.
     // The tests should use $this->type and $this->typeName and not use
-    // $this->nodetype->get('name') or $this->nodetype->get('type'), nor have
-    // the hard-coded strings 'Test Page' or 'testpage'.
+    // $this->nodetype->get('type') or $this->nodetype->get('name'), nor have
+    // the hard-coded strings 'testpage' or 'Test Page'.
     $this->type = 'testpage';
     $this->typeName = 'Test Page';
     /** @var NodeTypeInterface $nodetype */

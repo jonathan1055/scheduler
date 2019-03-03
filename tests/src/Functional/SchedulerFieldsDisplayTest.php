@@ -17,9 +17,28 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   public static $modules = ['field_ui'];
 
   /**
-   * Tests date input is displayed as vertical tab or an expandable fieldset.
+   * {@inheritdoc}
    */
-  public function testFieldsDisplay() {
+  public function setUp() {
+    parent::setUp();
+
+    // Create a custom user with admin permissions but also permission to use
+    // the field_ui module 'node form display' tab.
+    $this->adminUser2 = $this->drupalCreateUser([
+      'access content',
+      'administer content types',
+      'administer node form display',
+      'create ' . $this->type . ' content',
+      'schedule publishing of nodes',
+    ]);
+  }
+
+  /**
+   * Tests date input is displayed as vertical tab or an expandable fieldset.
+   *
+   * This test covers scheduler_form_node_form_alter().
+   */
+  public function testVerticalTabOrFieldset() {
     $this->drupalLogin($this->adminUser);
 
     // Check that the dates are shown in a vertical tab by default.
@@ -72,6 +91,12 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $node = $this->drupalCreateNode($options);
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->assertTrue($this->xpath('//details[@id = "edit-scheduler-settings" and @open = "open"]'), 'The scheduler dates are shown in an expanded fieldset when an unpublish-on date already exists.');
+
+    // Check that the display reverts to a vertical tab again when specifically
+    // configured to do so.
+    $this->nodetype->setThirdPartySetting('scheduler', 'fields_display_mode', 'vertical_tab')->save();
+    $this->drupalGet('node/add/' . $this->type);
+    $this->assertTrue($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler dates are shown in a vertical tab when that option is set.');
   }
 
   /**
@@ -80,13 +105,6 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * This test covers scheduler_entity_extra_field_info().
    */
   public function testManageFormDisplay() {
-
-    // Create a custom administrator user with permissions to use the field_ui
-    // module 'node form display' tab.
-    $this->adminUser2 = $this->drupalCreateUser([
-      'administer content types',
-      'administer node form display',
-    ]);
     $this->drupalLogin($this->adminUser2);
 
     // Check that the weight input field is displayed when the content type is
