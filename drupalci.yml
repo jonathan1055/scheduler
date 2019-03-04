@@ -24,8 +24,4 @@ build:
       phpcs:
     testing:
       run_tests.standard:
-        types: 'Simpletest,PHPUnit-Unit,PHPUnit-Kernel,PHPUnit-Functional'
-      run_tests.js:
-        concurrency: 1
-        types: 'PHPUnit-FunctionalJavascript'
-      nightwatchjs:
+        types: 'PHPUnit-Functional'
