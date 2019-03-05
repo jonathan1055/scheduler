@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Component\Utility\SafeMarkup;
-
 /**
  * Tests the validation when editing a node.
  *
@@ -44,7 +42,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
 
     $this->submitForm($edit, $checkbox ? 'Save' : 'Save and keep unpublished');
     $this->assertText("If you set a 'publish on' date then you must also set an 'unpublish on' date.", 'Validation prevents entering a publish-on date with no unpublish-on date if unpublishing is required.');
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($node->title->value)), 'The node has not been saved.');
+    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
 
     // Create an unpublished page node, then edit the node and check that if the
     // status is changed to published, then an unpublish-on date is also needed.
@@ -60,7 +58,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     }
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, $checkbox ? 'Save' : 'Save and publish');
     $this->assertText("Either you must set an 'unpublish on' date or save this node as unpublished.", 'Validation prevents publishing the node directly without an unpublish-on date if unpublishing is required.');
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($node->title->value)), 'The node has not been saved.');
+    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
 
     // Create an unpublished node, edit the node and check that if both dates
     // are entered then the unpublish date is later than the publish date.
@@ -76,7 +74,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, $checkbox ? 'Save' : 'Save and keep unpublished');
     $this->assertText("The 'unpublish on' date must be later than the 'publish on' date.", 'Validation prevents entering an unpublish-on date which is earlier than the publish-on date.');
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, SafeMarkup::checkPlain($node->title->value)), 'The node has not been saved.');
+    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
   }
 
 }

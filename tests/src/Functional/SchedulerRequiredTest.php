@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Component\Utility\SafeMarkup;
-
 /**
  * Tests the options for scheduling dates to be required during add/edit.
  *
@@ -217,7 +215,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
           break;
 
         case 'not required':
-          $string = sprintf('%s %s has been %s.', $this->typeName, SafeMarkup::checkPlain($title), ($test_case['operation'] == 'add' ? 'created' : 'updated'));
+          $string = sprintf('%s %s has been %s.', $this->typeName, $title, ($test_case['operation'] == 'add' ? 'created' : 'updated'));
           $this->assertText($string, $test_case['id'] . '. ' . $test_case['message']);
           break;
       }
