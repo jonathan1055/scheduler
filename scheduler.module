@@ -72,9 +72,15 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
   $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
-  // If neither publishing nor unpublishing are enabled for this node type then
-  // the only thing to do is remove the fields from the form, then exit.
-  if (!$publishing_enabled && !$unpublishing_enabled) {
+  // Determine if the scheduler fields have been set to hidden (disabled).
+  $display = $form_state->getFormObject()->getFormDisplay($form_state);
+  $publishing_displayed = $display->getComponent('publish_on');
+  $unpublishing_displayed = $display->getComponent('unpublish_on');
+
+  // If both publishing and unpublishing are either not enabled or are hidden
+  // for this node type then the only thing to do is remove the fields from the
+  // form, then exit.
+  if ((!$publishing_enabled || !$publishing_displayed) && (!$unpublishing_enabled || !$unpublishing_displayed)) {
     unset($form['publish_on']);
     unset($form['unpublish_on']);
     return;
@@ -173,13 +179,17 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
 
   // Check which widget type is set for the scheduler fields, and give a warning
   // if the wrong one has been set and provide a hint and link to fix it.
-  $storage_form_display = $form_state->getStorage()['form_display'];
-  $content = $storage_form_display->get('content');
-  $pluginDefinitions = $storage_form_display->get('pluginManager')->getDefinitions();
+  $pluginDefinitions = $display->get('pluginManager')->getDefinitions();
+  if ($publishing_enabled && $publishing_displayed) {
+    $fields_to_check[] = 'publish_on';
+  }
+  if ($unpublishing_enabled && $unpublishing_displayed) {
+    $fields_to_check[] = 'unpublish_on';
+  }
   $correct_widget_id = 'datetime_timestamp_no_default';
-  foreach (['publish_on' => $publishing_enabled, 'unpublish_on' => $unpublishing_enabled] as $field => $enabled) {
-    $actual_widget_id = $content[$field]['type'];
-    if ($enabled && $actual_widget_id != $correct_widget_id) {
+  foreach ($fields_to_check as $field) {
+    $actual_widget_id = $display->getComponent($field)['type'];
+    if ($actual_widget_id != $correct_widget_id) {
       \Drupal::messenger()->addMessage(t('The widget for field %field is incorrectly set to %wrong. This should be changed to %correct by an admin user via Field UI <a href="@link">content type form display</a> :not_available', [
         '%field' => (string) $form[$field]['widget']['#title'],
         '%correct' => (string) $pluginDefinitions[$correct_widget_id]['label'],

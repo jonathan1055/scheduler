@@ -120,4 +120,54 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->assertNoFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is not shown when the content type is not enabled for scheduling.');
   }
 
+  /**
+   * Tests the edit form when scheduler fields have been disabled.
+   *
+   * This test covers scheduler_form_node_form_alter().
+   */
+  public function testDisabledFields() {
+    $this->drupalLogin($this->adminUser2);
+
+    // 1. Set the publish_on field to 'hidden' in the node edit form.
+    $edit = [
+      'fields[publish_on][region]' => 'hidden',
+    ];
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+
+    // Check that a scheduler vertical tab is displayed.
+    $this->drupalGet('node/add/' . $this->type);
+    $this->assertTrue($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler input is a vertical tab.');
+    // Check the publish_on field is not shown, but the unpublish_on field is.
+    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - 1');
+    $this->assertFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is shown - 1');
+
+    // 2. Set publish_on to be displayed but hide the unpublish_on field.
+    $edit = [
+      'fields[publish_on][region]' => 'content',
+      'fields[unpublish_on][region]' => 'hidden',
+    ];
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+
+    // Check that a scheduler vertical tab is displayed.
+    $this->drupalGet('node/add/' . $this->type);
+    $this->assertTrue($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler input is a vertical tab.');
+    // Check the publish_on field is not shown, but the unpublish_on field is.
+    $this->assertFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is shown - 2');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - 2');
+
+    // 3. Set both fields to be hidden.
+    $edit = [
+      'fields[publish_on][region]' => 'hidden',
+      'fields[unpublish_on][region]' => 'hidden',
+    ];
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+
+    // Check that no vertical tab is displayed.
+    $this->drupalGet('node/add/' . $this->type);
+    $this->assertFalse($this->xpath('//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]'), 'The scheduler vertical tab is not shown.');
+    // Check the neither field is displayed.
+    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - 3');
+    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - 3');
+  }
+
 }
