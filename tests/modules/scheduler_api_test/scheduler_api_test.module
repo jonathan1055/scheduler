@@ -6,6 +6,7 @@
  */
 
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
 
 /**
  * Implements hook_scheduler_nid_list().
@@ -67,7 +68,7 @@ function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
 /**
  * Implements hook_scheduler_allow_publishing().
  */
-function scheduler_api_test_scheduler_allow_publishing($node) {
+function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
   // If there is no 'Approved for Publishing' field then allow publishing.
   if (!isset($node->field_approved_publishing)) {
     $allowed = TRUE;
@@ -84,7 +85,7 @@ function scheduler_api_test_scheduler_allow_publishing($node) {
       if ($node->publish_on->value <= REQUEST_TIME) {
         \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
           '%title' => $node->title->value,
-          'link' => $node->id() ? $node->link(t('View node')) : '',
+          'link' => $node->id() ? $node->toLink(t('View node'))->toString() : '',
         ]);
       }
     }
@@ -95,7 +96,7 @@ function scheduler_api_test_scheduler_allow_publishing($node) {
 /**
  * Implements hook_scheduler_allow_unpublishing().
  */
-function scheduler_api_test_scheduler_allow_unpublishing($node) {
+function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
   // If there is no 'Approved for Unpublishing' field then allow unpublishing.
   if (!isset($node->field_approved_unpublishing)) {
     $allowed = TRUE;
@@ -112,7 +113,7 @@ function scheduler_api_test_scheduler_allow_unpublishing($node) {
       if ($node->unpublish_on->value <= REQUEST_TIME) {
         \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
           '%title' => $node->title->value,
-          'link' => $node->id() ? $node->link(t('View node')) : '',
+          'link' => $node->id() ? $node->toLink(t('View node'))->toString() : '',
         ]);
       }
     }
