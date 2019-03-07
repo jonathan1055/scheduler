@@ -317,7 +317,7 @@ class SchedulerManager {
           $node->setRevisionLogMessage($revision_log_message);
         }
         // Unset unpublish_on so the node will not get rescheduled by subsequent
-        // calls to $node->save(). Save the value for use when calling Rules.
+        // calls to $node->save().
         $node->unpublish_on->value = NULL;
 
         // Log the fact that a scheduled unpublication is about to take place.
@@ -331,7 +331,7 @@ class SchedulerManager {
         ];
         $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
 
-        // Use the actions system to publish the node.
+        // Use the actions system to unpublish the node.
         $this->entityTypeManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
 
         // Invoke event to tell Rules that Scheduler has unpublished this node.
@@ -339,7 +339,7 @@ class SchedulerManager {
           _scheduler_rules_integration_dispatch_cron_event($node, 'unpublish');
         }
 
-        // Trigger the UNPUBLISH event so that modules can react before the node
+        // Trigger the UNPUBLISH event so that modules can react after the node
         // is unpublished.
         $event = new SchedulerEvent($node);
         $this->eventDispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
