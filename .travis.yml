@@ -12,9 +12,9 @@ env:
     # Make the script re-usable for other modules.
     - MODULE=scheduler
   matrix:
-    - DRUPAL_CORE=8.5.x
     - DRUPAL_CORE=8.6.x
     - DRUPAL_CORE=8.7.x
+    - DRUPAL_CORE=8.8.x
 
 matrix:
   fast_finish: true
