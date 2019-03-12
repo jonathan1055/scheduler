@@ -60,6 +60,9 @@ before_script:
   # Run composer install for Drupal 8.1 and up. We need an up-to-date composer
   # when installing Drupal 8.1.
   - travis_retry composer self-update && travis_retry composer install
+  # If running PHP7 the following script will upgrade to phpunit 6
+  - travis_retry composer run-script drupal-phpunit-upgrade
+
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
