@@ -33,7 +33,7 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
 
     // Verify that the values have been saved correctly.
     $this->assertTrue($this->config('scheduler.settings')->get('allow_date_only'), 'The config setting for allow_date_only is stored correctly.');
-    $this->assertEqual($this->config('scheduler.settings')->get('default_time'), $this->seconds_formatted, 'The config setting for default_time is stored correctly.');
+    $this->assertEquals($this->seconds_formatted, $this->config('scheduler.settings')->get('default_time'), 'The config setting for default_time is stored correctly.');
 
     // Try to save an invalid time value.
     $settings = [
@@ -42,7 +42,7 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('admin/config/content/scheduler', $settings, t('Save configuration'));
     // Verify that an error is displayed and the value has not been saved.
-    $this->assertEqual($this->config('scheduler.settings')->get('default_time'), $this->seconds_formatted, 'The config setting for default_time has not changed.');
+    $this->assertEquals($this->seconds_formatted, $this->config('scheduler.settings')->get('default_time'), 'The config setting for default_time has not changed.');
     $this->assertText('The default time should be in the format HH:MM:SS', 'When an invalid default time is entered the correct error message is displayed.');
 
     // Show the status report, which includes the Scheduler timecheck.

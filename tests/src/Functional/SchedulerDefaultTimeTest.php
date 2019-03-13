@@ -65,8 +65,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // Protect in case the node was not created.
     if ($node = $this->drupalGetNodeByTitle($edit['title[0][value]'])) {
       // Check that the correct scheduled dates are stored in the node.
-      $this->assertEqual($node->publish_on->value, $publish_time, 'The node publish_on value is stored correctly.');
-      $this->assertEqual($node->unpublish_on->value, $unpublish_time, 'The node unpublish_on value is stored correctly.');
+      $this->assertEquals($publish_time, (int) $node->publish_on->value, 'The node publish_on value is stored correctly.');
+      $this->assertEquals($unpublish_time, (int) $node->unpublish_on->value, 'The node unpublish_on value is stored correctly.');
 
       // Check that the default time has been added to the form on edit.
       $this->drupalGet('node/' . $node->id() . '/edit');

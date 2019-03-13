@@ -65,7 +65,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       ->condition('type', $type)
       ->count()
       ->execute();
-    $this->assertEqual($count, $num_nodes, sprintf('The expected number of %s is %s, found %s', $type, $num_nodes, $count));
+    $this->assertEquals($num_nodes, $count, sprintf('The expected number of %s is %s, found %s', $type, $num_nodes, $count));
 
     // Check that the expected number of nodes have been scheduled.
     $count = $this->nodeStorage->getQuery()
@@ -73,7 +73,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       ->exists($field)
       ->count()
       ->execute();
-    $this->assertEqual($count, $num_scheduled, sprintf('The expected number of scheduled %s is %s, found %s', $field, $num_scheduled, $count));
+    $this->assertEquals($num_scheduled, $count, sprintf('The expected number of scheduled %s is %s, found %s', $field, $num_scheduled, $count));
 
     if (isset($time_range)) {
       // Define the minimum and maximum times that we expect the scheduled dates

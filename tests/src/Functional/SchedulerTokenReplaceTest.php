@@ -61,7 +61,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
       $unpublish_on_date = $date_formatter->format($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
       $expected_output = 'Publish on: ' . $publish_on_date . '. Unpublish on: ' . $unpublish_on_date . '.';
       // Check that the actual text matches the expected value.
-      $this->assertEqual($body_output, $expected_output, 'Scheduler tokens replaced correctly for ' . $test_data['token_format'] . ' format.');
+      $this->assertEquals($expected_output, $body_output, 'Scheduler tokens replaced correctly for ' . $test_data['token_format'] . ' format.');
     }
   }
 

@@ -263,7 +263,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), 'API action "PRE_PUBLISH_IMMEDIATELY" has changed the node to sticky.');
     $this->assertTrue($node->isPromoted(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to promoted.');
-    $this->assertEqual($node->title->value, 'Published immediately', 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
+    $this->assertEquals('Published immediately', $node->title->value, 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
   }
 
   /**

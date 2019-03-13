@@ -66,7 +66,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEqual($node->publish_on->value, strtotime('-1 day', REQUEST_TIME), 'The node has the correct publish_on date stored.');
+    $this->assertEquals(strtotime('-1 day', REQUEST_TIME), (int) $node->publish_on->value, 'The node has the correct publish_on date stored.');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();

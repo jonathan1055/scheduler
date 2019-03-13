@@ -89,19 +89,19 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$nid]);
     $node = $this->nodeStorage->load($nid);
 
-    foreach ($st as $key => $status) {
+    foreach ($st as $key => $expected_status) {
       if ($key == 0) {
         // Key 0 is the original, so we just check $node.
-        $this->assertEqual($node->isPublished(), $status,
-          sprintf('%s: The original content (%s) is %s', $description, $this->languages[$key]['name'], ($status ? 'published' : 'unpublished')));
+        $this->assertEquals($expected_status, $node->isPublished(),
+          sprintf('%s: The original content (%s) is %s', $description, $this->languages[$key]['name'], ($expected_status ? 'published' : 'unpublished')));
       }
       else {
         // Key > 0 are the translations, which we get using the Content
         // Translation Manager getTranslationMetadata() function.
         $trans = $this->ctm->getTranslationMetadata($node->getTranslation($this->languages[$key]['code']));
         $trans = $node->getTranslation($this->languages[$key]['code']);
-        $this->assertEqual($trans->isPublished(), $status,
-          sprintf('%s: Translation %d (%s) is %s', $description, $key, $this->languages[$key]['name'], ($status ? 'published' : 'unpublished')));
+        $this->assertEquals($expected_status, $trans->isPublished(),
+          sprintf('%s: Translation %d (%s) is %s', $description, $key, $this->languages[$key]['name'], ($expected_status ? 'published' : 'unpublished')));
       }
     }
   }

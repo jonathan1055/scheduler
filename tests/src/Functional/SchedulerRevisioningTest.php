@@ -42,13 +42,11 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    *   The value with which the log message will be compared.
    * @param string $message
    *   The message to display along with the assertion.
-   * @param string $group
-   *   The type of assertion - examples are "Browser", "PHP".
    *
    * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertRevisionLogMessage($nid, $value, $message = '', $group = 'Other') {
+  protected function assertRevisionLogMessage($nid, $value, $message = '') {
     // Retrieve the latest revision log message for this node.
     $log_message = $this->database->select('node_revision', 'r')
       ->fields('r', ['revision_log'])
@@ -58,7 +56,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
       ->execute()
       ->fetchColumn();
 
-    return $this->assertEqual($log_message, $value, $message, $group);
+    return $this->assertEquals($value, $log_message, $message);
   }
 
   /**
@@ -70,20 +68,17 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    *   The value with which the number of revisions will be compared.
    * @param string $message
    *   The message to display along with the assertion.
-   * @param string $group
-   *   The type of assertion - examples are "Browser", "PHP".
    *
    * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertRevisionCount($nid, $value, $message = '', $group = 'Other') {
+  protected function assertRevisionCount($nid, $value, $message = '') {
     $count = \Drupal::database()->select('node_revision', 'r')
       ->condition('nid', $nid)
       ->countQuery()
       ->execute()
       ->fetchColumn();
-
-    return $this->assertEqual($count, $value, $message, $group);
+    return $this->assertEquals($value, (int) $count, $message);
   }
 
   /**
@@ -155,7 +150,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     // Get the created date from the node and check that it has not changed.
     $created_after_cron = $node->created->value;
     $this->assertTrue($node->isPublished(), 'The node has been published.');
-    $this->assertEqual($created, $created_after_cron, 'The node creation date is not changed by default.');
+    $this->assertEquals($created_after_cron, $created, 'The node creation date is not changed by default.');
 
     // Set option to change the created date to match the publish_on date.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_touch', TRUE)->save();
@@ -164,7 +159,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $node = $this->schedule($node, 'publish');
     // Check that the created date has changed to match the publish_on date.
     $created_after_cron = $node->created->value;
-    $this->assertEqual(strtotime('-1 day', REQUEST_TIME), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
+    $this->assertEquals($created_after_cron, strtotime('-1 day', REQUEST_TIME), "With 'touch' option set, the node creation date is changed to match the publishing date.");
   }
 
 }
