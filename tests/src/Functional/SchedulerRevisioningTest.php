@@ -34,6 +34,28 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Check if the number of revisions for a node matches a given value.
+   *
+   * @param int $nid
+   *   The node id of the node to check.
+   * @param string $value
+   *   The value with which the number of revisions will be compared.
+   * @param string $message
+   *   The message to display along with the assertion.
+   *
+   * @return bool
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  protected function assertRevisionCount($nid, $value, $message = '') {
+    $count = \Drupal::database()->select('node_revision', 'r')
+      ->condition('nid', $nid)
+      ->countQuery()
+      ->execute()
+      ->fetchColumn();
+    return $this->assertEquals($value, (int) $count, $message);
+  }
+
+  /**
    * Check if the latest revision log message of a node matches a given string.
    *
    * @param int $nid
@@ -57,28 +79,6 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
       ->fetchColumn();
 
     return $this->assertEquals($value, $log_message, $message);
-  }
-
-  /**
-   * Check if the number of revisions for a node matches a given value.
-   *
-   * @param int $nid
-   *   The node id of the node to check.
-   * @param string $value
-   *   The value with which the number of revisions will be compared.
-   * @param string $message
-   *   The message to display along with the assertion.
-   *
-   * @return bool
-   *   TRUE if the assertion succeeded, FALSE otherwise.
-   */
-  protected function assertRevisionCount($nid, $value, $message = '') {
-    $count = \Drupal::database()->select('node_revision', 'r')
-      ->condition('nid', $nid)
-      ->countQuery()
-      ->execute()
-      ->fetchColumn();
-    return $this->assertEquals($value, (int) $count, $message);
   }
 
   /**
