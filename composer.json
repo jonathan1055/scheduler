@@ -2,7 +2,7 @@
     "name": "drupal/scheduler",
     "description": "Automatically publish and unpublish content at specified dates and times.",
     "type": "drupal-module",
-    "license": "GPL-2.0+"
+    "license": "GPL-2.0+",
     "homepage": "https://drupal.org/project/scheduler",
     "authors": [
         {
@@ -29,5 +29,5 @@
     "support": {
         "issues": "https://www.drupal.org/project/issues/scheduler",
         "source": "http://cgit.drupalcode.org/scheduler"
-    },
+    }
 }
