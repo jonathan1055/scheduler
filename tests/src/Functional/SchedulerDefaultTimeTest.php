@@ -41,8 +41,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // Test that entering a time is required.
     $edit = [
       'title[0][value]' => 'No time ' . $this->randomString(15),
-      'publish_on[0][value][date]' => $date_formatter->format(strtotime('+1 day', REQUEST_TIME), 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][date]' => $date_formatter->format(strtotime('+2 day', REQUEST_TIME), 'custom', 'Y-m-d'),
+      'publish_on[0][value][date]' => $date_formatter->format(strtotime('+1 day', $this->requestTime), 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][date]' => $date_formatter->format(strtotime('+2 day', $this->requestTime), 'custom', 'Y-m-d'),
     ];
     // Create a node and check that the expected error messages are shown.
     $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
@@ -58,8 +58,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->assertSession()->pageTextNotContains($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 
     // Check that the scheduled information is shown after saving.
-    $publish_time = strtotime('+1 day midnight', REQUEST_TIME) + $seconds;
-    $unpublish_time = strtotime('+2 day midnight', REQUEST_TIME) + $seconds;
+    $publish_time = strtotime('+1 day midnight', $this->requestTime) + $seconds;
+    $unpublish_time = strtotime('+2 day midnight', $this->requestTime) + $seconds;
     $this->assertText(sprintf('This post is unpublished and will be published %s', $date_formatter->format($publish_time, 'long')), 'The user is informed that the content will be published on the requested date, on the default time.');
 
     // Protect in case the node was not created.

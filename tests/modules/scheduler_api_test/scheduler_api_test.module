@@ -17,18 +17,18 @@ function scheduler_api_test_scheduler_nid_list($action) {
   // Check to see what test nodes exist.
   $query = \Drupal::entityQuery('node');
   $nodes = Node::loadMultiple($query->execute());
-
+  $request_time = \Drupal::time()->getRequestTime();
   foreach ($nodes as $nid => $node) {
     // If publishing and this is the publish test node, set a date and add
     // the node id to the list.
     if ($action == 'publish' && $node->title->value == 'API TEST nid_list publish me') {
-      $node->set('publish_on', REQUEST_TIME)->save();
+      $node->set('publish_on', $request_time)->save();
       $nids[] = $nid;
     }
     // If unpublishing and this is the unpublish test node, set a date and add
     // the node id to the list.
     if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list unpublish me') {
-      $node->set('unpublish_on', REQUEST_TIME)->save();
+      $node->set('unpublish_on', $request_time)->save();
       $nids[] = $nid;
     }
   }
@@ -41,7 +41,7 @@ function scheduler_api_test_scheduler_nid_list($action) {
 function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
   $query = \Drupal::entityQuery('node');
   $nodes = Node::loadMultiple($query->execute());
-
+  $request_time = \Drupal::time()->getRequestTime();
   foreach ($nodes as $nid => $node) {
     if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter do not publish me') {
       // Remove the node id.
@@ -49,7 +49,7 @@ function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
     }
     if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter publish me') {
       // Set a publish_on date and add the node id.
-      $node->set('publish_on', REQUEST_TIME)->save();
+      $node->set('publish_on', $request_time)->save();
       $nids[] = $nid;
     }
     if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter do not unpublish me') {
@@ -58,7 +58,7 @@ function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
     }
     if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter unpublish me') {
       // Set an unpublish_on date and add the node id.
-      $node->set('unpublish_on', REQUEST_TIME)->save();
+      $node->set('unpublish_on', $request_time)->save();
       $nids[] = $nid;
     }
   }
@@ -82,7 +82,7 @@ function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
       // If the time is in the past it means that the action has been prevented.
       // Write a dblog message to show this. Give a link to view the node but
       // cater for no nid as the node may be new and not yet saved.
-      if ($node->publish_on->value <= REQUEST_TIME) {
+      if ($node->publish_on->value <= \Drupal::time()->getRequestTime()) {
         \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
           '%title' => $node->title->value,
           'link' => $node->id() ? $node->toLink(t('View node'))->toString() : '',
@@ -110,7 +110,7 @@ function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
       // If the time is in the past it means that the action has been prevented.
       // Write a dblog message to show this. Give a link to view the node but
       // cater for no nid as the node may be new and not yet saved.
-      if ($node->unpublish_on->value <= REQUEST_TIME) {
+      if ($node->unpublish_on->value <= \Drupal::time()->getRequestTime()) {
         \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
           '%title' => $node->title->value,
           'link' => $node->id() ? $node->toLink(t('View node'))->toString() : '',

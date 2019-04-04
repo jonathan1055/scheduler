@@ -237,8 +237,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
     // Edit the node and set a publish_on date.
     $edit = [
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', REQUEST_TIME)),
-      'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', REQUEST_TIME)),
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', $this->requestTime)),
+      'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', $this->requestTime)),
     ];
     $this->drupalPostForm('node/' . $this->node->id() . '/edit', $edit, t('Save'));
 
@@ -249,8 +249,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
     // Edit the node and set an unpublish_on date.
     $edit = [
-      'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
-      'unpublish_on[0][value][time]' => date('H:i:s', strtotime('+2 day', REQUEST_TIME)),
+      'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', $this->requestTime)),
+      'unpublish_on[0][value][time]' => date('H:i:s', strtotime('+2 day', $this->requestTime)),
     ];
     $this->drupalPostForm('node/' . $this->node->id() . '/edit', $edit, t('Save'));
 

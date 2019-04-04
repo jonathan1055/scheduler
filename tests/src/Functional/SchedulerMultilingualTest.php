@@ -160,8 +160,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $node->id() . '/translations/add/' . $this->languages[0]['code'] . '/' . $this->languages[2]['code']);
     $edit = [
       'title[0][value]' => $this->languages[2]['name'] . '(2) - Publish in the future',
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', REQUEST_TIME)),
-      'publish_on[0][value][time]' => date('H:i:s', strtotime('+2 day', REQUEST_TIME)),
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', $this->requestTime)),
+      'publish_on[0][value][time]' => date('H:i:s', strtotime('+2 day', $this->requestTime)),
     ];
     $this->submitForm($edit, $save_button_text);
 
@@ -169,8 +169,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $node->id() . '/translations/add/' . $this->languages[0]['code'] . '/' . $this->languages[3]['code']);
     $edit = [
       'title[0][value]' => $this->languages[3]['name'] . '(3) - Publish in the past',
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', REQUEST_TIME)),
-      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', REQUEST_TIME)),
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
+      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
     ];
     $this->submitForm($edit, $save_button_text);
 

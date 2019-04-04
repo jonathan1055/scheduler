@@ -17,7 +17,7 @@ function scheduler_requirements($phase) {
   if ($phase === 'runtime') {
     $user = \Drupal::currentUser();
 
-    $now = REQUEST_TIME;
+    $now = \Drupal::time()->getRequestTime();
     $system_date = \Drupal::config('system.date');
     $date_default_timezone = $system_date->get('timezone.default') ?: date_default_timezone_get();
     $date_formatter = \Drupal::service('date.formatter');

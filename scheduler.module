@@ -308,6 +308,7 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
 function scheduler_node_presave(EntityInterface $node) {
   $config = \Drupal::config('scheduler.settings');
   $entity = $node->type->entity;
+  $request_time = \Drupal::time()->getRequestTime();
 
   // If there is no entity object or the class is incorrect then stop here. This
   // should not really happen but it has been observed, so better to be safe.
@@ -337,14 +338,14 @@ function scheduler_node_presave(EntityInterface $node) {
       if (rand(1, 100) <= $publishing_percent) {
         // Randomly assign a publish_on value in the range starting with the
         // created date and up to the selected time range in the future.
-        $node->set('publish_on', rand($node->created->value + 1, REQUEST_TIME + $time_range));
+        $node->set('publish_on', rand($node->created->value + 1, $request_time + $time_range));
       }
     }
     if ($unpublishing_percent && in_array($node->getType(), $unpublishing_enabled_types)) {
       if (rand(1, 100) <= $unpublishing_percent) {
         // Randomly assign an unpublish_on value in the range from the later of
         // created date/publish_on date up to the time range in the future.
-        $node->set('unpublish_on', rand(max($node->created->value, $node->publish_on->value), REQUEST_TIME + $time_range));
+        $node->set('unpublish_on', rand(max($node->created->value, $node->publish_on->value), $request_time + $time_range));
       }
     }
   }
@@ -359,7 +360,7 @@ function scheduler_node_presave(EntityInterface $node) {
     // Publish the node immediately if the publication date is in the past.
     $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
 
-    if ($publication_allowed && $publish_immediately && $node->publish_on->value <= REQUEST_TIME) {
+    if ($publication_allowed && $publish_immediately && $node->publish_on->value <= $request_time) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
       // before the node has been published.
       $event = new SchedulerEvent($node);

@@ -82,7 +82,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       // slowly creep forward during sucessive calls. Tests can fail incorrectly
       // for this reason, hence the best approximation is to use time() when
       // calculating the upper end of the range.
-      $min = REQUEST_TIME - $time_range;
+      $min = $this->requestTime - $time_range;
       $max = time() + $time_range;
 
       $query = $this->nodeStorage->getAggregateQuery();

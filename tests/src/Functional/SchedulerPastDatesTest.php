@@ -29,8 +29,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // enters a publication date that is in the past.
     $edit = [
       'title[0][value]' => 'Past ' . $this->randomString(10),
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', REQUEST_TIME), 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', REQUEST_TIME), 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', $this->requestTime), 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', $this->requestTime), 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertText("The 'publish on' date must be in the future", 'An error message is shown by default when the publication date is in the past.');
@@ -66,7 +66,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
-    $this->assertEquals(strtotime('-1 day', REQUEST_TIME), (int) $node->publish_on->value, 'The node has the correct publish_on date stored.');
+    $this->assertEquals(strtotime('-1 day', $this->requestTime), (int) $node->publish_on->value, 'The node has the correct publish_on date stored.');
 
     // Simulate a cron run and check that the node is published.
     scheduler_cron();
@@ -77,8 +77,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // Check that an Unpublish date in the past fails validation.
     $edit = [
       'title[0][value]' => 'Unpublish in the past ' . $this->randomString(10),
-      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format(REQUEST_TIME - 3600, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format($this->requestTime - 3600, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format($this->requestTime - 3600, 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
     $this->assertText("The 'unpublish on' date must be in the future", 'An error message is shown when the unpublish date is in the past.');

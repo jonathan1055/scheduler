@@ -60,7 +60,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $rule1->addAction('scheduler_set_publishing_date_action',
       ContextConfig::create()
         ->map('node', 'node')
-        ->setValue('date', REQUEST_TIME + 1800)
+        ->setValue('date', $this->requestTime + 1800)
       )
       ->addAction('rules_system_message',
         ContextConfig::create()
@@ -182,7 +182,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $rule3->addAction('scheduler_set_unpublishing_date_action',
       ContextConfig::create()
         ->map('node', 'node')
-        ->setValue('date', REQUEST_TIME + 1800)
+        ->setValue('date', $this->requestTime + 1800)
       )
       ->addAction('rules_system_message',
         ContextConfig::create()

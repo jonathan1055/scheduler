@@ -32,7 +32,7 @@ class SchedulerHandlerFieldSchedulerCountdown extends views_handler_field {
     $this->ensure_my_table();
     $this->node_table = $this->query->ensure_table('node', $this->relationship);
     $time_field = $this->definition['timestamp_field'];
-    $this->field_alias = $this->query->add_field(NULL, 'CASE WHEN (' . $time_field . ' > ' . REQUEST_TIME . ') THEN (' . $time_field . ' - ' . REQUEST_TIME . ') ELSE NULL END', $this->table_alias . '_' . $this->field);
+    $this->field_alias = $this->query->add_field(NULL, 'CASE WHEN (' . $time_field . ' > ' . \Drupal::time()->getRequestTime() . ') THEN (' . $time_field . ' - ' . \Drupal::time()->getRequestTime() . ') ELSE NULL END', $this->table_alias . '_' . $this->field);
   }
 
   /**

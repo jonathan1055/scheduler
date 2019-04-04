@@ -75,6 +75,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $database;
 
   /**
+   * The request time stored as interger for direct re-use in many tests.
+   *
+   * @var int
+   */
+  protected $requestTime;
+
+  /**
    * {@inheritdoc}
    */
   public function setUp() {
@@ -134,6 +141,8 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     // Store the database connection for re-use in the actual tests.
     $this->database = $this->container->get('database');
 
+    // Determine the request time and save for re-use in the actual tests.
+    $this->requestTime = $this->container->get('datetime.time')->getRequestTime();
   }
 
   /**

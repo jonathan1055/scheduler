@@ -63,7 +63,7 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
     }
 
     // Modify the scheduler field data to a time in the past, then run cron.
-    $node->$key = REQUEST_TIME - 1;
+    $node->$key = $this->requestTime - 1;
     $node->save();
     $this->cronRun();
 

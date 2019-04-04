@@ -15,10 +15,9 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
   public function testSchedulerTokenReplacement() {
     $this->drupalLogin($this->schedulerUser);
     $date_formatter = \Drupal::service('date.formatter');
-
     // Define timestamps for consistent use when repeated throughout this test.
-    $publish_on_timestamp = REQUEST_TIME + 3600;
-    $unpublish_on_timestamp = REQUEST_TIME + 7200;
+    $publish_on_timestamp = $this->requestTime + 3600;
+    $unpublish_on_timestamp = $this->requestTime + 7200;
 
     // Create an unpublished page with scheduled dates.
     $node = $this->drupalCreateNode([

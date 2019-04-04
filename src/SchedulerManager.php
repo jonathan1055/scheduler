@@ -2,6 +2,7 @@
 
 namespace Drupal\scheduler;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -65,15 +66,23 @@ class SchedulerManager {
   protected $eventDispatcher;
 
   /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a SchedulerManager object.
    */
-  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher) {
+  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher, TimeInterface $time) {
     $this->dateFormatter = $dateFormatter;
     $this->logger = $logger;
     $this->moduleHandler = $moduleHandler;
     $this->entityTypeManager = $entityTypeManager;
     $this->configFactory = $configFactory;
     $this->eventDispatcher = $eventDispatcher;
+    $this->time = $time;
   }
 
   /**
@@ -96,7 +105,7 @@ class SchedulerManager {
     if (!empty($scheduler_enabled_types)) {
       $query = $this->entityTypeManager->getStorage('node')->getQuery()
         ->exists('publish_on')
-        ->condition('publish_on', REQUEST_TIME, '<=')
+        ->condition('publish_on', $this->time->getRequestTime(), '<=')
         ->condition('type', $scheduler_enabled_types, 'IN')
         ->sort('publish_on')
         ->sort('nid');
@@ -135,7 +144,7 @@ class SchedulerManager {
         // If the current translation does not have a publish on value, or it is
         // later than the date we are processing then move on to the next.
         $publish_on = $node->publish_on->value;
-        if (empty($publish_on) || $publish_on > REQUEST_TIME) {
+        if (empty($publish_on) || $publish_on > $this->time->getRequestTime()) {
           continue;
         }
 
@@ -173,7 +182,7 @@ class SchedulerManager {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
           $revision_log_message = $this->t('Node published by Scheduler on @now. Previous creation date was @date.', [
-            '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
+            '@now' => $this->dateFormatter->format($this->time->getRequestTime(), 'short'),
             '@date' => $this->dateFormatter->format($old_creation_date, 'short'),
           ]);
           $node->setRevisionLogMessage($revision_log_message);
@@ -234,7 +243,7 @@ class SchedulerManager {
     if (!empty($scheduler_enabled_types)) {
       $query = $this->entityTypeManager->getStorage('node')->getQuery()
         ->exists('unpublish_on')
-        ->condition('unpublish_on', REQUEST_TIME, '<=')
+        ->condition('unpublish_on', $this->time->getRequestTime(), '<=')
         ->condition('type', $scheduler_enabled_types, 'IN')
         ->sort('unpublish_on')
         ->sort('nid');
@@ -267,7 +276,7 @@ class SchedulerManager {
         // If the current translation does not have an unpublish on value, or it
         // is later than the date we are processing then move on to the next.
         $unpublish_on = $node->unpublish_on->value;
-        if (empty($unpublish_on) || $unpublish_on > REQUEST_TIME) {
+        if (empty($unpublish_on) || $unpublish_on > $this->time->getRequestTime()) {
           continue;
         }
 
@@ -276,7 +285,7 @@ class SchedulerManager {
         // by one of the hook functions we provide, and is still being blocked
         // now that the unpublishing time has been reached.
         $publish_on = $node->publish_on->value;
-        if (!empty($publish_on) && $publish_on <= REQUEST_TIME) {
+        if (!empty($publish_on) && $publish_on <= $this->time->getRequestTime()) {
           continue;
         }
 
@@ -311,7 +320,7 @@ class SchedulerManager {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
           $revision_log_message = $this->t('Node unpublished by Scheduler on @now. Previous change date was @date.', [
-            '@now' => $this->dateFormatter->format(REQUEST_TIME, 'short'),
+            '@now' => $this->dateFormatter->format($this->time->getRequestTime(), 'short'),
             '@date' => $this->dateFormatter->format($old_change_date, 'short'),
           ]);
           $node->setRevisionLogMessage($revision_log_message);

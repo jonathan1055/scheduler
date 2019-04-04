@@ -254,8 +254,8 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
 
     // Edit the node and set a publish-on date in the past.
     $edit = [
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', REQUEST_TIME)),
-      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', REQUEST_TIME)),
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
+      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     // Verify that the values have been altered as expected.

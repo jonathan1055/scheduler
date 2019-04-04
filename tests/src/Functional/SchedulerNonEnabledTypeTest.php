@@ -78,7 +78,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'title' => $title,
       'status' => 0,
       'type' => $this->contentName,
-      'publish_on' => REQUEST_TIME - 2,
+      'publish_on' => $this->requestTime - 2,
     ];
     $node = $this->drupalCreateNode($edit);
 
@@ -105,7 +105,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'title' => $title,
       'status' => 1,
       'type' => $this->contentName,
-      'unpublish_on' => REQUEST_TIME - 1,
+      'unpublish_on' => $this->requestTime - 1,
     ];
     $node = $this->drupalCreateNode($edit);
 
