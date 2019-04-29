@@ -95,8 +95,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       $max_found = $result[0]["{$field}_max"];
 
       // Assert that the found values are within the expcted range.
-      $this->assertGreaterThanOrEqual($min, $min_found, sprintf('The minimum value for %s is %s, smaller than the expected %s', $field, format_date($min_found, 'custom', 'j M, H:i:s'), format_date($min, 'custom', 'j M, H:i:s')));
-      $this->assertLessThanOrEqual($max, $max_found, sprintf('The maximum value for %s is %s which is larger than expected %s', $field, format_date($max_found, 'custom', 'j M, H:i:s'), format_date($max, 'custom', 'j M, H:i:s')));
+      $this->assertGreaterThanOrEqual($min, $min_found, sprintf('The minimum value for %s is %s, smaller than the expected %s', $field, $this->dateFormatter->format($min_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($min, 'custom', 'j M, H:i:s')));
+      $this->assertLessThanOrEqual($max, $max_found, sprintf('The maximum value for %s is %s which is larger than expected %s', $field, $this->dateFormatter->format($max_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($max, 'custom', 'j M, H:i:s')));
     }
   }
 

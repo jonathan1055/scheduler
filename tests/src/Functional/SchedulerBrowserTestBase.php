@@ -82,6 +82,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $requestTime;
 
   /**
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
+   */
+  protected $dateFormatter;
+
+  /**
    * {@inheritdoc}
    */
   public function setUp() {
@@ -143,6 +150,10 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
 
     // Determine the request time and save for re-use in the actual tests.
     $this->requestTime = $this->container->get('datetime.time')->getRequestTime();
+
+    // Store the core dateFormatter service for re-use in the actual tests.
+    $this->dateFormatter = $this->container->get('date.formatter');
+
   }
 
   /**
