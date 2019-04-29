@@ -26,7 +26,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
   protected function schedule(NodeInterface $node, $action = 'publish') {
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
-    $node->{$action . '_on'} = strtotime('-1 day', $this->requestTime);
+    $node->{$action . '_on'} = strtotime('-5 hour', $this->requestTime);
     $node->save();
     scheduler_cron();
     $this->nodeStorage->resetCache([$node->id()]);
@@ -113,17 +113,15 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     // Test scheduled publication with revisioning enabled.
     $node = $this->schedule($node);
     $this->assertRevisionCount($node->id(), 2, 'A new revision was created when revisioning is enabled.');
-    $expected_message = sprintf('Node published by Scheduler on %s. Previous creation date was %s.',
-      \Drupal::service('date.formatter')->format($this->requestTime, 'short'),
-      \Drupal::service('date.formatter')->format($created, 'short'));
+    $expected_message = sprintf('Published by Scheduler. The scheduled publishing date was %s.',
+    $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
 
     // Test scheduled unpublication with revisioning enabled.
     $node = $this->schedule($node, 'unpublish');
     $this->assertRevisionCount($node->id(), 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
-    $expected_message = sprintf('Node unpublished by Scheduler on %s. Previous change date was %s.',
-      \Drupal::service('date.formatter')->format($this->requestTime, 'short'),
-      \Drupal::service('date.formatter')->format($this->requestTime, 'short'));
+    $expected_message = sprintf('Unpublished by Scheduler. The scheduled unpublishing date was %s.',
+    $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
     $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
   }
 
@@ -159,7 +157,8 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $node = $this->schedule($node, 'publish');
     // Check that the created date has changed to match the publish_on date.
     $created_after_cron = $node->created->value;
-    $this->assertEquals($created_after_cron, strtotime('-1 day', $this->requestTime), "With 'touch' option set, the node creation date is changed to match the publishing date.");
+    $this->assertEqual(strtotime('-5 hour', $this->requestTime), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
+
   }
 
 }

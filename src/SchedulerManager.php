@@ -173,19 +173,25 @@ class SchedulerManager {
         // Update timestamps.
         $node->set('changed', $publish_on);
         $old_creation_date = $node->getCreatedTime();
-        if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
+        if ($touch = $node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
           $node->setCreatedTime($publish_on);
+          $msg_extra = $this->t('The previous creation date was @old_creation_date, now updated to match the publishing date.', [
+            '@old_creation_date' => $this->dateFormatter->format($old_creation_date, 'short'),
+          ]);
         }
 
         $create_publishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'publish_revision', $this->setting('default_publish_revision'));
         if ($create_publishing_revision) {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
-          $revision_log_message = $this->t('Node published by Scheduler on @now. Previous creation date was @date.', [
-            '@now' => $this->dateFormatter->format($this->time->getRequestTime(), 'short'),
-            '@date' => $this->dateFormatter->format($old_creation_date, 'short'),
+          $revision_log_message = $this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
+            '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
           ]);
-          $node->setRevisionLogMessage($revision_log_message);
+          if ($touch) {
+            $revision_log_message .= ' ' . $msg_extra;
+          }
+          $node->setRevisionLogMessage($revision_log_message)
+            ->setRevisionCreationTime($this->time->getRequestTime());
         }
         // Unset publish_on so the node will not get rescheduled by subsequent
         // calls to $node->save().
@@ -312,18 +318,18 @@ class SchedulerManager {
         $node = $event->getNode();
 
         // Update timestamps.
-        $old_change_date = $node->getChangedTime();
         $node->set('changed', $unpublish_on);
 
         $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
         if ($create_unpublishing_revision) {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
-          $revision_log_message = $this->t('Node unpublished by Scheduler on @now. Previous change date was @date.', [
-            '@now' => $this->dateFormatter->format($this->time->getRequestTime(), 'short'),
-            '@date' => $this->dateFormatter->format($old_change_date, 'short'),
+          $revision_log_message = $this->t('Unpublished by Scheduler. The scheduled unpublishing date was @unpublish_on.', [
+            '@unpublish_on' => $this->dateFormatter->format($unpublish_on, 'short'),
           ]);
-          $node->setRevisionLogMessage($revision_log_message);
+          // Create the new revision, setting message and revision timestamp.
+          $node->setRevisionLogMessage($revision_log_message)
+            ->setRevisionCreationTime($this->time->getRequestTime());
         }
         // Unset unpublish_on so the node will not get rescheduled by subsequent
         // calls to $node->save().
