@@ -480,7 +480,7 @@ function scheduler_entity_extra_field_info() {
   // content type. This allows admins to adjust the weight of the group, and it
   // works for vertical tabs and separate fieldsets.
   $fields = [];
-  foreach (node_type_get_types() as $type) {
+  foreach (NodeType::loadMultiple() as $type) {
     $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
     $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
