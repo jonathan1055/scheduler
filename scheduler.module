@@ -168,10 +168,17 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
 
   if (!\Drupal::currentUser()->hasPermission('schedule publishing of nodes')) {
     // Do not show the scheduler fields for users who do not have permission.
+    // Setting #access to FALSE for 'scheduler_settings' is enough to hide the
+    // fields. Setting FALSE for the individual fields is necessary to keep any
+    // existing scheduled dates preserved and remain unchanged on saving.
     $form['scheduler_settings']['#access'] = FALSE;
+    $form['publish_on']['#access'] = FALSE;
+    $form['unpublish_on']['#access'] = FALSE;
 
     // @todo Find a more elegant solution for bypassing the validation of
     // scheduler fields when the user does not have permission.
+    // Note: This scenario is NOT yet covered by any tests, neither in
+    // SchedulerPermissionsTest.php nor SchedulerRequiredTest.php
     // @see https://www.drupal.org/node/2651448
     $form['publish_on']['widget'][0]['value']['#required'] = FALSE;
     $form['unpublish_on']['widget'][0]['value']['#required'] = FALSE;
