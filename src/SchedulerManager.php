@@ -153,7 +153,7 @@ class SchedulerManager {
           continue;
         }
 
-        // $node->set('changed', $publish_on) will fail badly if an API call has
+        // $node->setChangedTime($publish_on) will fail badly if an API call has
         // removed the date. Trap this as an exception here and give a
         // meaningful message.
         // @TODO This will now never be thrown due to the empty(publish_on)
@@ -170,10 +170,14 @@ class SchedulerManager {
         $this->eventDispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
         $node = $event->getNode();
 
-        // Update timestamps.
-        $node->set('changed', $publish_on);
+        // Update 'changed' timestamp.
+        $node->setChangedTime($publish_on);
         $old_creation_date = $node->getCreatedTime();
-        if ($touch = $node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch'))) {
+        $msg_extra = '';
+        // If required, set the created date to match published date.
+        if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_touch', $this->setting('default_publish_touch')) ||
+          ($node->getCreatedTime() > $publish_on && $node->type->entity->getThirdPartySetting('scheduler', 'publish_past_date_created', $this->setting('default_publish_past_date_created')))
+        ) {
           $node->setCreatedTime($publish_on);
           $msg_extra = $this->t('The previous creation date was @old_creation_date, now updated to match the publishing date.', [
             '@old_creation_date' => $this->dateFormatter->format($old_creation_date, 'short'),
@@ -184,12 +188,9 @@ class SchedulerManager {
         if ($create_publishing_revision) {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
-          $revision_log_message = $this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
+          $revision_log_message = rtrim($this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
             '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
-          ]);
-          if ($touch) {
-            $revision_log_message .= ' ' . $msg_extra;
-          }
+          ]) . ' ' . $msg_extra);
           $node->setRevisionLogMessage($revision_log_message)
             ->setRevisionCreationTime($this->time->getRequestTime());
         }
@@ -300,7 +301,7 @@ class SchedulerManager {
           continue;
         }
 
-        // $node->set('changed', $unpublish_on) will fail badly if an API call
+        // $node->setChangedTime($unpublish_on) will fail badly if an API call
         // has removed the date. Trap this as an exception here and give a
         // meaningful message.
         // @TODO This will now never be thrown due to the empty(unpublish_on)
@@ -317,8 +318,8 @@ class SchedulerManager {
         $this->eventDispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
         $node = $event->getNode();
 
-        // Update timestamps.
-        $node->set('changed', $unpublish_on);
+        // Update 'changed' timestamp.
+        $node->setChangedTime($unpublish_on);
 
         $create_unpublishing_revision = $node->type->entity->getThirdPartySetting('scheduler', 'unpublish_revision', $this->setting('default_unpublish_revision'));
         if ($create_unpublishing_revision) {

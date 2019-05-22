@@ -18,12 +18,10 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // Log in.
     $this->drupalLogin($this->schedulerUser);
 
-    // Ensure that neither of the scheduling dates are set to be required.
-    $this->nodetype->setThirdPartySetting('scheduler', 'publish_required', FALSE)
-      ->setThirdPartySetting('scheduler', 'unpublish_required', FALSE)->save();
-
     // Create an unpublished page node.
+    /** @var NodeInterface $node */
     $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
+    $created_time = $node->getCreatedTime();
 
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
@@ -46,25 +44,31 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->assertNoText("The 'publish on' date must be in the future", 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertText(sprintf('%s %s has been updated.', $this->typeName, Html::escape($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "publish" behavior is chosen.');
 
-    // Reload the changed node and check that it is published.
+    // Reload the node.
     $this->nodeStorage->resetCache([$node->id()]);
-
-    /** @var NodeInterface $node */
     $node = $this->nodeStorage->load($node->id());
+
+    // Check that the node is published and has the expected timestamps.
     $this->assertTrue($node->isPublished(), 'The node has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertNull($node->publish_on->value, 'The node publish_on date has been removed after publishing when the "publish" behavior is chosen.');
+    $this->assertEquals($node->getChangedTime(), strtotime('-1 day', $this->requestTime), 'The changed time of the node has been updated to the publish_on time when published immediately.');
+    $this->assertEquals($node->getCreatedTime(), $created_time, 'The created time of the node has not been changed when the "publish" behavior is chosen.');
 
     // Test the 'schedule' behavior: the node should be unpublished and become
-    // published on the next cron run.
+    // published on the next cron run. Use a new unpublished node.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
+    $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
+    $created_time = $node->getCreatedTime();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertNoText("The 'publish on' date must be in the future", 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText(sprintf('%s %s has been updated.', $this->typeName, Html::escape($edit['title[0][value]'])), 'The node is saved successfully when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertText('will be published', 'The node is scheduled to be published when the publication date is in the past and the "schedule" behavior is chosen.');
 
-    // Reload the node and check that it is unpublished but scheduled correctly.
+    // Reload the node.
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
+
+    // Check that the node is unpublished but scheduled correctly.
     $this->assertFalse($node->isPublished(), 'The node has been unpublished when the publication date is in the past and the "schedule" behavior is chosen.');
     $this->assertEquals(strtotime('-1 day', $this->requestTime), (int) $node->publish_on->value, 'The node has the correct publish_on date stored.');
 
@@ -73,6 +77,37 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'The node with publication date in the past and the "schedule" behavior has now been published by cron.');
+    $this->assertEquals($node->getChangedTime(), strtotime('-1 day', $this->requestTime), 'The changed time of the node has been updated to the publish_on time when published via cron.');
+    $this->assertEquals($node->getCreatedTime(), $created_time, 'The created time of the node has not been changed when the "schedule" behavior is chosen.');
+
+    // Test the option to alter the creation time if the publishing time is
+    // earlier than the node created time.
+    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date_created', TRUE)->save();
+
+    $past_date_options = [
+      'publish' => 'publish',
+      'schedule' => 'schedule',
+    ];
+
+    foreach ($past_date_options as $key => $option) {
+      $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', $key)->save();
+
+      // Create a new node, edit and save.
+      $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
+      $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
+
+      if ($option == 'schedule') {
+        scheduler_cron();
+      }
+
+      // Reload the node.
+      $this->nodeStorage->resetCache([$node->id()]);
+      $node = $this->nodeStorage->load($node->id());
+
+      // Check that the created time has been altered to match publishing time.
+      $this->assertEquals($node->getCreatedTime(), strtotime('-1 day', $this->requestTime), sprintf('The created time of the node has not been changed when the %s option is chosen.', $option));
+
+    }
 
     // Check that an Unpublish date in the past fails validation.
     $edit = [

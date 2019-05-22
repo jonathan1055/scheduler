@@ -374,8 +374,12 @@ function scheduler_node_presave(EntityInterface $node) {
       \Drupal::service('event_dispatcher')->dispatch(SchedulerEvents::PRE_PUBLISH_IMMEDIATELY, $event);
       $node = $event->getNode();
 
+      // Set the 'changed' timestamp to match what would have been done had this
+      // content been published via cron.
+      $node->setChangedTime($node->publish_on->value);
       // If required, set the created date to match published date.
-      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch'))) {
+      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch')) ||
+      ($node->getCreatedTime() > $node->publish_on->value && $entity->getThirdPartySetting('scheduler', 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
         $node->setCreatedTime($node->publish_on->value);
       }
       $node->publish_on->value = NULL;
