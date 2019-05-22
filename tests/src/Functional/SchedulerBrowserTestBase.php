@@ -54,14 +54,14 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $typeName;
 
   /**
-   * The node type.
+   * The node type object.
    *
    * @var \Drupal\node\Entity\NodeType
    */
   protected $nodetype;
 
   /**
-   * The node storage.
+   * The node storage object.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
