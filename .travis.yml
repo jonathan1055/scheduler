@@ -48,12 +48,6 @@ before_script:
   - DRUPAL_ROOT=$(pwd)
   - echo $DRUPAL_ROOT
 
-  # If running core 8.8 we need Coder 8.3.3 so apply patch to core composer.json
-  # and composer.lock. This is a temporary fix, until committed in core.
-  - if [ $DRUPAL_CORE == "8.8.x" ]; then
-      wget -q -O - https://www.drupal.org/files/issues/2019-04-22/3049433-8.patch | patch -p1 --verbose;
-    fi
-
   # Make a directory for our module and copy the built source into it.
   - mkdir $DRUPAL_ROOT/modules/$MODULE
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
