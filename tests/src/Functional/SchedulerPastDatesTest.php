@@ -27,8 +27,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // enters a publication date that is in the past.
     $edit = [
       'title[0][value]' => 'Past ' . $this->randomString(10),
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', $this->requestTime), 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(strtotime('-1 day', $this->requestTime), 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => $this->dateFormatter->format(strtotime('-1 day', $this->requestTime), 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => $this->dateFormatter->format(strtotime('-1 day', $this->requestTime), 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, t('Save'));
     $this->assertText("The 'publish on' date must be in the future", 'An error message is shown by default when the publication date is in the past.');
@@ -112,8 +112,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // Check that an Unpublish date in the past fails validation.
     $edit = [
       'title[0][value]' => 'Unpublish in the past ' . $this->randomString(10),
-      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format($this->requestTime - 3600, 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format($this->requestTime - 3600, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => $this->dateFormatter->format($this->requestTime - 3600, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => $this->dateFormatter->format($this->requestTime - 3600, 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
     $this->assertText("The 'unpublish on' date must be in the future", 'An error message is shown when the unpublish date is in the past.');

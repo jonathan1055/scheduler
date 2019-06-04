@@ -14,16 +14,16 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
    */
   public function testPublishingAndUnpublishing() {
     // Login is required here before creating the publish_on date and time
-    // values so that date.formatter can utilise the current users timezone. The
-    // constraints receive values which have been converted using the users
-    // timezone so they need to be consistent.
+    // values so that $this->dateFormatter can utilise the current users
+    // timezone. The constraints receive values which have been converted using
+    // the users timezone so they need to be consistent.
     $this->drupalLogin($this->schedulerUser);
 
     // Create node values. Set time to one hour in the future.
     $edit = [
       'title[0][value]' => 'Publish This Node',
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format(time() + 3600, 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => $this->dateFormatter->format(time() + 3600, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => $this->dateFormatter->format(time() + 3600, 'custom', 'H:i:s'),
     ];
     $this->helpTestScheduler($edit);
 

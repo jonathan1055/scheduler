@@ -14,7 +14,6 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
    */
   public function testSchedulerTokenReplacement() {
     $this->drupalLogin($this->schedulerUser);
-    $date_formatter = \Drupal::service('date.formatter');
     // Define timestamps for consistent use when repeated throughout this test.
     $publish_on_timestamp = $this->requestTime + 3600;
     $unpublish_on_timestamp = $this->requestTime + 7200;
@@ -56,8 +55,8 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
       $body_output = \Drupal::token()->replace($node->body->value, ['node' => $node]);
 
       // Create the expected text for the body.
-      $publish_on_date = $date_formatter->format($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
-      $unpublish_on_date = $date_formatter->format($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
+      $publish_on_date = $this->dateFormatter->format($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);
+      $unpublish_on_date = $this->dateFormatter->format($unpublish_on_timestamp, $test_data['date_format'], $test_data['custom']);
       $expected_output = 'Publish on: ' . $publish_on_date . '. Unpublish on: ' . $unpublish_on_date . '.';
       // Check that the actual text matches the expected value.
       $this->assertEquals($expected_output, $body_output, 'Scheduler tokens replaced correctly for ' . $test_data['token_format'] . ' format.');

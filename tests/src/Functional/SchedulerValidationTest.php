@@ -67,10 +67,10 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
       'status' => FALSE,
     ]);
     $edit = [
-      'publish_on[0][value][date]' => \Drupal::service('date.formatter')->format($this->requestTime + 8100, 'custom', 'Y-m-d'),
-      'publish_on[0][value][time]' => \Drupal::service('date.formatter')->format($this->requestTime + 8100, 'custom', 'H:i:s'),
-      'unpublish_on[0][value][date]' => \Drupal::service('date.formatter')->format($this->requestTime + 1800, 'custom', 'Y-m-d'),
-      'unpublish_on[0][value][time]' => \Drupal::service('date.formatter')->format($this->requestTime + 1800, 'custom', 'H:i:s'),
+      'publish_on[0][value][date]' => $this->dateFormatter->format($this->requestTime + 8100, 'custom', 'Y-m-d'),
+      'publish_on[0][value][time]' => $this->dateFormatter->format($this->requestTime + 8100, 'custom', 'H:i:s'),
+      'unpublish_on[0][value][date]' => $this->dateFormatter->format($this->requestTime + 1800, 'custom', 'Y-m-d'),
+      'unpublish_on[0][value][time]' => $this->dateFormatter->format($this->requestTime + 1800, 'custom', 'H:i:s'),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, $checkbox ? 'Save' : 'Save and keep unpublished');
     $this->assertText("The 'unpublish on' date must be later than the 'publish on' date.", 'Validation prevents entering an unpublish-on date which is earlier than the publish-on date.');
