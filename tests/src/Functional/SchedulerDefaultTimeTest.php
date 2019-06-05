@@ -63,7 +63,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $this->assertSession()->pageTextNotContains($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 
     // Get the pattern of the 'long' default date format.
-    $date_format_storage = \Drupal::entityManager()->getStorage('date_format');
+    $date_format_storage = $this->container->get('entity_type.manager')->getStorage('date_format');
     $long_pattern = $date_format_storage->load('long')->getPattern();
 
     // Check that the scheduled information is shown after saving.

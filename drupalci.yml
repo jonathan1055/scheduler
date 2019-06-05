@@ -9,3 +9,4 @@ build:
     testing:
       run_tests.standard:
         types: 'PHPUnit-Functional'
+        suppress-deprecations: false
