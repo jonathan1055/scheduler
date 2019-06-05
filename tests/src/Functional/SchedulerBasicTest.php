@@ -43,7 +43,7 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
    * Schedules content, runs cron and asserts status.
    */
   protected function helpTestScheduler($edit) {
-    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
     // Verify that the node was created.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertTrue($node, sprintf('"%s" was created sucessfully.', $edit['title[0][value]']));

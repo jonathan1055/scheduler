@@ -37,7 +37,7 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => $this->dateFormatter->format($unpublish_date, 'custom', 'Y-m-d'),
       'unpublish_on[0][value][time]' => $this->dateFormatter->format($unpublish_date, 'custom', 'H:i:s'),
     ];
-    $this->drupalPostForm('node/' . $published_node->id() . '/edit', $edit, t('Save'));
+    $this->drupalPostForm('node/' . $published_node->id() . '/edit', $edit, 'Save');
 
     // The node page should now have an X-Robots-Tag header with an
     // unavailable_after-directive and RFC850 date- and time-value.

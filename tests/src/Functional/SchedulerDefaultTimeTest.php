@@ -50,7 +50,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => $unpublish_time->format('Y-m-d'),
     ];
     // Create a node and check that the expected error messages are shown.
-    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
     $this->assertSession()->pageTextContains($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
     $this->assertSession()->pageTextContains($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
 
@@ -58,7 +58,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $config->set('allow_date_only', TRUE)->save();
 
     // Create a node and check that the expected error messages are not shown.
-    $this->drupalPostForm('node/add/' . $this->type, $edit, t('Save'));
+    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
     $this->assertSession()->pageTextNotContains($publish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
     $this->assertSession()->pageTextNotContains($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
 

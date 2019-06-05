@@ -132,7 +132,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $edit = [
       'fields[publish_on][region]' => 'hidden',
     ];
-    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, 'Save');
 
     // Check that a scheduler vertical tab is displayed.
     $this->drupalGet('node/add/' . $this->type);
@@ -146,7 +146,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'fields[publish_on][region]' => 'content',
       'fields[unpublish_on][region]' => 'hidden',
     ];
-    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, 'Save');
 
     // Check that a scheduler vertical tab is displayed.
     $this->drupalGet('node/add/' . $this->type);
@@ -160,7 +160,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'fields[publish_on][region]' => 'hidden',
       'fields[unpublish_on][region]' => 'hidden',
     ];
-    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, t('Save'));
+    $this->drupalPostForm('admin/structure/types/manage/' . $this->type . '/form-display', $edit, 'Save');
 
     // Check that no vertical tab is displayed.
     $this->drupalGet('node/add/' . $this->type);
