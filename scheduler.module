@@ -74,8 +74,25 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
 
   // Determine if the scheduler fields have been set to hidden (disabled).
   $display = $form_state->getFormObject()->getFormDisplay($form_state);
-  $publishing_displayed = $display->getComponent('publish_on');
-  $unpublishing_displayed = $display->getComponent('unpublish_on');
+  $publishing_displayed = !empty($display->getComponent('publish_on'));
+  $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
+
+  /* @var $node \Drupal\node\NodeInterface */
+  $node = $form_state->getFormObject()->getEntity();
+
+  // Invoke all implementations of hook_scheduler_hide_publish_on_field() and
+  // hook_scheduler_hide_unpublish_on_field() to allow other modules to hide the
+  // fields on the node edit form.
+  $hook = 'scheduler_hide_publish_on_field';
+  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+    $function = $module . '_' . $hook;
+    $publishing_enabled = $publishing_enabled && ($function($form, $form_state, $node) !== TRUE);
+  }
+  $hook = 'scheduler_hide_unpublish_on_field';
+  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+    $function = $module . '_' . $hook;
+    $unpublishing_enabled = $unpublishing_enabled && ($function($form, $form_state, $node) !== TRUE);
+  }
 
   // If both publishing and unpublishing are either not enabled or are hidden
   // for this node type then the only thing to do is remove the fields from the
@@ -87,9 +104,6 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   }
 
   $date_only_allowed = $config->get('allow_date_only');
-
-  /* @var $node \Drupal\node\NodeInterface */
-  $node = $form_state->getFormObject()->getEntity();
 
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.

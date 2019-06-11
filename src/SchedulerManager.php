@@ -199,6 +199,19 @@ class SchedulerManager {
         // calls to $node->save().
         $node->publish_on->value = NULL;
 
+        // Invoke all implementations of hook_scheduler_publish_action() to
+        // allow other modules to do the "publishing" process instead of
+        // Scheduler.
+        $hook = 'scheduler_publish_action';
+        $processed = FALSE;
+        $failed = FALSE;
+        foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+          $function = $module . '_' . $hook;
+          $return = $function($node);
+          $processed = $processed || ($return === 1);
+          $failed = $failed || ($return === -1);
+        }
+
         // Log the fact that a scheduled publication is about to take place.
         $view_link = $node->toLink($this->t('View node'));
         $node_type = $this->entityTypeManager->getStorage('node_type')->load($node->bundle());
@@ -207,11 +220,27 @@ class SchedulerManager {
           '@type' => $node_type->label(),
           '%title' => $node->getTitle(),
           'link' => $node_type_link->toString() . ' ' . $view_link->toString(),
+          '@hook' => 'hook_' . $hook,
         ];
-        $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
 
-        // Use the actions system to publish the node.
-        $this->entityTypeManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
+        if ($failed) {
+          // At least one hook function returned a failure or exception, so stop
+          // processing this node and move on to the next one.
+          $this->logger->warning('Publishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+          continue;
+        }
+        elseif ($processed) {
+          // The node had 'publishing' processed by a module implementing the
+          // hook, so no need to do anything more, apart from log this result.
+          $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
+        }
+        else {
+          // None of the above hook calls processed the node and there were no
+          // errors detected so fall back to the standard actions system to
+          // publish the node.
+          $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
+          $this->entityTypeManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
+        }
 
         // Invoke the event to tell Rules that Scheduler has published the node.
         if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
@@ -338,7 +367,20 @@ class SchedulerManager {
         // calls to $node->save().
         $node->unpublish_on->value = NULL;
 
-        // Log the fact that a scheduled unpublication is about to take place.
+        // Invoke all implementations of hook_scheduler_unpublish_action() to
+        // allow other modules to do the "unpublishing" process instead of
+        // Scheduler.
+        $hook = 'scheduler_unpublish_action';
+        $processed = FALSE;
+        $failed = FALSE;
+        foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+          $function = $module . '_' . $hook;
+          $return = $function($node);
+          $processed = $processed || ($return === 1);
+          $failed = $failed || ($return === -1);
+        }
+
+        // Set up the log variables.
         $view_link = $node->toLink($this->t('View node'));
         $node_type = $this->entityTypeManager->getStorage('node_type')->load($node->bundle());
         $node_type_link = $node_type->toLink($this->t('@label settings', ['@label' => $node_type->label()]), 'edit-form');
@@ -346,11 +388,27 @@ class SchedulerManager {
           '@type' => $node_type->label(),
           '%title' => $node->getTitle(),
           'link' => $node_type_link->toString() . ' ' . $view_link->toString(),
+          '@hook' => 'hook_' . $hook,
         ];
-        $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
 
-        // Use the actions system to unpublish the node.
-        $this->entityTypeManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
+        if ($failed) {
+          // At least one hook function returned a failure or exception, so stop
+          // processing this node and move on to the next one.
+          $this->logger->warning('Unpublishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+          continue;
+        }
+        elseif ($processed) {
+          // The node has 'unpublishing' processed by a module implementing the
+          // hook, so no need to do anything more, apart from log this result.
+          $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
+        }
+        else {
+          // None of the above hook calls processed the node and there were no
+          // errors detected so fall back to the standard actions system to
+          // unpublish the node.
+          $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
+          $this->entityTypeManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
+        }
 
         // Invoke event to tell Rules that Scheduler has unpublished this node.
         if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
