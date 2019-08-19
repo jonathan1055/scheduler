@@ -80,18 +80,23 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   /* @var $node \Drupal\node\NodeInterface */
   $node = $form_state->getFormObject()->getEntity();
 
-  // Invoke all implementations of hook_scheduler_hide_publish_on_field() and
-  // hook_scheduler_hide_unpublish_on_field() to allow other modules to hide the
-  // fields on the node edit form.
-  $hook = 'scheduler_hide_publish_on_field';
-  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-    $function = $module . '_' . $hook;
-    $publishing_enabled = $publishing_enabled && ($function($form, $form_state, $node) !== TRUE);
+  // Invoke all implementations of hook_scheduler_hide_publish_on_field() to
+  // allow other modules to hide the field on the node edit form.
+  if ($publishing_enabled && $publishing_displayed) {
+    $hook = 'scheduler_hide_publish_on_field';
+    foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+      $function = $module . '_' . $hook;
+      $publishing_displayed = ($function($form, $form_state, $node) !== TRUE) && $publishing_displayed;
+    }
   }
-  $hook = 'scheduler_hide_unpublish_on_field';
-  foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-    $function = $module . '_' . $hook;
-    $unpublishing_enabled = $unpublishing_enabled && ($function($form, $form_state, $node) !== TRUE);
+  // Invoke all implementations of hook_scheduler_hide_unpublish_on_field() to
+  // allow other modules to hide the field on the node edit form.
+  if ($unpublishing_enabled && $unpublishing_displayed) {
+    $hook = 'scheduler_hide_unpublish_on_field';
+    foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+      $function = $module . '_' . $hook;
+      $unpublishing_displayed = ($function($form, $form_state, $node) !== TRUE) && $unpublishing_displayed;
+    }
   }
 
   // If both publishing and unpublishing are either not enabled or are hidden
@@ -165,7 +170,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     $descriptions['blank'] = t('Leave the date blank for no scheduled publishing.');
   }
 
-  $form['publish_on']['#access'] = $publishing_enabled;
+  $form['publish_on']['#access'] = $publishing_enabled && $publishing_displayed;
   $form['publish_on']['widget'][0]['value']['#required'] = $publishing_required;
   $form['publish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
 
@@ -176,7 +181,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     unset($descriptions['blank']);
   }
 
-  $form['unpublish_on']['#access'] = $unpublishing_enabled;
+  $form['unpublish_on']['#access'] = $unpublishing_enabled && $unpublishing_displayed;
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
 
