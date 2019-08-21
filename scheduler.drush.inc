@@ -12,7 +12,7 @@ function scheduler_drush_command() {
   $items = [];
 
   $items['scheduler-cron'] = [
-    'description' => 'Lighweight cron to process scheduler tasks.',
+    'description' => 'Lightweight cron to process scheduler tasks.',
     'core' => ['8+'],
     'aliases' => ['sch-cron'],
     'category' => 'scheduler',
@@ -25,7 +25,7 @@ function scheduler_drush_command() {
 }
 
 /**
- * Run lighweight scheduler cron.
+ * Run lightweight scheduler cron.
  */
 function drush_scheduler_cron() {
   \Drupal::service('scheduler.manager')->runLightweightCron();

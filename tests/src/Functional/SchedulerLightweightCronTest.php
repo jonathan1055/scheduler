@@ -5,7 +5,7 @@ namespace Drupal\Tests\scheduler\Functional;
 use Drupal\Core\Url;
 
 /**
- * Tests the Scheduler lighweight cron urls and admin form.
+ * Tests the Scheduler lightweight cron urls and admin form.
  *
  * @group scheduler
  */
