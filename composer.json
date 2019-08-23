@@ -33,5 +33,12 @@
     "support": {
         "issues": "https://www.drupal.org/project/issues/scheduler",
         "source": "http://cgit.drupalcode.org/scheduler"
+    },
+    "extra": {
+        "drush": {
+            "services": {
+                "drush.services.yml": "^9"
+            }
+        }
     }
 }

@@ -492,11 +492,25 @@ class SchedulerManager {
    * This function is called from the external crontab job via url
    * /scheduler/cron/{access key} or it can be run interactively from the
    * Scheduler configuration page at /admin/config/content/scheduler/cron.
+   * It is also executed when running Scheduler Cron via drush.
+   *
+   * @param array $options
+   *   Options passed from drush command or admin form.
    */
-  public function runLightweightCron() {
-    $log = $this->setting('log');
+  public function runLightweightCron(array $options = []) {
+    // When calling via drush the log messages can be avoided by using --nolog.
+    $log = $this->setting('log') && empty($options['nolog']);
     if ($log) {
-      $this->logger->notice('Lightweight cron run activated.');
+      if (array_key_exists('nolog', $options)) {
+        $trigger = 'drush command';
+      }
+      elseif (array_key_exists('admin_form', $options)) {
+        $trigger = 'admin user form';
+      }
+      else {
+        $trigger = 'url';
+      }
+      $this->logger->notice('Lightweight cron run activated by @trigger.', ['@trigger' => $trigger]);
     }
     scheduler_cron();
     if (ob_get_level() > 0) {
