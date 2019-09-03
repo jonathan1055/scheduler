@@ -2,9 +2,9 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drush\TestTraits\DrushTestTrait;
+// use Drush\TestTraits\DrushTestTrait;
 use drush\TestTraits\DrushTestTrait;
-use \Drush\TestTraits\DrushTestTrait;
+// use \Drush\TestTraits\DrushTestTrait;
 
 /**
  * Tests the Drush commands provided by Scheduler.
