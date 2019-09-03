@@ -5,7 +5,7 @@
     "license": "GPL-2.0+",
     "homepage": "https://drupal.org/project/scheduler",
     "require-dev": {
-        "drupal/devel": "^2.0",
+        "drupal/devel": "^8.2.0",
         "drupal/coder": "^8.3.3",
         "drush/drush": "^9.0"
     },
