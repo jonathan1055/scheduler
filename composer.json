@@ -4,6 +4,12 @@
     "type": "drupal-module",
     "license": "GPL-2.0+",
     "homepage": "https://drupal.org/project/scheduler",
+    "repositories": {
+            "drupal": {
+                "type": "composer",
+                "url": "https://packages.drupal.org/8"
+            }
+    },
     "require-dev": {
         "drupal/coder": "^8.3.3",
         "drush/drush": "^9.0",
