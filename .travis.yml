@@ -79,7 +79,7 @@ before_script:
   # Install drush
   # - travis_retry composer require drush/drush:^9.6.1
   cd $DRUPAL_ROOT/modules/$MODULE
-  travis_retry composer update
+  travis_retry composer  update
   cd $DRUPAL_ROOT
 
   # Coder is already installed as part of composer install. We just need to set
