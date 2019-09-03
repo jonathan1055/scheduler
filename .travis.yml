@@ -77,7 +77,7 @@ before_script:
     fi
 
   # Install drush
-  - travis_retry composer require drush/drush:^9.6.1
+  # - travis_retry composer require drush/drush:^9.6.1
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
