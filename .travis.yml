@@ -76,6 +76,9 @@ before_script:
       travis_retry composer run-script drupal-phpunit-upgrade;
     fi
 
+  # Install drush
+  - travis_retry composer require drush/drush:^9.6.1
+
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
   - $DRUPAL_ROOT/vendor/bin/phpcs --config-set installed_paths $DRUPAL_ROOT/vendor/drupal/coder/coder_sniffer
