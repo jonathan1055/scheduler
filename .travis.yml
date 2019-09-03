@@ -9,7 +9,7 @@ notifications:
       - jonathan1055@sandfordsolutions.com
 
 php:
-  - 5.6
+  # - 5.6
   - 7.0
 
 services:
@@ -19,7 +19,7 @@ env:
   global:
     - MODULE=scheduler
   matrix:
-    - DRUPAL_CORE=8.6.x
+    # - DRUPAL_CORE=8.6.x
     - DRUPAL_CORE=8.7.x
     - DRUPAL_CORE=8.8.x
 
