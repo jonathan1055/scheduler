@@ -13,7 +13,7 @@
     "require-dev": {
         "drupal/coder": "^8.3.3",
         "drush/drush": "^9.0",
-        "drupal/devel": "^8.2.0"
+        "drupal/devel": "^2.0"
     },
     "authors": [
         {
