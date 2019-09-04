@@ -14,9 +14,9 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
   use DrushTestTrait;
 
   /**
-   * Tests the Scheduler Cron command.
+   * Tests the Scheduler Drush messages.
    */
-  public function testCronCommand() {
+  public function testDrushCronMessages() {
     // Run the plain command using the full scheduler:cron command name, and
     // check that all of the output messages are shown.
     $this->drush('scheduler:cron');
@@ -37,6 +37,34 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     $messages = $this->getErrorOutput();
     $this->assertNotContains('Lightweight cron run activated by drush command', $messages, '--nolog parameter did not work for starting message', TRUE);
     $this->assertNotContains('Lightweight cron run completed', $messages, '--nolog parameter did not work for ending message', TRUE);
+  }
+
+  /**
+   * Tests scheduled publishing via Drush command.
+   */
+  public function testDrushCronPublishing() {
+    // Create a node which is scheduled for publishing.
+    $title1 = $this->randomMachineName(20);
+    $this->drupalCreateNode([
+      'title' => $title1,
+      'type' => $this->type,
+      'publish_on' => strtotime('-3 hours'),
+    ]);
+
+    // Create a node which is scheduled for unpublishing.
+    $title2 = $this->randomMachineName(20);
+    $this->drupalCreateNode([
+      'title' => $title2,
+      'type' => $this->type,
+      'unpublish_on' => strtotime('-2 hours'),
+    ]);
+
+    // Run Scheduler's drush cron command and check that the expected publishing
+    // and unpublishing messages are found.
+    $this->drush('scheduler:cron');
+    $messages = $this->getErrorOutput();
+    $this->assertContains(sprintf('%s: scheduled publishing of %s', $this->typeName, $title1), $messages, 'Scheduled publishing message not found', TRUE);
+    $this->assertContains(sprintf('%s: scheduled unpublishing of %s', $this->typeName, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
   }
 
 }
