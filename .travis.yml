@@ -65,7 +65,7 @@ before_script:
 
   # Install dependencies.
   - travis_retry git clone --branch 8.x-3.x --depth 1 https://github.com/fago/rules.git modules/rules
-  - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  # - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
 
   # Run composer self-update and install.
@@ -77,6 +77,9 @@ before_script:
     fi
 
   # Install drush
+  - cd $DRUPAL_ROOT/modules/$MODULE
+  - travis_retry composer update
+  - cd $DRUPAL_ROOT
   - travis_retry composer require drush/drush:^9.0
 
   # Coder is already installed as part of composer install. We just need to set
@@ -91,7 +94,7 @@ before_script:
 
 script:
   # Run the PHPUnit tests.
-  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/ --filter="Rules"
+  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/
 
   # Check for coding standards. First change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
