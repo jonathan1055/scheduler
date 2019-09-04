@@ -11,6 +11,7 @@ dependencies:
   - drupal:views
 test_dependencies:
   - devel:devel_generate
+  - rules:rules
 libraries:
   - scheduler/admin
   - vertical-tabs
