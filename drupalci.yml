@@ -7,6 +7,9 @@ build:
       eslint:
       phpcs:
     testing:
+      container_command:
+        commands:
+          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drush/drush:^9.0 && sudo -u www-data composer update twig/twig"
       run_tests.standard:
         types: 'PHPUnit-Functional'
         suppress-deprecations: false
