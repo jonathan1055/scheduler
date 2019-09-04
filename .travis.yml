@@ -9,7 +9,7 @@ notifications:
       - jonathan1055@sandfordsolutions.com
 
 php:
-  # - 5.6
+  - 5.6
   - 7.0
 
 services:
@@ -19,7 +19,7 @@ env:
   global:
     - MODULE=scheduler
   matrix:
-    # - DRUPAL_CORE=8.6.x
+    - DRUPAL_CORE=8.6.x
     - DRUPAL_CORE=8.7.x
     - DRUPAL_CORE=8.8.x
 
@@ -65,7 +65,7 @@ before_script:
 
   # Install dependencies.
   - travis_retry git clone --branch 8.x-3.x --depth 1 https://github.com/fago/rules.git modules/rules
-  # - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
 
   # Run composer self-update and install.
@@ -77,9 +77,6 @@ before_script:
     fi
 
   # Install drush
-  - cd $DRUPAL_ROOT/modules/$MODULE
-  - travis_retry composer update
-  - cd $DRUPAL_ROOT
   - travis_retry composer require drush/drush:^9.0
 
   # Coder is already installed as part of composer install. We just need to set
