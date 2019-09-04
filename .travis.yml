@@ -91,7 +91,7 @@ before_script:
 
 script:
   # Run the PHPUnit tests.
-  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/ --filter="Devel"
+  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/ --filter="Rules"
 
   # Check for coding standards. First change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
