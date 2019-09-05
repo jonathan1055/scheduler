@@ -5,9 +5,16 @@
     "license": "GPL-2.0+",
     "homepage": "https://drupal.org/project/scheduler",
     "require-dev": {
+        "drush/drush": "^9.0",
         "drupal/rules": "^3",
         "drupal/devel_generate": "^2.0",
         "drupal/coder": "^8.3.3"
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
     },
     "authors": [
         {
