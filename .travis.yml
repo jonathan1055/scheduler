@@ -3,11 +3,6 @@ language: php
 # sudo here.
 sudo: true
 
-notifications:
-  email:
-    recipients:
-      - jonathan1055@sandfordsolutions.com
-
 php:
   - 5.6
   - 7.0
@@ -64,7 +59,7 @@ before_script:
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
   # Install dependencies.
-  - travis_retry git clone --branch 8.x-3.x --depth 1 https://github.com/fago/rules.git modules/rules
+  - travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
   - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
 
