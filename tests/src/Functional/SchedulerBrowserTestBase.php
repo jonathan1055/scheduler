@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\Traits\Core\CronRunTrait;
 
 /**
  * Base class to provide common test setup.
@@ -10,6 +11,8 @@ use Drupal\Tests\BrowserTestBase;
  * Extends the preferred BrowserTestBase instead of the old WebTestBase.
  */
 abstract class SchedulerBrowserTestBase extends BrowserTestBase {
+
+  use CronRunTrait;
 
   /**
    * The profile to install as a basis for testing.
@@ -154,23 +157,6 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     // Store the core dateFormatter service for re-use in the actual tests.
     $this->dateFormatter = $this->container->get('date.formatter');
 
-  }
-
-  /**
-   * Run standard Drupal cron.
-   *
-   * This replicates the standard cronRun function to allow the Scheduler tests
-   * that use this to be converted from WebTestBase to BrowserTestBase.
-   *
-   * @TODO Delete this function after it has been added to BrowserTestBase.
-   *
-   * Update Jan 2017: cronRun() has been committed to core 8.4 and 8.3 but will
-   * not be added to 8.2. Therefore we still need it here whilst we are using
-   * 8.2 for testing.
-   * @see https://www.drupal.org/node/2795037
-   */
-  public function cronRun() {
-    $this->drupalGet('cron/' . \Drupal::state()->get('system.cron_key'));
   }
 
 }
