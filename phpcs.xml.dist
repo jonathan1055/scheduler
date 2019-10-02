@@ -14,8 +14,9 @@
 
   <rule ref="Drupal.Files.TxtFileLineLength.TooLong">
     <!-- Do not run this sniff on README.md as the file has long markup lines.
-         @todo These are now allowed in the latest dev version of Coder, and
-         this exclusion can be removed when Coder 8.x-2.13 is released. -->
+         @todo Coder has been fixed to allow these. Remove this exclusion when
+         Coder 8.x-2.13 is released and used in Core 8.6, or when Core 8.6 is no
+         longer supported. Core 8.7 uses Coder 8.3.1 that allows these lines -->
     <exclude-pattern>README.md</exclude-pattern>
   </rule>
 
@@ -23,5 +24,8 @@
     <!-- Allow empty lines after comments, we don't like this rule. -->
     <exclude name="DrupalPractice.Commenting.CommentEmptyLine"/>
   </rule>
+
+  <!-- ignore all files that start with _ignore -->
+  <exclude-pattern>_ignore*</exclude-pattern>
 
 </ruleset>

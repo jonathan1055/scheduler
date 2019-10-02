@@ -106,5 +106,5 @@ script:
   # Show the violations in detail and do not fail for any errors or warnings.
   - $DRUPAL_ROOT/vendor/bin/phpcs --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1
 
-  # Run again to give a summary and total count, and fail for errors (not warnings).
-  - $DRUPAL_ROOT/vendor/bin/phpcs --report=summary --runtime-set ignore_warnings_on_exit 1
+  # Run again to give a summary and totals, and fail for errors and warnings.
+  - $DRUPAL_ROOT/vendor/bin/phpcs --report=summary
