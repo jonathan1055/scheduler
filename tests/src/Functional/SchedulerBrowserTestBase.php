@@ -64,6 +64,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected $nodetype;
 
   /**
+   * The node type object which is not enabled for scheduling.
+   *
+   * @var \Drupal\node\Entity\NodeType
+   */
+  protected $nonSchedulerNodetype;
+
+  /**
    * The node storage object.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -114,6 +121,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
+    // The majority of tests use the standard Scheduler-enabled content type but
+    // we also need a content type which is not enabled for Scheduler.
+    $this->nonSchedulerNodeType = $this->drupalCreateContentType([
+      'type' => 'not-for-scheduler',
+      'name' => 'Non Scheduler Content',
+    ]);
+
     // Define nodeStorage for use in many tests.
     /** @var EntityStorageInterface $nodeStorage */
     $this->nodeStorage = $this->container->get('entity_type.manager')->getStorage('node');
@@ -129,8 +143,11 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
       'administer nodes',
       'administer site configuration',
       'create ' . $this->type . ' content',
-      'edit own ' . $this->type . ' content',
-      'delete own ' . $this->type . ' content',
+      'edit any ' . $this->type . ' content',
+      'delete any ' . $this->type . ' content',
+      'create ' . $this->nonSchedulerNodeType->id() . ' content',
+      'edit any ' . $this->nonSchedulerNodeType->id() . ' content',
+      'delete any ' . $this->nonSchedulerNodeType->id() . ' content',
       'view own unpublished content',
       'administer scheduler',
       'schedule publishing of nodes',

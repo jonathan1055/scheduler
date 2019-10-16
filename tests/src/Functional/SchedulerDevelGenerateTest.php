@@ -37,11 +37,6 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'access content',
       'access content overview',
     ]);
-
-    // The majority of the tests use the standard Sceduler-enabled content type
-    // but we also verify that dates are not added for non-enabled types.
-    $this->non_scheduler_type = 'not-for-scheduler';
-    $this->drupalCreateContentType(['type' => $this->non_scheduler_type, 'name' => 'Not enabled for Scheduler']);
   }
 
   /**
@@ -162,8 +157,9 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     // Generate new content using the type which is not enabled for Scheduler.
     // The nodes should be created but no dates should be added even though the
     // scheduler values are set to 100.
+    $non_scheduler_id = $this->nonSchedulerNodeType->id();
     $generate_settings = [
-      "edit-node-types-$this->non_scheduler_type" => TRUE,
+      "edit-node-types-$non_scheduler_id" => TRUE,
       'num' => 20,
       'kill' => TRUE,
       'scheduler_publishing' => 100,
@@ -174,8 +170,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/content/scheduled');
 
     // Check we have the expected number of nodes but that none are scheduled.
-    $this->countScheduledNodes($this->non_scheduler_type, 'publish_on', 20, 0);
-    $this->countScheduledNodes($this->non_scheduler_type, 'unpublish_on', 20, 0);
+    $this->countScheduledNodes($non_scheduler_id, 'publish_on', 20, 0);
+    $this->countScheduledNodes($non_scheduler_id, 'unpublish_on', 20, 0);
   }
 
 }
