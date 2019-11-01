@@ -82,7 +82,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     ]);
     $config_entity->save();
 
-    // Create rule 2 to remove the publishing date and publish the node now.
+    // Create rule 2 to remove the publishing date and publish the node.
     $rule2 = $this->expressionManager->createRule();
     $rule2->addCondition('rules_data_comparison',
         ContextConfig::create()
@@ -111,6 +111,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     ]);
     $config_entity->save();
 
+    $assert = $this->assertSession();
+
     // Firstly, use the Scheduler-enabled node.
     $node = $this->node_a;
 
@@ -138,7 +140,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 1 is triggered and rule 2 is not. Check that a publishing
-    // date has been set and status is now unpublished.
+    // date has been set and the status is now unpublished.
     $this->assertText($message1, '"' . $message1 . '" is shown');
     $this->assertNoText($message2, '"' . $message2 . '" is not shown');
     $this->assertTrue($node->publish_on->value, 'Node is scheduled for publishing.');
@@ -154,7 +156,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 2 is triggered and rule 1 is not. Check that the
-    // publishing date has been removed and the status is published.
+    // publishing date has been removed and the status is now published.
     $this->assertNoText($message1, '"' . $message1 . '" is not shown');
     $this->assertText($message2, '"' . $message2 . '" is shown');
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
@@ -164,17 +166,17 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // Secondly, use the node which is not enabled for Scheduler.
     $node = $this->node_b;
 
-    // Edit the node, attempting to trigger rule 1.
+    // Edit the node, triggering rule 1.
     $edit = [
       'title[0][value]' => 'Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 1 issued a warning message.
-    // $assert->pageTextContains('warning message');  // Not implemented yet.
-    // Check that no publishing date is set and the node remains published.
+    $assert->pageTextContains('warning message');
+    $assert->elementTextContains('css', '.messages--warning', 'Action');
+    // Check that no publishing date is set.
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertTrue($node->isPublished(), 'Node remains published for title: "' . $node->title->value . '".');
     // Check that a log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
@@ -184,15 +186,15 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->fetchColumn();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
-    // Edit the node, set it to unpublished and attempt to trigger rule 2.
+    // Edit the node, triggering rule 2.
     $edit = [
       'title[0][value]' => 'Trigger Action Rule 2',
       'body[0][value]' => $this->randomString(30),
-      'status[value]' => FALSE,
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 2 issued a warning message.
-    // $assert->pageTextContains('warning message');  // Not implemented yet.
+    $assert->pageTextContains('warning message');
+    $assert->elementTextContains('css', '.messages--warning', 'Action');
     // Check that a second log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
@@ -265,6 +267,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     ]);
     $config_entity->save();
 
+    $assert = $this->assertSession();
+
     // Firstly, use the Scheduler-enabled node.
     $node = $this->node_a;
 
@@ -292,7 +296,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 3 is triggered and rule 4 is not. Check that an
-    // unpublishing date has been set and status is still published.
+    // unpublishing date has been set and the status is still published.
     $this->assertText($message3, '"' . $message3 . '" is shown');
     $this->assertNoText($message4, '"' . $message4 . '" is not shown');
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
@@ -308,7 +312,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 4 is triggered and rule 3 is not. Check that the
-    // unpublishing date has been removed and the status is unpublished.
+    // unpublishing date has been removed and the status is now unpublished.
     $this->assertNoText($message3, '"' . $message3 . '" is not shown');
     $this->assertText($message4, '"' . $message4 . '" is shown');
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
@@ -318,14 +322,15 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // Secondly, use the node which is not enabled for Scheduler.
     $node = $this->node_b;
 
-    // Edit the node, attempting to trigger rule 3.
+    // Edit the node, triggering rule 3.
     $edit = [
       'title[0][value]' => 'Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 3 issued a warning message.
-    // $assert->pageTextContains('warning message');  // Not implemented yet.
+    $assert->pageTextContains('warning message');
+    $assert->elementTextContains('css', '.messages--warning', 'Action');
     // Check that no unpublishing date is set.
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for unpublishing.');
     // Check that a log message has been recorded.
@@ -337,14 +342,15 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->fetchColumn();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
-    // Edit the node, and attempt to trigger rule 4.
+    // Edit the node, triggering rule 4.
     $edit = [
       'title[0][value]' => 'Trigger Action Rule 4',
       'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 4 issued a warning message.
-    // $assert->pageTextContains('warning message');  // Not implemented yet.
+    $assert->pageTextContains('warning message');
+    $assert->elementTextContains('css', '.messages--warning', 'Action');
     // Check that a second log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
@@ -353,7 +359,6 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->execute()
       ->fetchColumn();
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
-
   }
 
 }
