@@ -2,6 +2,7 @@
 
 namespace Drupal\scheduler_rules_integration\Plugin\RulesAction;
 
+use Drupal\Core\Link;
 use Drupal\rules\Core\RulesActionBase;
 use Drupal\Core\Url;
 
@@ -37,7 +38,7 @@ class RemoveUnpublishingDate extends RulesActionBase {
       $type_name = node_get_type_label($node);
       $arguments = [
         '%type' => $type_name,
-        'link' => \Drupal::l($this->t('@type settings', ['@type' => $type_name]), new Url('entity.node_type.edit_form', ['node_type' => $node->getType()])),
+        'link' => Link::fromTextAndUrl($this->t('@type settings', ['@type' => $type_name]), new Url('entity.node_type.edit_form', ['node_type' => $node->getType()]))->toString(),
       ];
       \Drupal::logger('scheduler')->warning('Scheduler rules action "Remove unpublishing date" -  Scheduled unpublishing is not enabled for %type content. To prevent this message add the condition "Scheduled unpublishing is enabled" to your Rule, or enable the Scheduler options via the %type content type settings.', $arguments);
     }
