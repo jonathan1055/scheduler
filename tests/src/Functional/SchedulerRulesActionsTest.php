@@ -174,7 +174,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 1 issued a warning message.
     $assert->pageTextContains('warning message');
-    $assert->elementTextContains('css', '.messages--warning', 'Action');
+    $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that no publishing date is set.
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     // Check that a log message has been recorded.
@@ -194,7 +194,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 2 issued a warning message.
     $assert->pageTextContains('warning message');
-    $assert->elementTextContains('css', '.messages--warning', 'Action');
+    $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that a second log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
@@ -330,7 +330,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 3 issued a warning message.
     $assert->pageTextContains('warning message');
-    $assert->elementTextContains('css', '.messages--warning', 'Action');
+    $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that no unpublishing date is set.
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for unpublishing.');
     // Check that a log message has been recorded.
@@ -350,7 +350,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     // Check that rule 4 issued a warning message.
     $assert->pageTextContains('warning message');
-    $assert->elementTextContains('css', '.messages--warning', 'Action');
+    $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that a second log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
