@@ -404,25 +404,28 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
       'title' => 'Green will have both Scheduler fields hidden',
     ]);
 
+    /** @var \Drupal\Tests\WebAssert $assert */
+    $assert = $this->assertSession();
+
     // Node 1 'red' should have both fields displayed.
     $this->drupalGet('node/' . $node1->id() . '/edit');
-    $this->assertTrue($this->xpath('//input[@id = "edit-publish-on-0-value-date"]'), 'The red publish-on field is shown.');
-    $this->assertTrue($this->xpath('//input[@id = "edit-unpublish-on-0-value-date"]'), 'The red unpublish-on field is shown.');
+    $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
+    $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Node 2 'orange' should have only the publish-on field hidden.
     $this->drupalGet('node/' . $node2->id() . '/edit');
-    $this->assertFalse($this->xpath('//input[@id = "edit-publish-on-0-value-date"]'), 'The orange publish-on field is hidden.');
-    $this->assertTrue($this->xpath('//input[@id = "edit-unpublish-on-0-value-date"]'), 'The orange unpublish-on field is shown.');
+    $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
+    $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Node 3 'yellow' should have only the unpublish-on field hidden.
     $this->drupalGet('node/' . $node3->id() . '/edit');
-    $this->assertTrue($this->xpath('//input[@id = "edit-publish-on-0-value-date"]'), 'The yellow publish-on field is shown.');
-    $this->assertFalse($this->xpath('//input[@id = "edit-unpublish-on-0-value-date"]'), 'The yellow unpublish-on field is hidden.');
+    $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
+    $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Node 4 'green' should have both publish-on and unpublish-on hidden.
     $this->drupalGet('node/' . $node4->id() . '/edit');
-    $this->assertFalse($this->xpath('//input[@id = "edit-publish-on-0-value-date"]'), 'The green publish-on field is hidden.');
-    $this->assertFalse($this->xpath('//input[@id = "edit-unpublish-on-0-value-date"]'), 'The green unpublish-on field is hidden.');
+    $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
+    $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
   }
 
   /**
@@ -469,27 +472,27 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$node1->id()]);
     $node1 = $this->nodeStorage->load($node1->id());
     $this->assertFalse($node1->isPublished(), 'The red node is still unpublished.');
-    $this->assertTrue($node1->publish_on->value, 'The red node still has a publish-on date.');
+    $this->assertNotEmpty($node1->publish_on->value, 'The red node still has a publish-on date.');
 
     // Check the orange node.
     $this->nodeStorage->resetCache([$node2->id()]);
     $node2 = $this->nodeStorage->load($node2->id());
     $this->assertFalse($node2->isPublished(), 'The orange node was unpublished by the API test module.');
-    $this->assertTrue(stristr($node2->title->value, 'unpublishing processed by API test module'), 'The orange node was processed by the API test module.');
-    $this->assertFalse($node2->unpublish_on->value, 'The orange node no longer has an unpublish-on date.');
+    $this->assertNotEmpty(stristr($node2->title->value, 'unpublishing processed by API test module'), 'The orange node was processed by the API test module.');
+    $this->assertEmpty($node2->unpublish_on->value, 'The orange node no longer has an unpublish-on date.');
 
     // Check the yellow node.
     $this->nodeStorage->resetCache([$node3->id()]);
     $node3 = $this->nodeStorage->load($node3->id());
     $this->assertTrue($node3->isPublished(), 'The yellow node was published by the API test module.');
-    $this->assertTrue(stristr($node3->title->value, 'publishing processed by API test module'), 'The yellow node was processed by the API test module.');
-    $this->assertFalse($node3->publish_on->value, 'The yellow node no longer has a publish-on date.');
+    $this->assertNotEmpty(stristr($node3->title->value, 'publishing processed by API test module'), 'The yellow node was processed by the API test module.');
+    $this->assertEmpty($node3->publish_on->value, 'The yellow node no longer has a publish-on date.');
 
     // Check the blue node.
     $this->nodeStorage->resetCache([$node4->id()]);
     $node4 = $this->nodeStorage->load($node4->id());
     $this->assertTrue($node4->isPublished(), 'The green node is still published.');
-    $this->assertTrue($node4->unpublish_on->value, 'The green node still has an unpublish-on date.');
+    $this->assertNotEmpty($node4->unpublish_on->value, 'The green node still has an unpublish-on date.');
 
   }
 
