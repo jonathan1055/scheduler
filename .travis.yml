@@ -16,22 +16,19 @@ env:
   global:
     - MODULE=scheduler
   matrix:
-    - DRUPAL_CORE=8.6.x
     - DRUPAL_CORE=8.7.x
     - DRUPAL_CORE=8.8.x
     - DRUPAL_CORE=8.9.x
 
 matrix:
   fast_finish: true
-  # Core 8.7 is the last version which supports PHP5.
-  # Start using PHP7.3 with Core 8.8 not before.
+  # PHP5 is not supported on Core 8.8 and later.
+  # PHP7.3 is not supported before Core 8.8.
   exclude:
     - php: 5.6
       env: DRUPAL_CORE=8.8.x
     - php: 5.6
       env: DRUPAL_CORE=8.9.x
-    - php: 7.3
-      env: DRUPAL_CORE=8.6.x
     - php: 7.3
       env: DRUPAL_CORE=8.7.x
 
