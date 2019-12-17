@@ -51,13 +51,13 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     // It is also good when testing for the absense of something to also test
     // for the presence of text, hence the second assertion for each check.
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete a published node with no scheduling information.');
-    $this->assertSession()->pageTextContains('Are you sure you want to delete the content', 'The deletion warning message is shown immediately when trying to delete a published node with no scheduling information.');
+    $this->assertSession()->pageTextContains('Are you sure you want to delete the content');
 
     // Do the same test for the unpublished node.
     $this->drupalGet('node/' . $unpublished_node->id() . '/edit');
     $this->clickLink('Delete');
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete an unpublished node with no scheduling information.');
-    $this->assertSession()->pageTextContains('Are you sure you want to delete the content', 'The deletion warning message is shown immediately when trying to delete an unpublished node with no scheduling information.');
+    $this->assertSession()->pageTextContains('Are you sure you want to delete the content');
   }
 
   /**
@@ -88,13 +88,13 @@ class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $published_node->id() . '/edit');
     $this->clickLink('Delete');
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete a node with an unpublish date in the past.');
-    $this->assertSession()->pageTextContains('Are you sure you want to delete the content', 'The deletion warning message is shown immediately when trying to delete a node with an unpublish date in the past.');
+    $this->assertSession()->pageTextContains('Are you sure you want to delete the content');
 
     // Attempt to delete the unpublished node and check for no validation error.
     $this->drupalGet('node/' . $unpublished_node->id() . '/edit');
     $this->clickLink('Delete');
     $this->assertNoText('Error message', 'No error messages are shown when trying to delete a node with a publish date in the past.');
-    $this->assertSession()->pageTextContains('Are you sure you want to delete the content', 'The deletion warning message is shown immediately when trying to delete a node with a publish date in the past.');
+    $this->assertSession()->pageTextContains('Are you sure you want to delete the content');
   }
 
 }

@@ -51,8 +51,10 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     ];
     // Create a node and check that the expected error messages are shown.
     $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
-    $this->assertSession()->pageTextContains($publish_validation_message, 'By default it is required to enter a time when scheduling content for publication.');
-    $this->assertSession()->pageTextContains($unpublish_validation_message, 'By default it is required to enter a time when scheduling content for unpublication.');
+    // By default it is required to enter a time when scheduling content for
+    // publishing and for unpublishing.
+    $this->assertSession()->pageTextContains($publish_validation_message);
+    $this->assertSession()->pageTextContains($unpublish_validation_message);
 
     // Allow the user to enter only a date with no time.
     $config->set('allow_date_only', TRUE)->save();
@@ -67,7 +69,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $long_pattern = $date_format_storage->load('long')->getPattern();
 
     // Check that the scheduled information is shown after saving.
-    $this->assertSession()->pageTextContains(sprintf('This post is unpublished and will be published %s', $publish_time->format($long_pattern)), 'The user is informed that the content will be published on the requested date, on the default time.');
+    $this->assertSession()->pageTextContains(sprintf('This post is unpublished and will be published %s', $publish_time->format($long_pattern)));
 
     // Protect this section in case the node was not created.
     if ($node = $this->drupalGetNodeByTitle($edit['title[0][value]'])) {

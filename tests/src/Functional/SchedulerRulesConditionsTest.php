@@ -119,8 +119,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // View the node and check the default position - that the node type is
     // enabled for both publishing and unpublishing.
     $this->drupalGet('node/' . $this->node->id());
-    $this->assertSession()->pageTextContains($message1, '"' . $message1 . '" is shown');
-    $this->assertSession()->pageTextContains($message2, '"' . $message2 . '" is shown');
+    $this->assertSession()->pageTextContains($message1);
+    $this->assertSession()->pageTextContains($message2);
     $this->assertNoText($message3, '"' . $message3 . '" is not shown');
     $this->assertNoText($message4, '"' . $message4 . '" is not shown');
 
@@ -131,8 +131,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     drupal_flush_all_caches();
     $this->drupalGet('node/' . $this->node->id());
     $this->assertNoText($message1, '"' . $message1 . '" is not shown');
-    $this->assertSession()->pageTextContains($message2, '"' . $message2 . '" is shown');
-    $this->assertSession()->pageTextContains($message3, '"' . $message3 . '" is shown');
+    $this->assertSession()->pageTextContains($message2);
+    $this->assertSession()->pageTextContains($message3);
     $this->assertNoText($message4, '"' . $message4 . '" is not shown');
 
     // Turn off scheduled unpublishing for the node type and the check again.
@@ -141,8 +141,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $this->node->id());
     $this->assertNoText($message1, '"' . $message1 . '" is not shown');
     $this->assertNoText($message2, '"' . $message2 . '" is not shown');
-    $this->assertSession()->pageTextContains($message3, '"' . $message3 . '" is shown');
-    $this->assertSession()->pageTextContains($message4, '"' . $message4 . '" is shown');
+    $this->assertSession()->pageTextContains($message3);
+    $this->assertSession()->pageTextContains($message4);
 
   }
 
@@ -230,8 +230,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('node/' . $this->node->id() . '/edit', $edit, 'Save');
 
-    $this->assertSession()->pageTextContains($message5, '"' . $message5 . '" is shown');
-    $this->assertSession()->pageTextContains($message6, '"' . $message6 . '" is shown');
+    $this->assertSession()->pageTextContains($message5);
+    $this->assertSession()->pageTextContains($message6);
     $this->assertNoText($message7, '"' . $message7 . '" is not shown');
     $this->assertNoText($message8, '"' . $message8 . '" is not shown');
 
@@ -243,8 +243,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $this->node->id() . '/edit', $edit, 'Save');
 
     $this->assertNoText($message5, '"' . $message5 . '" is not shown');
-    $this->assertSession()->pageTextContains($message6, '"' . $message6 . '" is shown');
-    $this->assertSession()->pageTextContains($message7, '"' . $message7 . '" is shown');
+    $this->assertSession()->pageTextContains($message6);
+    $this->assertSession()->pageTextContains($message7);
     $this->assertNoText($message8, '"' . $message8 . '" is not shown');
 
     // Edit the node and set an unpublish_on date.
@@ -256,8 +256,8 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
     $this->assertNoText($message5, '"' . $message5 . '" is not shown');
     $this->assertNoText($message6, '"' . $message6 . '" is not shown');
-    $this->assertSession()->pageTextContains($message7, '"' . $message7 . '" is shown');
-    $this->assertSession()->pageTextContains($message8, '"' . $message8 . '" is shown');
+    $this->assertSession()->pageTextContains($message7);
+    $this->assertSession()->pageTextContains($message8);
 
   }
 

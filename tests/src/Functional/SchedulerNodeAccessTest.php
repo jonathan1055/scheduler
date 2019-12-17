@@ -78,11 +78,11 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
       $this->assertResponse(403, 'After cron, viewing the ' . $data['after'] . '  node returns "403 Not Authorized"');
     }
 
-    // Log in and show the dblog for info only.
+    // Log in and assert that the two dblog messages are shown.
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/reports/dblog');
-    $this->assertSession()->pageTextContains('scheduled publishing', '"Scheduled publishing" message is shown in the dblog');
-    $this->assertSession()->pageTextContains('scheduled unpublishing', '"Scheduled unpublishing" message is shown in the dblog');
+    $this->assertSession()->pageTextContains('scheduled publishing');
+    $this->assertSession()->pageTextContains('scheduled unpublishing');
   }
 
 }
