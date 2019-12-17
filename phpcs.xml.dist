@@ -7,25 +7,21 @@
   <rule ref="Drupal"/>
   <rule ref="DrupalPractice"/>
 
+  <!-- Check these file extensions -->
+  <arg name="extensions" value="php,module,inc,install,css,md,yml,js"/>
+
   <!-- Use 's' to print the full sniff name in the report. -->
   <arg value="s"/>
   <arg value="-colors"/>
   <arg name="report-width" value="130"/>
-
-  <rule ref="Drupal.Files.TxtFileLineLength.TooLong">
-    <!-- Do not run this sniff on README.md as the file has long markup lines.
-         @todo Coder has been fixed to allow these. Remove this exclusion when
-         Coder 8.x-2.13 is released and used in Core 8.6, or when Core 8.6 is no
-         longer supported. Core 8.7 uses Coder 8.3.1 that allows these lines -->
-    <exclude-pattern>README.md</exclude-pattern>
-  </rule>
 
   <rule ref="DrupalPractice">
     <!-- Allow empty lines after comments, we don't like this rule. -->
     <exclude name="DrupalPractice.Commenting.CommentEmptyLine"/>
   </rule>
 
-  <!-- ignore all files that start with _ignore -->
+  <!-- ignore these files -->
   <exclude-pattern>_ignore*</exclude-pattern>
+  <exclude-pattern>*interdif*</exclude-pattern>
 
 </ruleset>
