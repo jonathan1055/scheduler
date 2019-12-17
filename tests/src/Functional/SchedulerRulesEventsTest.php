@@ -112,7 +112,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    $this->assertText($message[1], '"' . $message[1] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[1], '"' . $message[1] . '" IS shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
@@ -126,7 +126,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
-    $this->assertText($message[2], '"' . $message[2] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[2], '"' . $message[2] . '" IS shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
     $this->assertNoText($message[5], '"' . $message[5] . '" is not shown');
@@ -139,7 +139,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/reports/dblog');
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
-    $this->assertText($message[3], '"' . $message[3] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[3], '"' . $message[3] . '" IS shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
     $this->assertNoText($message[5], '"' . $message[5] . '" is not shown');
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
@@ -157,7 +157,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
-    $this->assertText($message[4], '"' . $message[4] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[4], '"' . $message[4] . '" IS shown');
     $this->assertNoText($message[5], '"' . $message[5] . '" is not shown');
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
 
@@ -171,7 +171,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
-    $this->assertText($message[5], '"' . $message[5] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[5], '"' . $message[5] . '" IS shown');
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
 
     // Delay to ensure that the date entered is now in the past so that the node
@@ -184,7 +184,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
     $this->assertNoText($message[5], '"' . $message[5] . '" is not shown');
-    $this->assertText($message[6], '"' . $message[6] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[6], '"' . $message[6] . '" IS shown');
 
     // Create a new node with both publish-on and unpublish-on dates, and check
     // that events 1 and event 4 are both triggered.
@@ -198,10 +198,10 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     ];
     $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    $this->assertText($message[1], '"' . $message[1] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[1], '"' . $message[1] . '" IS shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
-    $this->assertText($message[4], '"' . $message[4] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[4], '"' . $message[4] . '" IS shown');
     $this->assertNoText($message[5], '"' . $message[5] . '" is not shown');
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
 
@@ -213,10 +213,10 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
-    $this->assertText($message[2], '"' . $message[2] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[2], '"' . $message[2] . '" IS shown');
     $this->assertNoText($message[3], '"' . $message[3] . '" is not shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
-    $this->assertText($message[5], '"' . $message[5] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[5], '"' . $message[5] . '" IS shown');
     $this->assertNoText($message[6], '"' . $message[6] . '" is not shown');
 
     // Delay to ensure that the dates are now in the past so that the node will
@@ -226,10 +226,10 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/reports/dblog');
     $this->assertNoText($message[1], '"' . $message[1] . '" is not shown');
     $this->assertNoText($message[2], '"' . $message[2] . '" is not shown');
-    $this->assertText($message[3], '"' . $message[3] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[3], '"' . $message[3] . '" IS shown');
     $this->assertNoText($message[4], '"' . $message[4] . '" is not shown');
-    $this->assertText($message[5], '"' . $message[5] . '" IS shown');
-    $this->assertText($message[6], '"' . $message[6] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[5], '"' . $message[5] . '" IS shown');
+    $this->assertSession()->pageTextContains($message[6], '"' . $message[6] . '" IS shown');
 
   }
 

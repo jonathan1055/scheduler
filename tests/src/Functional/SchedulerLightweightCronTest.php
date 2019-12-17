@@ -65,11 +65,11 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
 
     // Check that the 'run lightweight cron' button works.
     $this->drupalPostForm($this->routeCronForm, [], "Run Scheduler's lightweight cron now");
-    $this->assertText('Lightweight cron run completed.', 'Lightweight cron runs OK manually');
+    $this->assertSession()->pageTextContains('Lightweight cron run completed.', 'Lightweight cron runs OK manually');
 
     // Check that the form cannot be saved if the cron key is blank.
     $this->drupalPostForm($this->routeCronForm, ['lightweight_access_key' => ''], 'Save configuration');
-    $this->assertText('Lightweight cron access key field is required.', 'Saving configuration with a blank cron key throws the expected validation message');
+    $this->assertSession()->pageTextContains('Lightweight cron access key field is required.', 'Saving configuration with a blank cron key throws the expected validation message');
     $this->assertNoText('The configuration options have been saved.', 'Saving configuration with a blank cron key is not possible');
   }
 

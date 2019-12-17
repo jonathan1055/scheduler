@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Component\Utility\Html;
-
 /**
  * Tests the permissions of the Scheduler module.
  *
@@ -51,7 +49,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       $edit['status[value]'] = TRUE;
     }
     $this->drupalPostForm('node/add/' . $this->type, $edit, $checkbox ? 'Save' : 'Save and publish');
-    $this->assertText(sprintf('%s %s has been created.', $this->typeName, Html::escape($title)), 'A node can be created and published when the user does not have scheduler permissions.');
+    $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->typeName, $title), 'A node can be created and published when the user does not have scheduler permissions.');
     $this->assertTrue($this->drupalGetNodeByTitle($title)->isPublished(), 'The new node is published');
 
     // Check that a new node can be saved as unpublished.
@@ -61,7 +59,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       $edit['status[value]'] = FALSE;
     }
     $this->drupalPostForm('node/add/' . $this->type, $edit, $checkbox ? 'Save' : 'Save as unpublished');
-    $this->assertText(sprintf('%s %s has been created.', $this->typeName, Html::escape($title)), 'A node can be created and saved as unpublished when the user does not have scheduler permissions.');
+    $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->typeName, $title), 'A node can be created and saved as unpublished when the user does not have scheduler permissions.');
     $this->assertFalse($this->drupalGetNodeByTitle($title)->isPublished(), 'The new node is unpublished');
 
     // Set publishing and unpublishing to required, to make it a stronger test.

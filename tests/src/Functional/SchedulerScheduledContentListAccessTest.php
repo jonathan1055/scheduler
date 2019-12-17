@@ -82,8 +82,8 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->schedulerUser);
     $this->drupalGet("user/{$this->schedulerUser->id()}/scheduled");
     $this->assertResponse(200, '"Scheduler User" can access their scheduled content user tab.');
-    $this->assertText('Node created by Scheduler User for publishing');
-    $this->assertText('Node created by Scheduler User for unpublishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for publishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for unpublishing');
     $this->assertNoText('Node created by Scheduler Manager for unpublishing');
 
     // Access another users scheduled content tab as "Scheduler User".
@@ -95,16 +95,16 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->schedulerManager);
     $this->drupalGet("user/{$this->schedulerManager->id()}/scheduled");
     $this->assertResponse(200, 'Scheduler Manager can access their own scheduled content user tab.');
-    $this->assertText('Node created by Scheduler Manager for publishing');
-    $this->assertText('Node created by Scheduler Manager for unpublishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler Manager for publishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler Manager for unpublishing');
     $this->assertNoText('Node created by Scheduler User for unpublishing');
 
     // Access another users scheduled content tab as "Scheduler Manager".
     // The published and unpublished content should be listed.
     $this->drupalGet("user/{$this->schedulerUser->id()}/scheduled");
     $this->assertResponse(200, '"Scheduler Manager" can access the scheduled content user tab for "Scheduler User"');
-    $this->assertText('Node created by Scheduler User for publishing');
-    $this->assertText('Node created by Scheduler User for unpublishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for publishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for unpublishing');
   }
 
   /**
@@ -133,10 +133,10 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->schedulerManager);
     $this->drupalGet('admin/content/scheduled');
     $this->assertResponse(200, 'Scheduler Manager can access the scheduled content overview.');
-    $this->assertText('Node created by Scheduler User for publishing');
-    $this->assertText('Node created by Scheduler User for unpublishing');
-    $this->assertText('Node created by Scheduler Manager for publishing');
-    $this->assertText('Node created by Scheduler Manager for unpublishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for publishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler User for unpublishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler Manager for publishing');
+    $this->assertSession()->pageTextContains('Node created by Scheduler Manager for unpublishing');
   }
 
 }
