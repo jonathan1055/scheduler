@@ -8,7 +8,7 @@
   <rule ref="DrupalPractice"/>
 
   <!-- Check these file extensions -->
-  <arg name="extensions" value="php,module,inc,install,css,md,yml,js"/>
+  <arg name="extensions" value="php,module,inc,install,css,md,yml"/>
 
   <!-- Use 's' to print the full sniff name in the report. -->
   <arg value="s"/>
