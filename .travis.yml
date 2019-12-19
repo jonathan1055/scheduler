@@ -91,8 +91,14 @@ before_script:
   # Export web server URL for browser tests.
   - export SIMPLETEST_BASE_URL=http://localhost:8888
 
+  # TEMP - Patch Scheduler to cater for latest Rules and Typed Data changes.
+  # See https://www.drupal.org/project/scheduler/issues/3101377
+  - cd $DRUPAL_ROOT/modules/$MODULE
+  - wget -q -O - https://www.drupal.org/files/issues/2019-12-18/3101377-7.context_definitions.patch | patch -p1
+
 script:
   # Run the PHPUnit tests.
+  - cd $DRUPAL_ROOT
   - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/
 
   # Check for coding standards. First change directory to our module.
