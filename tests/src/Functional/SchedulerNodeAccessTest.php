@@ -61,7 +61,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
       ];
       $node = $this->drupalCreateNode($settings);
       $this->drupalGet('node/' . $node->id());
-      $this->assertResponse(403, 'Before cron, viewing the ' . $data['before'] . '  node returns "403 Not Authorized"');
+      $this->assertSession()->statusCodeEquals(403, 'Before cron, viewing the ' . $data['before'] . '  node returns "403 Not Authorized"');
 
       // Delay so that the date entered is now in the past, then run cron.
       sleep(2);
@@ -75,7 +75,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
 
       // Check the node is still not viewable.
       $this->drupalGet('node/' . $node->id());
-      $this->assertResponse(403, 'After cron, viewing the ' . $data['after'] . '  node returns "403 Not Authorized"');
+      $this->assertSession()->statusCodeEquals(403, 'After cron, viewing the ' . $data['after'] . '  node returns "403 Not Authorized"');
     }
 
     // Log in and assert that the two dblog messages are shown.
