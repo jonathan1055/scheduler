@@ -113,7 +113,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     // Check that the weight input field is displayed when the content type is
     // enabled for scheduling. This field still exists even with tabledrag on.
     $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
-    $this->assertFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is shown when the content type is enabled for scheduling.');
+    $this->assertSession()->fieldExists('edit-fields-scheduler-settings-weight');
 
     // Check that the weight input field is not displayed when the content type
     // is not enabled for scheduling.

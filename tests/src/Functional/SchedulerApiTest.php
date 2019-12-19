@@ -59,7 +59,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->webUser);
     // Check the 'approved for publishing' field is shown on the node form.
     $this->drupalGet('node/add/' . $this->customName);
-    $this->assertFieldById('edit-field-approved-publishing-value', NULL, 'The "Approved for publishing" field is shown on the node form');
+    $this->assertSession()->fieldExists('edit-field-approved-publishing-value');
 
     // Check that the message is shown when scheduling a node for publishing
     // which is not yet allowed to be published.
@@ -126,7 +126,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->webUser);
     // Check the 'approved for unpublishing' field is shown on the node form.
     $this->drupalGet('node/add/' . $this->customName);
-    $this->assertFieldById('edit-field-approved-unpublishing-value', NULL, 'The "Approved for unpublishing" field is shown on the node form');
+    $this->assertSession()->fieldExists('edit-field-approved-unpublishing-value');
 
     // Check that the message is shown when scheduling a node for unpublishing
     // which is not yet allowed to be unpublished.
