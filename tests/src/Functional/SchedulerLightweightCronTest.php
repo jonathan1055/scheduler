@@ -70,7 +70,7 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
     // Check that the form cannot be saved if the cron key is blank.
     $this->drupalPostForm($this->routeCronForm, ['lightweight_access_key' => ''], 'Save configuration');
     $this->assertSession()->pageTextContains('Lightweight cron access key field is required.');
-    $this->assertNoText('The configuration options have been saved.', 'Saving configuration with a blank cron key is not possible');
+    $this->assertSession()->pageTextNotContains('The configuration options have been saved.');
   }
 
 }

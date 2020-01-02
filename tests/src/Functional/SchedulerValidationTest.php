@@ -44,7 +44,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents entering a publish-on date with no
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("If you set a 'publish on' date then you must also set an 'unpublish on' date.");
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
+    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $this->typeName, $node->title->value));
 
     // Create an unpublished page node, then edit the node and check that if the
     // status is changed to published, then an unpublish-on date is also needed.
@@ -62,7 +62,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents publishing the node directly without an
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("Either you must set an 'unpublish on' date or save this node as unpublished.");
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
+    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $this->typeName, $node->title->value));
 
     // Create an unpublished node, edit the node and check that if both dates
     // are entered then the unpublish date is later than the publish date.
@@ -80,7 +80,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents entering an unpublish-on date which is
     // earlier than the publish-on date.
     $this->assertSession()->pageTextContains("The 'unpublish on' date must be later than the 'publish on' date.");
-    $this->assertNoText(sprintf('%s %s has been updated.', $this->typeName, $node->title->value), 'The node has not been saved.');
+    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $this->typeName, $node->title->value));
   }
 
 }

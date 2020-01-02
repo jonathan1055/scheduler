@@ -39,7 +39,9 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // Test the 'publish' behavior: the node should be published immediately.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
-    $this->assertNoText("The 'publish on' date must be in the future", 'No error message is shown when the publication date is in the past and the "publish" behavior is chosen.');
+    // Check that no error message is shown when the publication date is in the
+    // past and the "publish" behavior is chosen.
+    $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
     $this->assertSession()->pageTextContains(sprintf('%s %s has been updated.', $this->typeName, $edit['title[0][value]']));
 
     // Reload the node.
@@ -58,7 +60,9 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
     $created_time = $node->getCreatedTime();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
-    $this->assertNoText("The 'publish on' date must be in the future", 'No error message is shown when the publication date is in the past and the "schedule" behavior is chosen.');
+    // Check that no error message is shown when the publication date is in the
+    // past and the "schedule" behavior is chosen.
+    $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
     $this->assertSession()->pageTextContains(sprintf('%s %s has been updated.', $this->typeName, $edit['title[0][value]']));
     $this->assertSession()->pageTextContains('will be published');
 

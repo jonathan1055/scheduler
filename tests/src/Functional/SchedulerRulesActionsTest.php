@@ -125,8 +125,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $node = $this->nodeStorage->load($node->id());
     // Check that neither of the rules are triggered, no publish and unpublish
     // dates are set and the status is still published.
-    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
-    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $assert->pageTextNotContains($message1);
+    $assert->pageTextNotContains($message2);
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node remains published for title: "' . $node->title->value . '".');
@@ -142,7 +142,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // Check that rule 1 is triggered and rule 2 is not. Check that a publishing
     // date has been set and the status is now unpublished.
     $assert->pageTextContains($message1);
-    $this->assertNoText($message2, '"' . $message2 . '" is not shown');
+    $assert->pageTextNotContains($message2);
     $this->assertTrue($node->publish_on->value, 'Node is scheduled for publishing.');
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertFalse($node->isPublished(), 'Node is now unpublished for title: "' . $node->title->value . '".');
@@ -157,7 +157,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 2 is triggered and rule 1 is not. Check that the
     // publishing date has been removed and the status is now published.
-    $this->assertNoText($message1, '"' . $message1 . '" is not shown');
+    $assert->pageTextNotContains($message1);
     $assert->pageTextContains($message2);
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
@@ -281,8 +281,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $node = $this->nodeStorage->load($node->id());
     // Check that neither of the rules are triggered, no publish and unpublish
     // dates are set and the status is still published.
-    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
-    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    $assert->pageTextNotContains($message3);
+    $assert->pageTextNotContains($message4);
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node remains published for title: "' . $node->title->value . '".');
@@ -298,7 +298,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // Check that rule 3 is triggered and rule 4 is not. Check that an
     // unpublishing date has been set and the status is still published.
     $assert->pageTextContains($message3);
-    $this->assertNoText($message4, '"' . $message4 . '" is not shown');
+    $assert->pageTextNotContains($message4);
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     $this->assertTrue($node->unpublish_on->value, 'Node is scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node is still published for title: "' . $node->title->value . '".');
@@ -313,7 +313,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 4 is triggered and rule 3 is not. Check that the
     // unpublishing date has been removed and the status is now unpublished.
-    $this->assertNoText($message3, '"' . $message3 . '" is not shown');
+    $assert->pageTextNotContains($message3);
     $assert->pageTextContains($message4);
     $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
     $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');

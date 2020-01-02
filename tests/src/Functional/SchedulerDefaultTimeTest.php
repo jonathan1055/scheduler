@@ -59,10 +59,10 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // Allow the user to enter only a date with no time.
     $config->set('allow_date_only', TRUE)->save();
 
-    // Create a node and check that the expected error messages are not shown.
+    // Create a node and check that the validation messages are not shown.
     $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
-    $this->assertSession()->pageTextNotContains($publish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for publication.');
-    $this->assertSession()->pageTextNotContains($unpublish_validation_message, 'If the default time option is enabled the user can skip the time when scheduling content for unpublication.');
+    $this->assertSession()->pageTextNotContains($publish_validation_message);
+    $this->assertSession()->pageTextNotContains($unpublish_validation_message);
 
     // Get the pattern of the 'long' default date format.
     $date_format_storage = $this->container->get('entity_type.manager')->getStorage('date_format');
