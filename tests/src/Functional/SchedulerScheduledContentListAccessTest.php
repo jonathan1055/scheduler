@@ -71,32 +71,34 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
 
     // Access a scheduled content user tab as an anonymous visitor.
     $this->drupalGet("user/{$this->schedulerUser->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(403, 'An anonymous visitor cannot access a user\'s scheduled content tab.');
+    // An anonymous visitor cannot access a user's scheduled content tab.
+    $assert->statusCodeEquals(403);
 
-    // Access a users own scheduled content tab as "Editor" without any
-    // scheduler permissions.
+    // Try to access a users own scheduled content tab when they do not have
+    // any scheduler permissions. This should give "403 Access Denied".
     $this->drupalLogin($this->editorUser);
     $this->drupalGet("user/{$this->editorUser->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(403, '"Editor" cannot access a scheduled content user tab.');
+    $assert->statusCodeEquals(403);
 
-    // Access a users own scheduled content tab as "Scheduler User" with only
-    // 'schedule publishing of nodes' permission.
+    // Access a users own scheduled content tab when they have only
+    // 'schedule publishing of nodes' permission. This will give "200 OK".
     $this->drupalLogin($this->schedulerUser);
     $this->drupalGet("user/{$this->schedulerUser->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(200, '"Scheduler User" can access their scheduled content user tab.');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('Node created by Scheduler User for publishing');
     $assert->pageTextContains('Node created by Scheduler User for unpublishing');
     $assert->pageTextNotContains('Node created by Scheduler Manager for unpublishing');
 
-    // Access another users scheduled content tab as "Scheduler User".
+    // Access another users scheduled content tab as "Scheduler User". This
+    // should not be possible and will give "403 Access Denied".
     $this->drupalGet("user/{$this->schedulerManager->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(403, '"Scheduler User" cannot access the scheduled content user tab for "Scheduler Manager"');
+    $assert->statusCodeEquals(403);
 
     // Access the users own scheduled content tab as "Scheduler Manager" with
     // only 'view scheduled content' permission.
     $this->drupalLogin($this->schedulerManager);
     $this->drupalGet("user/{$this->schedulerManager->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(200, 'Scheduler Manager can access their own scheduled content user tab.');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('Node created by Scheduler Manager for publishing');
     $assert->pageTextContains('Node created by Scheduler Manager for unpublishing');
     $assert->pageTextNotContains('Node created by Scheduler User for unpublishing');
@@ -104,7 +106,7 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
     // Access another users scheduled content tab as "Scheduler Manager".
     // The published and unpublished content should be listed.
     $this->drupalGet("user/{$this->schedulerUser->id()}/scheduled");
-    $this->assertSession()->statusCodeEquals(200, '"Scheduler Manager" can access the scheduled content user tab for "Scheduler User"');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('Node created by Scheduler User for publishing');
     $assert->pageTextContains('Node created by Scheduler User for unpublishing');
   }
@@ -117,26 +119,26 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
 
     // Access the scheduled content overview as anonymous visitor.
     $this->drupalGet('admin/content/scheduled');
-    $this->assertSession()->statusCodeEquals(403, 'An anonymous visitor cannot access the scheduled content overview.');
+    $assert->statusCodeEquals(403);
 
     // Access the scheduled content overview as "Editor" without any
     // scheduler permissions.
     $this->drupalLogin($this->editorUser);
     $this->drupalGet('admin/content/scheduled');
-    $this->assertSession()->statusCodeEquals(403, '"Editor" cannot access the scheduled content overview.');
+    $assert->statusCodeEquals(403);
 
     // Access the scheduled content overview as "Scheduler User" with only
     // 'schedule publishing of nodes' permission.
     $this->drupalLogin($this->schedulerUser);
     $this->drupalGet('admin/content/scheduled');
-    $this->assertSession()->statusCodeEquals(403, '"Scheduler User" cannot access the scheduled content overview.');
+    $assert->statusCodeEquals(403);
 
     // Access the scheduled content overview as "Scheduler Manager" with only
     // 'view scheduled content' permission. They should be able to see the
     // scheduled published and unpublished content by all users.
     $this->drupalLogin($this->schedulerManager);
     $this->drupalGet('admin/content/scheduled');
-    $this->assertSession()->statusCodeEquals(200, 'Scheduler Manager can access the scheduled content overview.');
+    $assert->statusCodeEquals(200);
     $assert->pageTextContains('Node created by Scheduler User for publishing');
     $assert->pageTextContains('Node created by Scheduler User for unpublishing');
     $assert->pageTextContains('Node created by Scheduler Manager for publishing');

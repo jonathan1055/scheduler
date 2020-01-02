@@ -25,20 +25,23 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
    */
   public function testLightweightCronRun() {
     // Run scheduler lightweight cron anonymously without any cron key.
+    // The response with no key should be "404 Not Found".
     $this->drupalGet('scheduler/cron');
-    $this->assertSession()->statusCodeEquals(404, 'scheduler/cron with no cron key returns "404 Not Found"');
+    $this->assertSession()->statusCodeEquals(404);
 
     // Run scheduler lightweight cron anonymously with a random cron key.
+    // The response for an incorrect key should be "403 Access Denied".
     $key = substr(md5(rand()), 0, 20);
     $this->drupalGet('scheduler/cron/' . $key);
-    $this->assertSession()->statusCodeEquals(403, 'scheduler/cron with the wrong cron key returns "403 Not Authorized"');
+    $this->assertSession()->statusCodeEquals(403);
 
     // Run scheduler lightweight cron anonymously with the valid cron key which
-    // is defined during install.
+    // is defined during install. It should run OK but no content will be
+    // produced so the response should be "204 No Content".
     $config = $this->config('scheduler.settings');
     $key = $config->get('lightweight_cron_access_key');
     $this->drupalGet('scheduler/cron/' . $key);
-    $this->assertSession()->statusCodeEquals(204, 'scheduler/cron with the correct cron key runs OK and returns "204 No Content"');
+    $this->assertSession()->statusCodeEquals(204);
   }
 
   /**
