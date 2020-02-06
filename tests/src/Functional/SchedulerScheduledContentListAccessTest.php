@@ -14,7 +14,7 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['views'];
+  protected static $modules = ['views'];
 
   /**
    * {@inheritdoc}

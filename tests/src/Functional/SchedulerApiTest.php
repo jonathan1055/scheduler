@@ -20,7 +20,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    * the entity_form_display. Could these be removed from the config files and
    * then not needed here?
    */
-  public static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
+  protected static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
 
   /**
    * {@inheritdoc}

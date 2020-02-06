@@ -18,7 +18,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['devel_generate'];
+  protected static $modules = ['devel_generate'];
 
   /**
    * {@inheritdoc}

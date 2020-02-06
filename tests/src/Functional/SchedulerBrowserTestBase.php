@@ -26,7 +26,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['scheduler', 'dblog'];
+  protected static $modules = ['scheduler', 'dblog'];
 
   /**
    * A user with administration rights.

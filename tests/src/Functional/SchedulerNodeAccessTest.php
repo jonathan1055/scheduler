@@ -17,7 +17,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['scheduler_access_test'];
+  protected static $modules = ['scheduler_access_test'];
 
   /**
    * {@inheritdoc}

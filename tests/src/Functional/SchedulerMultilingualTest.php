@@ -16,7 +16,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['content_translation'];
+  protected static $modules = ['content_translation'];
 
   /**
    * {@inheritdoc}

@@ -20,7 +20,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['scheduler_rules_integration'];
+  protected static $modules = ['scheduler_rules_integration'];
 
   /**
    * {@inheritdoc}
