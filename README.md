@@ -30,6 +30,11 @@ For a fuller description of the module, visit the [project page on Drupal.org](h
      When generating new test content via Devel Generate, Scheduler can add
      publishing dates automatically.
 
+ * Scheduler Content Moderation Integration 
+     (https://www.drupal.org/project/scheduler_content_moderation_integration)
+     If you use core Content Moderation then you should also install this
+     sub-module, contributed by the folks at Thunder https://www.drupal.org/thunder
+
 ## Installation
 
  * Install as you would normally install a contributed Drupal module. See:
