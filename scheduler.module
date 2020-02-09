@@ -355,8 +355,8 @@ function scheduler_node_presave(EntityInterface $node) {
     if (!isset($publishing_enabled_types)) {
       $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
       $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
-      $publishing_percent = $node->devel_generate['scheduler_publishing'];
-      $unpublishing_percent = $node->devel_generate['scheduler_unpublishing'];
+      $publishing_percent = isset($node->devel_generate['scheduler_publishing']) ?: 0;
+      $unpublishing_percent = isset($node->devel_generate['scheduler_unpublishing']) ?: 0;
       // Reuse the selected 'node creation' time range for our future date span.
       $time_range = $node->devel_generate['time_range'];
     }
