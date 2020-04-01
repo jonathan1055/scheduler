@@ -40,7 +40,7 @@
     ],
     "support": {
         "issues": "https://www.drupal.org/project/issues/scheduler",
-        "source": "http://cgit.drupalcode.org/scheduler"
+        "source": "https://git.drupalcode.org/project/scheduler"
     },
     "extra": {
         "drush": {
