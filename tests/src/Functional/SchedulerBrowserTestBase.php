@@ -22,6 +22,13 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   protected static $modules = ['scheduler', 'dblog'];
 
   /**
+   * The profile to install as a basis for testing.
+   *
+   * @var string
+   */
+  protected $profile = 'testing';
+
+  /**
    * {@inheritdoc}
    */
   protected $defaultTheme = 'stark';

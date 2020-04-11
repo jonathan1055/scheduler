@@ -14,13 +14,6 @@ trait SchedulerSetupTrait {
   use CronRunTrait;
 
   /**
-   * The profile to install as a basis for testing.
-   *
-   * @var string
-   */
-  protected $profile = 'testing';
-
-  /**
    * A user with administration rights.
    *
    * @var \Drupal\Core\Session\AccountInterface
