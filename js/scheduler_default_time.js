@@ -23,7 +23,7 @@
         operations.forEach(function (value) {
           var element = $("input#edit-" + value + "-on-0-value-time", context);
           // Only set the time when there is no value and the field is required.
-          if (!element.val() && element.prop("required")) {
+          if (element.val() === "" && element.prop("required")) {
             element.val(drupalSettings.schedulerDefaultTime);
           }
         });
