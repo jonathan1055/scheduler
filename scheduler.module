@@ -108,7 +108,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     return;
   }
 
-  $date_only_allowed = $config->get('allow_date_only');
+  $allow_date_only = $config->get('allow_date_only');
 
   // A publish_on date is required if the content type option is set and the
   // node is being created or it currently has a scheduled publishing date.
@@ -153,14 +153,22 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // Define the descriptions depending on whether the time can be skipped.
   $date_formatter = \Drupal::service('date.formatter');
   $descriptions = [];
-  if ($date_only_allowed) {
+  if ($allow_date_only) {
     $descriptions['format'] = t('Enter a date. The time part is optional.');
     // Show the default time so users know what they will get if they do not
     // enter a time.
     $default_time = strtotime($config->get('default_time'));
+    $default_time_formatted = $date_formatter->format($default_time, 'custom', 'H:i:s');
     $descriptions['default'] = t('The default time is @default_time.', [
-      '@default_time' => $date_formatter->format($default_time, 'custom', 'H:i:s'),
+      '@default_time' => $default_time_formatted,
     ]);
+
+    // Use javascript to pre-fill the time parts if the dates are required.
+    // See js/scheduler_default_time.js for more details.
+    if ($publishing_required || $unpublishing_required) {
+      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $default_time_formatted;
+    }
   }
   else {
     $descriptions['format'] = t('Enter a date and time.');

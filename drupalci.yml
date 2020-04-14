@@ -12,4 +12,10 @@ build:
         halt-on-fail: false
     testing:
       run_tests.standard:
+        types: 'PHPUnit-Functional'
         suppress-deprecations: true
+      run_tests.js:
+        types: 'PHPUnit-FunctionalJavascript'
+        suppress-deprecations: true
+        concurrency: 1
+        halt-on-fail: false

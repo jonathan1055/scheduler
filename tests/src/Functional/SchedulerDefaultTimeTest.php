@@ -14,6 +14,9 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
   /**
    * Test the default time functionality during content creation and edit.
+   *
+   * This test covers the default scenario where the dates are optional and not
+   * required. A javascript test covers the cases where the dates are required.
    */
   public function testDefaultTime() {
     $this->drupalLogin($this->schedulerUser);

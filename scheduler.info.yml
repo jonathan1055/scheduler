@@ -16,3 +16,4 @@ test_dependencies:
 libraries:
   - scheduler/admin
   - vertical-tabs
+  - default-time
