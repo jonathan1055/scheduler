@@ -99,7 +99,13 @@ before_script:
 script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
-  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/
+  # Do not run the Javascript tests on PHP5.6
+  # See https://www.drupal.org/project/scheduler/issues/3133151
+  - if [ $TRAVIS_PHP_VERSION == "5.6" ]; then
+        ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/ --filter='/(?!.*Javascript)^.*$/';
+      else
+        ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/;
+    fi
 
   # Check for coding standards. First change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
