@@ -6,7 +6,7 @@
     "homepage": "https://drupal.org/project/scheduler",
     "require-dev": {
         "drush/drush": "^9.0",
-        "drupal/devel_generate": "^3.x-dev",
+        "drupal/devel_generate": "3.x-dev",
         "drupal/coder": "^8.3.3"
     },
     "repositories": {
