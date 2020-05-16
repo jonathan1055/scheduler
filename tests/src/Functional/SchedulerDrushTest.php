@@ -21,22 +21,22 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     // check that all of the output messages are shown.
     $this->drush('scheduler:cron');
     $messages = $this->getErrorOutput();
-    $this->assertContains('Lightweight cron run activated by drush command', $messages, 'Starting dblog message not found', TRUE);
-    $this->assertContains('Lightweight cron run completed', $messages, 'Ending dblog message not found', TRUE);
-    $this->assertContains('Message: Scheduler lightweight cron completed', $messages, 'Drush message not found', TRUE);
+    $this->assertStringContainsString('Lightweight cron run activated by drush command', $messages, 'Starting dblog message not found', TRUE);
+    $this->assertStringContainsString('Lightweight cron run completed', $messages, 'Ending dblog message not found', TRUE);
+    $this->assertStringContainsString('Message: Scheduler lightweight cron completed', $messages, 'Drush message not found', TRUE);
 
     // Use the sch:cron alias and simulate the --nomsg parameter, then check
     // that the drush confirmation message is not shown.
     $this->drush('sch:cron', [], ['nomsg' => TRUE]);
     $messages = $this->getErrorOutput();
-    $this->assertNotContains('Message: Scheduler lightweight cron completed', $messages, '--nomsg parameter did not work', TRUE);
+    $this->assertStringNotContainsString('Message: Scheduler lightweight cron completed', $messages, '--nomsg parameter did not work', TRUE);
 
     // Use the alternative alias sch-cron and add the --nolog parameter, then
     // check that the dblog messages are not shown.
     $this->drush('sch-cron', [], ['nolog' => TRUE]);
     $messages = $this->getErrorOutput();
-    $this->assertNotContains('Lightweight cron run activated by drush command', $messages, '--nolog parameter did not work for starting message', TRUE);
-    $this->assertNotContains('Lightweight cron run completed', $messages, '--nolog parameter did not work for ending message', TRUE);
+    $this->assertStringNotContainsString('Lightweight cron run activated by drush command', $messages, '--nolog parameter did not work for starting message', TRUE);
+    $this->assertStringNotContainsString('Lightweight cron run completed', $messages, '--nolog parameter did not work for ending message', TRUE);
   }
 
   /**
@@ -63,8 +63,8 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     // and unpublishing messages are found.
     $this->drush('scheduler:cron');
     $messages = $this->getErrorOutput();
-    $this->assertContains(sprintf('%s: scheduled publishing of %s', $this->typeName, $title1), $messages, 'Scheduled publishing message not found', TRUE);
-    $this->assertContains(sprintf('%s: scheduled unpublishing of %s', $this->typeName, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
+    $this->assertStringContainsString(sprintf('%s: scheduled publishing of %s', $this->typeName, $title1), $messages, 'Scheduled publishing message not found', TRUE);
+    $this->assertStringContainsString(sprintf('%s: scheduled unpublishing of %s', $this->typeName, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
   }
 
 }

@@ -13,6 +13,10 @@ trait SchedulerSetupTrait {
 
   use CronRunTrait;
 
+  // @todo Remove this when core 8.8 is the lowest supported version.
+  // @see https://www.drupal.org/project/scheduler/issues/3136744
+  use PhpunitCompatibilityCore87Trait;
+
   /**
    * A user with administration rights.
    *
