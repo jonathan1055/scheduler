@@ -60,11 +60,10 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $node = $this->drupalCreateNode(['type' => $this->type, 'status' => FALSE]);
     $created_time = $node->getCreatedTime();
     $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
-    // Check that no error message is shown when the publication date is in the
-    // past and the "schedule" behavior is chosen.
+    // Check that no error is shown when the publish_on date is in the past.
     $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
+    $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published', $edit['title[0][value]']));
     $this->assertSession()->pageTextContains(sprintf('%s %s has been updated.', $this->typeName, $edit['title[0][value]']));
-    $this->assertSession()->pageTextContains('will be published');
 
     // Reload the node.
     $this->nodeStorage->resetCache([$node->id()]);

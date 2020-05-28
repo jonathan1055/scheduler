@@ -387,6 +387,8 @@ function scheduler_node_presave(EntityInterface $node) {
   $config = \Drupal::config('scheduler.settings');
   $entity = $node->type->entity;
   $request_time = \Drupal::time()->getRequestTime();
+  $publish_message = FALSE;
+  $unpublish_message = FALSE;
 
   // If there is no entity object or the class is incorrect then stop here. This
   // should not really happen but it has been observed, so better to be safe.
@@ -470,12 +472,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // Only inform the user that the node is scheduled if publication has not
       // been prevented by other modules. Those modules have to display a
       // message themselves explaining why publication is denied.
-      if ($publication_allowed) {
-        $date_formatter = \Drupal::service('date.formatter');
-        \Drupal::messenger()->addMessage(t('This post is unpublished and will be published @publish_time.', [
-          '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
-        ]), 'status', FALSE);
-      }
+      $publish_message = ($publication_allowed && $entity->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')));
     }
   }
 
@@ -483,7 +480,32 @@ function scheduler_node_presave(EntityInterface $node) {
     // Scheduler does not do the same 'immediate' processing for unpublishing.
     // However, the api hook should still be called during presave as there may
     // be messages to be displayed if the unpublishing will be disallowed later.
-    \Drupal::service('scheduler.manager')->isAllowed($node, 'unpublish');
+    $unpublication_allowed = \Drupal::service('scheduler.manager')->isAllowed($node, 'unpublish');
+    $unpublish_message = ($unpublication_allowed && $entity->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')));
+  }
+
+  // Give one message, which will include the publish_on date, the unpublish_on
+  // date or both dates. Cannot make the title into a link here when the node
+  // is being created. But the node module gives the link in the next message.
+  $date_formatter = \Drupal::service('date.formatter');
+  if ($publish_message && $unpublish_message) {
+    \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time and unpublished @unpublish_time.', [
+      '%title' => $node->getTitle(),
+      '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
+      '@unpublish_time' => $date_formatter->format($node->unpublish_on->value, 'long'),
+    ]), 'status', FALSE);
+  }
+  elseif ($publish_message) {
+    \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time.', [
+      '%title' => $node->getTitle(),
+      '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
+    ]), 'status', FALSE);
+  }
+  elseif ($unpublish_message) {
+    \Drupal::messenger()->addMessage(t('%title is scheduled to be unpublished @unpublish_time.', [
+      '%title' => $node->getTitle(),
+      '@unpublish_time' => $date_formatter->format($node->unpublish_on->value, 'long'),
+    ]), 'status', FALSE);
   }
 }
 
