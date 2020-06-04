@@ -253,7 +253,12 @@ class SchedulerManager {
 
         // Use the standard actions system to publish and save the node.
         $node = $event->getNode();
-        $this->entityTypeManager->getStorage('action')->load('node_publish_action')->getPlugin()->execute($node);
+        $action_id = 'node_publish_action';
+        if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
+          // workbench_moderation_actions module uses a custom action instead.
+          $action_id = 'state_change__node__published';
+        }
+        $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($node);
 
         $result = TRUE;
       }
@@ -423,7 +428,12 @@ class SchedulerManager {
 
         // Use the standard actions system to unpublish and save the node.
         $node = $event->getNode();
-        $this->entityTypeManager->getStorage('action')->load('node_unpublish_action')->getPlugin()->execute($node);
+        $action_id = 'node_unpublish_action';
+        if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
+          // workbench_moderation_actions module uses a custom action instead.
+          $action_id = 'state_change__node__archived';
+        }
+        $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($node);
 
         $result = TRUE;
       }
