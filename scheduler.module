@@ -33,7 +33,7 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       break;
 
     case 'scheduler.admin_form':
-      $output = '<p>' . t('Some Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', ['@link' => Url::fromRoute('entity.node_type.collection')->toString()]) . '</br>';
+      $output = '<p>' . t('Most of the Scheduler options are set for each different content type, and are accessed via the <a href="@link">admin content type</a> list.', ['@link' => Url::fromRoute('entity.node_type.collection')->toString()]) . '</br>';
       $output .= t('The options and settings below are common to all content types.') . '</p>';
       break;
 
