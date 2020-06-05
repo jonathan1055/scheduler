@@ -5,7 +5,6 @@ language: php
 sudo: true
 
 php:
-  - 5.6
   - 7.1
   - 7.3
 
@@ -15,21 +14,16 @@ services:
 env:
   global:
     - MODULE=scheduler
+    # Allow this many deprecation warnings before failing the build.
+    - SYMFONY_DEPRECATIONS_HELPER=4
   matrix:
-    - DRUPAL_CORE=8.7.x
     - DRUPAL_CORE=8.8.x
     - DRUPAL_CORE=8.9.x
 
 matrix:
   fast_finish: true
-  # PHP7.3 is not supported on Core 8.7 and earlier.
-  # PHP5 is not supported on Core 8.8 and later.
   exclude:
-    - php: 7.3
-      env: DRUPAL_CORE=8.7.x
-    - php: 5.6
-      env: DRUPAL_CORE=8.8.x
-    - php: 5.6
+    - php: 7.1
       env: DRUPAL_CORE=8.9.x
 
 # Be sure to cache composer downloads.
@@ -54,7 +48,7 @@ before_script:
   # Export database variable for kernel tests.
   - export SIMPLETEST_DB=mysql://root:@127.0.0.1/$MODULE
 
-  # Download Drupal 8 core from the Github mirror because it is faster.
+  # Download Drupal core from the Github mirror because it is faster.
   - travis_retry git clone --branch $DRUPAL_CORE --depth 1 https://github.com/drupal/drupal.git
   - cd drupal
   # Store the path to Drupal root.
@@ -65,21 +59,16 @@ before_script:
   - mkdir $DRUPAL_ROOT/modules/$MODULE
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
-  # Install dependencies.
+  # Get the latest dev versions of the test dependency modules.
   - travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
-  - travis_retry git clone --branch 8.x-2.1 --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
 
   # Run composer self-update and install.
   - travis_retry composer self-update && travis_retry composer install
-  # If running Core 8.6 or 8.7 the following script will upgrade to phpunit 6
-  # which is required in PHP7. The script has now been deleted from Core 8.8.
-  - if [[ $DRUPAL_CORE == "8.6.x" || $DRUPAL_CORE == "8.7.x" ]]; then
-      travis_retry composer run-script drupal-phpunit-upgrade;
-    fi
 
   # Install drush
-  - travis_retry composer require drush/drush:^9.0
+  - travis_retry composer require drush/drush:"^9.0 || ^10.0"
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
@@ -99,13 +88,7 @@ before_script:
 script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
-  # Do not run the Javascript tests on PHP5.6
-  # See https://www.drupal.org/project/scheduler/issues/3133151
-  - if [ $TRAVIS_PHP_VERSION == "5.6" ]; then
-        ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/ --filter='/(?!.*Javascript)^.*$/';
-      else
-        ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/;
-    fi
+  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/;
 
   # Check for coding standards. First change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
