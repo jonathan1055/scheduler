@@ -19,12 +19,16 @@ env:
   matrix:
     - DRUPAL_CORE=8.8.x
     - DRUPAL_CORE=8.9.x
+    - DRUPAL_CORE=9.0.x
 
 matrix:
   fast_finish: true
+  # Core 9.x requires PHP7.3+
   exclude:
     - php: 7.1
       env: DRUPAL_CORE=8.9.x
+    - php: 7.1
+      env: DRUPAL_CORE=9.0.x
 
 # Be sure to cache composer downloads.
 cache:
