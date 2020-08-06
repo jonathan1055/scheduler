@@ -7,6 +7,8 @@ use Drupal\rules\Context\ContextConfig;
 /**
  * Tests the six events that Scheduler provides for use in Rules module.
  *
+ * phpcs:set Drupal.Arrays.Array lineLimit 140
+ *
  * @group scheduler
  * @group legacy
  * @todo Remove the 'legacy' tag when Rules no longer uses deprecated code.
