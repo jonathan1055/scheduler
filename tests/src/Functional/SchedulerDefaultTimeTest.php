@@ -2,9 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use DateTime;
-use DateInterval;
-
 /**
  * Tests the default time functionality.
  *
@@ -30,11 +27,11 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // than using raw unix timestamps because it caters for daylight-saving
     // shifts properly.
     // @see https://www.drupal.org/project/scheduler/issues/2957490
-    $publish_time = new DateTime();
-    $publish_time->add(new DateInterval('P1D'))->setTime(6, 30);
+    $publish_time = new \DateTime();
+    $publish_time->add(new \DateInterval('P1D'))->setTime(6, 30);
 
-    $unpublish_time = new DateTime();
-    $unpublish_time->add(new DateInterval('P2D'))->setTime(6, 30);
+    $unpublish_time = new \DateTime();
+    $unpublish_time->add(new \DateInterval('P2D'))->setTime(6, 30);
 
     // We cannot easily test the full validation message as they contain the
     // current time which can be one or two seconds in the past. The best we can

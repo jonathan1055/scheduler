@@ -2,9 +2,6 @@
 
 namespace Drupal\Tests\scheduler\FunctionalJavascript;
 
-use DateTime;
-use DateInterval;
-
 /**
  * Tests the JavaScript functionality for default dates.
  *
@@ -67,8 +64,8 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
 
     // Create a DateTime object to hold the scheduling date. This is better than
     // using a raw unix timestamp because it caters for daylight-saving.
-    $scheduling_time = new DateTime();
-    $scheduling_time->add(new DateInterval('P1D'))->setTime(19, 30);
+    $scheduling_time = new \DateTime();
+    $scheduling_time->add(new \DateInterval('P1D'))->setTime(19, 30);
 
     foreach ([TRUE, FALSE] as $required) {
       // Set the publish-on/unpublish-on date to the $required setting.
