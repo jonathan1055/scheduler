@@ -28,13 +28,12 @@ class TimestampDatetimeNoDefaultWidget extends TimestampDatetimeWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-    // Remove 'Leave blank to use the time of form submission' which is in the
-    // #description inherited from TimestampDatetimeWidget. The text here is not
-    // used because it is entirely replaced in scheduler_form_node_form_alter()
-    // However the widget is generic and may be used elsewhere in future.
-    $date_format = DateFormat::load('html_date')->getPattern();
-    $time_format = DateFormat::load('html_time')->getPattern();
-    $element['value']['#description'] = $this->t('Format: %format. Leave blank for no date.', ['%format' => Datetime::formatExample($date_format . ' ' . $time_format)]);
+    // The default description "Format: html-date html-time. Leave blank to use
+    // the time of form submission" is inherited from TimestampDatetimeWidget,
+    // but this is entirely replaced in scheduler_form_node_form_alter().
+    // However this widget is generic and may be used elsewhere, so provide
+    // an accurate #description here.
+    $element['value']['#description'] = $this->t('Leave blank for no date.');
 
     // Set the callback function to allow interception of the submitted user
     // input and add the default time if needed. It is too late to try this in
