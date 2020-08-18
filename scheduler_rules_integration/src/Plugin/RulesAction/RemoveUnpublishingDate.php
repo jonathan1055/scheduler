@@ -13,7 +13,7 @@ use Drupal\rules\Core\RulesActionBase;
  *   id = "scheduler_remove_unpublishing_date_action",
  *   label = @Translation("Remove date for scheduled unpublishing"),
  *   category = @Translation("Scheduler"),
- *   context = {
+ *   context_definitions = {
  *     "node" = @ContextDefinition("entity:node",
  *       label = @Translation("Node"),
  *       description = @Translation("The node from which to remove the scheduled unpublishing date"),
