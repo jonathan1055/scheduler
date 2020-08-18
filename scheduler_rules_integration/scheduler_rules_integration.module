@@ -11,10 +11,10 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\scheduler_rules_integration\Event\NewNodeIsScheduledForPublishingEvent;
-use Drupal\scheduler_rules_integration\Event\NewNodeIsScheduledForUnpublishingEvent;
 use Drupal\scheduler_rules_integration\Event\ExistingNodeIsScheduledForPublishingEvent;
 use Drupal\scheduler_rules_integration\Event\ExistingNodeIsScheduledForUnpublishingEvent;
+use Drupal\scheduler_rules_integration\Event\NewNodeIsScheduledForPublishingEvent;
+use Drupal\scheduler_rules_integration\Event\NewNodeIsScheduledForUnpublishingEvent;
 use Drupal\scheduler_rules_integration\Event\SchedulerHasPublishedThisNodeEvent;
 use Drupal\scheduler_rules_integration\Event\SchedulerHasUnpublishedThisNodeEvent;
 
