@@ -28,12 +28,6 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
   public function setUp() {
     parent::setUp();
 
-    // If the Rules module has not been loaded then skip the tests.
-    // @see https://www.drupal.org/project/scheduler/issues/3136553
-    if (!\Drupal::moduleHandler()->moduleExists('rules')) {
-      $this->markTestSkipped('Rules module is not available for testing.');
-    }
-
     $this->rulesStorage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
     $this->drupalLogin($this->adminUser);
