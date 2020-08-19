@@ -64,7 +64,7 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
     $new_key = $new_key_xpath[0]->getText();
     $this->assertTrue(!empty($new_key), 'Lightweight cron key field is not empty after generating new key');
     $this->assertTrue(strlen($new_key) == 20, 'New lightweight cron key string length is 20');
-    $this->assertNotEqual($key, $new_key, 'Lightweight cron key has changed.');
+    $this->assertNotEquals($new_key, $key, 'Lightweight cron key has changed.');
 
     // Check that the 'run lightweight cron' button works.
     $this->drupalPostForm($this->routeCronForm, [], "Run Scheduler's lightweight cron now");
