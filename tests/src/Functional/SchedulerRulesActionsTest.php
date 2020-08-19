@@ -133,8 +133,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // dates are set and the status is still published.
     $assert->pageTextNotContains($message1);
     $assert->pageTextNotContains($message2);
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node remains published for title: "' . $node->title->value . '".');
 
     // Edit the node, triggering rule 1.
@@ -149,8 +149,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // date has been set and the status is now unpublished.
     $assert->pageTextContains($message1);
     $assert->pageTextNotContains($message2);
-    $this->assertTrue($node->publish_on->value, 'Node is scheduled for publishing.');
-    $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertNotEmpty($node->publish_on->value, 'Node is scheduled for publishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertFalse($node->isPublished(), 'Node is now unpublished for title: "' . $node->title->value . '".');
 
     // Edit the node, triggering rule 2.
@@ -165,8 +165,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // publishing date has been removed and the status is now published.
     $assert->pageTextNotContains($message1);
     $assert->pageTextContains($message2);
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node is now published for title: "' . $node->title->value . '".');
 
     // Secondly, use the node which is not enabled for Scheduler.
@@ -182,7 +182,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that no publishing date is set.
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
     // Check that a log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
@@ -289,8 +289,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // dates are set and the status is still published.
     $assert->pageTextNotContains($message3);
     $assert->pageTextNotContains($message4);
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node remains published for title: "' . $node->title->value . '".');
 
     // Edit the node, triggering rule 3.
@@ -305,8 +305,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // unpublishing date has been set and the status is still published.
     $assert->pageTextContains($message3);
     $assert->pageTextNotContains($message4);
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertTrue($node->unpublish_on->value, 'Node is scheduled for unpublishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertNotEmpty($node->unpublish_on->value, 'Node is scheduled for unpublishing.');
     $this->assertTrue($node->isPublished(), 'Node is still published for title: "' . $node->title->value . '".');
 
     // Edit the node, triggering rule 4.
@@ -321,8 +321,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // unpublishing date has been removed and the status is now unpublished.
     $assert->pageTextNotContains($message3);
     $assert->pageTextContains($message4);
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for publishing.');
-    $this->assertFalse($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertEmpty($node->publish_on->value, 'Node is not scheduled for publishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     $this->assertFalse($node->isPublished(), 'Node is now unpublished for title: "' . $node->title->value . '".');
 
     // Secondly, use the node which is not enabled for Scheduler.
@@ -338,7 +338,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
     // Check that no unpublishing date is set.
-    $this->assertFalse($node->publish_on->value, 'Node is not scheduled for unpublishing.');
+    $this->assertEmpty($node->unpublish_on->value, 'Node is not scheduled for unpublishing.');
     // Check that a log message has been recorded.
     $log = \Drupal::database()->select('watchdog', 'w')
       ->condition('type', 'scheduler')
