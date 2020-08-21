@@ -35,17 +35,17 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     $title = $info . ' (' . $run_number . 'a)';
     $this->drupalGet('node/add/' . $this->nonSchedulerNodeType->id());
     if ($publishing_enabled) {
-      $this->assertFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is shown - ' . $title);
+      $this->assertSession()->fieldExists('publish_on[0][value][date]');
     }
     else {
-      $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - ' . $title);
+      $this->assertSession()->fieldNotExists('publish_on[0][value][date]');
     }
 
     if ($unpublishing_enabled) {
-      $this->assertFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is shown - ' . $title);
+      $this->assertSession()->fieldExists('unpublish_on[0][value][date]');
     }
     else {
-      $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - ' . $title);
+      $this->assertSession()->fieldNotExists('unpublish_on[0][value][date]');
     }
 
     // Create an unpublished node with a publishing date, which mimics what

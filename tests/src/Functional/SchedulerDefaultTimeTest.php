@@ -80,8 +80,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
 
       // Check that the default time has been added to the form on edit.
       $this->drupalGet('node/' . $node->id() . '/edit');
-      $this->assertFieldByName('publish_on[0][value][time]', $default_time, 'The default time offset has been added to the date field when scheduling content for publication.');
-      $this->assertFieldByName('unpublish_on[0][value][time]', $default_time, 'The default time offset has been added to the date field when scheduling content for unpublication.');
+      $this->assertSession()->fieldExists('publish_on[0][value][time]');
+      $this->assertSession()->fieldExists('unpublish_on[0][value][time]');
 
     }
     else {

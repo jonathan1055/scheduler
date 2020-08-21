@@ -120,7 +120,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
     $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
-    $this->assertNoFieldById('edit-fields-scheduler-settings-weight', NULL, 'The scheduler settings row is not shown when the content type is not enabled for scheduling.');
+    $this->assertSession()->FieldNotExists('edit-fields-scheduler-settings-weight');
   }
 
   /**
@@ -144,8 +144,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/add/' . $this->type);
     $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
     // Check the publish_on field is not shown, but the unpublish_on field is.
-    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - 1');
-    $this->assertFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is shown - 1');
+    $this->assertSession()->FieldNotExists('publish_on[0][value][date]');
+    $this->assertSession()->FieldExists('unpublish_on[0][value][date]');
 
     // 2. Set publish_on to be displayed but hide the unpublish_on field.
     $edit = [
@@ -158,8 +158,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/add/' . $this->type);
     $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
     // Check the publish_on field is not shown, but the unpublish_on field is.
-    $this->assertFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is shown - 2');
-    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - 2');
+    $this->assertSession()->FieldExists('publish_on[0][value][date]');
+    $this->assertSession()->FieldNotExists('unpublish_on[0][value][date]');
 
     // 3. Set both fields to be hidden.
     $edit = [
@@ -172,8 +172,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/add/' . $this->type);
     $assert->elementNotExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
     // Check the neither field is displayed.
-    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown - 3');
-    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown - 3');
+    $this->assertSession()->FieldNotExists('publish_on[0][value][date]');
+    $this->assertSession()->FieldNotExists('unpublish_on[0][value][date]');
   }
 
 }

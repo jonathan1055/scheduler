@@ -27,8 +27,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
     // Check that neither of the fields are displayed when creating a node.
     $this->drupalGet('node/add/' . $this->type);
-    $this->assertNoFieldByName('publish_on[0][value][date]', NULL, 'The Publish-on field is not shown for users who do not have permission to schedule content');
-    $this->assertNoFieldByName('unpublish_on[0][value][date]', NULL, 'The Unpublish-on field is not shown for users who do not have permission to schedule content');
+    $this->assertSession()->fieldNotExists('publish_on[0][value][date]');
+    $this->assertSession()->fieldNotExists('unpublish_on[0][value][date]');
 
     // At core 8.4 an enhancement will be committed to change the 'save and ...'
     // button into a 'save' with a corresponding status checkbox. This test has
