@@ -1,34 +1,42 @@
 language: php
+os: linux
+dist: xenial
 
 # The Travis CI container mode has random functional test fails, so we must use
 # sudo here.
 sudo: true
-
-php:
-  - 7.1
-  - 7.3
 
 services:
   - mysql
 
 env:
   global:
+    # Make the script re-usable for other modules.
     - MODULE=scheduler
-    # Allow this many deprecation warnings before failing the build.
-    - SYMFONY_DEPRECATIONS_HELPER=4
-  matrix:
-    - DRUPAL_CORE=8.8.x
-    - DRUPAL_CORE=8.9.x
-    - DRUPAL_CORE=9.0.x
+    # Initialise the real SYMFONY_DEPRECATIONS_HELPER variable.
+    - SYMFONY_DEPRECATIONS_HELPER=0
+    # Create a default for the allowed deprecations.
+    - DEPRECATIONS=0
 
-matrix:
+jobs:
   fast_finish: true
-  # Core 9.x requires PHP7.3+
-  exclude:
+  include:
     - php: 7.1
+      env: DRUPAL_CORE=8.8.x
+    - php: 7.2
       env: DRUPAL_CORE=8.9.x
-    - php: 7.1
-      env: DRUPAL_CORE=9.0.x
+    - php: 7.3
+      env:
+        - DRUPAL_CORE=9.0.x
+        # 4 inheritEnvironmentVariables
+        - DEPRECATIONS=4
+    - php: 7.4
+      env:
+        - DRUPAL_CORE=9.1.x
+        # 4 inheritEnvironmentVariables
+        # 31 setUp without a void return
+        # 52 \Component\EventDispatcher -> \Contracts\EventDispatcher
+        - DEPRECATIONS=87
 
 # Be sure to cache composer downloads.
 cache:
@@ -83,6 +91,10 @@ before_script:
 
   # Export web server URL for browser tests.
   - export SIMPLETEST_BASE_URL=http://localhost:8888
+
+  # Set the allowed number of deprecation warnings.
+  - SYMFONY_DEPRECATIONS_HELPER=$DEPRECATIONS || $SYMFONY_DEPRECATIONS_HELPER
+  - echo $SYMFONY_DEPRECATIONS_HELPER
 
 script:
   # Run the PHPUnit tests.
