@@ -56,7 +56,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     ];
     // PHPCS throws a false-positive 'variable $var is undefined' message when
     // the variable is defined by list( ) syntax. To avoid the unwanted warnings
-    // we can wrap the section with @codingStandardsIgnoreStart and IgnoreEnd.
+    // we can wrap the section with codingStandardsIgnoreStart and IgnoreEnd.
     // @see https://www.drupal.org/project/coder/issues/2876245
     // @codingStandardsIgnoreStart
     foreach ($rule_data as $i => list($event_name, $description)) {

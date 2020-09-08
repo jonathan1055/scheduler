@@ -15,7 +15,7 @@ env:
     - MODULE=scheduler
     # Initialise the real SYMFONY_DEPRECATIONS_HELPER variable.
     - SYMFONY_DEPRECATIONS_HELPER=0
-    # Create a default for the allowed deprecations.
+    # Create a default for the allowed deprecations per branch.
     - DEPRECATIONS=0
 
 jobs:
@@ -92,7 +92,7 @@ before_script:
   # Export web server URL for browser tests.
   - export SIMPLETEST_BASE_URL=http://localhost:8888
 
-  # Set the allowed number of deprecation warnings.
+  # Get the allowed number of deprecation warnings.
   - SYMFONY_DEPRECATIONS_HELPER=$DEPRECATIONS || $SYMFONY_DEPRECATIONS_HELPER
   - echo $SYMFONY_DEPRECATIONS_HELPER
 

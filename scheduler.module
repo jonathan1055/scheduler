@@ -214,6 +214,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // Check which widget type is set for the scheduler fields, and give a warning
   // if the wrong one has been set and provide a hint and link to fix it.
   $pluginDefinitions = $display->get('pluginManager')->getDefinitions();
+  $fields_to_check = [];
   if ($publishing_enabled && $publishing_displayed) {
     $fields_to_check[] = 'publish_on';
   }
@@ -339,6 +340,7 @@ function _scheduler_translation_validate($form, FormStateInterface $form_state) 
  * Implements hook_entity_base_field_info().
  */
 function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
+  $fields = [];
   if ($entity_type->id() === 'node') {
     $fields['publish_on'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Publish on'))
