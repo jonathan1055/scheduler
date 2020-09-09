@@ -10,9 +10,6 @@ use Drupal\rules\Context\ContextConfig;
  * phpcs:set Drupal.Arrays.Array lineLimit 140
  *
  * @group scheduler
- * @group legacy
- * @todo Remove the 'legacy' tag when Rules no longer uses deprecated code.
- * @see https://www.drupal.org/project/scheduler/issues/2924353
  */
 class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 

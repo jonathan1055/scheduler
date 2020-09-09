@@ -33,10 +33,15 @@ jobs:
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # 4 inheritEnvironmentVariables
+        # --- self deprecation notices
         # 31 setUp without a void return
+
+        # --- direct deprecation notices
+        # 4 inheritEnvironmentVariables
+        # 4 Support for keys without a placeholder prefix
         # 52 \Component\EventDispatcher -> \Contracts\EventDispatcher
-        - DEPRECATIONS=87
+        # 106 \Component\EventDispatcher -> \Contracts\EventDispatcher in Rules tests
+        - DEPRECATIONS=197
 
 # Be sure to cache composer downloads.
 cache:

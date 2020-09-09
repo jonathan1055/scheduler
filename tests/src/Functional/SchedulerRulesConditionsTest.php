@@ -8,9 +8,6 @@ use Drupal\rules\Context\ContextConfig;
  * Tests the four conditions that Scheduler provides for use in Rules module.
  *
  * @group scheduler
- * @group legacy
- * @todo Remove the 'legacy' tag when Rules no longer uses deprecated code.
- * @see https://www.drupal.org/project/scheduler/issues/2924353
  */
 class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
