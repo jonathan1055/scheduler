@@ -57,11 +57,11 @@ class SetUnpublishingDate extends RulesActionBase {
         '%action_label' => $action_label,
         '%condition' => $condition,
         '@url' => $url->toString(),
-        'link' => Link::fromTextAndUrl($this->t('@type settings', ['@type' => $type_name]), $url)->toString(),
       ];
 
+      $link = Link::fromTextAndUrl($this->t('@type settings', ['@type' => $type_name]), $url)->toString();
       \Drupal::logger('scheduler')->warning('Action "%action_label" is not valid because scheduled unpublishing is not enabled for %type content. Add the condition "%condition" to your Reaction Rule, or enable scheduled unpublishing via the %type settings.',
-        $arguments);
+        $arguments + ['link' => $link]);
 
       \Drupal::messenger()->addMessage($this->t('Action "%action_label" is not valid because scheduled unpublishing is not enabled for %type content. Add the condition "%condition" to your Reaction Rule, or enable scheduled unpublishing via the <a href="@url">%type</a> settings.',
         $arguments), 'warning', FALSE);

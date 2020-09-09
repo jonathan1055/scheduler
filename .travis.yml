@@ -38,10 +38,9 @@ jobs:
 
         # --- direct deprecation notices
         # 4 inheritEnvironmentVariables
-        # 4 Support for keys without a placeholder prefix
         # 52 \Component\EventDispatcher -> \Contracts\EventDispatcher
         # 106 \Component\EventDispatcher -> \Contracts\EventDispatcher in Rules tests
-        - DEPRECATIONS=197
+        - DEPRECATIONS=193
 
 # Be sure to cache composer downloads.
 cache:
