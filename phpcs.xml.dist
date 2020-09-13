@@ -17,7 +17,11 @@
 
   <rule ref="DrupalPractice">
     <!-- Allow empty lines after comments, we don't like this rule. -->
-    <exclude name="DrupalPractice.Commenting.CommentEmptyLine"/>
+    <exclude name="DrupalPractice.Commenting.CommentEmptyLine.SpacingAfter"/>
+  </rule>
+  <rule ref="Drupal">
+    <!-- There appears to be two rules checking nearly the same thing. -->
+    <exclude name="Drupal.Commenting.InlineComment.SpacingAfter"/>
   </rule>
 
   <!-- Ignore all files that match these patterns. By default the full file -->

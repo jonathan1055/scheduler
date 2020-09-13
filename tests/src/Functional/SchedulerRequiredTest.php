@@ -94,19 +94,25 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
    * Provides data for testRequiredScheduling().
    *
    * @return array
-   *   The test data. Each array element has the format:
-   *   Publish_on translatable
-   *   Unublish_on translatable
-   *   Status translatable
-   *   Expected status of four translations before cron
-   *   Expected status of four translations after cron
+   *   id                 - a sequential id to help in identifying test output
+   *   publish_required   - (bool) whether the publish_on field is required
+   *   unpublish_required - (bool) whether the unpublish_on field is required
+   *   operation          - what is being done to the node, 'add' or 'edit'
+   *   scheduled          - (bool) the node is already scheduled for publishing
+   *   status             - (bool) the current published status of the node
+   *   publish_expected   - (bool) will this scenario produced a 'publish on
+   *                        required' error message
+   *   unpublish_expected -  (bool) will this scenario produced a 'unpublish on
+   *                        required' error message
+   *   message            - Descriptive text used in the body of the node
    */
   public function dataRequiredScheduling() {
 
-    $test_cases = [
+    $data = [
       // The numbering used below matches the test cases described in
       // http://drupal.org/node/1198788#comment-7816119
-      //
+
+      // Check the default case when neither date should be required.
       [
         'id' => 0,
         'publish_required' => FALSE,
@@ -118,6 +124,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
         'unpublish_expected' => FALSE,
         'message' => 'By default when a new node is created, the publish on and unpublish on dates are not required.',
       ],
+
       // A. Test scenarios that require scheduled publishing.
       // When creating a new unpublished node it is required to enter a
       // publication date.
@@ -191,6 +198,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       ],
 
       // B. Test scenarios that require scheduled unpublishing.
+
       // When creating a new unpublished node it is required to enter an
       // unpublication date since it is to be expected that the node will be
       // published at some point and should subsequently be unpublished.
@@ -264,7 +272,9 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       ],
 
       // C. Test scenarios that require both publishing and unpublishing.
-      // This section is an amalgamation of the two sections A and B above.
+
+      // This section is an amalgamation of the values in the sections A and B
+      // to check that the settings do not interfere with each other.
       [
         'id' => 11,
         'publish_required' => TRUE,
@@ -327,10 +337,10 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
 
     ];
 
-    // Use unset($test_cases[n]) to remove a temporarily unwanted item, use
-    // return [$test_cases[n]]; to selectively test just one item, or have the
-    // default return $test_cases to test everything.
-    return $test_cases;
+    // Use unset($data[n]) to remove a temporarily unwanted item, use
+    // return [$data[n]] to selectively test just one item, or have the default
+    // return $data to test everything.
+    return $data;
   }
 
 }
