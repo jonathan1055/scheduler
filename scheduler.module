@@ -111,14 +111,18 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $allow_date_only = $config->get('allow_date_only');
 
   // A publish_on date is required if the content type option is set and the
-  // node is being created or it currently has a scheduled publishing date.
-  $publishing_required = $type->getThirdPartySetting('scheduler', 'publish_required', $config->get('default_publish_required'))
+  // node is being created or it is currently not published but has a
+  // scheduled publishing date.
+  $publishing_required = $publishing_enabled
+    && $type->getThirdPartySetting('scheduler', 'publish_required', $config->get('default_publish_required'))
     && ($node->isNew() || (!$node->isPublished() && !empty($node->publish_on->value)));
 
   // An unpublish_on date is required if the content type option is set and the
   // node is being created or the current status is published or the node is
   // scheduled to be published.
-  $unpublishing_required = $type->getThirdPartySetting('scheduler', 'unpublish_required', $config->get('default_unpublish_required')) && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
+  $unpublishing_required = $unpublishing_enabled
+    && $type->getThirdPartySetting('scheduler', 'unpublish_required', $config->get('default_unpublish_required'))
+    && ($node->isNew() || $node->isPublished() || !empty($node->publish_on->value));
 
   // Create a 'details' field group to wrap the scheduling fields, and expand it
   // if publishing or unpublishing is required, if a date already exists or the
