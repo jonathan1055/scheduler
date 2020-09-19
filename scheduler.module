@@ -451,7 +451,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
       // before the node has been published.
       $event = new SchedulerEvent($node);
-      \Drupal::service('event_dispatcher')->dispatch(SchedulerEvents::PRE_PUBLISH_IMMEDIATELY, $event);
+      \Drupal::service('scheduler.manager')->dispatch($event, SchedulerEvents::PRE_PUBLISH_IMMEDIATELY);
       $node = $event->getNode();
 
       // Set the 'changed' timestamp to match what would have been done had this
@@ -468,7 +468,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
       // the node has been published.
       $event = new SchedulerEvent($node);
-      \Drupal::service('event_dispatcher')->dispatch(SchedulerEvents::PUBLISH_IMMEDIATELY, $event);
+      \Drupal::service('scheduler.manager')->dispatch($event, SchedulerEvents::PUBLISH_IMMEDIATELY);
       $node = $event->getNode();
     }
     else {

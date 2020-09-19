@@ -14,6 +14,7 @@ use Drupal\node\NodeInterface;
 use Drupal\scheduler\Exception\SchedulerMissingDateException;
 use Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -83,6 +84,23 @@ class SchedulerManager {
     $this->configFactory = $configFactory;
     $this->eventDispatcher = $eventDispatcher;
     $this->time = $time;
+  }
+
+  /**
+   * Dispatch a Scheduler event.
+   *
+   * All Scheduler events should be dispatched through this common function.
+   *
+   * @param \Symfony\Component\EventDispatcher\Event $event
+   *   The event object.
+   * @param string $event_name
+   *   The text name for the event.
+   *
+   * @see https://www.drupal.org/project/scheduler/issues/3166688
+   */
+  public function dispatch(Event $event, string $event_name) {
+    // Replicate the existing dispatch signature.
+    $this->eventDispatcher->dispatch($event_name, $event);
   }
 
   /**
@@ -168,7 +186,7 @@ class SchedulerManager {
         // Trigger the PRE_PUBLISH event so that modules can react before the
         // node is published.
         $event = new SchedulerEvent($node);
-        $this->eventDispatcher->dispatch(SchedulerEvents::PRE_PUBLISH, $event);
+        $this->dispatch($event, SchedulerEvents::PRE_PUBLISH);
         $node = $event->getNode();
 
         // Update 'changed' timestamp.
@@ -249,7 +267,7 @@ class SchedulerManager {
         // Trigger the PUBLISH event so that modules can react after the node is
         // published.
         $event = new SchedulerEvent($node);
-        $this->eventDispatcher->dispatch(SchedulerEvents::PUBLISH, $event);
+        $this->dispatch($event, SchedulerEvents::PUBLISH);
 
         // Use the standard actions system to publish and save the node.
         $node = $event->getNode();
@@ -353,7 +371,7 @@ class SchedulerManager {
         // Trigger the PRE_UNPUBLISH event so that modules can react before the
         // node is unpublished.
         $event = new SchedulerEvent($node);
-        $this->eventDispatcher->dispatch(SchedulerEvents::PRE_UNPUBLISH, $event);
+        $this->dispatch($event, SchedulerEvents::PRE_UNPUBLISH);
         $node = $event->getNode();
 
         // Update 'changed' timestamp.
@@ -424,7 +442,7 @@ class SchedulerManager {
         // Trigger the UNPUBLISH event so that modules can react after the node
         // is unpublished.
         $event = new SchedulerEvent($node);
-        $this->eventDispatcher->dispatch(SchedulerEvents::UNPUBLISH, $event);
+        $this->dispatch($event, SchedulerEvents::UNPUBLISH);
 
         // Use the standard actions system to unpublish and save the node.
         $node = $event->getNode();
