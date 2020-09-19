@@ -2,10 +2,6 @@ language: php
 os: linux
 dist: xenial
 
-# The Travis CI container mode has random functional test fails, so we must use
-# sudo here.
-sudo: true
-
 services:
   - mysql
 
@@ -34,13 +30,26 @@ jobs:
       env:
         - DRUPAL_CORE=9.1.x
         # --- Remaining self deprecation notices (31)
-        # 31 setUp without a void return
+        # 26 setUp without a void return
+        # 5  setUp without a void return (in Rules module)
 
         # --- Remaining direct deprecation notices (164)
         # 4 inheritEnvironmentVariables
         # 54 \Component\EventDispatcher -> \Contracts\EventDispatcher
         # 106 \Component\EventDispatcher -> \Contracts\EventDispatcher in Rules tests
         - DEPRECATIONS=195
+    - php: 7.4
+      env:
+        # Have a second 9.1 run which does not execute the Rules tests.
+        - DRUPAL_CORE=9.1.x
+        # --- Remaining self deprecation notices (26)
+        # 26 setUp without a void return
+
+        # --- Remaining direct deprecation notices (58)
+        # 4 inheritEnvironmentVariables
+        # 54 \Component\EventDispatcher -> \Contracts\EventDispatcher
+        - DEPRECATIONS=84
+        - RULES=NO
 
 # Be sure to cache composer downloads.
 cache:
@@ -103,7 +112,11 @@ before_script:
 script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
-  - ./vendor/bin/phpunit -c ./core/phpunit.xml.dist ./modules/$MODULE/tests/;
+  - if [ $RULES == "NO" ]; then
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i';
+    else
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/;
+    fi
 
   # Check for coding standards. First change directory to our module.
   - cd $DRUPAL_ROOT/modules/$MODULE
