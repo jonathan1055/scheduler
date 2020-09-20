@@ -33,11 +33,10 @@ jobs:
         # 26 setUp without a void return
         # 5  setUp without a void return (in Rules module)
 
-        # --- Remaining direct deprecation notices (164)
+        # --- Remaining direct deprecation notices (110)
         # 4 inheritEnvironmentVariables
-        # 54 \Component\EventDispatcher -> \Contracts\EventDispatcher
-        # 106 \Component\EventDispatcher -> \Contracts\EventDispatcher in Rules tests
-        - DEPRECATIONS=195
+        # 106 EventDispatcher (in Rules module)
+        - DEPRECATIONS=141
     - php: 7.4
       env:
         # Have a second 9.1 run which does not execute the Rules tests.
@@ -45,10 +44,9 @@ jobs:
         # --- Remaining self deprecation notices (26)
         # 26 setUp without a void return
 
-        # --- Remaining direct deprecation notices (58)
+        # --- Remaining direct deprecation notices (4)
         # 4 inheritEnvironmentVariables
-        # 54 \Component\EventDispatcher -> \Contracts\EventDispatcher
-        - DEPRECATIONS=84
+        - DEPRECATIONS=30
         - RULES=NO
 
 # Be sure to cache composer downloads.

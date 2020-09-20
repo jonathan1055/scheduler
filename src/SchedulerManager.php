@@ -3,6 +3,8 @@
 namespace Drupal\scheduler;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,8 +16,6 @@ use Drupal\node\NodeInterface;
 use Drupal\scheduler\Exception\SchedulerMissingDateException;
 use Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Defines a scheduler manager.
@@ -62,7 +62,7 @@ class SchedulerManager {
   /**
    * The event dispatcher.
    *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   * @var \Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher
    */
   protected $eventDispatcher;
 
@@ -76,7 +76,7 @@ class SchedulerManager {
   /**
    * Constructs a SchedulerManager object.
    */
-  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, EventDispatcherInterface $eventDispatcher, TimeInterface $time) {
+  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, ContainerAwareEventDispatcher $eventDispatcher, TimeInterface $time) {
     $this->dateFormatter = $dateFormatter;
     $this->logger = $logger;
     $this->moduleHandler = $moduleHandler;
@@ -91,7 +91,13 @@ class SchedulerManager {
    *
    * All Scheduler events should be dispatched through this common function.
    *
-   * @param \Symfony\Component\EventDispatcher\Event $event
+   * Drupal 8.8 and 8.9 use Symfony 3.4 and from Drupal 9.0 the Symfony version
+   * is 4.4. Starting with Symfony 4.3 the signature of the event dispatcher
+   * function has the parameters swapped round, the event object is first,
+   * followed by the event name string. At 9.0 the existing signature has to be
+   * used but from 9.1 the parameters must be switched.
+   *
+   * @param \Drupal\Component\EventDispatcher\Event $event
    *   The event object.
    * @param string $event_name
    *   The text name for the event.
@@ -99,8 +105,18 @@ class SchedulerManager {
    * @see https://www.drupal.org/project/scheduler/issues/3166688
    */
   public function dispatch(Event $event, string $event_name) {
-    // Replicate the existing dispatch signature.
-    $this->eventDispatcher->dispatch($event_name, $event);
+    // \Symfony\Component\HttpKernel\Kernel::VERSION will give the symfony
+    // version. However, testing this does not give the required outcome, we
+    // need to test the Drupal core version.
+    // @todo Remove the check when Core 9.1 is the lowest supported version.
+    if (version_compare(\Drupal::VERSION, '9.1', '>=')) {
+      // The new way, with $event first.
+      $this->eventDispatcher->dispatch($event, $event_name);
+    }
+    else {
+      // Replicate the existing dispatch signature.
+      $this->eventDispatcher->dispatch($event_name, $event);
+    }
   }
 
   /**
