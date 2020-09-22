@@ -25,7 +25,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Load the custom node type. It will be enabled for Scheduler automatically

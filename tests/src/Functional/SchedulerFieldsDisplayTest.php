@@ -19,7 +19,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Create a custom user with admin permissions but also permission to use

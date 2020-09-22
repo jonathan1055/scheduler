@@ -19,7 +19,7 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Determine whether the HTML5 date picker is expecting d/m/Y or m/d/Y

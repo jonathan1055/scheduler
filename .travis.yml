@@ -24,29 +24,26 @@ jobs:
     - php: 7.3
       env:
         - DRUPAL_CORE=9.0.x
+        # --- Remaining self deprecation notices (0)
+        # --- Remaining direct deprecation notices (4)
         # 4 inheritEnvironmentVariables
         - DEPRECATIONS=4
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (31)
-        # 26 setUp without a void return
-        # 5  setUp without a void return (in Rules module)
-
+        # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (110)
         # 4 inheritEnvironmentVariables
         # 106 EventDispatcher (in Rules module)
-        - DEPRECATIONS=141
+        - DEPRECATIONS=110
     - php: 7.4
       env:
         # Have a second 9.1 run which does not execute the Rules tests.
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (26)
-        # 26 setUp without a void return
-
+        # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (4)
         # 4 inheritEnvironmentVariables
-        - DEPRECATIONS=30
+        - DEPRECATIONS=4
         - RULES=NO
 
 # Be sure to cache composer downloads.

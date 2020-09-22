@@ -14,7 +14,7 @@ class SchedulerLightweightCronTest extends SchedulerBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->routeCronForm = Url::fromRoute('scheduler.cron_form');

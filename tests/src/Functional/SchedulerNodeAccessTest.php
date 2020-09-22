@@ -20,20 +20,14 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
   protected static $modules = ['scheduler_access_test'];
 
   /**
-   * {@inheritdoc}
+   * Tests Scheduler cron functionality when access to the nodes is denied.
    */
-  public function setUp() {
-    parent::setUp();
+  public function testNodeAccess() {
+
     // scheduler_access_test_install() sets node_access_needs_rebuild(TRUE) and
     // this works when testing the module interactively, but during simpletest
     // the node access table is not rebuilt. Hence do that here explicitly here.
     node_access_rebuild();
-  }
-
-  /**
-   * Tests Scheduler cron functionality when access to the nodes is denied.
-   */
-  public function testNodeAccess() {
 
     // Create data to test publishing then unpublishing via loop.
     // @TODO Convert this test to use a @dataProvider function instead of this
