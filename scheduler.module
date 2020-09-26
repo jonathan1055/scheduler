@@ -391,6 +391,7 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
  */
 function scheduler_node_presave(EntityInterface $node) {
   $config = \Drupal::config('scheduler.settings');
+  $scheduler_manager = \Drupal::service('scheduler.manager');
   $entity = $node->type->entity;
   $request_time = \Drupal::time()->getRequestTime();
   $publish_message = FALSE;
@@ -442,7 +443,7 @@ function scheduler_node_presave(EntityInterface $node) {
   // published immediately.
   if ($entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')) && !empty($node->publish_on->value)) {
     // Check that other modules allow the action on this node.
-    $publication_allowed = \Drupal::service('scheduler.manager')->isAllowed($node, 'publish');
+    $publication_allowed = $scheduler_manager->isAllowed($node, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
     $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
@@ -451,7 +452,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
       // before the node has been published.
       $event = new SchedulerEvent($node);
-      \Drupal::service('scheduler.manager')->dispatch($event, SchedulerEvents::PRE_PUBLISH_IMMEDIATELY);
+      $scheduler_manager->dispatch($event, SchedulerEvents::PRE_PUBLISH_IMMEDIATELY);
       $node = $event->getNode();
 
       // Set the 'changed' timestamp to match what would have been done had this
@@ -468,7 +469,7 @@ function scheduler_node_presave(EntityInterface $node) {
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
       // the node has been published.
       $event = new SchedulerEvent($node);
-      \Drupal::service('scheduler.manager')->dispatch($event, SchedulerEvents::PUBLISH_IMMEDIATELY);
+      $scheduler_manager->dispatch($event, SchedulerEvents::PUBLISH_IMMEDIATELY);
       $node = $event->getNode();
     }
     else {
@@ -486,7 +487,7 @@ function scheduler_node_presave(EntityInterface $node) {
     // Scheduler does not do the same 'immediate' processing for unpublishing.
     // However, the api hook should still be called during presave as there may
     // be messages to be displayed if the unpublishing will be disallowed later.
-    $unpublication_allowed = \Drupal::service('scheduler.manager')->isAllowed($node, 'unpublish');
+    $unpublication_allowed = $scheduler_manager->isAllowed($node, 'unpublish');
     $unpublish_message = ($unpublication_allowed && $entity->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')));
   }
 
