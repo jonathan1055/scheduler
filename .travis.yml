@@ -38,7 +38,7 @@ jobs:
         - DEPRECATIONS=110
     - php: 7.4
       env:
-        # Have a second 9.1 run which does not execute the Rules tests.
+        # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (4)
@@ -87,8 +87,9 @@ before_script:
   # Run composer self-update and install.
   - travis_retry composer self-update && travis_retry composer install
 
-  # Install drush
-  - travis_retry composer require drush/drush:"^9.0 || ^10.0"
+  # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
+  # problem when running at core 8.8.
+  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drush/drush:"^9.0 || ^10.0"
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
