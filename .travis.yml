@@ -80,9 +80,13 @@ before_script:
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
   # Get the latest dev versions of the test dependency modules.
-  - travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
   - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
-  - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
+  - |
+    if [ "$RULES" != "NO" ]; then
+      echo "Installing Rules and Typed Data ..."
+      travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
+      travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
+    fi
 
   # Run composer self-update and install.
   - travis_retry composer self-update && travis_retry composer install
@@ -108,7 +112,7 @@ before_script:
 script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
-  - if [ $RULES == "NO" ]; then
+  - if [ "$RULES" == "NO" ]; then
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i';
     else
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/;
