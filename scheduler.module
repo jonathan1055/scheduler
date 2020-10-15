@@ -77,7 +77,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $publishing_displayed = !empty($display->getComponent('publish_on'));
   $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
 
-  /* @var $node \Drupal\node\NodeInterface */
+  /** @var \Drupal\node\NodeInterface $node */
   $node = $form_state->getFormObject()->getEntity();
 
   // Invoke all implementations of hook_scheduler_hide_publish_on_field() to
@@ -610,7 +610,7 @@ function scheduler_entity_extra_field_info() {
  */
 function scheduler_preprocess_node(&$variables) {
   $date_formatter = \Drupal::service('date.formatter');
-  /* @var $node \Drupal\node\NodeInterface */
+  /** @var \Drupal\node\NodeInterface $node */
   $node = $variables['node'];
   if (!empty($node->publish_on->value) && $node->publish_on->value && is_numeric($node->publish_on->value)) {
     $variables['publish_on'] = $date_formatter->format($node->publish_on->value, 'long');
@@ -699,7 +699,7 @@ function _scheduler_get_scheduler_enabled_node_types($action) {
   $config = \Drupal::config('scheduler.settings');
   $node_types = NodeType::loadMultiple();
   return array_filter($node_types, function ($bundle) use ($action, $config) {
-    /* @var \Drupal\node\NodeTypeInterface $bundle */
+    /** @var \Drupal\node\NodeTypeInterface $bundle */
     return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
   });
 }
