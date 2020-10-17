@@ -26,25 +26,26 @@ jobs:
         - DRUPAL_CORE=9.0.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (4)
-        # 4 inheritEnvironmentVariables
+        #   4 inheritEnvironmentVariables
         - DEPRECATIONS=4
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (0)
-        # --- Remaining direct deprecation notices (114)
-        # 4 inheritEnvironmentVariables
+        # --- Remaining self deprecation notices (129)
         # 106 EventDispatcher (in Rules module)
-        # 4 passing command as string in drush
-        - DEPRECATIONS=114
+        #  23 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
+        # --- Remaining direct deprecation notices (8)
+        #   4 inheritEnvironmentVariables
+        #   4 Passing command as string in drush
+        - DEPRECATIONS=137
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (8)
-        # 4 inheritEnvironmentVariables
-        # 4 passing command as string in drush
+        #   4 inheritEnvironmentVariables
+        #   4 Passing command as string in drush
         - DEPRECATIONS=8
         - RULES=NO
 
