@@ -1,0 +1,5 @@
+services:
+  plugin.manager.scheduler_repeat.repeater:
+    class: Drupal\scheduler_repeat\SchedulerRepeaterManager
+    parent: default_plugin_manager
+    arguments: ['@entity_type.manager', '@config.factory']

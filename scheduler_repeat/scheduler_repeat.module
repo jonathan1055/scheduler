@@ -1,0 +1,95 @@
+<?php
+
+/**
+ * @file
+ * Scheduler Repeat extends scheduling by providing options for repeating
+ * publishing and un-publishing.
+ */
+
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Component\Plugin\Exception\PluginException;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'node') {
+    $fields['repeat'] = BaseFieldDefinition::create('scheduler_repeater')
+      ->setLabel(t('Repeat'))
+      ->setDisplayOptions('form', [
+        'type' => 'scheduler_repeater_widget',
+        'weight' => 31,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE);
+
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for node_form().
+ */
+function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  if (!isset($form['publish_on'])) {
+    // @todo What if scheduler_form_node_form_alter() is invoked AFTER this?
+    _scheduler_repeat_remove_field($form);
+    return;
+  }
+  _scheduler_repeat_move_field_to_fieldset($form);
+}
+
+/**
+ * Implements hook_scheduler_unpublish_action().
+ */
+function scheduler_repeat_scheduler_unpublish_action(NodeInterface &$node) {
+  if (empty($node->repeat->value)) {
+    return 0;
+  }
+  $plugin_id = $node->repeat->value;
+
+  /** @var \Drupal\scheduler_repeat\SchedulerRepeaterManager $scheduler_repeater_manager */
+  $scheduler_repeater_manager = \Drupal::service('plugin.manager.scheduler_repeat.repeater');
+
+  /** @var \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater */
+  try {
+    $repeater = $scheduler_repeater_manager->createInstance($plugin_id, ['node' => $node]);
+  } catch (PluginException $e) {
+    _scheduler_repeat_log_warning('Could not create scheduler repeater instance: @message', ['@message' => $e->getMessage()]);
+    return 0;
+  }
+
+  if ($repeater->shouldRepeat()) {
+    $repeater->applyNextOccurance($node);
+  }
+
+  return 0;
+}
+
+/**
+ * @param $form
+ *   The node form where we expect repeat field to be.
+ */
+function _scheduler_repeat_remove_field(&$form) {
+  unset($form['repeat']);
+}
+
+/**
+ * @param $form
+ *   The node form where we expect repeat field to be.
+ */
+function _scheduler_repeat_move_field_to_fieldset(&$form) {
+  $form['repeat']['#group'] = 'scheduler_settings';
+}
+
+/**
+ * @param string $message
+ * @param array $context
+ */
+function _scheduler_repeat_log_warning(string $message, array $context) {
+  \Drupal::logger('scheduler_repeat')->warning($message, $context);
+}
