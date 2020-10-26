@@ -4,8 +4,6 @@
 namespace Drupal\scheduler_repeat;
 
 
-use Drupal\node\Entity\Node;
-
 interface SchedulerRepeaterInterface {
 
   /**
@@ -25,13 +23,51 @@ interface SchedulerRepeaterInterface {
   public function shouldRepeat();
 
   /**
-   * Implements the behaviour of calculating the next 'published_on' and
-   * 'unpublished_on' timestamps.
+   * @param $previous_publish_on
    *
-   * @param Node $node
-   *
-   * @return void
+   * @return mixed
    */
-  public function applyNextOccurance(Node &$node);
+  public function setPreviousPublishOn($previous_publish_on);
+
+  /**
+   * @return mixed
+   *   Returns previous publish on timestamp that was set by setPreviousPublishOn()
+   * @see setPreviousPublishOn()
+   */
+  public function getPreviousPublishOn();
+
+  /**
+   * @param $previous_unpublish_on
+   *
+   * @return mixed
+   */
+  public function setPreviousUnpublishOn($previous_unpublish_on);
+
+  /**
+   * @return mixed
+   *   Returns previous publish on timestamp that was set by setPreviousUnpublishOn()
+   * @see setPreviousUnpublishOn()
+   */
+  public function getPreviousUnpublishOn();
+
+  /**
+   * Calculates the next occurrence based on given $previous_publish_on
+   *
+   * @param $previous_publish_on
+   *   Timestamp of previous publish on.
+   *
+   * @return mixed
+   */
+  public function calculateNextPublishedOn($previous_publish_on);
+
+  /**
+   * Calculates the next occurrence based on given $previous_unpublish_on
+   *
+   * @param $previous_publish_on
+   *   Timestamp of previous unpublish on.
+   *
+   * @return mixed
+   */
+  public function calculateNextUnpublishedOn($previous_unpublish_on);
 
 }

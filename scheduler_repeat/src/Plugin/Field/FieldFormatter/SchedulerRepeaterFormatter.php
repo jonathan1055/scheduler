@@ -27,7 +27,7 @@ class SchedulerRepeaterFormatter extends FormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
     foreach ($items as $delta => $item) {
-      $elements[$delta] = Xss::filter($item->value);
+      $elements[$delta] = Xss::filter($item->plugin_id);
     }
     return $elements;
   }

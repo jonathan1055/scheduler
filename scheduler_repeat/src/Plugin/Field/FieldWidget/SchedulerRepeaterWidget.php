@@ -46,9 +46,9 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $element['value'] = $element + [
+    $element['plugin_id'] = $element + [
       '#type' => 'select',
-      '#default_value' => isset($items[$delta]->value) ? $items[$delta]->value : NULL,
+      '#default_value' => isset($items[$delta]->plugin_id) ? $items[$delta]->plugin_id : NULL,
       '#options' => $this->getRepeaterOptions(),
       '#empty_option' => $this->t('Once'),
       '#empty_value' => 'once',
