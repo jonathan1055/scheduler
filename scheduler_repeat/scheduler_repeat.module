@@ -25,7 +25,8 @@ function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_typ
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setTranslatable(TRUE)
-      ->setRevisionable(TRUE);
+      ->setRevisionable(TRUE)
+      ->addConstraint('SchedulerRepeat');
 
     return $fields;
   }
