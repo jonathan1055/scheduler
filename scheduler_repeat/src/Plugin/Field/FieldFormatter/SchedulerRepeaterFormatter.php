@@ -27,7 +27,11 @@ class SchedulerRepeaterFormatter extends FormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
     foreach ($items as $delta => $item) {
-      $elements[$delta] = Xss::filter($item->plugin_id);
+      // @todo Cannot have numeric keys, because when added to a view this gives:
+      // User error: "0" is an invalid render array key in Drupal\Core\Render\Element::children()
+      // line 97 of /Library/WebServer/Web/drupal89dev/core/lib/Drupal/Core/Render/Element.php
+      // But what key should is be? is #value correct?
+      $elements[$delta] = ['#value' => Xss::filter($item->plugin_id)];
     }
     return $elements;
   }
