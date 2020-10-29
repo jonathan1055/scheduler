@@ -48,10 +48,57 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
   }
 
   /**
+   * Default validation method.
+   *
+   * @return bool
+   */
+  public function validate() {
+    return !$this->publishesBeforeUnpublishing() && !$this->publishesAtSameTimeWhenUnpublishing();
+  }
+
+  /**
+   * Determines if current $this->node tries to publish next time before it has
+   * not even being unpublished.
+   *
+   * @return bool
+   */
+  protected function publishesBeforeUnpublishing() {
+    return $this->calculateNextPublishedOn($this->getPublishOn()) < $this->getUnpublishOn();
+  }
+
+  /**
+   * Determines if current $this->node tries to publish next time at the same
+   * time it should be unpublishing.
+   *
+   * @return bool
+   */
+  protected function publishesAtSameTimeWhenUnpublishing() {
+    return $this->calculateNextPublishedOn($this->getPublishOn()) == $this->getUnpublishOn();
+  }
+
+  /**
+   * Gets publish_on that is being used in node given in constructor.
+   *
+   * @return mixed
+   */
+  protected function getPublishOn() {
+    return $this->node->get('publish_on')->value;
+  }
+
+  /**
+   * Gets unpublish_on that is being used in node given in constructor.
+   *
+   * @return mixed
+   */
+  protected function getUnpublishOn() {
+    return $this->node->get('unpublish_on')->value;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function hasPreviousScheduleAvailable() {
-    return $this->getPreviousPublishOn() || $this->getPreviousUnublishOn();
+    return $this->getPreviousPublishOn() || $this->getPreviousUnpublishOn();
   }
 
   /**
