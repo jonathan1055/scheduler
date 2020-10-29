@@ -46,7 +46,7 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
    */
   public function isEmpty() {
     $plugin_id = $this->get('plugin_id')->getValue();
-    return $plugin_id === NULL || $plugin_id === '' || $plugin_id === 'once';
+    return $plugin_id === NULL || $plugin_id === '' || $plugin_id === 'none';
   }
 
   /**
@@ -60,19 +60,19 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
       'plugin_id' => [
         'Length' => [
           'max' => self::COLUMN_PLUGIN_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => $max_length]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_PLUGIN_MAX_LENGTH]),
         ],
       ],
       'previous_publish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => $max_length]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
         ],
       ],
       'previous_unpublish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => $max_length]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
         ],
       ],
     ]);

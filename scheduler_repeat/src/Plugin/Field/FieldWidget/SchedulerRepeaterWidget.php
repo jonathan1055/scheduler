@@ -50,8 +50,8 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
       '#type' => 'select',
       '#default_value' => isset($items[$delta]->plugin_id) ? $items[$delta]->plugin_id : NULL,
       '#options' => $this->getRepeaterOptions(),
-      '#empty_option' => $this->t('Once'),
-      '#empty_value' => 'once',
+      '#empty_option' => $this->t('None'),
+      '#empty_value' => 'none',
     ];
     return $element;
   }

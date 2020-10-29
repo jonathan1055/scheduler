@@ -24,7 +24,7 @@ class FieldsDisplayTest extends SchedulerBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     // Create node type that has only publish on date set
