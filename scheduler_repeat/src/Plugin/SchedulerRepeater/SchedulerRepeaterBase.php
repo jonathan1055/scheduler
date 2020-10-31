@@ -19,15 +19,15 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
   /**
    * @var int
    */
-  protected $previous_publish_on;
+  protected $next_publish_on;
 
   /**
    * @var int
    */
-  protected $previous_unpublish_on;
+  protected $next_unpublish_on;
 
   /**
-   * Hourly constructor.
+   * Constructor.
    *
    * @param array $options
    *
@@ -44,7 +44,10 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
    * {@inheritdoc}
    */
   public function shouldRepeat() {
-    return $this->hasPreviousScheduleAvailable();
+    // @todo What exactly is the purpose of this function?
+    // It is called when deciding whether to 
+    ddm('--SchedulerRepeaterBase::shouldRepeat()--');
+    return $this->getPublishOn() || $this->getUnpublishOn();
   }
 
   /**
@@ -97,36 +100,29 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
   /**
    * {@inheritdoc}
    */
-  protected function hasPreviousScheduleAvailable() {
-    return $this->getPreviousPublishOn() || $this->getPreviousUnpublishOn();
+  public function setNextPublishOn($next_publish_on) {
+    $this->next_publish_on = $next_publish_on;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPreviousPublishOn($previous_publish_on) {
-    $this->previous_publish_on = $previous_publish_on;
+  public function getNextPublishOn() {
+    return $this->next_publish_on;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPreviousPublishOn() {
-    return $this->previous_publish_on;
+  public function setNextUnpublishOn($next_unpublish_on) {
+    $this->next_unpublish_on = $next_unpublish_on;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPreviousUnpublishOn($previous_unpublish_on) {
-    $this->previous_unpublish_on = $previous_unpublish_on;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPreviousUnpublishOn() {
-    return $this->previous_unpublish_on;
+  public function getNextUnpublishOn() {
+    return $this->next_unpublish_on;
   }
 
 }

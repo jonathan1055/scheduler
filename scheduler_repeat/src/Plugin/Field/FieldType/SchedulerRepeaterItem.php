@@ -31,12 +31,12 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
     $properties['plugin_id'] = DataDefinition::create('string')
       ->setLabel('Repeat')
       ->setDescription('Specifies the plugin to be used for applying repeat logic.');
-    $properties['previous_publish_on'] = DataDefinition::create('string')
-      ->setLabel('Previous publish on')
-      ->setDescription('Snapshot of publish_on timestmap at the time of scheduled publishing.');
-    $properties['previous_unpublish_on'] = DataDefinition::create('string')
-      ->setLabel('Previous unpublish on')
-      ->setDescription('Snapshot of unpublish_on timestmap at the time of scheduled publishing.');
+    $properties['next_publish_on'] = DataDefinition::create('string')
+      ->setLabel('Next publish on ')
+      ->setDescription('The calculated next datet and time for scheduled publishing.');
+    $properties['next_unpublish_on'] = DataDefinition::create('string')
+      ->setLabel('Next unpublish on')
+      ->setDescription('The calculated next datet and time for scheduled unpublishing.');
 
     return $properties;
   }
@@ -63,13 +63,13 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
           'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_PLUGIN_MAX_LENGTH]),
         ],
       ],
-      'previous_publish_on' => [
+      'next_publish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
           'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
         ],
       ],
-      'previous_unpublish_on' => [
+      'next_unpublish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
           'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
@@ -88,8 +88,9 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
       'hourly' => 'Hourly',
     ];
     $values['plugin_id'] = array_rand($options);
-    $values['previous_publish_on'] = rand(strtotime("-20 days"), strtotime("-10 days"));
-    $values['previous_unpublish_on'] = rand(strtotime("-10 days"), strtotime("-1 hour"));
+    $values['next_publish_on'] = rand(strtotime("+1 day"), strtotime("+3 days"));
+    // @todo Change unpublish time when we have more $options.
+    $values['next_unpublish_on'] = $values['next_publish_on'] + rand(1, 3600);
     return $values;
   }
 
@@ -104,12 +105,12 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
           'length' => self::COLUMN_PLUGIN_MAX_LENGTH,
           'not null' => TRUE,
         ],
-        'previous_publish_on' => [
+        'next_publish_on' => [
           'type' => 'varchar',
           'length' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
           'not null' => TRUE,
         ],
-        'previous_unpublish_on' => [
+        'next_unpublish_on' => [
           'type' => 'varchar',
           'length' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
           'not null' => TRUE,

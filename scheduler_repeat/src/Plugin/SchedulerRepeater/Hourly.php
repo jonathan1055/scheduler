@@ -14,21 +14,21 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 class Hourly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
-   * @param $previous_publish_on
+   * @param $datetime
    *
    * @return int
    */
-  public function calculateNextPublishedOn($previous_publish_on) {
-    return strtotime("+1 hour", $previous_publish_on);
+  public function calculateNextPublishedOn($datetime) {
+    return strtotime("+1 hour", $datetime);
   }
 
   /**
-   * @param $previous_unpublish_on
+   * @param $datetime
    *
    * @return int
    */
-  public function calculateNextUnpublishedOn($previous_unpublish_on) {
-    return strtotime("+1 hour", $previous_unpublish_on);
+  public function calculateNextUnpublishedOn($datetime) {
+    return strtotime("+1 hour", $datetime);
   }
 
 }

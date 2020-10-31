@@ -7,11 +7,11 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
  * @SchedulerRepeater(
- *   id = "tenminutes",
- *   label = @Translation("Every 10 minutes")
+ *   id = "sixminutes",
+ *   label = @Translation("Every 6 minutes")
  * )
  */
-class TenMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
+class SixMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
    * @param $publish_on
@@ -19,7 +19,7 @@ class TenMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInter
    * @return int
    */
   public function calculateNextPublishedOn($publish_on) {
-    return strtotime("+10 mins", $publish_on);
+    return strtotime("+6 mins", $publish_on);
   }
 
   /**
@@ -28,7 +28,7 @@ class TenMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInter
    * @return int
    */
   public function calculateNextUnpublishedOn($unpublish_on) {
-    return strtotime("+10 mins", $unpublish_on);
+    return strtotime("+6 mins", $unpublish_on);
   }
 
 }

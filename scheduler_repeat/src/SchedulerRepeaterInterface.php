@@ -36,51 +36,53 @@ interface SchedulerRepeaterInterface {
   public function validate();
 
   /**
-   * @param $previous_publish_on
+   * @param $next_publish_on
    *
    * @return mixed
    */
-  public function setPreviousPublishOn($previous_publish_on);
+  public function setNextPublishOn($next_publish_on);
 
   /**
+   * Returns next publish on timestamp that was set by setNextPublishOn()
+   * 
    * @return mixed
-   *   Returns previous publish on timestamp that was set by setPreviousPublishOn()
-   * @see setPreviousPublishOn()
+   * @see setNextPublishOn()
    */
-  public function getPreviousPublishOn();
+  public function getNextPublishOn();
 
   /**
-   * @param $previous_unpublish_on
+   * @param $next_unpublish_on
    *
    * @return mixed
    */
-  public function setPreviousUnpublishOn($previous_unpublish_on);
+  public function setNextUnpublishOn($next_unpublish_on);
 
   /**
+   * Returns next unpublish on timestamp that was set by setNextUnpublishOn()
+   *
    * @return mixed
-   *   Returns previous publish on timestamp that was set by setPreviousUnpublishOn()
-   * @see setPreviousUnpublishOn()
+   * @see setNextUnpublishOn()
    */
-  public function getPreviousUnpublishOn();
+  public function getNextUnpublishOn();
 
   /**
-   * Calculates the next occurrence based on given $previous_publish_on
+   * Calculates the next occurrence of Publish On.
    *
-   * @param $previous_publish_on
-   *   Timestamp of previous publish on.
+   * @param $publish_on
+   *   Timestamp from which to calculate the next publish on value.
    *
    * @return mixed
    */
-  public function calculateNextPublishedOn($previous_publish_on);
+  public function calculateNextPublishedOn($publish_on);
 
   /**
-   * Calculates the next occurrence based on given $previous_unpublish_on
+   * Calculates the next occurrence of Unpublish On
    *
-   * @param $previous_publish_on
-   *   Timestamp of previous unpublish on.
+   * @param $unpublish_on
+   *   Timestamp from which to calculate the next unpublish on value.
    *
    * @return mixed
    */
-  public function calculateNextUnpublishedOn($previous_unpublish_on);
+  public function calculateNextUnpublishedOn($unpublish_on);
 
 }

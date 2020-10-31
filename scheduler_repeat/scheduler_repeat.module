@@ -36,6 +36,7 @@ function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_typ
  * Implements hook_form_FORM_ID_alter() for node_form().
  */
 function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  ddm('--scheduler_repeat_form_node_form_alter()--');
   if (!_scheduler_repeat_should_show_field($form)) {
     // @todo What if scheduler_form_node_form_alter() is invoked AFTER this?
     // @todo What if scheduler date fields are configured as hidden?
@@ -49,15 +50,8 @@ function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_
  * Implements hook_scheduler_publish_action().
  */
 function scheduler_repeat_scheduler_publish_action(NodeInterface &$node) {
-  if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-    return 0;
-  }
-
-  try {
-    _scheduler_repeat_set_snapshot_of_scheduling_timestamps($node);
-  } catch (\Exception $e) {
-    _scheduler_repeat_log_warning('Could not set scheduling snapshot: @message', ['@message' => $e->getMessage()]);
-  }
+  // ddm('--scheduler_repeat_scheduler_publish_action()--');
+  // ddm($node->get('publish_on')->value, 'node publish_on');
 
   return 0;
 }
@@ -66,27 +60,8 @@ function scheduler_repeat_scheduler_publish_action(NodeInterface &$node) {
  * Implements hook_scheduler_unpublish_action().
  */
 function scheduler_repeat_scheduler_unpublish_action(NodeInterface &$node) {
-  if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-    return 0;
-  }
-
-  $repeater->setPreviousPublishOn($node->get('repeat')->previous_publish_on);
-  $repeater->setPreviousUnpublishOn($node->get('repeat')->previous_unpublish_on);
-  if (!$repeater->shouldRepeat()) {
-    return 0;
-  }
-
-  $next_publish_on = $repeater->calculateNextPublishedOn($repeater->getPreviousPublishOn());
-  $next_unpublish_on = $repeater->calculateNextUnpublishedOn($repeater->getPreviousUnpublishOn());
-
-  while (!_scheduler_repeat_is_in_future($next_publish_on)) {
-    $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
-    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
-  }
-
-  $node->set('publish_on', $next_publish_on);
-  $node->set('unpublish_on', $next_unpublish_on);
-  _scheduler_repeat_clear_snapshot_of_scheduling_timestamps($node);
+  // ddm('--scheduler_repeat_scheduler_unpublish_action()--');
+  // ddm('$node ' . $node->id() . ' "' . $node->title->value);
 }
 
 /**
@@ -94,9 +69,9 @@ function scheduler_repeat_scheduler_unpublish_action(NodeInterface &$node) {
  *
  * @return bool
  */
-function _scheduler_repeat_is_in_future($timestamp) {
-  return $timestamp > time();
-}
+// function _scheduler_repeat_is_in_future($timestamp) {
+//   return $timestamp > time();
+// }
 
 /**
  * @param $form
@@ -130,15 +105,36 @@ function _scheduler_repeat_move_field_to_fieldset(&$form) {
  * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
  */
 function _scheduler_repeat_set_snapshot_of_scheduling_timestamps(NodeInterface &$node) {
+  ddm('--_scheduler_repeat_set_snapshot_of_scheduling_timestamps()--');
+  ddm('$node ' . $node->id() . ' "' . $node->title->value);
+  ddm('publish_on ' . format_date($node->publish_on->value, 'medium'));
+  ddm('unpublish_on ' . format_date($node->unpublish_on->value, 'medium'));
+
   // We need to read (un)publish_on values from storage instead of working
   // $node, because scheduler sets publish_on value to NULL before invoking the
   // hooks we work on.
-  $node_in_storage = \Drupal::entityTypeManager()->getStorage('node')->load($node->id());
+  // $node_in_storage = \Drupal::entityTypeManager()->getStorage('node')->load($node->id());
+
+  if (!$repeater = _scheduler_repeat_get_repeater($node)) {
+    return 0;
+  }
+
+  $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
+  $next_unpublish_on = $repeater->calculateNextUnpublishedOn($node->get('unpublish_on')->value);
+  $request_time = \Drupal::time()->getRequestTime();
+
+  while ($next_publish_on < $request_time) {
+    $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
+    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
+  }
+
   $node->set('repeat', [
     'plugin_id' => $node->repeat->plugin_id,
-    'previous_publish_on' => $node_in_storage->get('publish_on')->value,
-    'previous_unpublish_on' => $node_in_storage->get('unpublish_on')->value,
+    'next_publish_on' => $next_publish_on, // temp, using existing field names
+    'next_unpublish_on' => $next_unpublish_on,
   ]);
+  ddm('next_publish_on ' . format_date($next_publish_on, 'medium'));
+  ddm('next_unpublish_on ' . format_date($next_unpublish_on, 'medium'));
 }
 
 /**
@@ -147,8 +143,8 @@ function _scheduler_repeat_set_snapshot_of_scheduling_timestamps(NodeInterface &
 function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface &$node) {
   $node->set('repeat', [
     'plugin_id' => $node->repeat->plugin_id,
-    'previous_publish_on' => NULL,
-    'previous_unpublish_on' => NULL,
+    'next_publish_on' => NULL,
+    'next_unpublish_on' => NULL,
   ]);
 }
 
