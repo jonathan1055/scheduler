@@ -46,18 +46,23 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    // @todo when we have associated data, extract the id.
-    // For now use entire value.
-    $plugin_id = $items[$delta]->plugin;
-    
-    $element['plugin'] = $element + [
-      '#type' => 'select',
-      '#default_value' => isset($plugin_id) ? $plugin_id : NULL,
-      '#options' => $this->getRepeaterOptions(),
-      '#empty_option' => $this->t('None'),
-      '#empty_value' => 'none',
+    return $element + [
+      'plugin' => [
+        '#type' => 'select',
+        '#default_value' => isset($items->get($delta)->plugin) ? $items->get($delta)->plugin : NULL,
+        '#options' => $this->getRepeaterOptions(),
+        '#empty_option' => $this->t('None'),
+        '#empty_value' => 'none',
+      ],
+      'next_publish_on' => [
+        '#type' => 'item',
+        '#value' => $items->get($delta)->next_publish_on,
+      ],
+      'next_unpublish_on' => [
+        '#type' => 'item',
+        '#value' => $items->get($delta)->next_unpublish_on,
+      ],
     ];
-    return $element;
   }
 
   protected function getRepeaterOptions() {
