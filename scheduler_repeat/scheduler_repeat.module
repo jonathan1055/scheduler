@@ -69,13 +69,13 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
   if ($next_publish_on > $next_unpublish_on) {
     _scheduler_repeat_log_error(
       '@repeater repeater calculated conflicting next occurence for node @nid: @from -> @to',
-      ['@repeater' => $node->repeat->plugin, '@nid' => $node->id(), '@from' => date("Y-m-d H:i:s", $next_publish_on), '@to' => date("Y-m-d H:i:s", $next_unpublish_on)]
+      ['@repeater' => $node->scheduler_repeat->plugin, '@nid' => $node->id(), '@from' => date("Y-m-d H:i:s", $next_publish_on), '@to' => date("Y-m-d H:i:s", $next_unpublish_on)]
     );
     return;
   }
 
-  $node->set('repeat', [
-    'plugin' => $node->repeat->plugin,
+  $node->set('scheduler_repeat', [
+    'plugin' => $node->scheduler_repeat->plugin,
     'next_publish_on' => $next_publish_on,
     'next_unpublish_on' => $next_unpublish_on,
   ]);
@@ -85,7 +85,7 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
  * @param NodeInterface $node
  */
 function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
-  $node->set('repeat', [
+  $node->set('scheduler_repeat', [
     'plugin' => NULL,
     'next_publish_on' => NULL,
     'next_unpublish_on' => NULL,
@@ -104,7 +104,7 @@ function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
  */
 function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
   if ($node->get('publish_on')->isEmpty()) {
-    return !empty($node->get('repeat')->next_publish_on) ? $node->get('repeat')->next_publish_on : NULL;
+    return !empty($node->get('scheduler_repeat')->next_publish_on) ? $node->get('scheduler_repeat')->next_publish_on : NULL;
   }
 
   $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
@@ -127,7 +127,7 @@ function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater,
  */
 function _scheduler_repeat_next_unpublish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
   if ($node->get('unpublish_on')->isEmpty()) {
-    return !empty($node->get('repeat')->next_unpublish_on) ? $node->get('repeat')->next_unpublish_on : NULL;
+    return !empty($node->get('scheduler_repeat')->next_unpublish_on) ? $node->get('scheduler_repeat')->next_unpublish_on : NULL;
   }
 
   $next_unpublish_on = $repeater->calculateNextUnpublishedOn($node->get('unpublish_on')->value);
