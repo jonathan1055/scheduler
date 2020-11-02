@@ -37,15 +37,12 @@ function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_typ
  * Implements hook_form_FORM_ID_alter() for node_form().
  */
 function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_state) {
-  ddm('--scheduler_repeat_form_node_form_alter()--');
   if (!_scheduler_repeat_should_show_field($form)) {
     // @todo What if scheduler_form_node_form_alter() is invoked AFTER this?
     // @todo What if scheduler date fields are configured as hidden?
-    ddm('removing field');
     _scheduler_repeat_remove_field($form);
     return;
   }
-  ddm('ok, so moving field to fieldset');
   _scheduler_repeat_move_field_to_fieldset($form);
 }
 
@@ -53,21 +50,17 @@ function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_repeat_node_presave(EntityInterface $node) {
-  ddm('--scheduler_repeat_node_presave()--');
   
   // @todo Determine if this is the best function to do this.
 
   if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-    ddm('no repeater, so exiting');
     return 0;
   }
-  // ddm($repeater, '$repeater'); // big. __CLASS__=Drupal\scheduler_repeat\Plugin\SchedulerRepeater\SixMinutes
   
   if (empty($node->get('publish_on')->value) || empty($node->get('publish_on')->value)) {
     // When this function is executed during cron publishing or unpublishing one
     // or both of these values will be empty. But that is OK as the next values
-    // are already set and saved. 
-    ddm('do not have both node values, so exiting');
+    // are already set and saved.
     return 0;
   }
   
@@ -78,8 +71,6 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
     $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
     $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
   }
-  ddm('next_publish_on ' . format_date($next_publish_on, 'medium'));
-  ddm('next_unpublish_on ' . format_date($next_unpublish_on, 'medium'));
 
   // Save the 'next' dates.
   $node->set('repeat', [
@@ -133,12 +124,7 @@ function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
  */
 function _scheduler_repeat_get_repeater(NodeInterface $node) {
-  ddm('--_scheduler_repeat_get_repeater()--');
-  // ddm($node->repeat, '$node-repeat'); // This has stuff
-  ddm($node->repeat->plugin_id, '$node->repeat->plugin_id');
-  ddm($node->repeat->plugin, '$node->repeat->plugin');
   if (empty($node->repeat->plugin)) {
-    ddm('$node->repeat->plugin is empty, returning NULL');
     return NULL;
   }
   // @todo When we cater for optional associated data, the id can be extrated,
