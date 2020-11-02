@@ -41,16 +41,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\scheduler\SchedulerEvent $event
    */
   public function prePublish(SchedulerEvent $event) {
-    ddm('== scheduler_repeat EventSubscriber::prePublish == ' . format_date(REQUEST_TIME, 'medium'));
-    /** @var Node $node */
-    $node = $event->getNode();
-    ddm('$node ' . $node->id() . ' "' . $node->title->value . '", publish_on ' . format_date($node->publish_on->value, 'medium'));
-
-    // THIS IS ALL TEMPORARY. Values will be set in node edit form.
-    if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-      ddm('no repeater found, so exiting');
-      return 0;
-    }
+    // ddm('== scheduler_repeat EventSubscriber::prePublish == ' . format_date(REQUEST_TIME, 'medium'));
 
     // @todo We do need this.
     // try {
@@ -60,36 +51,7 @@ class EventSubscriber implements EventSubscriberInterface {
     //   _scheduler_repeat_log_warning('Could not set scheduling snapshot: @message', ['@message' => $e->getMessage()]);
     // }
 
-    // $node->get('repeat')->next_unpublish_on
-    $repeater->setNextPublishOn($node->publish_on->value); // use existing function name, will change.
-    $repeater->setNextUnpublishOn($node->unpublish_on->value);
     
-    // @todo Check what this does. Verifies that values above are set.
-    if (!$repeater->shouldRepeat()) {
-      ddm('should not repeat, so exiting');
-      return 0;
-    }
-    // ddm($node->get('repeat'), '$node->get(repeat)'); // big.
-
-    $next_publish_on = $repeater->calculateNextPublishedOn($repeater->getNextPublishOn());
-    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($repeater->getNextUnpublishOn());
-    ddm('initial next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
-    ddm('initial next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
-    
-    $request_time = \Drupal::time()->getRequestTime();
-    while ($next_publish_on < $request_time) {
-      $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
-      $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
-    }
-    ddm('final next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
-    ddm('final next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
-
-    $node->set('repeat', [
-      'plugin_id' => $node->repeat->plugin_id,
-      'next_publish_on' => $next_publish_on,
-      'next_unpublish_on' => $next_unpublish_on,
-    ]);
-    $event->setNode($node);
 
   }
 
@@ -123,25 +85,53 @@ class EventSubscriber implements EventSubscriberInterface {
     $node = $event->getNode();
 
     if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-      ddm('should not repeat, so exiting');
+      ddm('no repeater, so exiting');
       return 0;
     }
 
-  // ddm($node->get('repeat'), '$node->get(repeat)'); // big.
-  $next_publish_on = $node->get('repeat')->next_publish_on;
-  $next_unpublish_on = $node->get('repeat')->next_unpublish_on;
-  ddm($next_publish_on, 'recovered next_publish_on');
-  ddm($next_unpublish_on, 'recovered next_unpublish_on');
-  ddm('recovered next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
-  ddm('recovered next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
+    // @todo Check what this does.
+    // if (!$repeater->shouldRepeat()) {
+    //   ddm('should not repeat any more, so exiting');
+    //   return 0;
+    // }
 
-  $node->set('publish_on', $next_publish_on);
-  $node->set('unpublish_on', $next_unpublish_on);
-  // _scheduler_repeat_clear_snapshot_of_scheduling_timestamps($node);
+    // The content has now been unpublished. Get the stored dates for the next
+    // period, and set these as the new publish_on and unpublish_on values. 
+    $next_publish_on = $node->get('repeat')->next_publish_on;
+    $next_unpublish_on = $node->get('repeat')->next_unpublish_on;
+    // ddm($node->get('repeat'), '$node->get(repeat)'); // big.
+    ddm($next_publish_on, 'recovered next_publish_on');
+    ddm($next_unpublish_on, 'recovered next_unpublish_on');
+    if (empty($next_publish_on) || empty($next_unpublish_on)) {
+      // Do not have both values, so cannot set the next period.
+      ddm('Do not have both "next" values. Quit');
+      return;
+    }
+    
+    ddm('recovered next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
+    ddm('recovered next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
+    $node->set('publish_on', $next_publish_on);
+    $node->set('unpublish_on', $next_unpublish_on);
 
-  // @todo Calculate and store next publish_on and unpublish_on here.
+    // @todo Not sure why this is necessary?
+    $repeater->setNextPublishOn($next_publish_on);
+    $repeater->setNextUnpublishOn($next_unpublish_on);
 
-  $event->setNode($node);
+    // Calculate and store the new next_publish_on and next_unpublish_on values.
+    $request_time = \Drupal::time()->getRequestTime();
+    while ($next_publish_on < $request_time) {
+      $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
+      $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
+    }
+    ddm('final next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
+    ddm('final next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
+    $node->set('repeat', [
+      'plugin' => $node->repeat->plugin,
+      'next_publish_on' => $next_publish_on,
+      'next_unpublish_on' => $next_unpublish_on,
+    ]);
+
+    $event->setNode($node);
   }
 
   /**

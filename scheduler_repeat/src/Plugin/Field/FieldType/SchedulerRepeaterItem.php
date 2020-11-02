@@ -10,7 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
- * Provides a field type of baz.
+ * Provides a Scheduler Repeat field type.
  *
  * @FieldType(
  *   id = "scheduler_repeater",
@@ -28,15 +28,15 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
    * {@inheritdoc}
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
-    $properties['plugin_id'] = DataDefinition::create('string')
+    $properties['plugin'] = DataDefinition::create('string')
       ->setLabel('Repeat')
-      ->setDescription('Specifies the plugin to be used for applying repeat logic.');
-    $properties['next_publish_on'] = DataDefinition::create('string')
-      ->setLabel('Next publish on ')
-      ->setDescription('The calculated next datet and time for scheduled publishing.');
-    $properties['next_unpublish_on'] = DataDefinition::create('string')
+      ->setDescription('Specifies the plugin and optionla data to be used for calculating the repeat schedule.');
+    $properties['next_publish_on'] = DataDefinition::create('timestamp')
+      ->setLabel('Next publish on')
+      ->setDescription('The calculated next date and time for scheduled publishing.');
+    $properties['next_unpublish_on'] = DataDefinition::create('timestamp')
       ->setLabel('Next unpublish on')
-      ->setDescription('The calculated next datet and time for scheduled unpublishing.');
+      ->setDescription('The calculated next date and time for scheduled unpublishing.');
 
     return $properties;
   }
@@ -45,8 +45,8 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $plugin_id = $this->get('plugin_id')->getValue();
-    return $plugin_id === NULL || $plugin_id === '' || $plugin_id === 'none';
+    $plugin = $this->get('plugin')->getValue();
+    return $plugin === NULL || $plugin === '' || $plugin === 'none';
   }
 
   /**
@@ -57,7 +57,7 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
 
     $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
     $constraints[] = $constraint_manager->create('ComplexData', [
-      'plugin_id' => [
+      'plugin' => [
         'Length' => [
           'max' => self::COLUMN_PLUGIN_MAX_LENGTH,
           'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_PLUGIN_MAX_LENGTH]),
@@ -87,7 +87,7 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
     $options = [
       'hourly' => 'Hourly',
     ];
-    $values['plugin_id'] = array_rand($options);
+    $values['plugin'] = array_rand($options);
     $values['next_publish_on'] = rand(strtotime("+1 day"), strtotime("+3 days"));
     // @todo Change unpublish time when we have more $options.
     $values['next_unpublish_on'] = $values['next_publish_on'] + rand(1, 3600);
@@ -98,22 +98,18 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
    * {@inheritdoc}
    */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
+    // Can alter this list to allow uninstall of old column names.
     return [
       'columns' => [
-        'plugin_id' => [
+        'plugin' => [
           'type' => 'varchar',
           'length' => self::COLUMN_PLUGIN_MAX_LENGTH,
-          'not null' => TRUE,
         ],
         'next_publish_on' => [
-          'type' => 'varchar',
-          'length' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'not null' => TRUE,
+          'type' => 'int',
         ],
         'next_unpublish_on' => [
-          'type' => 'varchar',
-          'length' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'not null' => TRUE,
+          'type' => 'int',
         ],
       ]
     ];

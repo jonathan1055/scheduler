@@ -32,7 +32,7 @@ class SchedulerRepeaterFormatter extends FormatterBase {
       //   User error: "0" is an invalid render array key in Drupal\Core\Render\Element::children()
       //   line 97 of /Library/WebServer/Web/drupal89dev/core/lib/Drupal/Core/Render/Element.php
       // But what key should is be? is #value correct?
-      $elements[$delta] = ['#value' => Xss::filter($item->plugin_id)];
+      $elements[$delta] = ['#value' => Xss::filter($item->plugin)];
     }
     return $elements;
   }

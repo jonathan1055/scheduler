@@ -31,7 +31,10 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
       return;
     }
 
-    $repeater = $this->getRepeaterWithNode($value->plugin_id, $node);
+    // @todo When associated data is added, the plugin id can be extracted.
+    $plugin_id = $value->plugin;
+    
+    $repeater = $this->getRepeaterWithNode($plugin_id, $node);
     if (!$repeater->validate()) {
       $this->context->buildViolation($constraint->messageRepeatPeriodSmallerThanScheduledPeriod)
         ->atPath('repeat')
@@ -59,6 +62,10 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
    *
    * @return SchedulerRepeaterInterface
    * @throws InvalidPluginTypeException
+   *
+   * @todo This duplicates fiunctionality done in _scheduler_repeat_get_repeater
+   * Need to consolidate these? Also from node->plugin may need to get the
+   * optional associated data. See _scheduler_repeat_get_repeater().
    */
   private function getRepeaterWithNode(string $plugin_id, NodeInterface $node) {
     $repeater = $this->scheduler_repeater_manager->createInstance($plugin_id, ['node' => $node]);
