@@ -26,12 +26,12 @@ class EventSubscriber implements EventSubscriberInterface {
   public static function getSubscribedEvents() {
     // The values in the arrays give the function names below.
     $events = [];
-    $events[SchedulerEvents::PRE_PUBLISH][] = array('prePublish');
-    $events[SchedulerEvents::PUBLISH][] = array('publish');
-    $events[SchedulerEvents::PRE_UNPUBLISH][] = array('preUnpublish');
-    $events[SchedulerEvents::UNPUBLISH][] = array('unpublish');
-    $events[SchedulerEvents::PRE_PUBLISH_IMMEDIATELY][] = array('prePublishImmediately');
-    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = array('publishImmediately');
+    $events[SchedulerEvents::PRE_PUBLISH][] = ['prePublish'];
+    $events[SchedulerEvents::PUBLISH][] = ['publish'];
+    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['preUnpublish'];
+    $events[SchedulerEvents::UNPUBLISH][] = ['unpublish'];
+    $events[SchedulerEvents::PRE_PUBLISH_IMMEDIATELY][] = ['prePublishImmediately'];
+    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['publishImmediately'];
     return $events;
   }
 
