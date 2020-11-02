@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
  * Implements hook_entity_base_field_info().
@@ -50,33 +51,91 @@ function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function scheduler_repeat_node_presave(EntityInterface $node) {
-  // @todo Determine if this is the best function to do this.
-
   if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-    return 0;
-  }
-  
-  if (empty($node->get('publish_on')->value) || empty($node->get('publish_on')->value)) {
-    // When this function is executed during cron publishing or unpublishing one
-    // or both of these values will be empty. But that is OK as the next values
-    // are already set and saved. 
-    return 0;
-  }
-  
-  $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
-  $next_unpublish_on = $repeater->calculateNextUnpublishedOn($node->get('unpublish_on')->value);
-  $request_time = \Drupal::time()->getRequestTime();
-  while ($next_publish_on < $request_time) {
-    $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
-    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
   }
 
-  // Save the 'next' dates.
+  if (!$next_publish_on = _scheduler_repeat_next_publish_on($repeater, $node)) {
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
+  }
+
+  if (!$next_unpublish_on = _scheduler_repeat_next_unpublish_on($repeater, $node)) {
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
+  }
+
+  if ($next_publish_on > $next_unpublish_on) {
+    _scheduler_repeat_log_error(
+      '@repeater repeater calculated conflicting next occurence for node @nid: @from -> @to',
+      ['@repeater' => $node->scheduler_repeat->plugin, '@nid' => $node->id(), '@from' => date("Y-m-d H:i:s", $next_publish_on), '@to' => date("Y-m-d H:i:s", $next_unpublish_on)]
+    );
+    return;
+  }
+
   $node->set('scheduler_repeat', [
     'plugin' => $node->scheduler_repeat->plugin,
     'next_publish_on' => $next_publish_on,
     'next_unpublish_on' => $next_unpublish_on,
   ]);
+}
+
+/**
+ * @param NodeInterface $node
+ */
+function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
+  $node->set('scheduler_repeat', [
+    'plugin' => NULL,
+    'next_publish_on' => NULL,
+    'next_unpublish_on' => NULL,
+  ]);
+}
+
+/**
+ * If publish_on date isn't set, it will try to return stored next_publish_on
+ * date. If publish_on date is set, it will use $repeater to calculate the next
+ * occurence until the value is in future.
+ *
+ * @param SchedulerRepeaterInterface $repeater
+ * @param NodeInterface $node
+ *
+ * @return mixed|null
+ */
+function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
+  if ($node->get('publish_on')->isEmpty()) {
+    return !empty($node->get('scheduler_repeat')->next_publish_on) ? $node->get('scheduler_repeat')->next_publish_on : NULL;
+  }
+
+  $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
+  $request_time = \Drupal::time()->getRequestTime();
+  while ($next_publish_on < $request_time) {
+    $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
+  }
+  return $next_publish_on;
+}
+
+/**
+ * If unpublish_on date isn't set, it will try to return stored
+ * next_unpublish_on date. If unpublish_on date is set, it will use $repeater to
+ * calculate the next occurence until the value is in future.
+ *
+ * @param SchedulerRepeaterInterface $repeater
+ * @param NodeInterface $node
+ *
+ * @return mixed|null
+ */
+function _scheduler_repeat_next_unpublish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
+  if ($node->get('unpublish_on')->isEmpty()) {
+    return !empty($node->get('scheduler_repeat')->next_unpublish_on) ? $node->get('scheduler_repeat')->next_unpublish_on : NULL;
+  }
+
+  $next_unpublish_on = $repeater->calculateNextUnpublishedOn($node->get('unpublish_on')->value);
+  $request_time = \Drupal::time()->getRequestTime();
+  while ($next_unpublish_on < $request_time) {
+    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
+  }
+  return $next_unpublish_on;
 }
 
 /**
@@ -105,19 +164,6 @@ function _scheduler_repeat_move_field_to_fieldset(&$form) {
 }
 
 /**
- * @todo Is this function needed now?
- *
- * @param NodeInterface $node
- */
-function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface &$node) {
-  $node->set('scheduler_repeat', [
-    'plugin' => $node->scheduler_repeat->plugin,
-    'next_publish_on' => NULL,
-    'next_unpublish_on' => NULL,
-  ]);
-}
-
-/**
  * @param NodeInterface $node
  *
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
@@ -143,6 +189,14 @@ function _scheduler_repeat_get_repeater(NodeInterface $node) {
   }
 
   return $repeater;
+}
+
+/**
+ * @param string $message
+ * @param array $context
+ */
+function _scheduler_repeat_log_error(string $message, array $context) {
+  \Drupal::logger('scheduler_repeat')->error($message, $context);
 }
 
 /**
