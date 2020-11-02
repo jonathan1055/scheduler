@@ -19,7 +19,7 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
  */
 function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_type) {
   if ($entity_type->id() === 'node') {
-    $fields['repeat'] = BaseFieldDefinition::create('scheduler_repeater')
+    $fields['scheduler_repeat'] = BaseFieldDefinition::create('scheduler_repeater')
       ->setLabel(t('Repeat'))
       ->setDisplayOptions('form', [
         'type' => 'scheduler_repeater_widget',
@@ -152,7 +152,7 @@ function _scheduler_repeat_should_show_field($form) {
  *   The node form where we expect repeat field to be.
  */
 function _scheduler_repeat_remove_field(&$form) {
-  unset($form['repeat']);
+  unset($form['scheduler_repeat']);
 }
 
 /**
@@ -160,7 +160,7 @@ function _scheduler_repeat_remove_field(&$form) {
  *   The node form where we expect repeat field to be.
  */
 function _scheduler_repeat_move_field_to_fieldset(&$form) {
-  $form['repeat']['#group'] = 'scheduler_settings';
+  $form['scheduler_repeat']['#group'] = 'scheduler_settings';
 }
 
 /**
@@ -169,8 +169,8 @@ function _scheduler_repeat_move_field_to_fieldset(&$form) {
  * @param NodeInterface $node
  */
 function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface &$node) {
-  $node->set('repeat', [
-    'plugin' => $node->repeat->plugin,
+  $node->set('scheduler_repeat', [
+    'plugin' => $node->scheduler_repeat->plugin,
     'next_publish_on' => NULL,
     'next_unpublish_on' => NULL,
   ]);
@@ -182,12 +182,12 @@ function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
  */
 function _scheduler_repeat_get_repeater(NodeInterface $node) {
-  if (empty($node->repeat->plugin)) {
+  if (empty($node->scheduler_repeat->plugin)) {
     return NULL;
   }
   // @todo When we cater for optional associated data, the id can be extrated,
   // and the other values added into $plugin_data.
-  $plugin_id = $node->repeat->plugin;
+  $plugin_id = $node->scheduler_repeat->plugin;
   $plugin_data = ['node' => $node];
 
   /** @var \Drupal\scheduler_repeat\SchedulerRepeaterManager $scheduler_repeater_manager */

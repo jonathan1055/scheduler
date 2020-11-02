@@ -37,7 +37,7 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
     $repeater = $this->getRepeaterWithNode($plugin_id, $node);
     if (!$repeater->validate()) {
       $this->context->buildViolation($constraint->messageRepeatPeriodSmallerThanScheduledPeriod)
-        ->atPath('repeat')
+        ->atPath('scheduler_repeat')
         ->addViolation();
     }
 

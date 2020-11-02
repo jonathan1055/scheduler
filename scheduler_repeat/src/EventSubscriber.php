@@ -84,21 +84,14 @@ class EventSubscriber implements EventSubscriberInterface {
       return 0;
     }
 
-    // @todo Check what this does.
-    // if (!$repeater->shouldRepeat()) {
-    //   ddm('should not repeat any more, so exiting');
-    //   return 0;
-    // }
-
     // The content has now been unpublished. Get the stored dates for the next
-    // period, and set these as the new publish_on and unpublish_on values. 
-    $next_publish_on = $node->get('repeat')->next_publish_on;
-    $next_unpublish_on = $node->get('repeat')->next_unpublish_on;
+    // period, and set these as the new publish_on and unpublish_on values.
+    $next_publish_on = $node->get('scheduler_repeat')->next_publish_on;
+    $next_unpublish_on = $node->get('scheduler_repeat')->next_unpublish_on;
     if (empty($next_publish_on) || empty($next_unpublish_on)) {
       // Do not have both values, so cannot set the next period.
       return;
     }
-
     $node->set('publish_on', $next_publish_on);
     $node->set('unpublish_on', $next_unpublish_on);
 
@@ -112,31 +105,12 @@ class EventSubscriber implements EventSubscriberInterface {
       $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
       $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
     }
-    $node->set('repeat', [
-      'plugin' => $node->repeat->plugin,
+    $node->set('scheduler_repeat', [
+      'plugin' => $node->scheduler_repeat->plugin,
       'next_publish_on' => $next_publish_on,
       'next_unpublish_on' => $next_unpublish_on,
     ]);
 
     $event->setNode($node);
   }
-
-  /**
-   * Operations to perform before Scheduler publishes a node immediately not via
-   * cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function prePublishImmediately(SchedulerEvent $event) {
-  }
-
-  /**
-   * Operations to perform after Scheduler publishes a node immediately not via
-   * cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function publishImmediately(SchedulerEvent $event) {
-  }
-
 }
