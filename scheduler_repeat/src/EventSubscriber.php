@@ -36,80 +36,27 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Operations to perform before Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function prePublish(SchedulerEvent $event) {
-    // ddm('== scheduler_repeat EventSubscriber::prePublish == ' . format_date(REQUEST_TIME, 'medium'));
-
-    // @todo We do need this.
-    // try {
-    //   _scheduler_repeat_set_snapshot_of_scheduling_timestamps($node);
-    //   $event->setNode($node);
-    // } catch (\Exception $e) {
-    //   _scheduler_repeat_log_warning('Could not set scheduling snapshot: @message', ['@message' => $e->getMessage()]);
-    // }
-
-    
-
-  }
-
-  /**
-   * Operations to perform after Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function publish(SchedulerEvent $event) {
-    // ddm('== scheduler_repeat EventSubscriber::publish == ' . format_date(REQUEST_TIME, 'medium'));
-    
-  }
-
-  /**
-   * Operations to perform before Scheduler unpublishes a node.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function preUnpublish(SchedulerEvent $event) {
-    // ddm('== scheduler_repeat EventSubscriber::preUnpublish == ' . format_date(REQUEST_TIME, 'medium'));
-  }
-
-  /**
    * Operations to perform after Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
    */
   public function unpublish(SchedulerEvent $event) {
-    ddm('== scheduler_repeat EventSubscriber::unpublish == ' . format_date(REQUEST_TIME, 'medium'));
     /** @var Node $node */
     $node = $event->getNode();
 
     if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-      ddm('no repeater, so exiting');
       return 0;
     }
 
-    // @todo Check what this does.
-    // if (!$repeater->shouldRepeat()) {
-    //   ddm('should not repeat any more, so exiting');
-    //   return 0;
-    // }
-
     // The content has now been unpublished. Get the stored dates for the next
     // period, and set these as the new publish_on and unpublish_on values. 
-    $next_publish_on = $node->get('repeat')->next_publish_on;
-    $next_unpublish_on = $node->get('repeat')->next_unpublish_on;
-    // ddm($node->get('repeat'), '$node->get(repeat)'); // big.
-    ddm($next_publish_on, 'recovered next_publish_on');
-    ddm($next_unpublish_on, 'recovered next_unpublish_on');
+    $next_publish_on = $node->get('scheduler_repeat')->next_publish_on;
+    $next_unpublish_on = $node->get('scheduler_repeat')->next_unpublish_on;
     if (empty($next_publish_on) || empty($next_unpublish_on)) {
       // Do not have both values, so cannot set the next period.
-      ddm('Do not have both "next" values. Quit');
       return;
     }
     
-    ddm('recovered next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
-    ddm('recovered next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
     $node->set('publish_on', $next_publish_on);
     $node->set('unpublish_on', $next_unpublish_on);
 
@@ -123,35 +70,13 @@ class EventSubscriber implements EventSubscriberInterface {
       $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
       $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
     }
-    ddm('final next_publish_on = ' . $next_publish_on . ' = ' . format_date($next_publish_on, 'medium'));
-    ddm('final next_unpublish_on = ' . $next_unpublish_on . ' = ' . format_date($next_unpublish_on, 'medium'));
-    $node->set('repeat', [
-      'plugin' => $node->repeat->plugin,
+    $node->set('scheduler_repeat', [
+      'plugin' => $node->scheduler_repeat->plugin,
       'next_publish_on' => $next_publish_on,
       'next_unpublish_on' => $next_unpublish_on,
     ]);
 
     $event->setNode($node);
-  }
-
-  /**
-   * Operations to perform before Scheduler publishes a node immediately not via
-   * cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function prePublishImmediately(SchedulerEvent $event) {
-    // ddm('== scheduler_repeat EventSubscriber::prePublishImmediately == ' . format_date(REQUEST_TIME, 'medium'));
-  }
-
-  /**
-   * Operations to perform after Scheduler publishes a node immediately not via
-   * cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function publishImmediately(SchedulerEvent $event) {
-    // ddm('== scheduler_repeat EventSubscriber::publishImmediately == ' . format_date(REQUEST_TIME, 'medium'));
   }
 
 }

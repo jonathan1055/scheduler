@@ -29,7 +29,7 @@ class SchedulerRepeatConstraint extends CompositeConstraintBase {
    * {@inheritdoc}
    */
   public function coversFields() {
-    return ['repeat'];
+    return ['scheduler_repeat'];
   }
 
 }

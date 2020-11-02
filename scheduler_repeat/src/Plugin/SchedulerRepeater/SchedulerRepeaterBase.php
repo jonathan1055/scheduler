@@ -46,7 +46,6 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
   public function shouldRepeat() {
     // @todo What exactly is the purpose of this function?
     // It is called when deciding whether to set the next values.
-    ddm('--SchedulerRepeaterBase::shouldRepeat()--');
     return $this->getNextPublishOn() || $this->getNextUnpublishOn();
   }
 
