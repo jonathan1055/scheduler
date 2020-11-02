@@ -164,19 +164,6 @@ function _scheduler_repeat_move_field_to_fieldset(&$form) {
 }
 
 /**
- * @todo Is this function needed now?
- *
- * @param NodeInterface $node
- */
-function _scheduler_repeat_clear_snapshot_of_scheduling_timestamps(NodeInterface &$node) {
-  $node->set('scheduler_repeat', [
-    'plugin' => $node->scheduler_repeat->plugin,
-    'next_publish_on' => NULL,
-    'next_unpublish_on' => NULL,
-  ]);
-}
-
-/**
  * @param NodeInterface $node
  *
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
