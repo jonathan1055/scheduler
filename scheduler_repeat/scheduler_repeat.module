@@ -54,14 +54,14 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
   // @todo Determine if this is the best function to do this.
 
   if (!$repeater = _scheduler_repeat_get_repeater($node)) {
-    return 0;
+    return;
   }
   
   if (empty($node->get('publish_on')->value) || empty($node->get('publish_on')->value)) {
     // When this function is executed during cron publishing or unpublishing one
     // or both of these values will be empty. But that is OK as the next values
     // are already set and saved.
-    return 0;
+    return;
   }
   
   $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
