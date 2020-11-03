@@ -48,7 +48,7 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    return $element + [
+    return [
       'plugin' => [
         '#title' => $this->t('Repeat'),
         '#type' => 'select',
@@ -59,7 +59,7 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
       ],
       'next_publish_on' => $this->generateNextDateElement($this->t('Next publish on'), $items->get($delta)->next_publish_on),
       'next_unpublish_on' => $this->generateNextDateElement($this->t('Next unpublish on'), $items->get($delta)->next_unpublish_on),
-    ];
+    ] + $element;
   }
 
   /**
