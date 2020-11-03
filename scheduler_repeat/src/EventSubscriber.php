@@ -31,42 +31,6 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Operations to perform before Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function prePublish(SchedulerEvent $event) {
-
-    // @todo We do need this.
-    // try {
-    //   _scheduler_repeat_set_snapshot_of_scheduling_timestamps($node);
-    //   $event->setNode($node);
-    // } catch (\Exception $e) {
-    //   _scheduler_repeat_log_warning('Could not set scheduling snapshot: @message', ['@message' => $e->getMessage()]);
-    // }
-
-    
-
-  }
-
-  /**
-   * Operations to perform after Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function publish(SchedulerEvent $event) {
-    
-  }
-
-  /**
-   * Operations to perform before Scheduler unpublishes a node.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function preUnpublish(SchedulerEvent $event) {
-  }
-
-  /**
    * Operations to perform after Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
