@@ -95,10 +95,6 @@ class EventSubscriber implements EventSubscriberInterface {
     $node->set('publish_on', $next_publish_on);
     $node->set('unpublish_on', $next_unpublish_on);
 
-    // @todo Not sure why this is necessary?
-    $repeater->setNextPublishOn($next_publish_on);
-    $repeater->setNextUnpublishOn($next_unpublish_on);
-
     // Calculate and store the new next_publish_on and next_unpublish_on values.
     $request_time = \Drupal::time()->getRequestTime();
     while ($next_publish_on < $request_time) {

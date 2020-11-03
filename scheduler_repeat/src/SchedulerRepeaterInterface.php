@@ -16,13 +16,6 @@ interface SchedulerRepeaterInterface {
   public function __construct(array $options);
 
   /**
-   * Determines if given $node should be repeated.
-   *
-   * @return bool
-   */
-  public function shouldRepeat();
-
-  /**
    * Validates that publish_on and unpublish_on fields are aligned with this
    * plugin's repeat logic.
    *
@@ -34,36 +27,6 @@ interface SchedulerRepeaterInterface {
    * @return bool
    */
   public function validate();
-
-  /**
-   * @param $next_publish_on
-   *
-   * @return mixed
-   */
-  public function setNextPublishOn($next_publish_on);
-
-  /**
-   * Returns next publish on timestamp that was set by setNextPublishOn()
-   * 
-   * @return mixed
-   * @see setNextPublishOn()
-   */
-  public function getNextPublishOn();
-
-  /**
-   * @param $next_unpublish_on
-   *
-   * @return mixed
-   */
-  public function setNextUnpublishOn($next_unpublish_on);
-
-  /**
-   * Returns next unpublish on timestamp that was set by setNextUnpublishOn()
-   *
-   * @return mixed
-   * @see setNextUnpublishOn()
-   */
-  public function getNextUnpublishOn();
 
   /**
    * Calculates the next occurrence of Publish On.
