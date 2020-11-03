@@ -1,16 +1,13 @@
 <?php
 
-
-namespace Drupal\Tests\scheduler_repeater\Functional;
-
-use Drupal\Tests\scheduler\Functional\SchedulerBrowserTestBase;
+namespace Drupal\Tests\scheduler\Functional;
 
 /**
- * Tests that repeat widget is being enabled along with shceduled date fields.
+ * Tests that repeat widget is being enabled along with scheduled date fields.
  *
  * @group scheduler
  */
-class FieldsDisplayTest extends SchedulerBrowserTestBase {
+class RepeatFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
    * The standard modules to load for all browser tests.
