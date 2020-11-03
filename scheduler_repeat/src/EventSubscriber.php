@@ -26,55 +26,16 @@ class EventSubscriber implements EventSubscriberInterface {
   public static function getSubscribedEvents() {
     // The values in the arrays give the function names below.
     $events = [];
-    $events[SchedulerEvents::PRE_PUBLISH][] = ['prePublish'];
-    $events[SchedulerEvents::PUBLISH][] = ['publish'];
-    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['preUnpublish'];
     $events[SchedulerEvents::UNPUBLISH][] = ['unpublish'];
-    $events[SchedulerEvents::PRE_PUBLISH_IMMEDIATELY][] = ['prePublishImmediately'];
-    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['publishImmediately'];
     return $events;
-  }
-
-  /**
-   * Operations to perform before Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function prePublish(SchedulerEvent $event) {
-
-    // @todo We do need this.
-    // try {
-    //   _scheduler_repeat_set_snapshot_of_scheduling_timestamps($node);
-    //   $event->setNode($node);
-    // } catch (\Exception $e) {
-    //   _scheduler_repeat_log_warning('Could not set scheduling snapshot: @message', ['@message' => $e->getMessage()]);
-    // }
-
-    
-
-  }
-
-  /**
-   * Operations to perform after Scheduler publishes a node via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function publish(SchedulerEvent $event) {
-    
-  }
-
-  /**
-   * Operations to perform before Scheduler unpublishes a node.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   */
-  public function preUnpublish(SchedulerEvent $event) {
   }
 
   /**
    * Operations to perform after Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
+   *
+   * @return int|void
    */
   public function unpublish(SchedulerEvent $event) {
     /** @var Node $node */
