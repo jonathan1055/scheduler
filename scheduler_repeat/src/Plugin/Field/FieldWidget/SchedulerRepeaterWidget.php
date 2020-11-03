@@ -26,12 +26,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
 
   protected $pluginManager;
+  protected $dateFormatter;
 
   /**
    * {@inheritdoc}
    */
   public function __construct(ContainerInterface $container, $plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings) {
     $this->pluginManager = $container->get('plugin.manager.scheduler_repeat.repeater');
+    $this->dateFormatter = $container->get('date.formatter');
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
   }
 
@@ -46,17 +48,36 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    // @todo when we have associated data, extract the id.
-    // For now use entire value.
-    $plugin_id = $items[$delta]->plugin;
-    
-    $element['plugin'] = $element + [
-      '#type' => 'select',
-      '#default_value' => isset($plugin_id) ? $plugin_id : NULL,
-      '#options' => $this->getRepeaterOptions(),
-      '#empty_option' => $this->t('None'),
-      '#empty_value' => 'none',
+    return [
+      'plugin' => [
+        '#title' => $this->t('Repeat'),
+        '#type' => 'select',
+        '#default_value' => isset($items->get($delta)->plugin) ? $items->get($delta)->plugin : NULL,
+        '#options' => $this->getRepeaterOptions(),
+        '#empty_option' => $this->t('None'),
+        '#empty_value' => 'none',
+      ],
+      'next_publish_on' => $this->generateNextDateElement($this->t('Next publish on'), $items->get($delta)->next_publish_on),
+      'next_unpublish_on' => $this->generateNextDateElement($this->t('Next unpublish on'), $items->get($delta)->next_unpublish_on),
+    ] + $element;
+  }
+
+  /**
+   * @param $value
+   *
+   * @return array
+   */
+  protected function generateNextDateElement($title, $value) {
+    $element = [
+      '#type' => 'item',
+      '#value' => $value,
     ];
+
+    if ($value) {
+      $element['#title'] = $title;
+      $element['#markup'] = $this->dateFormatter->format($value);
+    }
+
     return $element;
   }
 
