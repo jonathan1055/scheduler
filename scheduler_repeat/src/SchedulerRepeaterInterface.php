@@ -16,19 +16,6 @@ interface SchedulerRepeaterInterface {
   public function __construct(array $options);
 
   /**
-   * Validates that publish_on and unpublish_on fields are aligned with this
-   * plugin's repeat logic.
-   *
-   * For example, you can't say "09:00-11:00 repeat every hour", because the
-   * periods would overlap.
-   *
-   * Repeater should have $this->node available for validation.
-   *
-   * @return bool
-   */
-  public function validate();
-
-  /**
    * Calculates the next occurrence of Publish On.
    *
    * @param $publish_on
