@@ -83,6 +83,9 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
 
   protected function getRepeaterOptions() {
     $plugin_definitions = $this->pluginManager->getDefinitions();
+    // @todo Make the sorting more robust. If a plugin does not have 'weight' we
+    // get error "array_multisort(): Array sizes are inconsistent".
+    array_multisort(array_column($plugin_definitions, 'weight'), SORT_ASC, $plugin_definitions);
     $options = [];
     foreach ($plugin_definitions as $plugin_id => $plugin) {
       /** @var TranslatableMarkup $label */

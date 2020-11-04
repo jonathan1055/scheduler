@@ -8,7 +8,8 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 /**
  * @SchedulerRepeater(
  *   id = "tenminutes",
- *   label = @Translation("Every 10 minutes")
+ *   label = @Translation("Testing: Every 10 minutes"),
+ *   weight = 101
  * )
  */
 class TenMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {

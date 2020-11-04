@@ -12,8 +12,9 @@ use Drupal\Core\Annotation\Translation;
  *
  * @code
  * @SchedulerRepeater(
- *   id = "daily",
- *   label = @Translation("Daily")
+ *   id = "example",
+ *   label = @Translation("Example Label"),
+ *   weight = 1
  * )
  * @endcode
  *

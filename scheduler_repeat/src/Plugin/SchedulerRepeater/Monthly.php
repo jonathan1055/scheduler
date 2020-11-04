@@ -7,12 +7,12 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
  * @SchedulerRepeater(
- *   id = "hourly",
- *   label = @Translation("Hourly"),
- *   weight = 1
+ *   id = "monthly",
+ *   label = @Translation("Monthly"),
+ *   weight = 4
  * )
  */
-class Hourly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
+class Monthly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
    * @param $datetime
@@ -20,7 +20,7 @@ class Hourly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface
    * @return int
    */
   public function calculateNextPublishedOn($datetime) {
-    return strtotime("+1 hour", $datetime);
+    return strtotime("+1 month", $datetime);
   }
 
   /**
@@ -29,7 +29,7 @@ class Hourly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface
    * @return int
    */
   public function calculateNextUnpublishedOn($datetime) {
-    return strtotime("+1 hour", $datetime);
+    return strtotime("+1 month", $datetime);
   }
 
 }
