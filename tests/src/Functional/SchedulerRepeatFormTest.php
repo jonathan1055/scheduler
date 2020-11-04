@@ -10,9 +10,7 @@ namespace Drupal\Tests\scheduler\Functional;
 class SchedulerRepeatFormTest extends SchedulerBrowserTestBase {
 
   /**
-   * The standard modules to load for all browser tests.
-   *
-   * Additional modules can be specified in the tests that need them.
+   * Additional modules required.
    *
    * @var array
    */
@@ -42,40 +40,29 @@ class SchedulerRepeatFormTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
-    // Create a custom user with admin permissions but also permission to use
-    // the field_ui module 'node form display' tab.
-    $this->adminUser2 = $this->drupalCreateUser([
-      'access content',
-      'administer content types',
-      'administer node form display',
-      'create ' . $this->type . ' content',
-      'schedule publishing of nodes',
-    ]);
   }
 
   /**
-   * Tests repeat input is displayed along with the schedule dates in vertical
-   * tab or an expandable fieldset.
+   * Tests that the repeat input is displayed correctly in the node edit form.
    *
    * This tests covers scheduler_repeat_form_node_form_alter().
    */
-  public function testVerticalTabOrFieldset() {
+  public function testRepeatNodeForm() {
     $this->drupalLogin($this->adminUser);
 
     /** @var \Drupal\Tests\WebAssert $assert */
     $assert = $this->assertSession();
 
-    // Check that repeat selection are shown in a vertical tab by default.
+    // Check that repeat selection is shown in the vertical tab.
     $this->drupalGet('node/add/' . $this->type);
-    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]//div[@id = "edit-scheduler-repeat-wrapper"]');
 
-    // Check that repeat selection are shown as a fieldset when configured to do
-    // so, and that fieldset is collapsed by default.
+    // Check that repeat selection is shown in the fieldset.
     $this->nodetype->setThirdPartySetting('scheduler', 'fields_display_mode', 'fieldset')->save();
     $this->drupalGet('node/add/' . $this->type);
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]//div[@id = "edit-scheduler-repeat-wrapper"]');
 
-    // Check that repeat selection are shown also when editing node.
+    // Check that repeat selection is shown also when editing node.
     $options = [
       'title' => 'Contains scheduled dates ' . $this->randomMachineName(10),
       'type' => $this->type,
@@ -84,20 +71,19 @@ class SchedulerRepeatFormTest extends SchedulerBrowserTestBase {
     ];
     $node = $this->drupalCreateNode($options);
     $this->drupalGet('node/' . $node->id() . '/edit');
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]//div[@id = "edit-scheduler-repeat-wrapper"]');
 
-    // Check that repeat selection isn't shown on node type that has no
-    // scheduling enabled.
+    // Check that repeat selection is not shown when no scheduling is enabled.
     $this->drupalGet('node/add/' . $this->nonSchedulerNodeType->id());
-    $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementNotExists('xpath', '//div[@id = "edit-scheduler-repeat-wrapper"]');
 
-    // Check that repeat selection is not shown if publish on field is missing.
+    // Check that repeat selection is not shown if publishing is not enabled.
     $this->drupalGet('node/add/' . $this->onlyPublishOnNodetype->id());
-    $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementNotExists('xpath', '//div[@id = "edit-scheduler-repeat-wrapper"]');
 
-    // Check that repeat selection is not shown if unpublish on field is missing.
+    // Check that repeat selection is not shown if unpublishing is not enabled.
     $this->drupalGet('node/add/' . $this->onlyUnpublishOnNodetype->id());
-    $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
+    $assert->elementNotExists('xpath', '//div[@id = "edit-scheduler-repeat-wrapper"]');
 
   }
 
@@ -106,21 +92,24 @@ class SchedulerRepeatFormTest extends SchedulerBrowserTestBase {
    *
    * This test covers scheduler_repeat_entity_base_field_info().
    */
-  public function testManageFormDisplay() {
+  public function testRepeatManageFormDisplay() {
+    // Create a custom user with admin permissions but also permission to use
+    // the field_ui module 'node form display' tab.
+    $this->adminUser2 = $this->drupalCreateUser([
+      'access content',
+      'administer content types',
+      'administer node form display',
+    ]);
     $this->drupalLogin($this->adminUser2);
 
     // Check that the weight input field is displayed when the content type is
     // enabled for scheduling. This field still exists even with tabledrag on.
     $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
-    $this->assertSession()
-      ->fieldExists('edit-fields-repeat-weight');
+    $this->assertSession()->fieldExists('edit-fields-scheduler-repeat-weight');
 
-    // Check that the weight input field is not displayed when the content type
-    // is not enabled for scheduling.
-    $this->nodetype->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
-      ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
-    $this->drupalGet('admin/structure/types/manage/' . $this->type . '/form-display');
-    $this->assertNoFieldById('edit-fields-repeat-weight', NULL);
+    // Disabling scheduled publishing and unpublishing has no effect on whether
+    // the base fields are displayed in the form. This is the same for the main
+    // Scheduler fields.
   }
 
 }
