@@ -86,6 +86,10 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $options = [
       'hourly' => 'Hourly',
+      'daily' => 'Daily',
+      'weekly' => 'Weekly',
+      'monthly' => 'Monthly',
+      'yearly' => 'Yearly',
     ];
     $values['plugin'] = array_rand($options);
     $values['next_publish_on'] = rand(strtotime("+1 day"), strtotime("+3 days"));

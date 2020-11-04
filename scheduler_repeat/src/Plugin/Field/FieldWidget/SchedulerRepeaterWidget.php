@@ -16,7 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @FieldWidget(
  *   id = "scheduler_repeater_widget",
- *   label = @Translation("Available repeat options"),
+ *   label = @Translation("Scheduler Repeat option list"),
  *   field_types = {
  *     "scheduler_repeater"
  *   }
@@ -50,7 +50,7 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     return [
       'plugin' => [
-        '#title' => $this->t('Repeat'),
+        '#title' => $this->t('Repeat schedule'),
         '#type' => 'select',
         '#default_value' => isset($items->get($delta)->plugin) ? $items->get($delta)->plugin : NULL,
         '#options' => $this->getRepeaterOptions(),

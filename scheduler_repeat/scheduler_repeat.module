@@ -20,7 +20,7 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_type) {
   if ($entity_type->id() === 'node') {
     $fields['scheduler_repeat'] = BaseFieldDefinition::create('scheduler_repeater')
-      ->setLabel(t('Repeat'))
+      ->setLabel(t('Scheduler Repeat'))
       ->setDisplayOptions('form', [
         'type' => 'scheduler_repeater_widget',
         'weight' => 31,
