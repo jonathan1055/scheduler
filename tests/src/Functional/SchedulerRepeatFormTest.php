@@ -7,7 +7,7 @@ namespace Drupal\Tests\scheduler\Functional;
  *
  * @group scheduler
  */
-class RepeatFieldsDisplayTest extends SchedulerBrowserTestBase {
+class SchedulerRepeatFormTest extends SchedulerBrowserTestBase {
 
   /**
    * The standard modules to load for all browser tests.
@@ -24,7 +24,7 @@ class RepeatFieldsDisplayTest extends SchedulerBrowserTestBase {
   public function setUp(): void {
     parent::setUp();
 
-    // Create node type that has only publish on date set
+    // Create node type that only has scheduled publishing enabled.
     $this->onlyPublishOnNodetype = $this->drupalCreateContentType([
       'type' => 'only_publish_hon_nodetype',
       'name' => 'Only publish on nodetype',
@@ -33,7 +33,7 @@ class RepeatFieldsDisplayTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)
       ->save();
 
-    // Create node type that has only unpublish on date set
+    // Create node type that only has scheduled unpublishing enabled.
     $this->onlyUnpublishOnNodetype = $this->drupalCreateContentType([
       'type' => 'only_unpublish_hon_nodetype',
       'name' => 'Only unpublish on nodetype',
@@ -91,11 +91,11 @@ class RepeatFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/add/' . $this->nonSchedulerNodeType->id());
     $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
 
-    // Check that repeat selection is not shown if publish on field is missing
+    // Check that repeat selection is not shown if publish on field is missing.
     $this->drupalGet('node/add/' . $this->onlyPublishOnNodetype->id());
     $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
 
-    // Check that repeat selection is not shown if unpublish on field is missing
+    // Check that repeat selection is not shown if unpublish on field is missing.
     $this->drupalGet('node/add/' . $this->onlyUnpublishOnNodetype->id());
     $assert->elementNotExists('xpath', '//div[@id = "edit-repeat-wrapper"]');
 
