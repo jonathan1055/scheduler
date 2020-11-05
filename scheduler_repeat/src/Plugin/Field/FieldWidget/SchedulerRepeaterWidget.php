@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -8,7 +7,6 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Field\WidgetInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,7 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   }
  * )
  */
-
 class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
 
   protected $pluginManager;
@@ -81,6 +78,9 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
     return $element;
   }
 
+  /**
+   *
+   */
   protected function getRepeaterOptions() {
     $plugin_definitions = $this->pluginManager->getDefinitions();
     // @todo Make the sorting more robust. If a plugin does not have 'weight' we
@@ -88,7 +88,7 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
     array_multisort(array_column($plugin_definitions, 'weight'), SORT_ASC, $plugin_definitions);
     $options = [];
     foreach ($plugin_definitions as $plugin_id => $plugin) {
-      /** @var TranslatableMarkup $label */
+      /** @var \Drupal\Core\StringTranslation\TranslatableMarkup $label */
       $label = $plugin['label'];
       $options[$plugin_id] = $label->render();
     }

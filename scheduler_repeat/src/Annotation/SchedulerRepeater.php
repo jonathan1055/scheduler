@@ -1,11 +1,8 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-use Drupal\Core\Annotation\Translation;
-
 
 /**
  * Defines repeater plugin.
@@ -23,23 +20,25 @@ use Drupal\Core\Annotation\Translation;
 class SchedulerRepeater extends Plugin {
 
   /**
-   * ID of the recurring scheduler plugin.
+   * ID of the repeat plugin.
    *
    * @var string
    */
   public $id;
 
   /**
-   * Label of the recurring scheduler plugin.
+   * Label of the repeat plugin.
    *
    * @ingroup plugin_translatable
    *
-   * @var Translation
+   * @var \Drupal\Core\Annotation\Translation
    */
   public $label;
 
   /**
-   * Helps sorting plugins and display them in consistent order.
+   * Weight of the repeat plugin.
+   *
+   * This is used for sorting the plugins in the form selction list.
    *
    * @var int
    */

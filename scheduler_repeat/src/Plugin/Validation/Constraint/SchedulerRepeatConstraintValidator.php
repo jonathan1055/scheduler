@@ -2,32 +2,36 @@
 
 namespace Drupal\scheduler_repeat\Plugin\Validation\Constraint;
 
-use Drupal\node\NodeInterface;
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 use Drupal\scheduler_repeat\InvalidPluginTypeException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
+/**
+ *
+ */
 class SchedulerRepeatConstraintValidator extends ConstraintValidator {
 
   protected $scheduler_repeater_manager;
   protected $node;
   protected $repeater;
 
+  /**
+   *
+   */
   public function __construct() {
     $this->scheduler_repeater_manager = \Drupal::service('plugin.manager.scheduler_repeat.repeater');
   }
 
   /**
    * {@inheritdoc}
-   * @throws InvalidPluginTypeException
    */
   public function validate($value, Constraint $constraint) {
     if ($value->isEmpty()) {
       return;
     }
 
-    /** @var NodeInterface $node */
+    /** @var \Drupal\node\NodeInterface $node */
     $this->node = $value->getEntity();
     if (!$this->shouldValidate()) {
       return;
@@ -50,7 +54,7 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
    * @return bool
    */
   private function shouldValidate() {
-    // We need both dates in order to validate potentially conflicting periods
+    // We need both dates in order to validate potentially conflicting periods.
     // @todo Figure out how to handle $node that is in active scheduled period
     return !$this->node->get('publish_on')->isEmpty() && !$this->node->get('unpublish_on')->isEmpty();
   }
@@ -96,8 +100,8 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
   /**
    * @param string $plugin_id
    *
-   * @return SchedulerRepeaterInterface
-   * @throws InvalidPluginTypeException
+   * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface
+   * @throws \Drupal\scheduler_repeat\InvalidPluginTypeException
    *
    * @todo This duplicates fiunctionality done in _scheduler_repeat_get_repeater
    * Need to consolidate these? Also from node->plugin may need to get the

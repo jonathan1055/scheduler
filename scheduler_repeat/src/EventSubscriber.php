@@ -1,13 +1,7 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\scheduler_repeat\EventSubscriber.
- */
-
 namespace Drupal\scheduler_repeat;
 
-use Drupal\node\Entity\Node;
 use Drupal\scheduler\SchedulerEvent;
 use Drupal\scheduler\SchedulerEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -38,7 +32,7 @@ class EventSubscriber implements EventSubscriberInterface {
    * @return int|void
    */
   public function unpublish(SchedulerEvent $event) {
-    /** @var Node $node */
+    /** @var \Drupal\node\Entity\Node $node */
     $node = $event->getNode();
 
     if (!$repeater = _scheduler_repeat_get_repeater($node)) {
@@ -58,4 +52,5 @@ class EventSubscriber implements EventSubscriberInterface {
     $node->set('unpublish_on', $next_unpublish_on);
     $event->setNode($node);
   }
+
 }

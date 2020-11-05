@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat\Plugin\SchedulerRepeater;
 
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;

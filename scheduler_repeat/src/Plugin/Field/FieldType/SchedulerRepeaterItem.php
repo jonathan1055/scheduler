@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -115,7 +114,7 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
         'next_unpublish_on' => [
           'type' => 'int',
         ],
-      ]
+      ],
     ];
   }
 

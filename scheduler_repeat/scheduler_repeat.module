@@ -82,7 +82,7 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
 }
 
 /**
- * @param NodeInterface $node
+ * @param \Drupal\node\NodeInterface $node
  */
 function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
   $node->set('scheduler_repeat', [
@@ -97,8 +97,8 @@ function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
  * date. If publish_on date is set, it will use $repeater to calculate the next
  * occurence until the value is in future.
  *
- * @param SchedulerRepeaterInterface $repeater
- * @param NodeInterface $node
+ * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ * @param \Drupal\node\NodeInterface $node
  *
  * @return mixed|null
  */
@@ -120,8 +120,8 @@ function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater,
  * next_unpublish_on date. If unpublish_on date is set, it will use $repeater to
  * calculate the next occurence until the value is in future.
  *
- * @param SchedulerRepeaterInterface $repeater
- * @param NodeInterface $node
+ * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ * @param \Drupal\node\NodeInterface $node
  *
  * @return mixed|null
  */
@@ -164,7 +164,7 @@ function _scheduler_repeat_move_field_to_fieldset(&$form) {
 }
 
 /**
- * @param NodeInterface $node
+ * @param \Drupal\node\NodeInterface $node
  *
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
  */
@@ -183,7 +183,8 @@ function _scheduler_repeat_get_repeater(NodeInterface $node) {
   /** @var \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater */
   try {
     $repeater = $scheduler_repeater_manager->createInstance($plugin_id, $plugin_data);
-  } catch (PluginException $e) {
+  }
+  catch (PluginException $e) {
     _scheduler_repeat_log_warning('Could not create scheduler repeater instance: @message', ['@message' => $e->getMessage()]);
     return NULL;
   }

@@ -1,17 +1,12 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat\Plugin\Field\FieldFormatter;
-
 
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Field\FieldDefinitionInterface;
-use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
-use Drupal\Core\Render\Element\Container;
 use Drupal\node\NodeInterface;
-use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -47,7 +42,7 @@ class SchedulerRepeaterFormatter extends FormatterBase {
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param ContainerInterface $container
+   * @param \Drupal\Core\Render\Element\ContainerInterface $container
    *   Container which is being used to inject plugin manager and date
    *   formatter.
    */
@@ -80,7 +75,7 @@ class SchedulerRepeaterFormatter extends FormatterBase {
   }
 
   /**
-   * @param NodeInterface $node
+   * @param \Drupal\node\NodeInterface $node
    *
    * @return string
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException

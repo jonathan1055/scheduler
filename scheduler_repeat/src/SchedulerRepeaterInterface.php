@@ -1,9 +1,10 @@
 <?php
 
-
 namespace Drupal\scheduler_repeat;
 
-
+/**
+ *
+ */
 interface SchedulerRepeaterInterface {
 
   /**
@@ -26,7 +27,7 @@ interface SchedulerRepeaterInterface {
   public function calculateNextPublishedOn($publish_on);
 
   /**
-   * Calculates the next occurrence of Unpublish On
+   * Calculates the next occurrence of Unpublish On.
    *
    * @param $unpublish_on
    *   Timestamp from which to calculate the next unpublish on value.
