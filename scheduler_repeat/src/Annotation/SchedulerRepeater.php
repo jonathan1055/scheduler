@@ -29,9 +29,9 @@ class SchedulerRepeater extends Plugin {
   /**
    * Label of the repeat plugin.
    *
-   * @ingroup plugin_translatable
-   *
    * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
    */
   public $label;
 

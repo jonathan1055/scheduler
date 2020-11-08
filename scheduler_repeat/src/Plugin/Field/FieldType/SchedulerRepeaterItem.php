@@ -59,19 +59,28 @@ class SchedulerRepeaterItem extends FieldItemBase implements FieldItemInterface 
       'plugin' => [
         'Length' => [
           'max' => self::COLUMN_PLUGIN_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_PLUGIN_MAX_LENGTH]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', [
+            '%name' => $this->getFieldDefinition()->getLabel(),
+            '@max' => self::COLUMN_PLUGIN_MAX_LENGTH,
+          ]),
         ],
       ],
       'next_publish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', [
+            '%name' => $this->getFieldDefinition()->getLabel(),
+            '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
+          ]),
         ],
       ],
       'next_unpublish_on' => [
         'Length' => [
           'max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
-          'maxMessage' => $this->t('%name: may not be longer than @max characters.', ['%name' => $this->getFieldDefinition()->getLabel(), '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH]),
+          'maxMessage' => $this->t('%name: may not be longer than @max characters.', [
+            '%name' => $this->getFieldDefinition()->getLabel(),
+            '@max' => self::COLUMN_TIMESTAMP_MAX_LENGTH,
+          ]),
         ],
       ],
     ]);

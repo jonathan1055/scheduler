@@ -3,7 +3,7 @@
 namespace Drupal\scheduler_repeat;
 
 /**
- *
+ * Interface for Sheduler Repeat plugins.
  */
 interface SchedulerRepeaterInterface {
 
@@ -19,21 +19,23 @@ interface SchedulerRepeaterInterface {
   /**
    * Calculates the next occurrence of Publish On.
    *
-   * @param $publish_on
+   * @param int $publish_on
    *   Timestamp from which to calculate the next publish on value.
    *
-   * @return mixed
+   * @return int
+   *   The calculated next publish_on value.
    */
-  public function calculateNextPublishedOn($publish_on);
+  public function calculateNextPublishedOn(int $publish_on);
 
   /**
    * Calculates the next occurrence of Unpublish On.
    *
-   * @param $unpublish_on
+   * @param int $unpublish_on
    *   Timestamp from which to calculate the next unpublish on value.
    *
-   * @return mixed
+   * @return int
+   *   The calculated next unpublish_on value.
    */
-  public function calculateNextUnpublishedOn($unpublish_on);
+  public function calculateNextUnpublishedOn(int $unpublish_on);
 
 }

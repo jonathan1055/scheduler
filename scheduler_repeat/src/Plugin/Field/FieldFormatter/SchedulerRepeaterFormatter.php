@@ -22,7 +22,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SchedulerRepeaterFormatter extends FormatterBase {
 
+  /**
+   * The Scheduler Repeat manager.
+   *
+   * @var
+   */
   protected $pluginManager;
+
+  /**
+   * The Drupal Core date formatter.
+   */
   protected $dateFormatter;
 
   /**

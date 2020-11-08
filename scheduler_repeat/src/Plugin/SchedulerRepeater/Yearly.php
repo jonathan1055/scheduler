@@ -5,6 +5,8 @@ namespace Drupal\scheduler_repeat\Plugin\SchedulerRepeater;
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
+ * Plugin definition for schedule to repeat every year.
+ *
  * @SchedulerRepeater(
  *   id = "yearly",
  *   label = @Translation("Yearly"),
@@ -14,21 +16,17 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 class Yearly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
-   * @param $datetime
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextPublishedOn($datetime) {
-    return strtotime("+1 year", $datetime);
+  public function calculateNextPublishedOn(int $publish_on) {
+    return strtotime("+1 year", $publish_on);
   }
 
   /**
-   * @param $datetime
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextUnpublishedOn($datetime) {
-    return strtotime("+1 year", $datetime);
+  public function calculateNextUnpublishedOn(int $unpublish_on) {
+    return strtotime("+1 year", $unpublish_on);
   }
 
 }

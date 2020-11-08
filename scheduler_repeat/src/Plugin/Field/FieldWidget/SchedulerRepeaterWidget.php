@@ -22,7 +22,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
 
+  /**
+   * The Scheduler Repeat manager.
+   *
+   * @var
+   */
   protected $pluginManager;
+
+  /**
+   * The Drupal Core date formatter.
+   */
   protected $dateFormatter;
 
   /**

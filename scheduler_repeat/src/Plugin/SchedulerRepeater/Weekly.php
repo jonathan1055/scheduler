@@ -5,6 +5,8 @@ namespace Drupal\scheduler_repeat\Plugin\SchedulerRepeater;
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
+ * Plugin definition for schedule to repeat every week.
+ *
  * @SchedulerRepeater(
  *   id = "weekly",
  *   label = @Translation("Weekly"),
@@ -14,21 +16,17 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 class Weekly extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
-   * @param $datetime
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextPublishedOn($datetime) {
-    return strtotime("+7 days", $datetime);
+  public function calculateNextPublishedOn(int $publish_on) {
+    return strtotime("+7 days", $publish_on);
   }
 
   /**
-   * @param $datetime
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextUnpublishedOn($datetime) {
-    return strtotime("+7 days", $datetime);
+  public function calculateNextUnpublishedOn(int $unpublish_on) {
+    return strtotime("+7 days", $unpublish_on);
   }
 
 }

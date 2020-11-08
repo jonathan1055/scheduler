@@ -7,7 +7,7 @@ use Drupal\scheduler_repeat\MissingOptionNodeException;
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
- *
+ * Base class for the repeat plugins to extend from.
  */
 abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
@@ -22,6 +22,7 @@ abstract class SchedulerRepeaterBase implements SchedulerRepeaterInterface {
    * Constructor.
    *
    * @param array $options
+   *   ? how to describe this parameter? What can be included in it?.
    *
    * @throws \Drupal\scheduler_repeat\MissingOptionNodeException
    */

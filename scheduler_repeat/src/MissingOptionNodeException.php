@@ -3,8 +3,11 @@
 namespace Drupal\scheduler_repeat;
 
 /**
+ * Defines an exception for missing node object.
  *
+ * This is thrown when the node is not passed in the $options parameter.
+ *
+ * @see SchedulerRepeaterBase::__construct()
  */
 class MissingOptionNodeException extends \Exception {
-  // Used when node is not given and repeat logic can not be reliably executed.
 }

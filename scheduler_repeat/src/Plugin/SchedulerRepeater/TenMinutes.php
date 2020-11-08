@@ -5,6 +5,8 @@ namespace Drupal\scheduler_repeat\Plugin\SchedulerRepeater;
 use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 
 /**
+ * Plugin definition for schedule to repeat every ten minutes.
+ *
  * @SchedulerRepeater(
  *   id = "tenminutes",
  *   label = @Translation("Testing: Every 10 minutes"),
@@ -14,20 +16,16 @@ use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 class TenMinutes extends SchedulerRepeaterBase implements SchedulerRepeaterInterface {
 
   /**
-   * @param $publish_on
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextPublishedOn($publish_on) {
+  public function calculateNextPublishedOn(int $publish_on) {
     return strtotime("+10 mins", $publish_on);
   }
 
   /**
-   * @param $unpublish_on
-   *
-   * @return int
+   * {@inheritdoc}
    */
-  public function calculateNextUnpublishedOn($unpublish_on) {
+  public function calculateNextUnpublishedOn(int $unpublish_on) {
     return strtotime("+10 mins", $unpublish_on);
   }
 
