@@ -119,7 +119,7 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
     // @todo When we cater for optional associated data, the id can be
     // extracted and the other values added into $plugin_data.
     $plugin_id = $plugin;
-    $plugin_data = ['node' => $node];
+    $plugin_data = ['node' => $this->node];
     $repeater = $this->schedulerRepeatPluginManager->createInstance($plugin_id, $plugin_data);
     if (!$repeater instanceof SchedulerRepeaterInterface) {
       throw new InvalidPluginTypeException('Scheduler repeater manager returned wrong plugin type: ' . get_class($repeater));
