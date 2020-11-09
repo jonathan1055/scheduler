@@ -5,7 +5,7 @@ namespace Drupal\scheduler_repeat\Plugin\Validation\Constraint;
 use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
 
 /**
- * Validates repeat values.
+ * Validates the selected scheduler_repeat value.
  *
  * @Constraint(
  *   id = "SchedulerRepeat",

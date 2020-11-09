@@ -8,19 +8,36 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 /**
- *
+ * Validates the SchedulerRepeat constraint.
  */
 class SchedulerRepeatConstraintValidator extends ConstraintValidator {
 
-  protected $scheduler_repeater_manager;
+  /**
+   * The Scheduler Repeat plugin manager.
+   *
+   * @var \Drupal\scheduler_repeat\SchedulerRepeaterManager
+   */
+  protected $schedulerRepeatPluginManager;
+
+  /**
+   * The node to validate.
+   *
+   * @var \Drupal\node\NodeInterface
+   */
   protected $node;
+
+  /**
+   * The repeat plugin instance.
+   *
+   * @var \Drupal\scheduler_repeat\SchedulerRepeaterInterface
+   */
   protected $repeater;
 
   /**
-   *
+   * Constructs the object.
    */
   public function __construct() {
-    $this->scheduler_repeater_manager = \Drupal::service('plugin.manager.scheduler_repeat.repeater');
+    $this->schedulerRepeatPluginManager = \Drupal::service('plugin.manager.scheduler_repeat.repeater');
   }
 
   /**
@@ -41,7 +58,10 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
     $plugin_id = $value->plugin;
 
     $this->repeater = $this->initializeRepeaterWithPlugin($plugin_id);
-    if ($this->publishesBeforeUnpublishing() || $this->publishesAtSameTimeWhenUnpublishing()) {
+    // If the calculated next publish_on value is earlier than the current
+    // unpublish_on value then the dates overlap. This means that the repeat
+    // period is too short so fail validation.
+    if ($this->repeater->calculateNextPublishedOn($this->getPublishOn()) <= $this->getUnpublishOn()) {
       $this->context->buildViolation($constraint->messageRepeatPeriodSmallerThanScheduledPeriod)
         ->atPath('scheduler_repeat')
         ->addViolation();
@@ -52,6 +72,7 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
    * Determine when validation should be applied.
    *
    * @return bool
+   *   Whether to validate the repeat value.
    */
   private function shouldValidate() {
     // We need both dates in order to validate potentially conflicting periods.
@@ -60,55 +81,46 @@ class SchedulerRepeatConstraintValidator extends ConstraintValidator {
   }
 
   /**
-   * Determines if current $this->node tries to publish next time before it has
-   * not even being unpublished.
+   * Gets publish_on date that exists in the node.
    *
-   * @return bool
-   */
-  protected function publishesBeforeUnpublishing() {
-    return $this->repeater->calculateNextPublishedOn($this->getPublishOn()) < $this->getUnpublishOn();
-  }
-
-  /**
-   * Determines if current $this->node tries to publish next time at the same
-   * time it should be unpublishing.
-   *
-   * @return bool
-   */
-  protected function publishesAtSameTimeWhenUnpublishing() {
-    return $this->repeater->calculateNextPublishedOn($this->getPublishOn()) == $this->getUnpublishOn();
-  }
-
-  /**
-   * Gets publish_on that is being used in node given in constructor.
-   *
-   * @return mixed
+   * @return int
+   *   The current publish_on value.
    */
   protected function getPublishOn() {
     return $this->node->get('publish_on')->value;
   }
 
   /**
-   * Gets unpublish_on that is being used in node given in constructor.
+   * Gets unpublish_on date that exists in the node.
    *
-   * @return mixed
+   * @return int
+   *   The current unpublish_on value.
    */
   protected function getUnpublishOn() {
     return $this->node->get('unpublish_on')->value;
   }
 
   /**
-   * @param string $plugin_id
+   * Create an instance of the required repeat plugin.
+   *
+   * @param string $plugin
+   *   The plugin information. Currently this is just the plugin id, but could
+   *   be expanded to hold additional associated data.
    *
    * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface
+   *   The repeat plugin object.
+   *
    * @throws \Drupal\scheduler_repeat\InvalidPluginTypeException
    *
-   * @todo This duplicates fiunctionality done in _scheduler_repeat_get_repeater
-   * Need to consolidate these? Also from node->plugin may need to get the
-   * optional associated data. See _scheduler_repeat_get_repeater().
+   * @todo This duplicates some functionality in _scheduler_repeat_get_repeater.
+   * Need to consolidate these?
    */
-  private function initializeRepeaterWithPlugin(string $plugin_id) {
-    $repeater = $this->scheduler_repeater_manager->createInstance($plugin_id, ['node' => $this->node]);
+  private function initializeRepeaterWithPlugin(string $plugin) {
+    // @todo When we cater for optional associated data, the id can be
+    // extracted and the other values added into $plugin_data.
+    $plugin_id = $plugin;
+    $plugin_data = ['node' => $node];
+    $repeater = $this->schedulerRepeatPluginManager->createInstance($plugin_id, $plugin_data);
     if (!$repeater instanceof SchedulerRepeaterInterface) {
       throw new InvalidPluginTypeException('Scheduler repeater manager returned wrong plugin type: ' . get_class($repeater));
     }

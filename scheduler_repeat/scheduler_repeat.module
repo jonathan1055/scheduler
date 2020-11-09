@@ -2,8 +2,7 @@
 
 /**
  * @file
- * Scheduler Repeat extends scheduling by providing options for repeating
- * publishing and un-publishing.
+ * Scheduler Repeat provides options for repeat publishing and un-publishing.
  */
 
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -71,7 +70,12 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
   if ($next_publish_on > $next_unpublish_on) {
     _scheduler_repeat_log_error(
       '@repeater repeater calculated conflicting next occurence for node @nid: @from -> @to',
-      ['@repeater' => $node->scheduler_repeat->plugin, '@nid' => $node->id(), '@from' => date("Y-m-d H:i:s", $next_publish_on), '@to' => date("Y-m-d H:i:s", $next_unpublish_on)]
+      [
+        '@repeater' => $node->scheduler_repeat->plugin,
+        '@nid' => $node->id(),
+        '@from' => date("Y-m-d H:i:s", $next_publish_on),
+        '@to' => date("Y-m-d H:i:s", $next_unpublish_on),
+      ]
     );
     return;
   }
@@ -84,7 +88,10 @@ function scheduler_repeat_node_presave(EntityInterface $node) {
 }
 
 /**
+ * Remove the repeat plugin and both 'next' date values.
+ *
  * @param \Drupal\node\NodeInterface $node
+ *   The node object to update.
  */
 function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
   $node->set('scheduler_repeat', [
@@ -95,14 +102,19 @@ function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
 }
 
 /**
- * If publish_on date isn't set, it will try to return stored next_publish_on
- * date. If publish_on date is set, it will use $repeater to calculate the next
- * occurence until the value is in future.
+ * Get the next publish_on date.
+ *
+ * If the existing publish_on date is empty, return the stored next_publish_on
+ * date if availbale. If publish_on date is set, use $repeater to calculate the
+ * next occurence until the value is in the future.
  *
  * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ *   The repeater plugin.
  * @param \Drupal\node\NodeInterface $node
+ *   The node to use.
  *
  * @return mixed|null
+ *   The next publish_on date
  */
 function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
   if ($node->get('publish_on')->isEmpty()) {
@@ -118,14 +130,19 @@ function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater,
 }
 
 /**
- * If unpublish_on date isn't set, it will try to return stored
- * next_unpublish_on date. If unpublish_on date is set, it will use $repeater to
- * calculate the next occurence until the value is in future.
+ * Get the next unpublish_on date.
+ *
+ * If the existing unpublish_on date is empty, return the stored
+ * next_unpublish_on date if available. If unpublish_on date is set, use
+ * $repeater to calculate the next occurence until the value is in the future.
  *
  * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ *   The repeater plugin.
  * @param \Drupal\node\NodeInterface $node
+ *   The node to use.
  *
  * @return mixed|null
+ *   The next unpublish_on date
  */
 function _scheduler_repeat_next_unpublish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
   if ($node->get('unpublish_on')->isEmpty()) {
@@ -174,16 +191,26 @@ function _scheduler_repeat_get_repeater(NodeInterface $node) {
 }
 
 /**
+ * Write an error to the db log.
+ *
  * @param string $message
+ *   The message text.
  * @param array $context
+ *   Context variables for substitution.
+ * @todo This is only called once. Move into scheduler_repeat_node_presave?.
  */
 function _scheduler_repeat_log_error(string $message, array $context) {
   \Drupal::logger('scheduler_repeat')->error($message, $context);
 }
 
 /**
+ * Write a warning to the db log.
+ *
  * @param string $message
+ *   The message text.
  * @param array $context
+ *   Context variables for substitution.
+ * @todo This is only called once. Move into _scheduler_repeat_get_repeater?.
  */
 function _scheduler_repeat_log_warning(string $message, array $context) {
   \Drupal::logger('scheduler_repeat')->warning($message, $context);
