@@ -197,6 +197,7 @@ function _scheduler_repeat_get_repeater(NodeInterface $node) {
  *   The message text.
  * @param array $context
  *   Context variables for substitution.
+ *
  * @todo This is only called once. Move into scheduler_repeat_node_presave?.
  */
 function _scheduler_repeat_log_error(string $message, array $context) {
@@ -210,6 +211,7 @@ function _scheduler_repeat_log_error(string $message, array $context) {
  *   The message text.
  * @param array $context
  *   Context variables for substitution.
+ *
  * @todo This is only called once. Move into _scheduler_repeat_get_repeater?.
  */
 function _scheduler_repeat_log_warning(string $message, array $context) {
