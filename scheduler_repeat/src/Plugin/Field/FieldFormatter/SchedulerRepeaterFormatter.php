@@ -23,14 +23,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SchedulerRepeaterFormatter extends FormatterBase {
 
   /**
-   * The Scheduler Repeat manager.
+   * The Scheduler Repeat plugin manager.
    *
-   * @var
+   * @var \Drupal\scheduler_repeat\SchedulerRepeaterManager
    */
   protected $pluginManager;
 
   /**
-   * The Drupal Core date formatter.
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
    */
   protected $dateFormatter;
 
@@ -84,9 +86,14 @@ class SchedulerRepeaterFormatter extends FormatterBase {
   }
 
   /**
+   * Render the two next occurence dates, for use in views.
+   *
    * @param \Drupal\node\NodeInterface $node
+   *   The node object to use.
    *
    * @return string
+   *   A string consisting of the next publish_on and unpublish_on dates.
+   *
    * @throws \Drupal\Core\TypedData\Exception\MissingDataException
    */
   protected function renderOccurence(NodeInterface $node) {
@@ -94,12 +101,17 @@ class SchedulerRepeaterFormatter extends FormatterBase {
   }
 
   /**
-   * @param $timestamp
+   * Render an individual date timestamp into a string.
+   *
+   * @todo Make this configurable? Pass a format parameter.
+   *
+   * @param int $timestamp
+   *   The the date integer value to render.
    *
    * @return string
+   *   The date rendered as a text value in 'short' format.
    */
   protected function renderDate($timestamp) {
-    // @todo Make it configurable
     return $this->dateFormatter->format($timestamp, 'short');
   }
 

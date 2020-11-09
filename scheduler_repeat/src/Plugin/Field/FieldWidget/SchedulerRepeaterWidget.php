@@ -23,14 +23,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
 
   /**
-   * The Scheduler Repeat manager.
+   * The Scheduler Repeat plugin manager.
    *
-   * @var
+   * @var \Drupal\scheduler_repeat\SchedulerRepeaterManager
    */
   protected $pluginManager;
 
   /**
-   * The Drupal Core date formatter.
+   * The date formatter service.
+   *
+   * @var \Drupal\Core\Datetime\DateFormatterInterface
    */
   protected $dateFormatter;
 
@@ -54,7 +56,7 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    return [
+    $formElement = [
       'plugin' => [
         '#title' => $this->t('Repeat schedule'),
         '#type' => 'select',
@@ -63,22 +65,31 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
         '#empty_option' => $this->t('None'),
         '#empty_value' => 'none',
       ],
-      'next_publish_on' => $this->generateNextDateElement($this->t('Next publish on'), $items->get($delta)->next_publish_on),
-      'next_unpublish_on' => $this->generateNextDateElement($this->t('Next unpublish on'), $items->get($delta)->next_unpublish_on),
+      'next_publish_on' => $this->addNextDateElement($this->t('Next publish on'), $items->get($delta)->next_publish_on),
+      'next_unpublish_on' => $this->addNextDateElement($this->t('Next unpublish on'), $items->get($delta)->next_unpublish_on),
     ] + $element;
+    return $formElement;
   }
 
   /**
-   * @param $value
+   * Add a read-only form item to store and display the next date.
+   *
+   * @param Drupal\Core\StringTranslation\TranslatableMarkup $title
+   *   The title of the date item.
+   * @param int $value
+   *   The date value, which may be empty.
    *
    * @return array
+   *   A form element displaying the next date.
    */
-  protected function generateNextDateElement($title, $value) {
+  protected function addNextDateElement(TranslatableMarkup $title, $value) {
+    // Create the element, even if the next date value is empty.
     $element = [
       '#type' => 'item',
       '#value' => $value,
     ];
 
+    // If there is a value, display the title and the formatted value.
     if ($value) {
       $element['#title'] = $title;
       $element['#markup'] = $this->dateFormatter->format($value);
@@ -88,7 +99,10 @@ class SchedulerRepeaterWidget extends WidgetBase implements WidgetInterface {
   }
 
   /**
+   * Get all Scheduler Repeat options.
    *
+   * @return array
+   *   An array of repeat options, for use in form selection element.
    */
   protected function getRepeaterOptions() {
     $plugin_definitions = $this->pluginManager->getDefinitions();
