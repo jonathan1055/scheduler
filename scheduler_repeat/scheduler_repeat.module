@@ -38,13 +38,15 @@ function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_typ
  * Implements hook_form_FORM_ID_alter() for node_form().
  */
 function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_state) {
-  if (!_scheduler_repeat_should_show_field($form)) {
+  if (!isset($form['publish_on']) || !isset($form['unpublish_on'])) {
+    // Remove the repeat selection field.
     // @todo What if scheduler_form_node_form_alter() is invoked AFTER this?
     // @todo What if scheduler date fields are configured as hidden?
-    _scheduler_repeat_remove_field($form);
+    unset($form['scheduler_repeat']);
     return;
   }
-  _scheduler_repeat_move_field_to_fieldset($form);
+  // Move the repeat widget to the 'scheduler_settings' fieldset.
+  $form['scheduler_repeat']['#group'] = 'scheduler_settings';
 }
 
 /**
@@ -139,40 +141,19 @@ function _scheduler_repeat_next_unpublish_on(SchedulerRepeaterInterface $repeate
 }
 
 /**
- * @param $form
+ * Get the repeat plugin if one is defined for the node.
  *
- * @return bool
- */
-function _scheduler_repeat_should_show_field($form) {
-  return isset($form['publish_on']) && isset($form['unpublish_on']);
-}
-
-/**
- * @param $form
- *   The node form where we expect repeat field to be.
- */
-function _scheduler_repeat_remove_field(&$form) {
-  unset($form['scheduler_repeat']);
-}
-
-/**
- * @param $form
- *   The node form where we expect repeat field to be.
- */
-function _scheduler_repeat_move_field_to_fieldset(&$form) {
-  $form['scheduler_repeat']['#group'] = 'scheduler_settings';
-}
-
-/**
  * @param \Drupal\node\NodeInterface $node
+ *   The node object to check.
  *
  * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
+ *   The repeat plugin instance.
  */
 function _scheduler_repeat_get_repeater(NodeInterface $node) {
   if (empty($node->scheduler_repeat->plugin)) {
     return NULL;
   }
-  // @todo When we cater for optional associated data, the id can be extrated,
+  // @todo When we cater for optional associated data, the id can be extracted,
   // and the other values added into $plugin_data.
   $plugin_id = $node->scheduler_repeat->plugin;
   $plugin_data = ['node' => $node];
