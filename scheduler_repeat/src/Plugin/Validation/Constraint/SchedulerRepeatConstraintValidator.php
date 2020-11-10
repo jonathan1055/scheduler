@@ -2,8 +2,8 @@
 
 namespace Drupal\scheduler_repeat\Plugin\Validation\Constraint;
 
-use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 use Drupal\scheduler_repeat\InvalidPluginTypeException;
+use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
