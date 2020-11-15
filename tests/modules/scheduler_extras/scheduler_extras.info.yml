@@ -1,0 +1,8 @@
+name: 'Scheduler Extras'
+type: module
+description: 'Support module for general Scheduler testing.'
+package: Testing
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - scheduler:scheduler

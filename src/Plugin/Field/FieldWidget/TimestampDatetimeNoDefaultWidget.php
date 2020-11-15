@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @FieldWidget(
  *   id = "datetime_timestamp_no_default",
  *   label = @Translation("Datetime Timestamp for Scheduler"),
- *   description = @Translation("An optional datetime field. Does not provide a default time if left blank. Defined by Scheduler module."),
+ *   description = @Translation("An optional datetime field. Does not fill in the current datetime if left blank. Defined by Scheduler module."),
  *   field_types = {
  *     "timestamp",
  *   }
@@ -61,9 +61,19 @@ class TimestampDatetimeNoDefaultWidget extends TimestampDatetimeWidget {
         $input['time'] = $config->get('default_time');
       }
     }
+
+    // Temporarily set the #date_time_element to 'time' because if it had been
+    // hidden in the form by being set to 'none' then the default time set above
+    // would not be used and we would get the current hour and minute instead.
+    $originalTimeElement = $element['#date_time_element'];
+    $element['#date_time_element'] = 'time';
     // Chain on to the standard valueCallback for Datetime as we do not want to
     // duplicate that core code here.
-    return Datetime::valueCallback($element, $input, $form_state);
+    $value = Datetime::valueCallback($element, $input, $form_state);
+    // Restore the #date_time_element.
+    $element['#date_time_element'] = $originalTimeElement;
+
+    return $value;
   }
 
   /**
@@ -72,13 +82,18 @@ class TimestampDatetimeNoDefaultWidget extends TimestampDatetimeWidget {
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     foreach ($values as &$item) {
       // @todo The structure is different whether access is denied or not, to
-      //   be fixed in https://www.drupal.org/node/2326533.
-      $date = NULL;
+      //   be fixed in core issue https://www.drupal.org/node/2326533.
       if (isset($item['value']) && $item['value'] instanceof DrupalDateTime) {
         $date = $item['value'];
       }
       elseif (isset($item['value']['object']) && $item['value']['object'] instanceof DrupalDateTime) {
         $date = $item['value']['object'];
+      }
+      else {
+        // The above is copied from core Datetime/Plugin/Field/FieldWidget
+        // TimestampDatetimeWidget. But here is where we do not return a current
+        // datetime when no value is sent in the form.
+        $date = NULL;
       }
 
       $item['value'] = $date ? $date->getTimestamp() : NULL;
