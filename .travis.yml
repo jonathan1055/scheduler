@@ -144,16 +144,12 @@ script:
   - composer show squizlabs/php_codesniffer | egrep 'name |vers'
   - $DRUPAL_ROOT/vendor/bin/phpcs --version
 
-  # Change into $MODULE directory to avoid having to add
-  # --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
+  # Change into $MODULE directory to avoid having to add --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
   - cd $DRUPAL_ROOT/modules/$MODULE
 
-  # List all the sniffs that are used.
+  # List the standards and the sniffs that are used.
   - $DRUPAL_ROOT/vendor/bin/phpcs -i
   - $DRUPAL_ROOT/vendor/bin/phpcs -e
 
-  # Show the violations in detail and do not fail for any errors or warnings.
-  - $DRUPAL_ROOT/vendor/bin/phpcs . --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1
-
-  # Run again to give a summary and totals, and fail for errors and warnings.
-  - $DRUPAL_ROOT/vendor/bin/phpcs . --report=summary
+  # Show the violations in detail, plus summary and source report.
+  - $DRUPAL_ROOT/vendor/bin/phpcs . --report-full --report-summary --report-source -s
