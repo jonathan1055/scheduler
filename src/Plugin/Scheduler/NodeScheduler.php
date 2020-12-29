@@ -114,4 +114,22 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
     return $node->type->entity;
   }
 
+  /**
+   * Get list of enabled bundles for $action ([un]publish).
+   *
+   * @param string $action
+   *   The action - publish|unpublish.
+   *
+   * @return array
+   *   The list of bundles.
+   */
+  public function getEnabledTypes($action) {
+    $config = \Drupal::config('scheduler.settings');
+    $types = $this->getTypes();
+    return array_filter($types, function ($bundle) use ($action, $config) {
+      /** @var \Drupal\node\NodeTypeInterface $bundle */
+      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
+    });
+  }
+
 }

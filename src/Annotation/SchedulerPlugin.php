@@ -1,11 +1,12 @@
 <?php
+
 namespace Drupal\scheduler\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
-use Drupal\Core\Annotation\Translation;
 
 /**
- * Class SchedulerPlugin
+ * Class SchedulerPlugin.
+ *
  * @package Drupal\scheduler\Annotation
  *
  * @Annotation
@@ -13,17 +14,19 @@ use Drupal\Core\Annotation\Translation;
 class SchedulerPlugin extends Plugin {
 
   /**
-   * Description of plugin
+   * Description of plugin.
    *
-   * @var Translation
+   * @var \Drupal\Core\Annotation\Translation
    *
    * @ingroup plugin_translatable
    */
   public $description;
 
   /**
-   * Plugin settings
-   * @var array $settings
+   * Plugin settings.
+   *
+   * @var array
    */
   public $settings = [];
+
 }
