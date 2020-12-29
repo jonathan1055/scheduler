@@ -24,7 +24,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
 
   abstract public function entityType();
 
-  abstract public function entityFormIDs();
+  abstract public function entityFormIds();
 
-  abstract public function entityTypeFormIDs();
+  abstract public function entityTypeFormIds();
 }

@@ -75,11 +75,15 @@ class SchedulerManager {
   protected $time;
 
   /**
-   * @var EntityFieldManagerInterface
+   * Entity Field Manager service object.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
   private $entityFieldManager;
 
   /**
+   * Scheduler Plugin Manager service object.
+   *
    * @var SchedulerPluginManager
    */
   private $pluginManager;
@@ -87,7 +91,8 @@ class SchedulerManager {
   /**
    * Constructs a SchedulerManager object.
    */
-  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger,
+  public function __construct(DateFormatterInterface $dateFormatter,
+                              LoggerInterface $logger,
                               ModuleHandlerInterface $moduleHandler,
                               EntityFieldManagerInterface $entityFieldManager,
                               EntityTypeManagerInterface $entityTypeManager,
@@ -245,8 +250,8 @@ class SchedulerManager {
           $node->setNewRevision();
           // Use a core date format to guarantee a time is included.
           $revision_log_message = rtrim($this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
-            '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
-          ]) . ' ' . $msg_extra);
+              '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
+            ]) . ' ' . $msg_extra);
           $node->setRevisionLogMessage($revision_log_message)
             ->setRevisionCreationTime($this->time->getRequestTime());
         }
@@ -638,8 +643,9 @@ class SchedulerManager {
    * Get a list of all scheduler plugin definitions.
    *
    * @return array|mixed[]|null
+   *   A list of definitions for the registered scheduler plugins.
    */
-  function getPluginDefinitions() {
+  public function getPluginDefinitions() {
     return $this->pluginManager->getDefinitions();
   }
 
@@ -647,13 +653,15 @@ class SchedulerManager {
    * Get instances of all scheduler plugins.
    *
    * @return array
+   *   A list of the registered scheduler plugins.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  function getPlugins() {
+  public function getPlugins() {
     $definitions = $this->getPluginDefinitions();
     $plugins = [];
     foreach ($definitions as $definition) {
-      $plugins[] = $this->pluginManager->createInstance( $definition['id']);
+      $plugins[] = $this->pluginManager->createInstance($definition['id']);
     }
     return $plugins;
   }
@@ -662,9 +670,11 @@ class SchedulerManager {
    * Get list of entity types supported by each scheduler plugin.
    *
    * @return array
+   *   A list of the entity tupes supported by the registered scheduler plugins.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  function getPluginEntityTypes() {
+  public function getPluginEntityTypes() {
     $plugins = $this->getPlugins();
     $types = [];
     foreach ($plugins as $plugin) {
@@ -674,42 +684,57 @@ class SchedulerManager {
   }
 
   /**
+   * Gets list of entity add/edit form IDs.
+   *
    * @return array
+   *   List of entity add/edit form IDs for all registered scheduler plugins.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  function getEntityFormIDs() {
+  public function getEntityFormIds() {
     $plugins = $this->getPlugins();
     $form_ids = [];
-    foreach ($plugins as $plugin ) {
+    foreach ($plugins as $plugin) {
       $form_ids = array_merge($form_ids, $plugin->entityFormIDs());
     }
     return $form_ids;
   }
 
   /**
+   * Gets list of entity type add/edit form IDs.
+   *
    * @return array
+   *   List of entity type add/edit form IDs for registered scheduler plugins.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  function getEntityTypeFormIDs() {
+  public function getEntityTypeFormIds() {
     $plugins = $this->getPlugins();
     $form_ids = [];
-    foreach ($plugins as $plugin ) {
+    foreach ($plugins as $plugin) {
       $form_ids = array_merge($form_ids, $plugin->entityTypeFormIDs());
     }
     return $form_ids;
   }
 
   /**
-   * @param $entity_type
+   * Get a plugin for a specific entity type.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   *
    * @return mixed
+   *   The plugin object associated with a specific node.
+   *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
-  function getPlugin($entity_type) {
+  public function getPlugin($entity_type) {
     $plugins = $this->getPlugins();
     foreach ($plugins as $plugin) {
-      if ( $plugin->entityType() == $entity_type) {
+      if ($plugin->entityType() == $entity_type) {
         return $plugin;
       }
     }
   }
+
 }
