@@ -7,6 +7,7 @@ use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
@@ -74,9 +75,27 @@ class SchedulerManager {
   protected $time;
 
   /**
+   * @var EntityFieldManagerInterface
+   */
+  private $entityFieldManager;
+
+  /**
+   * @var SchedulerPluginManager
+   */
+  private $pluginManager;
+
+  /**
    * Constructs a SchedulerManager object.
    */
-  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $configFactory, ContainerAwareEventDispatcher $eventDispatcher, TimeInterface $time) {
+  public function __construct(DateFormatterInterface $dateFormatter, LoggerInterface $logger,
+                              ModuleHandlerInterface $moduleHandler,
+                              EntityFieldManagerInterface $entityFieldManager,
+                              EntityTypeManagerInterface $entityTypeManager,
+                              ConfigFactoryInterface $configFactory,
+                              ContainerAwareEventDispatcher $eventDispatcher,
+                              TimeInterface $time,
+                              SchedulerPluginManager $pluginManager
+  ) {
     $this->dateFormatter = $dateFormatter;
     $this->logger = $logger;
     $this->moduleHandler = $moduleHandler;
@@ -84,6 +103,8 @@ class SchedulerManager {
     $this->configFactory = $configFactory;
     $this->eventDispatcher = $eventDispatcher;
     $this->time = $time;
+    $this->entityFieldManager = $entityFieldManager;
+    $this->pluginManager = $pluginManager;
   }
 
   /**
@@ -613,4 +634,82 @@ class SchedulerManager {
     return $nodes;
   }
 
+  /**
+   * Get a list of all scheduler plugin definitions.
+   *
+   * @return array|mixed[]|null
+   */
+  function getPluginDefinitions() {
+    return $this->pluginManager->getDefinitions();
+  }
+
+  /**
+   * Get instances of all scheduler plugins.
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  function getPlugins() {
+    $definitions = $this->getPluginDefinitions();
+    $plugins = [];
+    foreach ($definitions as $definition) {
+      $plugins[] = $this->pluginManager->createInstance( $definition['id']);
+    }
+    return $plugins;
+  }
+
+  /**
+   * Get list of entity types supported by each scheduler plugin.
+   *
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  function getPluginEntityTypes() {
+    $plugins = $this->getPlugins();
+    $types = [];
+    foreach ($plugins as $plugin) {
+      $types[] = $plugin->entityType();
+    }
+    return $types;
+  }
+
+  /**
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  function getEntityFormIDs() {
+    $plugins = $this->getPlugins();
+    $form_ids = [];
+    foreach ($plugins as $plugin ) {
+      $form_ids = array_merge($form_ids, $plugin->entityFormIDs());
+    }
+    return $form_ids;
+  }
+
+  /**
+   * @return array
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  function getEntityTypeFormIDs() {
+    $plugins = $this->getPlugins();
+    $form_ids = [];
+    foreach ($plugins as $plugin ) {
+      $form_ids = array_merge($form_ids, $plugin->entityTypeFormIDs());
+    }
+    return $form_ids;
+  }
+
+  /**
+   * @param $entity_type
+   * @return mixed
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   */
+  function getPlugin($entity_type) {
+    $plugins = $this->getPlugins();
+    foreach ($plugins as $plugin) {
+      if ( $plugin->entityType() == $entity_type) {
+        return $plugin;
+      }
+    }
+  }
 }
