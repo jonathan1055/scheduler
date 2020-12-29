@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\scheduler;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -13,18 +14,21 @@ use Drupal\scheduler\Annotation\SchedulerPlugin;
  */
 class SchedulerPluginManager extends DefaultPluginManager {
 
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cacheBackend, ModuleHandlerInterface $module_handler ) {
+  /**
+   * Constructor.
+   */
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cacheBackend, ModuleHandlerInterface $module_handler) {
 
     $subdir = 'Plugin/Scheduler';
     $plugin_interface = SchedulerPluginInterface::class;
     $plugin_definition_annotation_name = SchedulerPlugin::class;
 
     parent::__construct(
-          $subdir,
-          $namespaces,
-          $module_handler,
-          $plugin_interface,
-          $plugin_definition_annotation_name
+      $subdir,
+      $namespaces,
+      $module_handler,
+      $plugin_interface,
+      $plugin_definition_annotation_name
     );
 
     $this->alterInfo('scheduler_info');

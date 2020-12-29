@@ -1,12 +1,15 @@
 <?php
+
 namespace Drupal\scheduler\Plugin\Scheduler;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\media\Entity\Media;
 use Drupal\media\Entity\MediaType;
 use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+
 /**
- * Class Node
+ * Class Node.
  *
  * @package Drupal\Scheduler\Plugin\Scheduler
  *
@@ -17,8 +20,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
 
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition)
-  {
+  /**
+   * Create mothod.
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
       $configuration,
       $plugin_id,
@@ -27,32 +32,52 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     );
   }
 
+  /**
+   * Publish pending media entities.
+   */
   public function publish() {
-    /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
-    $scheduler_manager = \Drupal::service('scheduler.manager');
-    $scheduler_manager->publish();
-
+    // @todo - this will likely be handled in the ScheduleManager service.
   }
+
+  /**
+   * Unpublish pending media entities.
+   */
   public function unpublish() {
-    /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
-    $scheduler_manager = \Drupal::service('scheduler.manager');
-    $scheduler_manager->unpublish();
+    // @todo - this will likely be handled in the ScheduleManager service.
   }
 
+  /**
+   * Get the type of entity supported by this plugin.
+   *
+   * @return string
+   *   The entity type name.
+   */
   public function entityType() {
     return 'media';
   }
 
+  /**
+   * Get the available bundles for the entity type.
+   *
+   * @return array
+   *   The list of bundles.
+   */
   public function getTypes() {
-    if ( ! \Drupal::moduleHandler()->moduleExists('media')) {
+    if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
     return MediaType::loadMultiple();
   }
 
-  public function entityFormIDs() {
+  /**
+   * Get the form IDs for entity add/edit forms.
+   *
+   * @return array
+   *   The list of form IDs.
+   */
+  public function entityFormIds() {
 
-    if ( ! \Drupal::moduleHandler()->moduleExists('media')) {
+    if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
 
@@ -61,7 +86,7 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
       'media_edit_form',
     ];
     $types = MediaType::loadMultiple();
-    /** @var MediaType $type */
+    /** @var \Drupal\media\Entity\MediaType $type */
     foreach ($types as $type) {
       $ids[] = 'media_' . $type->id() . '_form';
       $ids[] = 'media_' . $type->id() . '_add_form';
@@ -70,9 +95,15 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     return $ids;
   }
 
-  public function entityTypeFormIDs() {
+  /**
+   * Get the list of entity type form IDs for media.
+   *
+   * @return array
+   *   The list of form IDs.
+   */
+  public function entityTypeFormIds() {
 
-    if ( ! \Drupal::moduleHandler()->moduleExists('media')) {
+    if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
 
@@ -82,13 +113,23 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     ];
   }
 
-  public function getEntityType($media) {
+  /**
+   * Get the bundle name for $media.
+   *
+   * @param \Drupal\media\Entity\Media $media
+   *   The media.
+   *
+   * @return string
+   *   The bundle.
+   */
+  public function getEntityType(Media $media) {
 
-    if ( ! \Drupal::moduleHandler()->moduleExists('media')) {
-      return null;
+    if (!\Drupal::moduleHandler()->moduleExists('media')) {
+      return NULL;
     }
 
     $bundle = $media->bundle();
-    return  MediaType::load($bundle);
+    return MediaType::load($bundle);
   }
+
 }

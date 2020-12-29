@@ -27,9 +27,9 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
       $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
-        '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
-        '@project' => 'https://drupal.org/project/scheduler',
-      ]) . '</p>';
+          '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
+          '@project' => 'https://drupal.org/project/scheduler',
+        ]) . '</p>';
       break;
 
     case 'scheduler.admin_form':
@@ -54,24 +54,13 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter() for node_type_form().
- */
-function scheduler_form_node_type_form_alter(array &$form, FormStateInterface $form_state) {
-  // Load the real code only when needed.
-  module_load_include('inc', 'scheduler', 'scheduler.admin');
-  _scheduler_form_node_type_form_alter($form, $form_state);
-}
-
-/**
- * @param $form
- * @param FormStateInterface $form_state
- * @param $form_id
+ * Implements hook_form_alter().
  */
 function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $entity_form_ids = \Drupal::service('scheduler.manager')->getEntityFormIDs();
-  $entity_type_form_ids = \Drupal::service('scheduler.manager')->getEntityTypeFormIDs();
+  $entity_form_ids = \Drupal::service('scheduler.manager')->getEntityFormIds();
+  $entity_type_form_ids = \Drupal::service('scheduler.manager')->getEntityTypeFormIds();
 
-  if ( in_array($form_id, $entity_form_ids)) {
+  if (in_array($form_id, $entity_form_ids)) {
     _scheduler_entity_form_alter($form, $form_state, $form_id);
   }
   elseif (in_array($form_id, $entity_type_form_ids)) {
@@ -85,10 +74,10 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
 function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('scheduler.settings');
 
-  /** @var EntityInterface $entity */
+  /** @var \Drupal\Core\Entity\EntityInterface $entity */
   $entity = $form_state->getFormObject()->getEntity();
   $plugin = \Drupal::service('scheduler.manager')->getPlugin($entity->getEntityType()->id());
-  /** @var EntityTypeInterface $type */
+  /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $plugin->getEntityType($entity);
 
   $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
@@ -119,8 +108,8 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   }
 
   // If both publishing and unpublishing are either not enabled or are hidden
-  // for this entity type then the only thing to do is remove the fields from the
-  // form, then exit.
+  // for this entity type then the only thing to do is remove the fields from
+  // the form, then exit.
   if ((!$publishing_enabled || !$publishing_displayed) && (!$unpublishing_enabled || !$unpublishing_displayed)) {
     unset($form['publish_on']);
     unset($form['unpublish_on']);
@@ -272,10 +261,13 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   }
 }
 
+/**
+ * Form alter handling for entity type forms.
+ */
 function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('scheduler.settings');
 
-  /** @var EntityTypeInterface $type */
+  /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
   $form['#attached']['library'][] = 'scheduler/admin';
@@ -450,7 +442,7 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
 /**
  * Entity builder for the entity type form with scheduler options.
  */
-function scheduler_form_entity_type_form_builder($entity_type,  $type, &$form, FormStateInterface $form_state) {
+function scheduler_form_entity_type_form_builder($entity_type, $type, &$form, FormStateInterface $form_state) {
   $type->setThirdPartySetting('scheduler', 'expand_fieldset', $form_state->getValue('scheduler_expand_fieldset'));
   $type->setThirdPartySetting('scheduler', 'fields_display_mode', $form_state->getValue('scheduler_fields_display_mode'));
   $type->setThirdPartySetting('scheduler', 'publish_enable', $form_state->getValue('scheduler_publish_enable'));
@@ -572,7 +564,7 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
   $fields = [];
   $entity_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
 
-  if (in_array($entity_type->id(),  $entity_types)) {
+  if (in_array($entity_type->id(), $entity_types)) {
     $fields['publish_on'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Publish on'))
       ->setDisplayOptions('form', [
@@ -700,7 +692,7 @@ function scheduler_node_presave(EntityInterface $node) {
       $node->setChangedTime($node->publish_on->value);
       // If required, set the created date to match published date.
       if ($entity->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch')) ||
-      ($node->getCreatedTime() > $node->publish_on->value && $entity->getThirdPartySetting('scheduler', 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
+        ($node->getCreatedTime() > $node->publish_on->value && $entity->getThirdPartySetting('scheduler', 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
         $node->setCreatedTime($node->publish_on->value);
       }
       $node->publish_on->value = NULL;
