@@ -30,6 +30,24 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the type of entity supported by this plugin.
+   *
+   * @return string
+   */
+  public function entityType() {
+    return $this->pluginDefinition['entityType'];
+  }
+
+  /**
+   * Get the name of the "type" field for the entity.
+   *
+   * @return string
+   */
+  public function typeFieldName() {
+    return $this->pluginDefinition['typeFieldName'];
+  }
+
+  /**
    * Publish pending entities.
    */
   abstract public function publish();
@@ -38,11 +56,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Unpublish pending entities.
    */
   abstract public function unpublish();
-
-  /**
-   * Get the bundle name for entity.
-   */
-  abstract public function entityType();
 
   /**
    * Get the form IDs for entity add/edit forms.
@@ -65,7 +78,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   /**
    * Return the entity type object for a specific entity.
    *
-   * @param EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
    *
    * @return mixed

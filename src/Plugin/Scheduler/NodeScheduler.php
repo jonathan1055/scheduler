@@ -2,6 +2,7 @@
 
 namespace Drupal\scheduler\Plugin\Scheduler;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
@@ -16,6 +17,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @SchedulerPlugin(
  *  id = "node_scheduler",
  *  label = @Translation("Node Scheduler Plugin"),
+ *  entityType = "node",
+ *  typeFieldName = "type",
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
@@ -44,16 +47,6 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
    */
   public function unpublish() {
     // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
-   * Get the type of entity supported by this plugin.
-   *
-   * @return string
-   *   The entity type name.
-   */
-  public function entityType() {
-    return 'node';
   }
 
   /**
@@ -104,13 +97,13 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   /**
    * Get the bundle name for $media.
    *
-   * @param \Drupal\node\Entity\Node $node
+   * @param \Drupal\Core\Entity\EntityInterface $node
    *   The node.
    *
    * @return string
    *   The bundle.
    */
-  public function getEntityType(Node $node) {
+  public function getEntityType(EntityInterface $node) {
     return $node->type->entity;
   }
 
@@ -130,6 +123,29 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
       /** @var \Drupal\node\NodeTypeInterface $bundle */
       return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
     });
+  }
+
+  /**
+   * Gather node IDs for all nodes that need to be $action'ed.
+   *
+   * Modules can implement hook_scheduler_nid_list($action) and return an array
+   * of node ids which will be added to the existing list.
+   *
+   * @param string $action
+   *   The action being performed, either "publish" or "unpublish".
+   *
+   * @return array
+   *   An array of node ids.
+   */
+  public function idList($action) {
+    $nids = [];
+
+    foreach (\Drupal::moduleHandler()->getImplementations('scheduler_nid_list') as $module) {
+      $function = $module . '_scheduler_nid_list';
+      $nids = array_merge($nids, $function($action));
+    }
+
+    return $nids;
   }
 
 }
