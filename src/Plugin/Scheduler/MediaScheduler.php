@@ -2,8 +2,8 @@
 
 namespace Drupal\scheduler\Plugin\Scheduler;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\media\Entity\Media;
 use Drupal\media\Entity\MediaType;
 use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,6 +16,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @SchedulerPlugin(
  *  id = "media_scheduler",
  *  label = @Translation("Media Scheduler Plugin"),
+ *  entityType = "media",
+ *  typeFieldName = "bundle",
  * )
  */
 class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
@@ -44,16 +46,6 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    */
   public function unpublish() {
     // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
-   * Get the type of entity supported by this plugin.
-   *
-   * @return string
-   *   The entity type name.
-   */
-  public function entityType() {
-    return 'media';
   }
 
   /**
@@ -116,14 +108,13 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   /**
    * Get the bundle name for $media.
    *
-   * @param \Drupal\media\Entity\Media $media
+   * @param \Drupal\Core\Entity\EntityInterface $media
    *   The media.
    *
    * @return string
    *   The bundle.
    */
-  public function getEntityType(Media $media) {
-
+  public function getEntityType(EntityInterface $media) {
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return NULL;
     }
