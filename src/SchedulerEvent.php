@@ -2,7 +2,7 @@
 
 namespace Drupal\scheduler;
 
-use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Wraps a scheduler event for event listeners.
@@ -10,23 +10,23 @@ use Drupal\node\NodeInterface;
 class SchedulerEvent extends EventBase {
 
   /**
-   * Gets node object.
+   * Gets entity object.
    *
-   * @return \Drupal\node\NodeInterface
+   * @return \Drupal\Core\Entity\EntityInterface
    *   The node object that caused the event to fire.
    */
-  public function getNode() {
-    return $this->node;
+  public function getEntity() {
+    return $this->entity;
   }
 
   /**
    * Sets the node object.
    *
-   * @param \Drupal\node\NodeInterface $node
+   * @param \Drupal\Core\Entity\EntityInterface $node
    *   The node object that caused the event to fire.
    */
-  public function setNode(NodeInterface $node) {
-    $this->node = $node;
+  public function setEntity(EntityInterface $entity) {
+    $this->entity = $entity;
   }
 
 }

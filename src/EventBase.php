@@ -11,7 +11,7 @@ if (!class_exists('Drupal\Component\EventDispatcher\Event')) {
 }
 
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Base class on which all Scheduler events are extended.
@@ -21,18 +21,18 @@ class EventBase extends Event {
   /**
    * The node which is being processed.
    *
-   * @var \Drupal\node\NodeInterface
+   * @var \Drupal\Core\Entity\EntityInterface
    */
-  public $node;
+  public $entity;
 
   /**
    * Constructs the object.
    *
-   * @param \Drupal\node\NodeInterface $node
-   *   The node which is being processed.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity which is being processed.
    */
-  public function __construct(NodeInterface $node) {
-    $this->node = $node;
+  public function __construct(EntityInterface $entity) {
+    $this->entity = $entity;
   }
 
 }

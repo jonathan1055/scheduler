@@ -48,11 +48,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestPrePublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     // Before publishing a node make it sticky.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setSticky(TRUE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 
@@ -64,11 +64,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestPreUnpublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       // Before unpublishing a node make it unsticky.
       $node->setSticky(FALSE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 
@@ -80,11 +80,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestPrePublishImmediately(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     // Before publishing immediately set the node to sticky.
     if (!$node->isPromoted() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setSticky(TRUE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 
@@ -96,11 +96,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestPublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     // After publishing a node promote it to the front page.
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setPromoted(TRUE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 
@@ -112,11 +112,11 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestUnpublish(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     // After unpublishing a node remove it from the front page.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setPromoted(FALSE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 
@@ -128,13 +128,13 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public function apiTestPublishImmediately(SchedulerEvent $event) {
     /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
+    $node = $event->getEntity();
     // After publishing immediately set the node to promoted and change the
     // title.
     if (!$node->isPromoted() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setTitle('Published immediately')
         ->setPromoted(TRUE);
-      $event->setNode($node);
+      $event->setEntity($node);
     }
   }
 

@@ -3,6 +3,7 @@
 namespace Drupal\scheduler\Plugin\Scheduler;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\media\Entity\MediaType;
 use Drupal\scheduler\SchedulerPluginBase;
@@ -123,4 +124,44 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     return MediaType::load($bundle);
   }
 
+  /**
+   * Get list of enabled bundles for $action ([un]publish).
+   *
+   * @param string $action
+   *   The action - publish|unpublish.
+   *
+   * @return array
+   *   The list of bundles.
+   */
+  public function getEnabledTypes($action) {
+    $config = \Drupal::config('scheduler.settings');
+    $types = $this->getTypes();
+    return array_filter($types, function ($bundle) use ($action, $config) {
+      /** @var EntityTypeInterface $bundle */
+      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
+    });
+  }
+
+  /**
+   * Gather IDs for all media that need to be $action'ed.
+   *
+   * Modules can implement hook_scheduler_media_id_list($action) and return an array
+   * of media ids which will be added to the existing list.
+   *
+   * @param string $action
+   *   The action being performed, either "publish" or "unpublish".
+   *
+   * @return array
+   *   An array of node ids.
+   */
+  public function idList($action) {
+    $ids = [];
+
+    foreach (\Drupal::moduleHandler()->getImplementations('scheduler_media_id_list') as $module) {
+      $function = $module . '_scheduler_media_id_list';
+      $ids = array_merge($ids, $function($action));
+    }
+
+    return $ids;
+  }
 }
