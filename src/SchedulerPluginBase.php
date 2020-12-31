@@ -33,15 +33,27 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Get the type of entity supported by this plugin.
    *
    * @return string
+   *   The name of the entity type.
    */
   public function entityType() {
     return $this->pluginDefinition['entityType'];
   }
 
   /**
+   * Get module dependency.
+   *
+   * @return string
+   *   The name of the entity type.
+   */
+  public function dependency() {
+    return $this->pluginDefinition['dependency'];
+  }
+
+  /**
    * Get the name of the "type" field for the entity.
    *
    * @return string
+   *   The name of the type/bundle field for this entity type.
    */
   public function typeFieldName() {
     return $this->pluginDefinition['typeFieldName'];

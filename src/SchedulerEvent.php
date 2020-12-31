@@ -22,7 +22,7 @@ class SchedulerEvent extends EventBase {
   /**
    * Sets the node object.
    *
-   * @param \Drupal\Core\Entity\EntityInterface $node
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The node object that caused the event to fire.
    */
   public function setEntity(EntityInterface $entity) {

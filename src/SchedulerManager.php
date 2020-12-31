@@ -735,11 +735,23 @@ class SchedulerManager {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getPlugins() {
+    $cache = \Drupal::cache()->get('scheduler.plugins');
+    if ( !empty($cache) && !empty($cache->data)) {
+      return $cache->data;
+    }
+
     $definitions = $this->getPluginDefinitions();
     $plugins = [];
     foreach ($definitions as $definition) {
-      $plugins[] = $this->pluginManager->createInstance($definition['id']);
+      $plugin = $this->pluginManager->createInstance($definition['id']);
+      $dependency = $plugin->dependency();
+      if ( $dependency && ! \Drupal::moduleHandler()->moduleExists($dependency) ) {
+        continue;
+      }
+      $plugins[] = $plugin;
     }
+
+    \Drupal::cache()->set('scheduler.plugins', $plugins);
     return $plugins;
   }
 

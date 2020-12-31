@@ -4,7 +4,6 @@ namespace Drupal\scheduler\Plugin\Scheduler;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;

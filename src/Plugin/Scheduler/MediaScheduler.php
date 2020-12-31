@@ -3,7 +3,6 @@
 namespace Drupal\scheduler\Plugin\Scheduler;
 
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\media\Entity\MediaType;
 use Drupal\scheduler\SchedulerPluginBase;
@@ -19,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  label = @Translation("Media Scheduler Plugin"),
  *  entityType = "media",
  *  typeFieldName = "bundle",
+ *  dependency = "media",
  * )
  */
 class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
@@ -112,7 +112,7 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    * @param \Drupal\Core\Entity\EntityInterface $media
    *   The media.
    *
-   * @return EntityTypeInterface
+   * @return \Drupal\Core\Entity\EntityTypeInterface
    *   The Media Type.
    */
   public function getEntityType(EntityInterface $media) {
@@ -137,7 +137,7 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     $config = \Drupal::config('scheduler.settings');
     $types = $this->getTypes();
     return array_filter($types, function ($bundle) use ($action, $config) {
-      /** @var EntityTypeInterface $bundle */
+      /** @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
       return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
     });
   }
@@ -145,8 +145,8 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   /**
    * Gather IDs for all media that need to be $action'ed.
    *
-   * Modules can implement hook_scheduler_media_id_list($action) and return an array
-   * of media ids which will be added to the existing list.
+   * Modules can implement hook_scheduler_media_id_list($action) and return an
+   * array of media ids which will be added to the existing list.
    *
    * @param string $action
    *   The action being performed, either "publish" or "unpublish".
@@ -164,4 +164,5 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
 
     return $ids;
   }
+
 }
