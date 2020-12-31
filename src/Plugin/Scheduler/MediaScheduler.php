@@ -112,8 +112,8 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    * @param \Drupal\Core\Entity\EntityInterface $media
    *   The media.
    *
-   * @return string
-   *   The bundle.
+   * @return EntityTypeInterface
+   *   The Media Type.
    */
   public function getEntityType(EntityInterface $media) {
     if (!\Drupal::moduleHandler()->moduleExists('media')) {

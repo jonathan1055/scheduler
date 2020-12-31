@@ -341,7 +341,16 @@ class SchedulerManager {
     return $result;
   }
 
-  public function getEntityTitle($entity) {
+  /**
+   * Get the title of an entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return string
+   *   The title of the entity.
+   */
+  public function getEntityTitle(EntityInterface $entity) {
     if (method_exists($entity, 'getTitle')) {
       return $entity->getTitle();
     }
@@ -351,8 +360,21 @@ class SchedulerManager {
     return '';
   }
 
-  public function getThirdPartySetting($entity, $setting, $default ) {
-    if ( !empty($entity->type)) {
+  /**
+   * Get 3rd party setting from entity type (via an Entity).
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param string $setting
+   *   The setting to retreive.
+   * @param mixed $default
+   *   The default value for setting if none is founed.
+   *
+   * @return mixed
+   *   The value of the setting.
+   */
+  public function getThirdPartySetting(EntityInterface $entity, $setting, $default) {
+    if (!empty($entity->type)) {
       return $entity->type->entity->getThirdPartySetting('scheduler', $setting, $default);
     }
     if (!empty($entity->bundle)) {
@@ -412,7 +434,7 @@ class SchedulerManager {
         // The API calls could return nodes of types which are not enabled for
         // scheduled unpublishing. Do not process these.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-          throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $node_multilingual->id(), $node_multilingual->getTitle(), node_get_type_label($node_multilingual)));
+          throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), node_get_type_label($entity_multilingual)));
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -637,6 +659,8 @@ class SchedulerManager {
    *
    * @param array $ids
    *   Array of entity ids.
+   * @param string $type
+   *   The type of entity.
    *
    * @return array
    *   Array of loaded nodes.
@@ -652,7 +676,7 @@ class SchedulerManager {
       $entity = $storage->load($id);
 
       // @todo - verify that entity type is revisionable
-      if ( method_exists($storage, 'revisionIds')) {
+      if (method_exists($storage, 'revisionIds')) {
         $revision_ids = $storage->revisionIds($entity);
         $vid = end($revision_ids);
         $entities[] = $storage->loadRevision($vid);

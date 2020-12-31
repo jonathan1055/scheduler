@@ -27,9 +27,9 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
       $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
-        '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
-        '@project' => 'https://drupal.org/project/scheduler',
-      ]) . '</p>';
+          '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
+          '@project' => 'https://drupal.org/project/scheduler',
+        ]) . '</p>';
       break;
 
     case 'scheduler.admin_form':
@@ -246,6 +246,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     $fields_to_check[] = 'unpublish_on';
   }
   $correct_widget_id = 'datetime_timestamp_no_default';
+  $type = $entity->getEntityType();
   foreach ($fields_to_check as $field) {
     $actual_widget_id = $display->getComponent($field)['type'];
     if ($actual_widget_id != $correct_widget_id) {
