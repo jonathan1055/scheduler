@@ -30,7 +30,7 @@ class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
     node_access_rebuild();
 
     // Create data to test publishing then unpublishing via loop.
-    // @todo Convert this test to use a @dataProvider function instead of this
+    // @TODO Convert this test to use a @dataProvider function instead of this
     // array and the loop.
     $test_data = [
       'publish_on' => [

@@ -11,7 +11,7 @@
  * This functions returns an array of rules configurations with the
  * configuration names as keys.
  *
- * @todo Convert to 8.x, this is stil 7.x code
+ * @TODO Convert to 8.x, this is stil 7.x code
  */
 function scheduler_rules_integration_default_rules_configuration() {
   // Define two reaction rules which will be displayed on the 'Rules' tab. These

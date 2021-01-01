@@ -191,7 +191,7 @@ class SchedulerManager {
         // $node->setChangedTime($publish_on) will fail badly if an API call has
         // removed the date. Trap this as an exception here and give a
         // meaningful message.
-        // @todo This will now never be thrown due to the empty(publish_on)
+        // @TODO This will now never be thrown due to the empty(publish_on)
         // check above to cater for translations. Remove this exception?
         if (empty($node->publish_on->value)) {
           $field_definitions = $this->entityTypeManager->getFieldDefinitions('node', $node->getType());
@@ -376,7 +376,7 @@ class SchedulerManager {
         // $node->setChangedTime($unpublish_on) will fail badly if an API call
         // has removed the date. Trap this as an exception here and give a
         // meaningful message.
-        // @todo This will now never be thrown due to the empty(unpublish_on)
+        // @TODO This will now never be thrown due to the empty(unpublish_on)
         // check above to cater for translations. Remove this exception?
         if (empty($unpublish_on)) {
           $field_definitions = $this->entityTypeManager->getFieldDefinitions('node', $node->getType());
