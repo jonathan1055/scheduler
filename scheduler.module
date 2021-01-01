@@ -521,7 +521,7 @@ function scheduler_node_presave(EntityInterface $node) {
  */
 function scheduler_node_insert(EntityInterface $node) {
   // Removed RULES code but keep the function. There may be code to add here.
-  // @TODO remove this comment when done. JSS Sep 2016.
+  // @todo remove this comment when done. JSS Sep 2016.
 }
 
 /**
@@ -531,7 +531,7 @@ function scheduler_node_update(EntityInterface $node) {
   // Removed RULES code but keep the function. There may be code to add here.
   // This function is currently called by actions SetPublishingDate and
   // SetUnpublishingDate.
-  // @TODO remove this comment when done. JSS Sep 2016.
+  // @todo remove this comment when done. JSS Sep 2016.
 }
 
 /**

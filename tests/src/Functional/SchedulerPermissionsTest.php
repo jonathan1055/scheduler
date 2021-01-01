@@ -54,7 +54,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)
       ->save();
 
-    // @TODO Add tests when scheduled publishing and unpublishing are required.
+    // @todo Add tests when scheduled publishing and unpublishing are required.
     // Cannot be done until we make a decision on what 'required'  means.
     // @see https://www.drupal.org/node/2707411
     // "Conflict between 'required publishing' and not having scheduler
