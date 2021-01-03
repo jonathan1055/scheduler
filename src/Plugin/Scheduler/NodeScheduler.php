@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  label = @Translation("Node Scheduler Plugin"),
  *  entityType = "node",
  *  typeFieldName = "type",
+ *  dependency = "node",
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
