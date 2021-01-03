@@ -6,17 +6,14 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\NodeTypeInterface;
 
 /**
- * Helper function for the real hook_form_node_type_form_alter().
- *
- * @see scheduler_form_node_type_form_alter()
+ * Form alter handling for entity type forms.
  */
-function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $form_state) {
+function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('scheduler.settings');
 
-  /** @var \Drupal\node\NodeTypeInterface $type */
+  /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
   $form['#attached']['library'][] = 'scheduler/admin';
@@ -142,11 +139,11 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     ],
   ];
 
-  // The 'node_edit_layout' fieldset contains options to alter the layout of
+  // The 'entity_edit_layout' fieldset contains options to alter the layout of
   // node edit pages.
-  $form['scheduler']['node_edit_layout'] = [
+  $form['scheduler']['entity_edit_layout'] = [
     '#type' => 'details',
-    '#title' => t('Node edit page'),
+    '#title' => t('Entity edit page'),
     '#weight' => 3,
     '#group' => 'scheduler',
     // The #states processing only caters for AND and does not do OR. So to set
@@ -159,7 +156,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       ],
     ],
   ];
-  $form['scheduler']['node_edit_layout']['scheduler_fields_display_mode'] = [
+  $form['scheduler']['entity_edit_layout']['scheduler_fields_display_mode'] = [
     '#type' => 'radios',
     '#title' => t('Display scheduling options as'),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'fields_display_mode', $config->get('default_fields_display_mode')),
@@ -169,7 +166,7 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
     ],
     '#description' => t('Use this option to specify how the scheduling options will be displayed when editing a node.'),
   ];
-  $form['scheduler']['node_edit_layout']['scheduler_expand_fieldset'] = [
+  $form['scheduler']['entity_edit_layout']['scheduler_expand_fieldset'] = [
     '#type' => 'radios',
     '#title' => t('Expand fieldset or vertical tab'),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'expand_fieldset', $config->get('default_expand_fieldset')),
@@ -178,20 +175,20 @@ function _scheduler_form_node_type_form_alter(array &$form, FormStateInterface $
       'always' => t('Always open the fieldset or vertical tab'),
     ],
   ];
-  $form['scheduler']['node_edit_layout']['scheduler_show_message_after_update'] = [
+  $form['scheduler']['entity_edit_layout']['scheduler_show_message_after_update'] = [
     '#type' => 'checkbox',
     '#prefix' => '<strong>' . t('Show message') . '</strong>',
     '#title' => t('Show a confirmation message when scheduled content is saved'),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')),
   ];
 
-  $form['#entity_builders'][] = 'scheduler_form_node_type_form_builder';
+  $form['#entity_builders'][] = 'scheduler_form_entity_type_form_builder';
 }
 
 /**
- * Entity builder for the node type form with scheduler options.
+ * Entity builder for the entity type form with scheduler options.
  */
-function scheduler_form_node_type_form_builder($entity_type, NodeTypeInterface $type, &$form, FormStateInterface $form_state) {
+function scheduler_form_entity_type_form_builder($entity_type, $type, &$form, FormStateInterface $form_state) {
   $type->setThirdPartySetting('scheduler', 'expand_fieldset', $form_state->getValue('scheduler_expand_fieldset'));
   $type->setThirdPartySetting('scheduler', 'fields_display_mode', $form_state->getValue('scheduler_fields_display_mode'));
   $type->setThirdPartySetting('scheduler', 'publish_enable', $form_state->getValue('scheduler_publish_enable'));
