@@ -338,29 +338,38 @@ function scheduler_form_language_content_settings_form_alter(array &$form, FormS
  * @see https://www.drupal.org/project/scheduler/issues/2871164
  */
 function _scheduler_translation_validate($form, FormStateInterface $form_state) {
-  $content_types = $form_state->getValues()['settings']['node'];
-  $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
-  $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
-  $enabled = [];
-  foreach ($content_types as $name => $settings) {
-    $enabled['publish_on'] = in_array($name, $publishing_enabled_types);
-    $enabled['unpublish_on'] = in_array($name, $unpublishing_enabled_types);
-    if ($settings['translatable'] && ($enabled['publish_on'] || $enabled['unpublish_on'])) {
-      $params = [
-        '@type' => $form['settings']['node'][$name]['settings']['#label'],
-        '@status' => $form['settings']['node'][$name]['fields']['status']['#label'],
-      ];
-      foreach (['publish_on', 'unpublish_on'] as $var) {
-        $mismatch = $enabled[$var] && ($settings['fields'][$var] <> $settings['fields']['status']);
-        if ($mismatch) {
-          $params['@scheduler_field'] = $form['settings']['node'][$name]['fields'][$var]['#label'];
-          $message = t("Content type '@type' - Translatable settings for status field '@status' and Scheduler field '@scheduler_field' should match, either both on or both off", $params);
-          $form_state->setErrorByName("settings][node][$name][fields][status", $message);
-          $form_state->setErrorByName("settings][node][$name][fields][$var", $message);
+  $settings = $form_state->getValues()['settings'];
+  /** @var \Drupal\scheduler\SchedulerManager $manager */
+  $manager = \Drupal::service('scheduler.manager');
+  foreach ($settings as $entity_type => $content_types) {
+    $plugin = $manager->getPlugin($entity_type);
+    if (empty($plugin)) {
+      continue;
+    }
+    $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
+    $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
+    $enabled = [];
+    foreach ($content_types as $name => $settings) {
+      $enabled['publish_on'] = in_array($name, $publishing_enabled_types);
+      $enabled['unpublish_on'] = in_array($name, $unpublishing_enabled_types);
+      if ($settings['translatable'] && ($enabled['publish_on'] || $enabled['unpublish_on'])) {
+        $params = [
+          '@type' => $form['settings'][$entity_type][$name]['settings']['#label'],
+          '@status' => $form['settings'][$entity_type][$name]['fields']['status']['#label'],
+        ];
+        foreach (['publish_on', 'unpublish_on'] as $var) {
+          $mismatch = $enabled[$var] && ($settings['fields'][$var] <> $settings['fields']['status']);
+          if ($mismatch) {
+            $params['@scheduler_field'] = $form['settings'][$entity_type][$name]['fields'][$var]['#label'];
+            $message = t("Content type '@type' - Translatable settings for status field '@status' and Scheduler field '@scheduler_field' should match, either both on or both off", $params);
+            $form_state->setErrorByName("settings][$entity_type][$name][fields][status", $message);
+            $form_state->setErrorByName("settings][$entity_type][$name][fields][$var", $message);
+          }
         }
       }
     }
   }
+
 }
 
 /**
