@@ -76,13 +76,13 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
 function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   $config = \Drupal::config('scheduler.settings');
 
-  $schedule_manager = \Drupal::service('scheduler.manager');
+  $scheduler_manager = \Drupal::service('scheduler.manager');
 
   /** @var \Drupal\Core\Entity\EntityInterface $entity */
   $entity = $form_state->getFormObject()->getEntity();
 
-  $publishing_enabled = $schedule_manager->getThirdPartySetting($entity, 'publish_enable', $config->get('default_publish_enable'));
-  $unpublishing_enabled = $schedule_manager->getThirdPartySetting($entity, 'unpublish_enable', $config->get('default_unpublish_enable'));
+  $publishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'publish_enable', $config->get('default_publish_enable'));
+  $unpublishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'unpublish_enable', $config->get('default_unpublish_enable'));
 
   // Determine if the scheduler fields have been set to hidden (disabled).
   $display = $form_state->getFormObject()->getFormDisplay($form_state);
@@ -123,21 +123,21 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   // entity is being created or it is currently not published but has a
   // scheduled publishing date.
   $publishing_required = $publishing_enabled
-    && $schedule_manager->getThirdPartySetting($entity, 'publish_required', $config->get('default_publish_required'))
+    && $scheduler_manager->getThirdPartySetting($entity, 'publish_required', $config->get('default_publish_required'))
     && ($entity->isNew() || (!$entity->isPublished() && !empty($entity->publish_on->value)));
 
   // An unpublish_on date is required if the content type option is set and the
   // entity is being created or the current status is published or the entity is
   // scheduled to be published.
   $unpublishing_required = $unpublishing_enabled
-    && $schedule_manager->getThirdPartySetting($entity, 'unpublish_required', $config->get('default_unpublish_required'))
+    && $scheduler_manager->getThirdPartySetting($entity, 'unpublish_required', $config->get('default_unpublish_required'))
     && ($entity->isNew() || $entity->isPublished() || !empty($entity->publish_on->value));
 
   // Create a 'details' field group to wrap the scheduling fields, and expand it
   // if publishing or unpublishing is required, if a date already exists or the
   // fieldset is configured to be always expanded.
   $has_data = isset($entity->publish_on->value) || isset($entity->unpublish_on->value);
-  $always_expand = $schedule_manager->getThirdPartySetting($entity, 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
+  $always_expand = $scheduler_manager->getThirdPartySetting($entity, 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
   $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
   // Create the group for the fields.
@@ -155,7 +155,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $form['publish_on']['#group'] = 'scheduler_settings';
 
   // Show the field group as a vertical tab if this option is enabled.
-  $use_vertical_tabs = $schedule_manager->getThirdPartySetting($entity, 'fields_display_mode', $config->get('default_fields_display_mode')) === 'vertical_tab';
+  $use_vertical_tabs = $scheduler_manager->getThirdPartySetting($entity, 'fields_display_mode', $config->get('default_fields_display_mode')) === 'vertical_tab';
   if ($use_vertical_tabs) {
     $form['scheduler_settings']['#group'] = 'advanced';
 
