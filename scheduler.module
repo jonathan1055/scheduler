@@ -248,15 +248,18 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     $fields_to_check[] = 'unpublish_on';
   }
   $correct_widget_id = 'datetime_timestamp_no_default';
-  $type = $entity->getEntityType();
   foreach ($fields_to_check as $field) {
     $actual_widget_id = $display->getComponent($field)['type'];
     if ($actual_widget_id != $correct_widget_id) {
-      \Drupal::messenger()->addMessage(t('The widget for field %field is incorrectly set to %wrong. This should be changed to %correct by an admin user via Field UI <a href="@link">content type form display</a> :not_available', [
+      $entityTypeId = $entity->getEntityTypeId();
+      $link = \Drupal::moduleHandler()->moduleExists('field_ui') ?
+        Url::fromRoute("entity.entity_form_display.$entityTypeId.default", ["{$entityTypeId}_type" => $entity->bundle()])->toString()
+        : '#';
+      \Drupal::messenger()->addMessage(t('The widget for field %field is incorrectly set to %wrong. This should be changed to %correct by an admin user via the <a href="@link">Field UI form display</a> :not_available', [
         '%field' => (string) $form[$field]['widget']['#title'],
         '%correct' => (string) $pluginDefinitions[$correct_widget_id]['label'],
         '%wrong' => (string) $pluginDefinitions[$actual_widget_id]['label'],
-        '@link' => \Drupal::moduleHandler()->moduleExists('field_ui') ? Url::fromRoute('entity.entity_form_display.entity.default', ['node_type' => $type->get('type')])->toString() : '#',
+        '@link' => $link,
         ':not_available' => \Drupal::moduleHandler()->moduleExists('field_ui') ? '' : ('(' . t('not available') . ')'),
       ]), 'warning', FALSE);
     }
