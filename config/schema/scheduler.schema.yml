@@ -71,16 +71,16 @@ scheduler.settings:
       type: string
       label: 'Time part of the full format'
 
-node.type.*.third_party.scheduler:
+node.type.*.third_party.scheduler: &third_party_settings_alias
   type: mapping
-  label: 'Scheduler content type settings'
+  label: 'Scheduler entity type settings'
   mapping:
     expand_fieldset:
       type: string
       label: 'Conditions under which to expand the date input fieldset or vertical tab'
     fields_display_mode:
       type: string
-      label: 'The way the scheduling fields are displayed in the node form'
+      label: 'The way the scheduling fields are displayed in the edit form'
     publish_enable:
       type: boolean
       label: 'Enable scheduled publishing'
@@ -89,7 +89,7 @@ node.type.*.third_party.scheduler:
       label: 'Action to be taken for publication dates in the past'
     publish_past_date_created:
       type: boolean
-      label: 'Change content creation date for past dates to avoid "changed" being earlier than "created"'
+      label: 'Change entity creation date for past dates to avoid "changed" being earlier than "created"'
     publish_required:
       type: boolean
       label: 'Require scheduled publishing'
@@ -98,10 +98,10 @@ node.type.*.third_party.scheduler:
       label: 'Create a new revision on publishing'
     publish_touch:
       type: boolean
-      label: 'Change content creation time to match the scheduled publish time'
+      label: 'Change entity creation time to match the scheduled publish time'
     show_message_after_update:
       type: boolean
-      label: 'Show a message after updating content which is scheduled'
+      label: 'Show a message after updating an entity which is scheduled'
     unpublish_enable:
       type: boolean
       label: 'Enable scheduled unpublishing'
@@ -111,3 +111,7 @@ node.type.*.third_party.scheduler:
     unpublish_revision:
       type: boolean
       label: 'Create a new revision on unpublishing'
+
+# Use saved alias to repeat the same settings for media.type
+media.type.*.third_party.scheduler:
+  *third_party_settings_alias
