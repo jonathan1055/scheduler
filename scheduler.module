@@ -631,23 +631,30 @@ function scheduler_cron_is_running() {
 function scheduler_entity_extra_field_info() {
   $config = \Drupal::config('scheduler.settings');
 
+  $plugins = \Drupal::service('scheduler.manager')->getPlugins();
+
   // Expose the Scheduler group on the 'Manage Form Display' tab when editing a
   // content type. This allows admins to adjust the weight of the group, and it
   // works for vertical tabs and separate fieldsets.
   $fields = [];
-  foreach (NodeType::loadMultiple() as $type) {
-    $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
-    $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
-    if ($publishing_enabled || $unpublishing_enabled) {
-      // Weight 20 puts this below the core fields by default.
-      $fields['node'][$type->get('type')]['form']['scheduler_settings'] = [
-        'label' => t('Scheduler Dates'),
-        'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
-        'weight' => 20,
-      ];
+  foreach ($plugins as $plugin) {
+    $types = $plugin->getTypes();
+    foreach ($types as $type) {
+      $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
+      $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
+
+      if ($publishing_enabled || $unpublishing_enabled) {
+        // Weight 20 puts this below the core fields by default.
+        $fields[$plugin->entityType()][$type->id()]['form']['scheduler_settings'] = [
+          'label' => t('Scheduler Dates'),
+          'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
+          'weight' => 20,
+        ];
+      }
     }
   }
+
   return $fields;
 }
 
