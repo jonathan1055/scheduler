@@ -285,8 +285,8 @@ class SchedulerManager {
           }
 
           // Log the fact that a scheduled publication is about to take place.
-          $view_link = $entity->toLink($this->t('View node'));
           $entity_type = $this->entityTypeManager->getStorage($plugin->entityType() . '_type')->load($entity->bundle());
+          $view_link = $entity->toLink($this->t('View @label', ['@label' => $entity_type->label()]));
           $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
@@ -512,8 +512,8 @@ class SchedulerManager {
           }
 
           // Set up the log variables.
-          $view_link = $entity->toLink($this->t('View node'));
           $entity_type = $this->entityTypeManager->getStorage($plugin->entityType() . '_type')->load($entity->bundle());
+          $view_link = $entity->toLink($this->t('View @label', ['@label' => $entity_type->label()]));
           $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
