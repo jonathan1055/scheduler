@@ -767,3 +767,17 @@ function _scheduler_get_scheduler_enabled_node_types($action) {
     return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
   });
 }
+
+/**
+ * Implements hook_modules_installed
+ */
+function scheduler_modules_installed($modules) {
+  /** @var \Drupal\scheduler\SchedulerManager $manager */
+  $manager = \Drupal::service('scheduler.manager');
+  $manager->invalidatePluginCache();
+  $plugins = $manager->getPluginEntityTypes();
+  $matches = array_intersect($modules, $plugins);
+  if ( !empty($matches)) {
+    $manager->updateEntities();
+  }
+}

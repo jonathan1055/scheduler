@@ -34,18 +34,7 @@ function scheduler_drush_command() {
 }
 
 function drush_scheduler_update_entities() {
-  $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
-
-  $list = $entityUpdateManager->getChangeList();
-  foreach ($list as $entity_type_id => $definitions ) {
-    if ($definitions['field_storage_definitions']['publish_on'] ?? 0 ) {
-      $entity_type = $entityUpdateManager->getEntityType($entity_type_id);
-      $fields = scheduler_entity_base_field_info($entity_type);
-      foreach ($fields as $field_name => $field_definition) {
-        $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id,  $field_definition);
-      }
-    }
-  }
+  \Drupal::service('scheduler.manager')->updateEntities();
 }
 
 /**
