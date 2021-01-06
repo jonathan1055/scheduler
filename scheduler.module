@@ -437,108 +437,113 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
 }
 
 /**
- * Implements hook_ENTITY_TYPE_presave() for node entities.
+ * Implements hook_entity_presave().
  */
-function scheduler_node_presave(EntityInterface $node) {
+function scheduler_entity_presave(EntityInterface $entity) {
   $config = \Drupal::config('scheduler.settings');
   $scheduler_manager = \Drupal::service('scheduler.manager');
-  $entity = $node->type->entity;
   $request_time = \Drupal::time()->getRequestTime();
+  // Get the plugin for this entity. If null then the entity is not supported
+  // by Scheduler so we do not need to go further.
+  if (!$plugin = $scheduler_manager->getPlugin($entity->getEntityTypeId())) {
+    return;
+  }
+
   $publish_message = FALSE;
   $unpublish_message = FALSE;
 
-  // If there is no entity object or the class is incorrect then stop here. This
-  // should not really happen but it has been observed, so better to be safe.
-  // @see https://www.drupal.org/node/2902512
-  if (is_null($entity) || !get_class($entity) == 'Drupal\node\Entity\NodeType') {
-    return;
-  };
+  $publishing_enabled_types = $plugin->getEnabledTypes('publish');
+  $unpublishing_enabled_types = $plugin->getEnabledTypes('unpublish');
+  $publishing_enabled = in_array($entity->bundle(), array_keys($publishing_enabled_types));
+  $unpublishing_enabled = in_array($entity->bundle(), array_keys($unpublishing_enabled_types));
 
-  // If this node is being created via Devel Generate then set values for the
+  if (!$publishing_enabled && !$unpublishing_enabled) {
+    // Neither scheduled publishing nor unpublishing is enabled for this
+    // specific type, so end here.
+    return;
+  }
+
+  // If this entity is being created via Devel Generate then set values for the
   // publish_on and unpublish_on dates as specified in the devel_generate form.
-  if (isset($node->devel_generate)) {
-    static $publishing_enabled_types;
-    static $unpublishing_enabled_types;
+  if (isset($entity->devel_generate)) {
     static $publishing_percent;
     static $unpublishing_percent;
     static $time_range;
 
-    if (!isset($publishing_enabled_types)) {
-      $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
-      $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
+    if (!isset($publishing_percent)) {
       // The values may not be set if calling via drush, so default to zero.
-      $publishing_percent = @$node->devel_generate['scheduler_publishing'] ?: 0;
-      $unpublishing_percent = @$node->devel_generate['scheduler_unpublishing'] ?: 0;
-      // Reuse the selected 'node creation' time range for our future date span.
-      $time_range = $node->devel_generate['time_range'];
+      $publishing_percent = @$entity->devel_generate['scheduler_publishing'] ?: 0;
+      $unpublishing_percent = @$entity->devel_generate['scheduler_unpublishing'] ?: 0;
+      // Reuse the selected 'creation' time range for our future date span.
+      $time_range = $entity->devel_generate['time_range'];
     }
-    if ($publishing_percent && in_array($node->getType(), $publishing_enabled_types)) {
+    if ($publishing_percent && $publishing_enabled) {
       if (rand(1, 100) <= $publishing_percent) {
         // Randomly assign a publish_on value in the range starting with the
         // created date and up to the selected time range in the future.
-        $node->set('publish_on', rand($node->created->value + 1, $request_time + $time_range));
+        $entity->set('publish_on', rand($entity->created->value + 1, $request_time + $time_range));
       }
     }
-    if ($unpublishing_percent && in_array($node->getType(), $unpublishing_enabled_types)) {
+    if ($unpublishing_percent && $unpublishing_enabled) {
       if (rand(1, 100) <= $unpublishing_percent) {
         // Randomly assign an unpublish_on value in the range from the later of
         // created date/publish_on date up to the time range in the future.
-        $node->set('unpublish_on', rand(max($node->created->value, $node->publish_on->value), $request_time + $time_range));
+        $entity->set('unpublish_on', rand(max($entity->created->value, $entity->publish_on->value), $request_time + $time_range));
       }
     }
   }
 
-  // If the node type is enabled for scheduled publishing and has a publish_on
+  // If the entity type is enabled for scheduled publishing and has a publish_on
   // date then check if publishing is allowed and if the content needs to be
   // published immediately.
-  if ($entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')) && !empty($node->publish_on->value)) {
+  if ($publishing_enabled && !empty($entity->publish_on->value)) {
     // Check that other modules allow the action on this node.
-    $publication_allowed = $scheduler_manager->isAllowed($node, 'publish');
+    $publication_allowed = $scheduler_manager->isAllowed($entity, 'publish');
 
     // Publish the node immediately if the publication date is in the past.
-    $publish_immediately = $entity->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
+    $publish_immediately = $scheduler_manager->getThirdPartySetting($entity, 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
 
-    if ($publication_allowed && $publish_immediately && $node->publish_on->value <= $request_time) {
+    if ($publication_allowed && $publish_immediately && $entity->publish_on->value <= $request_time) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
       // before the node has been published.
-      $event = new SchedulerEvent($node);
+      $event = new SchedulerEvent($entity);
       $scheduler_manager->dispatch($event, SchedulerEvents::PRE_PUBLISH_IMMEDIATELY);
-      $node = $event->getEntity();
+      $entity = $event->getEntity();
 
       // Set the 'changed' timestamp to match what would have been done had this
       // content been published via cron.
-      $node->setChangedTime($node->publish_on->value);
+      $entity->setChangedTime($entity->publish_on->value);
       // If required, set the created date to match published date.
-      if ($entity->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch')) ||
-        ($node->getCreatedTime() > $node->publish_on->value && $entity->getThirdPartySetting('scheduler', 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
-        $node->setCreatedTime($node->publish_on->value);
+      if ($scheduler_manager->getThirdPartySetting($entity, 'publish_touch', $config->get('default_publish_touch')) ||
+        ($entity->getCreatedTime() > $entity->publish_on->value && $scheduler_manager->getThirdPartySetting($entity, 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
+        $entity->setCreatedTime($entity->publish_on->value);
       }
-      $node->publish_on->value = NULL;
-      $node->setPublished();
+      $entity->publish_on->value = NULL;
+      $entity->setPublished();
 
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
       // the node has been published.
-      $event = new SchedulerEvent($node);
+      $event = new SchedulerEvent($entity);
       $scheduler_manager->dispatch($event, SchedulerEvents::PUBLISH_IMMEDIATELY);
-      $node = $event->getEntity();
+      $entity = $event->getEntity();
     }
     else {
       // Ensure the node is unpublished as it will be published by cron later.
-      $node->setUnpublished();
+      $entity->setUnpublished();
 
       // Only inform the user that the node is scheduled if publication has not
       // been prevented by other modules. Those modules have to display a
       // message themselves explaining why publication is denied.
-      $publish_message = ($publication_allowed && $entity->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')));
+      $publish_message = ($publication_allowed && $scheduler_manager->getThirdPartySetting($entity, 'show_message_after_update', $config->get('default_show_message_after_update')));
     }
-  }
+  } // Entity has a publish_on date.
 
-  if ($entity->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable')) && !empty($node->unpublish_on->value)) {
+  if ($unpublishing_enabled && !empty($entity->unpublish_on->value)) {
     // Scheduler does not do the same 'immediate' processing for unpublishing.
     // However, the api hook should still be called during presave as there may
     // be messages to be displayed if the unpublishing will be disallowed later.
-    $unpublication_allowed = $scheduler_manager->isAllowed($node, 'unpublish');
-    $unpublish_message = ($unpublication_allowed && $entity->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')));
+    $unpublication_allowed = $scheduler_manager->isAllowed($entity, 'unpublish');
+    $unpublish_message = ($unpublication_allowed && $scheduler_manager->getThirdPartySetting($entity, 'show_message_after_update', $config->get('default_show_message_after_update')));
   }
 
   // Give one message, which will include the publish_on date, the unpublish_on
@@ -547,21 +552,21 @@ function scheduler_node_presave(EntityInterface $node) {
   $date_formatter = \Drupal::service('date.formatter');
   if ($publish_message && $unpublish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time and unpublished @unpublish_time.', [
-      '%title' => $node->getTitle(),
-      '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
-      '@unpublish_time' => $date_formatter->format($node->unpublish_on->value, 'long'),
+      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '@publish_time' => $date_formatter->format($entity->publish_on->value, 'long'),
+      '@unpublish_time' => $date_formatter->format($entity->unpublish_on->value, 'long'),
     ]), 'status', FALSE);
   }
   elseif ($publish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time.', [
-      '%title' => $node->getTitle(),
-      '@publish_time' => $date_formatter->format($node->publish_on->value, 'long'),
+      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '@publish_time' => $date_formatter->format($entity->publish_on->value, 'long'),
     ]), 'status', FALSE);
   }
   elseif ($unpublish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be unpublished @unpublish_time.', [
-      '%title' => $node->getTitle(),
-      '@unpublish_time' => $date_formatter->format($node->unpublish_on->value, 'long'),
+      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '@unpublish_time' => $date_formatter->format($entity->unpublish_on->value, 'long'),
     ]), 'status', FALSE);
   }
 }

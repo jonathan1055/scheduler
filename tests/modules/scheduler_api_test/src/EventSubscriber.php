@@ -12,7 +12,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * These events allow modules to react to the Scheduler process being performed.
  * They are all triggered during Scheduler cron processing with the exception of
  * 'pre_publish_immediately' and 'publish_immediately' which are triggered from
- * scheduler_node_presave().
+ * scheduler_entity_presave().
  *
  * The tests use the standard 'sticky' and 'promote' fields as a simple way to
  * check the processing. Use extra conditional checks on $node->isPublished() to

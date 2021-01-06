@@ -36,12 +36,11 @@ class SetUnpublishingDate extends RulesActionBase {
     $config = \Drupal::config('scheduler.settings');
     if ($node->type->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'))) {
       $node->set('unpublish_on', $date);
-      // When this action is invoked and it operates on the node being editted
-      // then hook_node_presave() and hook_node_update() will be executed
-      // automatically. But if this action is being used to schedule a different
-      // node then we need to call the functions directly here.
-      scheduler_node_presave($node);
-      scheduler_node_update($node);
+      // When this action is invoked and it operates on the entity being editted
+      // then hook_entity_presave() will be executed automatically. But if this
+      // action is being used to schedule a different entity then we need to
+      // call the functions directly here.
+      scheduler_entity_presave($node);
     }
     else {
       // The action cannot be executed because the content type is not enabled

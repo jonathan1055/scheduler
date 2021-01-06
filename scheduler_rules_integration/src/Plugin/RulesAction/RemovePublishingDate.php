@@ -31,8 +31,7 @@ class RemovePublishingDate extends RulesActionBase {
     $config = \Drupal::config('scheduler.settings');
     if ($node->type->entity->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'))) {
       $node->set('publish_on', NULL);
-      scheduler_node_presave($node);
-      scheduler_node_update($node);
+      scheduler_entity_presave($node);
     }
     else {
       // The action cannot be executed because the content type is not enabled
