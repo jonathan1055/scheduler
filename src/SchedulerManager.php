@@ -181,23 +181,22 @@ class SchedulerManager {
         $ids = $query->execute();
       }
 
-      // Allow other modules to add to the list of nodes to be published.
-      $ids = array_unique(array_merge($ids, $plugin->idList($action)));
+      // Allow other modules to add to the list of entities to be published.
+      foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
+        $function = $module . '_' . $plugin->idListFunction();
+        $ids = array_merge($ids, $function($action));
+      }
 
       // Allow other modules to alter the list of entities to be published.
-      if ($plugin->entityType() == 'node') {
-        // Legacy support for nodes.
-        $this->moduleHandler->alter('scheduler_nid_list', $ids, $action);
-      }
-      else {
-        $this->moduleHandler->alter('scheduler_id_list',
-          $ids, $action, $plugin->entityType());
-      }
+      $this->moduleHandler->alter($plugin->idListFunction(), $ids, $action);
 
-      // In 8.x the entity translations are all associated with one node id
-      // unlike 7.x where each translation was a separate node. This means that
-      // the list of node ids returned above may have some translations that
-      // need processing now and others that do not.
+      // Finally ensure that there are no duplicates in the list of ids.
+      $ids = array_unique($ids);
+
+      // In 8.x the entity translations are all associated with one entity id
+      // unlike 7.x where each translation was a separate id. This means that
+      // the list of ids returned above may have some translations that need
+      // processing now and others that do not.
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
       $entities = $this->loadEntities($ids, $plugin->entityType());
       foreach ($entities as $entity_multilingual) {
@@ -416,18 +415,17 @@ class SchedulerManager {
         $ids = $query->execute();
       }
 
-      // Allow other modules to add to the list of nodes to be unpublished.
-      $ids = array_unique(array_merge($ids, $plugin->idList($action)));
+      // Allow other modules to add to the list of entities to be unpublished.
+      foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
+        $function = $module . '_' . $plugin->idListFunction();
+        $ids = array_merge($ids, $function($action));
+      }
 
-      // Allow other modules to alter the list of nodes to be unpublished.
-      if ($plugin->entityType() == 'node') {
-        // Legacy support for nodes.
-        $this->moduleHandler->alter('scheduler_nid_list', $ids, $action);
-      }
-      else {
-        $this->moduleHandler->alter('scheduler_id_list',
-          $ids, $action, $plugin->entityType());
-      }
+      // Allow other modules to alter the list of entities to be unpublished.
+      $this->moduleHandler->alter($plugin->idListFunction(), $ids, $action);
+
+      // Finally ensure that there are no duplicates in the list of ids.
+      $ids = array_unique($ids);
 
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
       $entities = $this->loadEntities($ids, $plugin->entityType());

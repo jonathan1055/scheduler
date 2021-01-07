@@ -9,7 +9,7 @@ use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class Node.
+ * Plugin for Node entity type.
  *
  * @package Drupal\Scheduler\Plugin\Scheduler
  *
@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  entityType = "node",
  *  typeFieldName = "type",
  *  dependency = "node",
+ *  idListFunction = "scheduler_nid_list",
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
@@ -123,29 +124,6 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
       /** @var \Drupal\node\NodeTypeInterface $bundle */
       return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
     });
-  }
-
-  /**
-   * Gather node IDs for all nodes that need to be $action'ed.
-   *
-   * Modules can implement hook_scheduler_nid_list($action) and return an array
-   * of node ids which will be added to the existing list.
-   *
-   * @param string $action
-   *   The action being performed, either "publish" or "unpublish".
-   *
-   * @return array
-   *   An array of node ids.
-   */
-  public function idList($action) {
-    $nids = [];
-
-    foreach (\Drupal::moduleHandler()->getImplementations('scheduler_nid_list') as $module) {
-      $function = $module . '_scheduler_nid_list';
-      $nids = array_merge($nids, $function($action));
-    }
-
-    return $nids;
   }
 
 }
