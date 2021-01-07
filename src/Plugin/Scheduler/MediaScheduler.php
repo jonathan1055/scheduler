@@ -125,22 +125,4 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     return MediaType::load($bundle);
   }
 
-  /**
-   * Get list of enabled bundles for $action ([un]publish).
-   *
-   * @param string $action
-   *   The action - publish|unpublish.
-   *
-   * @return array
-   *   The list of bundles.
-   */
-  public function getEnabledTypes($action) {
-    $config = \Drupal::config('scheduler.settings');
-    $types = $this->getTypes();
-    return array_filter($types, function ($bundle) use ($action, $config) {
-      /** @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
-    });
-  }
-
 }
