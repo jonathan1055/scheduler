@@ -834,9 +834,23 @@ class SchedulerManager {
     }
   }
 
-  public function updateEntities() {
+  /**
+   * Updates db tables for entities that should have the Scheduler fields.
+   *
+   * This is called from hook_modules_installed. It can also be called manually
+   * via drush command scheduler-update-entities.
+   *
+   * @param array $options
+   *   Array of options, passed as keys.
+   *
+   * @return array
+   *   Labels of the entity types updated.
+   *
+   * @todo Add logging and messenger output. Cater for 'nomsg' option.
+   */
+  public function updateEntities(array $options = []) {
     $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
-
+    $updated = [];
     $list = $entityUpdateManager->getChangeList();
     foreach ($list as $entity_type_id => $definitions ) {
       if ($definitions['field_storage_definitions']['publish_on'] ?? 0 ) {
@@ -845,7 +859,10 @@ class SchedulerManager {
         foreach ($fields as $field_name => $field_definition) {
           $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id,  $field_definition);
         }
+        $updated[] = (string) $entity_type->getLabel();
       }
     }
+    return $updated;
   }
+
 }
