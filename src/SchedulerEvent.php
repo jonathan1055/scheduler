@@ -13,17 +13,17 @@ class SchedulerEvent extends EventBase {
    * Gets entity object.
    *
    * @return \Drupal\Core\Entity\EntityInterface
-   *   The node object that caused the event to fire.
+   *   The entity object that caused the event to fire.
    */
   public function getEntity() {
     return $this->entity;
   }
 
   /**
-   * Sets the node object.
+   * Sets the entity object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The node object that caused the event to fire.
+   *   The entity object that caused the event to fire.
    */
   public function setEntity(EntityInterface $entity) {
     $this->entity = $entity;

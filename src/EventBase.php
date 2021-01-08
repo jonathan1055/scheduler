@@ -19,7 +19,7 @@ use Drupal\Core\Entity\EntityInterface;
 class EventBase extends Event {
 
   /**
-   * The node which is being processed.
+   * The entity which is being processed.
    *
    * @var \Drupal\Core\Entity\EntityInterface
    */

@@ -18,43 +18,43 @@ scheduler.settings:
       label: 'Date part of the full format'
     default_expand_fieldset:
       type: string
-      label: 'Default value for nodetype setting expand_fieldset'
+      label: 'Default value for entity type setting expand_fieldset'
     default_fields_display_mode:
       type: string
-      label: 'Default value for nodetype setting fields_display_mode'
+      label: 'Default value for entity type setting fields_display_mode'
     default_publish_enable:
       type: boolean
-      label: 'Default value for nodetype setting publish_enable'
+      label: 'Default value for entity type setting publish_enable'
     default_publish_past_date:
       type: string
-      label: 'Default value for nodetype setting publish_past_date'
+      label: 'Default value for entity type setting publish_past_date'
     default_publish_past_date_created:
       type: boolean
-      label: 'Default value for nodetype setting publish_past_date_created'
+      label: 'Default value for entity type setting publish_past_date_created'
     default_publish_required:
       type: boolean
-      label: 'Default value for nodetype setting publish_required'
+      label: 'Default value for entity type setting publish_required'
     default_publish_revision:
       type: boolean
-      label: 'Default value for nodetype setting publish_revision'
+      label: 'Default value for entity type setting publish_revision'
     default_publish_touch:
       type: boolean
-      label: 'Default value for nodetype setting publish_touch'
+      label: 'Default value for entity type setting publish_touch'
     default_show_message_after_update:
       type: boolean
-      label: 'Default value for nodetype setting show_message_after_update'
+      label: 'Default value for entity type setting show_message_after_update'
     default_time:
       type: string
       label: 'Default Scheduling Time. This is used with the option to allow date only'
     default_unpublish_enable:
       type: boolean
-      label: 'Default value for nodetype setting unpublish_enable'
+      label: 'Default value for entity type setting unpublish_enable'
     default_unpublish_required:
       type: boolean
-      label: 'Default value for nodetype setting unpublish_required'
+      label: 'Default value for entity type setting unpublish_required'
     default_unpublish_revision:
       type: boolean
-      label: 'Default value for nodetype setting unpublish_revision'
+      label: 'Default value for entity type setting unpublish_revision'
     hide_seconds:
       type: boolean
       label: 'Hide the seconds on the input control when entering a time'

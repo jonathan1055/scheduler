@@ -47,7 +47,7 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Get the form IDs for entity add/edit forms.
+   * Get the form IDs for node add/edit forms.
    *
    * @return array
    *   The list of form IDs.
@@ -69,7 +69,7 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Get the list of node type form IDs.
+   * Get the form IDs for node type forms.
    *
    * @return array
    *   The list of form IDs.

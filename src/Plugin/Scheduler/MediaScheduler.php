@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Create mothod.
+   * Create method.
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static(
@@ -50,7 +50,7 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   }
 
   /**
-   * Get the form IDs for entity add/edit forms.
+   * Get the form IDs for media add/edit forms.
    *
    * @return array
    *   The list of form IDs.
@@ -76,7 +76,7 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   }
 
   /**
-   * Get the list of entity type form IDs for media.
+   * Get the form IDs for media type forms.
    *
    * @return array
    *   The list of form IDs.
