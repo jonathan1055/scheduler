@@ -75,16 +75,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
-   * Publish pending entities.
-   */
-  abstract public function publish();
-
-  /**
-   * Unpublish pending entities.
-   */
-  abstract public function unpublish();
-
-  /**
    * Get the form IDs for entity add/edit forms.
    */
   abstract public function entityFormIds();
