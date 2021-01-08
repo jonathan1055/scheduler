@@ -689,33 +689,6 @@ class SchedulerManager {
   }
 
   /**
-   * Helper method to load latest revision of each node.
-   *
-   * @param array $nids
-   *   Array of node ids.
-   *
-   * @return array
-   *   Array of loaded nodes.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   */
-  protected function loadNodes(array $nids) {
-    $node_storage = $this->entityTypeManager->getStorage('node');
-    $nodes = [];
-
-    // Load the latest revision for each node.
-    foreach ($nids as $nid) {
-      $node = $node_storage->load($nid);
-      $revision_ids = $node_storage->revisionIds($node);
-      $vid = end($revision_ids);
-      $nodes[] = $node_storage->loadRevision($vid);
-    }
-
-    return $nodes;
-  }
-
-  /**
    * Get a list of all scheduler plugin definitions.
    *
    * @return array|mixed[]|null
