@@ -27,9 +27,9 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
       $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
-          '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
-          '@project' => 'https://drupal.org/project/scheduler',
-        ]) . '</p>';
+        '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
+        '@project' => 'https://drupal.org/project/scheduler',
+      ]) . '</p>';
       break;
 
     case 'scheduler.admin_form':
@@ -672,7 +672,7 @@ function scheduler_entity_extra_field_info() {
  */
 function scheduler_preprocess(&$variables, $hook) {
   $plugins = &drupal_static(__FUNCTION__);
-  if ( empty($plugins)) {
+  if (empty($plugins)) {
     $plugins = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
   }
   if (in_array($hook, $plugins)) {
@@ -689,6 +689,7 @@ function scheduler_preprocess(&$variables, $hook) {
     }
   }
 }
+
 /**
  * Implements hook_feeds_processor_targets_alter().
  *
@@ -774,7 +775,7 @@ function _scheduler_get_scheduler_enabled_node_types($action) {
 }
 
 /**
- * Implements hook_modules_installed
+ * Implements hook_modules_installed().
  */
 function scheduler_modules_installed($modules) {
   /** @var \Drupal\scheduler\SchedulerManager $manager */
@@ -782,7 +783,7 @@ function scheduler_modules_installed($modules) {
   $manager->invalidatePluginCache();
   $plugins = $manager->getPluginEntityTypes();
   $matches = array_intersect($modules, $plugins);
-  if ( !empty($matches)) {
+  if (!empty($matches)) {
     $manager->updateEntities();
   }
 }

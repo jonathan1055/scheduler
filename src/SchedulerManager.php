@@ -5,7 +5,6 @@ namespace Drupal\scheduler;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Component\EventDispatcher\Event;
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
@@ -262,8 +261,8 @@ class SchedulerManager {
             $entity->setNewRevision();
             // Use a core date format to guarantee a time is included.
             $revision_log_message = rtrim($this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
-                '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
-              ]) . ' ' . $msg_extra);
+              '@publish_on' => $this->dateFormatter->format($publish_on, 'short'),
+            ]) . ' ' . $msg_extra);
             $entity->setRevisionLogMessage($revision_log_message)
               ->setRevisionCreationTime($this->time->getRequestTime());
           }
@@ -708,7 +707,7 @@ class SchedulerManager {
    */
   public function getPlugins() {
     $cache = \Drupal::cache()->get('scheduler.plugins');
-    if ( !empty($cache) && !empty($cache->data)) {
+    if (!empty($cache) && !empty($cache->data)) {
       return $cache->data;
     }
 
@@ -717,7 +716,7 @@ class SchedulerManager {
     foreach ($definitions as $definition) {
       $plugin = $this->pluginManager->createInstance($definition['id']);
       $dependency = $plugin->dependency();
-      if ( $dependency && ! \Drupal::moduleHandler()->moduleExists($dependency) ) {
+      if ($dependency && !\Drupal::moduleHandler()->moduleExists($dependency)) {
         continue;
       }
       $plugins[] = $plugin;
@@ -730,10 +729,11 @@ class SchedulerManager {
   public function invalidatePluginCache() {
     /** @var Cache $cache */
     $cache = \Drupal::cache()->get('scheduler.plugins');
-    if ( !empty($cache) && !empty($cache->data)) {
-      \Drupal::cache()->set( 'scheduler.plugins', null);
+    if (!empty($cache) && !empty($cache->data)) {
+      \Drupal::cache()->set('scheduler.plugins', NULL);
     }
   }
+
   /**
    * Get list of entity types supported by each scheduler plugin.
    *
@@ -823,12 +823,12 @@ class SchedulerManager {
     $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
     $updated = [];
     $list = $entityUpdateManager->getChangeList();
-    foreach ($list as $entity_type_id => $definitions ) {
-      if ($definitions['field_storage_definitions']['publish_on'] ?? 0 ) {
+    foreach ($list as $entity_type_id => $definitions) {
+      if ($definitions['field_storage_definitions']['publish_on'] ?? 0) {
         $entity_type = $entityUpdateManager->getEntityType($entity_type_id);
         $fields = scheduler_entity_base_field_info($entity_type);
         foreach ($fields as $field_name => $field_definition) {
-          $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id,  $field_definition);
+          $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id, $field_definition);
         }
         $updated[] = (string) $entity_type->getLabel();
       }
