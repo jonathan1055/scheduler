@@ -37,20 +37,6 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Publish pending nodes.
-   */
-  public function publish() {
-    // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
-   * Unpublish pending nodes.
-   */
-  public function unpublish() {
-    // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
    * Get the available bundles for the entity type.
    *
    * @return array

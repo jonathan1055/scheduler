@@ -37,20 +37,6 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   }
 
   /**
-   * Publish pending media entities.
-   */
-  public function publish() {
-    // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
-   * Unpublish pending media entities.
-   */
-  public function unpublish() {
-    // @todo - this will likely be handled in the ScheduleManager service.
-  }
-
-  /**
    * Get the available bundles for the entity type.
    *
    * @return array
