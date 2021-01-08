@@ -2,7 +2,7 @@
 
 namespace Drupal\scheduler_rules_integration\Event;
 
-use Drupal\scheduler\EventBase;
+use Drupal\scheduler\NodeEventBase;
 
 /**
  * An existing node is scheduled for unpublishing.
@@ -10,7 +10,7 @@ use Drupal\scheduler\EventBase;
  * This event is fired when an existing node is updated/saved and it has a
  * scheduled unpublishing date.
  */
-class ExistingNodeIsScheduledForUnpublishingEvent extends EventBase {
+class ExistingNodeIsScheduledForUnpublishingEvent extends NodeEventBase {
 
   const EVENT_NAME = 'scheduler_existing_node_is_scheduled_for_unpublishing_event';
 

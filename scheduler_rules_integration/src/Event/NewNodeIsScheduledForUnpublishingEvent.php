@@ -2,7 +2,7 @@
 
 namespace Drupal\scheduler_rules_integration\Event;
 
-use Drupal\scheduler\EventBase;
+use Drupal\scheduler\NodeEventBase;
 
 /**
  * A new node is scheduled for unpublishing.
@@ -10,7 +10,7 @@ use Drupal\scheduler\EventBase;
  * This event is fired when a newly created node is saved for the first time
  * and it has a scheduled unpublishing date.
  */
-class NewNodeIsScheduledForUnpublishingEvent extends EventBase {
+class NewNodeIsScheduledForUnpublishingEvent extends NodeEventBase {
 
   const EVENT_NAME = 'scheduler_new_node_is_scheduled_for_unpublishing_event';
 
