@@ -146,10 +146,10 @@ class SchedulerManager {
   }
 
   /**
-   * Publish scheduled nodes.
+   * Publish scheduled entities.
    *
    * @return bool
-   *   TRUE if any node has been published, FALSE otherwise.
+   *   TRUE if any entity has been published, FALSE otherwise.
    *
    * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
@@ -162,7 +162,7 @@ class SchedulerManager {
 
     foreach ($plugins as $plugin) {
       // Select all entities of the types that are enabled for scheduled
-      // publishingand where publish_on is less than or equal to the current
+      // publishing and where publish_on is less than or equal to the current
       // time.
       $ids = [];
       $scheduler_enabled_types = array_keys($plugin->getEnabledTypes($action));
@@ -200,32 +200,32 @@ class SchedulerManager {
       $entities = $this->loadEntities($ids, $plugin->entityType());
       foreach ($entities as $entity_multilingual) {
 
-        // The API calls could return nodes of types which are not enabled for
-        // scheduled publishing, so do not process these. This check can be done
-        // once, here, as the setting will be the same for all translations.
+        // The API calls could return entities of types which are not enabled
+        // for scheduled publishing, so do not process these. This check can be
+        // done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'publish_enable', $this->setting('default_publish_enable'))) {
           throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), node_get_type_label($entity_multilingual)));
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
         foreach ($languages as $language) {
-          // The object returned by getTranslation() behaves the same as a $node.
+          // The object returned by getTranslation() is a normal $entity.
           $entity = $entity_multilingual->getTranslation($language->getId());
 
-          // If the current translation does not have a publish on value, or it is
-          // later than the date we are processing then move on to the next.
+          // If the current translation does not have a publish on value, or it
+          // is later than the date we are processing then move on to the next.
           $publish_on = $entity->publish_on->value;
           if (empty($publish_on) || $publish_on > $this->time->getRequestTime()) {
             continue;
           }
 
-          // Check that other modules allow the action on this node.
+          // Check that other modules allow the action on this entity.
           if (!$this->isAllowed($entity, $action)) {
             continue;
           }
 
-          // $node->setChangedTime($publish_on) will fail badly if an API call has
-          // removed the date. Trap this as an exception here and give a
+          // $entity->setChangedTime($publish_on) will fail badly if an API call
+          // has removed the date. Trap this as an exception here and give a
           // meaningful message.
           // @todo This will now never be thrown due to the empty(publish_on)
           // check above to cater for translations. Remove this exception?
@@ -235,8 +235,8 @@ class SchedulerManager {
             throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $entity->id(), $this->getEntityTitle($entity), $field));
           }
 
-          // Trigger the PRE_PUBLISH event so that modules can react before the
-          // node is published.
+          // Trigger the PRE_PUBLISH Scheduler event so that modules can react
+          // before the entity is published.
           $event = new SchedulerEvent($entity);
           $this->dispatch($event, SchedulerEvents::PRE_PUBLISH);
           $entity = $event->getEntity();
@@ -266,8 +266,8 @@ class SchedulerManager {
             $entity->setRevisionLogMessage($revision_log_message)
               ->setRevisionCreationTime($this->time->getRequestTime());
           }
-          // Unset publish_on so the node will not get rescheduled by subsequent
-          // calls to $node->save().
+          // Unset publish_on so the entity will not get rescheduled by
+          // subsequent calls to $entity->save().
           $entity->publish_on->value = NULL;
 
           // Invoke all implementations of hook_scheduler_publish_action() to
@@ -295,34 +295,34 @@ class SchedulerManager {
           ];
 
           if ($failed) {
-            // At least one hook function returned a failure or exception, so stop
-            // processing this node and move on to the next one.
+            // At least one hook function returned a failure or exception, so
+            // stop processing this entity and move on to the next one.
             $this->logger->warning('Publishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
             continue;
           }
           elseif ($processed) {
-            // The node had 'publishing' processed by a module implementing the
-            // hook, so no need to do anything more, apart from log this result.
+            // The entity was 'published' by a module implementing the hook, so
+            // we only need to log this result.
             $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
           }
           else {
-            // None of the above hook calls processed the node and there were no
-            // errors detected so set the entity to published.
+            // None of the above hook calls processed the entity and there were
+            // no errors detected so set the entity to published.
             $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
             $entity->setPublished();
           }
 
-          // Invoke the event to tell Rules that Scheduler has published the entity.
+          // Invoke event to tell Rules that Scheduler has published the entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
             _scheduler_rules_integration_dispatch_cron_event($entity, 'publish');
           }
 
-          // Trigger the PUBLISH event so that modules can react after the entity is
-          // published.
+          // Trigger the PUBLISH Scheduler event so that modules can react after
+          // the entity is published.
           $event = new SchedulerEvent($entity);
           $this->dispatch($event, SchedulerEvents::PUBLISH);
 
-          // Use the standard actions system to publish and save the node.
+          // Use the standard actions system to publish and save the entity.
           $entity = $event->getEntity();
           $action_id = $plugin->entityType() . '_publish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
@@ -360,14 +360,14 @@ class SchedulerManager {
   }
 
   /**
-   * Get 3rd party setting from entity type (via an Entity).
+   * Get third-party setting from entity type (via an Entity).
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
    * @param string $setting
-   *   The setting to retreive.
+   *   The setting to retrieve.
    * @param mixed $default
-   *   The default value for setting if none is founed.
+   *   The default value for setting if none is found.
    *
    * @return mixed
    *   The value of the setting.
@@ -382,10 +382,10 @@ class SchedulerManager {
   }
 
   /**
-   * Unpublish scheduled nodes.
+   * Unpublish scheduled entities.
    *
    * @return bool
-   *   TRUE if any node has been unpublished, FALSE otherwise.
+   *   TRUE if any entity has been unpublished, FALSE otherwise.
    *
    * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
    * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
@@ -397,8 +397,9 @@ class SchedulerManager {
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $plugin) {
-      // Select all nodes of the types that are enabled for scheduled unpublishing
-      // and where unpublish_on is less than or equal to the current time.
+      // Select all entities of the types for this plugin that are enabled for
+      // scheduled unpublishing and where unpublish_on is less than or equal to
+      // the current time.
       $ids = [];
       $scheduler_enabled_types = array_keys($plugin->getEnabledTypes($action));
       if (!empty($scheduler_enabled_types)) {
@@ -429,41 +430,41 @@ class SchedulerManager {
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
       $entities = $this->loadEntities($ids, $plugin->entityType());
       foreach ($entities as $entity_multilingual) {
-        // The API calls could return nodes of types which are not enabled for
-        // scheduled unpublishing. Do not process these.
+        // The API calls could return entities of types which are not enabled
+        // for scheduled unpublishing. Do not process these.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
           throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), node_get_type_label($entity_multilingual)));
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
         foreach ($languages as $language) {
-          // The object returned by getTranslation() behaves the same as a $node.
+          // The object returned by getTranslation() is a normal $entity.
           $entity = $entity_multilingual->getTranslation($language->getId());
 
-          // If the current translation does not have an unpublish on value, or it
-          // is later than the date we are processing then move on to the next.
+          // If the current translation does not have an unpublish-on value, or
+          // it is later than the date we are processing then move to the next.
           $unpublish_on = $entity->unpublish_on->value;
           if (empty($unpublish_on) || $unpublish_on > $this->time->getRequestTime()) {
             continue;
           }
 
-          // Do not process the node if it still has a publish_on time which is in
-          // the past, as this implies that scheduled publishing has been blocked
-          // by one of the hook functions we provide, and is still being blocked
-          // now that the unpublishing time has been reached.
+          // Do not process the entity if it still has a publish_on time which
+          // is in the past, as this implies that scheduled publishing has been
+          // blocked by one of the hook functions we provide, and is still being
+          // blocked now that the unpublishing time has been reached.
           $publish_on = $entity->publish_on->value;
           if (!empty($publish_on) && $publish_on <= $this->time->getRequestTime()) {
             continue;
           }
 
-          // Check that other modules allow the action on this node.
+          // Check that other modules allow the action on this entity.
           if (!$this->isAllowed($entity, $action)) {
             continue;
           }
 
-          // $node->setChangedTime($unpublish_on) will fail badly if an API call
-          // has removed the date. Trap this as an exception here and give a
-          // meaningful message.
+          // $entity->setChangedTime($unpublish_on) will fail badly if an API
+          // call has removed the date. Trap this as an exception here and give
+          // a meaningful message.
           // @todo This will now never be thrown due to the empty(unpublish_on)
           // check above to cater for translations. Remove this exception?
           if (empty($unpublish_on)) {
@@ -472,8 +473,8 @@ class SchedulerManager {
             throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $entity->id(), $entity->getTitle(), $field));
           }
 
-          // Trigger the PRE_UNPUBLISH event so that modules can react before the
-          // node is unpublished.
+          // Trigger the PRE_UNPUBLISH Scheduler event so that modules can react
+          // before the entity is unpublished.
           $event = new SchedulerEvent($entity);
           $this->dispatch($event, SchedulerEvents::PRE_UNPUBLISH);
           $entity = $event->getEntity();
@@ -492,8 +493,8 @@ class SchedulerManager {
             $entity->setRevisionLogMessage($revision_log_message)
               ->setRevisionCreationTime($this->time->getRequestTime());
           }
-          // Unset unpublish_on so the node will not get rescheduled by subsequent
-          // calls to $node->save().
+          // Unset unpublish_on so the entity will not get rescheduled by
+          // subsequent calls to $entity->save().
           $entity->unpublish_on->value = NULL;
 
           // Invoke all implementations of hook_scheduler_unpublish_action() to
@@ -521,34 +522,35 @@ class SchedulerManager {
           ];
 
           if ($failed) {
-            // At least one hook function returned a failure or exception, so stop
-            // processing this node and move on to the next one.
+            // At least one hook function returned a failure or exception, so
+            // stop processing this entity and move on to the next one.
             $this->logger->warning('Unpublishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
             continue;
           }
           elseif ($processed) {
-            // The node has 'unpublishing' processed by a module implementing the
-            // hook, so no need to do anything more, apart from log this result.
+            // The entity was 'unpublished' by a module implementing the hook,
+            // so we only need to log this result.
             $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
           }
           else {
-            // None of the above hook calls processed the node and there were no
-            // errors detected so set the node to unpublished.
+            // None of the above hook calls processed the entity and there were
+            // no errors detected so set the entity to unpublished.
             $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
             $entity->setUnpublished();
           }
 
-          // Invoke event to tell Rules that Scheduler has unpublished this node.
+          // Invoke event to tell Rules that Scheduler has unpublished the
+          // entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
             _scheduler_rules_integration_dispatch_cron_event($entity, 'unpublish');
           }
 
-          // Trigger the UNPUBLISH event so that modules can react after the node
-          // is unpublished.
+          // Trigger the UNPUBLISH Scheduler event so that modules can react
+          // after the entity is unpublished.
           $event = new SchedulerEvent($entity);
           $this->dispatch($event, SchedulerEvents::UNPUBLISH);
 
-          // Use the standard actions system to unpublish and save the node.
+          // Use the standard actions system to unpublish and save the entity.
           $entity = $event->getEntity();
           $action_id = $plugin->entityType() . '_unpublish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
@@ -573,7 +575,7 @@ class SchedulerManager {
    * hook_scheduler_allow_unpublishing().
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The node on which the action is to be performed.
+   *   The entity on which the action is to be performed.
    * @param string $action
    *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
    *
@@ -661,7 +663,7 @@ class SchedulerManager {
    *   The type of entity.
    *
    * @return array
-   *   Array of loaded nodes.
+   *   Array of loaded entities.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -726,8 +728,10 @@ class SchedulerManager {
     return $plugins;
   }
 
+  /**
+   * Reset the scheduler plugins cache.
+   */
   public function invalidatePluginCache() {
-    /** @var Cache $cache */
     $cache = \Drupal::cache()->get('scheduler.plugins');
     if (!empty($cache) && !empty($cache->data)) {
       \Drupal::cache()->set('scheduler.plugins', NULL);
@@ -792,7 +796,7 @@ class SchedulerManager {
    *   The entity type.
    *
    * @return mixed
-   *   The plugin object associated with a specific node.
+   *   The plugin object associated with a specific entity.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */

@@ -5,7 +5,7 @@ namespace Drupal\scheduler\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Class SchedulerPlugin.
+ * Annotation class for scheduler entity plugins.
  *
  * @package Drupal\scheduler\Annotation
  *

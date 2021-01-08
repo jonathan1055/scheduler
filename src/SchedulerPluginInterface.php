@@ -3,7 +3,7 @@
 namespace Drupal\scheduler;
 
 /**
- * SchedulerPluginInterface definition.
+ * Interface for Scheduler entity plugin definition.
  */
 interface SchedulerPluginInterface {
 

@@ -33,6 +33,9 @@ function scheduler_drush_command() {
   return $items;
 }
 
+/**
+ * Call updateEntities to add missing db fields.
+ */
 function drush_scheduler_update_entities() {
   \Drupal::service('scheduler.manager')->updateEntities();
 }
