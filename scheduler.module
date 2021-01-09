@@ -678,7 +678,7 @@ function scheduler_preprocess(&$variables, $hook) {
   if (in_array($hook, $plugins)) {
     $date_formatter = \Drupal::service('date.formatter');
 
-    // @todo - will this work for non-node entities?
+    // @todo Will this work for non-node entities?
     $entity = $variables[$hook];
 
     if (!empty($entity->publish_on->value) && $entity->publish_on->value && is_numeric($entity->publish_on->value)) {

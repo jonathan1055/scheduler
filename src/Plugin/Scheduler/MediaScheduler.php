@@ -2,9 +2,7 @@
 
 namespace Drupal\scheduler\Plugin\Scheduler;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\media\Entity\MediaType;
 use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -37,16 +35,17 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   }
 
   /**
-   * Get the available bundles for the entity type.
+   * Get the available types/bundles for the entity type.
    *
    * @return array
-   *   The list of bundles.
+   *   The media bundle objects.
    */
   public function getTypes() {
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
-    return MediaType::loadMultiple();
+    $mediaTypes = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
+    return $mediaTypes;
   }
 
   /**
@@ -65,12 +64,11 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
       'media_add_form',
       'media_edit_form',
     ];
-    $types = MediaType::loadMultiple();
-    /** @var \Drupal\media\Entity\MediaType $type */
-    foreach ($types as $type) {
-      $ids[] = 'media_' . $type->id() . '_form';
-      $ids[] = 'media_' . $type->id() . '_add_form';
-      $ids[] = 'media_' . $type->id() . '_edit_form';
+    $types = array_keys($this->getTypes());
+    foreach ($types as $typeId) {
+      $ids[] = 'media_' . $typeId . '_form';
+      $ids[] = 'media_' . $typeId . '_add_form';
+      $ids[] = 'media_' . $typeId . '_edit_form';
     }
     return $ids;
   }
@@ -91,24 +89,6 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
       'media_type_add_form',
       'media_type_edit_form',
     ];
-  }
-
-  /**
-   * Get the bundle name for $media.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $media
-   *   The media.
-   *
-   * @return \Drupal\Core\Entity\EntityTypeInterface
-   *   The Media Type.
-   */
-  public function getEntityType(EntityInterface $media) {
-    if (!\Drupal::moduleHandler()->moduleExists('media')) {
-      return NULL;
-    }
-
-    $bundle = $media->bundle();
-    return MediaType::load($bundle);
   }
 
 }

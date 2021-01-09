@@ -2,7 +2,6 @@
 
 namespace Drupal\scheduler;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\PluginBase;
 
 /**
@@ -43,7 +42,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Get module dependency.
    *
    * @return string
-   *   The name of the entity type.
+   *   The name of the required module.
    */
   public function dependency() {
     return $this->pluginDefinition['dependency'];
@@ -85,32 +84,21 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   abstract public function entityTypeFormIds();
 
   /**
-   * Get list of Entity Type objects.
+   * Get all the entity type/bundle objects.
    *
    * @return array
-   *   The list of entity type objects.
+   *   The entity type objects.
    */
   abstract public function getTypes();
 
   /**
-   * Return the entity type object for a specific entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return mixed
-   *   The entity type object.
-   */
-  abstract public function getEntityType(EntityInterface $entity);
-
-  /**
-   * Get list of enabled bundles for the specified $action.
+   * Get all types/bundles enabled for the specified $action.
    *
    * @param string $action
    *   The action - publish|unpublish.
    *
    * @return array
-   *   The list of bundles.
+   *   The type/bundle objects.
    */
   public function getEnabledTypes($action) {
     $config = \Drupal::config('scheduler.settings');

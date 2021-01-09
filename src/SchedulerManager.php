@@ -675,7 +675,7 @@ class SchedulerManager {
     foreach ($ids as $id) {
       $entity = $storage->load($id);
 
-      // @todo - verify that entity type is revisionable
+      // @todo Verify that entity type is revisionable
       if (method_exists($storage, 'revisionIds')) {
         $revision_ids = $storage->revisionIds($entity);
         $vid = end($revision_ids);

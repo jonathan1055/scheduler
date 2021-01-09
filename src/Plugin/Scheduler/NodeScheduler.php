@@ -2,9 +2,7 @@
 
 namespace Drupal\scheduler\Plugin\Scheduler;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\node\Entity\NodeType;
 use Drupal\scheduler\SchedulerPluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -37,13 +35,14 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   }
 
   /**
-   * Get the available bundles for the entity type.
+   * Get the available types/bundles for the entity type.
    *
    * @return array
-   *   The list of bundles.
+   *   The node type objects.
    */
   public function getTypes() {
-    return NodeType::loadMultiple();
+    $nodeTypes = \Drupal::entityTypeManager()->getStorage('node_type')->loadMultiple();
+    return $nodeTypes;
   }
 
   /**
@@ -57,13 +56,11 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
       'node_add_form',
       'node_edit_form',
     ];
-
-    $types = NodeType::loadMultiple();
-    /** @var \Drupal\node\Entity\NodeType $type */
-    foreach ($types as $type) {
-      $ids[] = 'node_' . $type->id() . '_form';
-      $ids[] = 'node_' . $type->id() . '_add_form';
-      $ids[] = 'node_' . $type->id() . '_edit_form';
+    $types = array_keys($this->getTypes());
+    foreach ($types as $typeId) {
+      $ids[] = 'node_' . $typeId . '_form';
+      $ids[] = 'node_' . $typeId . '_add_form';
+      $ids[] = 'node_' . $typeId . '_edit_form';
     }
     return $ids;
   }
@@ -79,19 +76,6 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
       'node_type_add_form',
       'node_type_edit_form',
     ];
-  }
-
-  /**
-   * Get the bundle name for $media.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $node
-   *   The node.
-   *
-   * @return string
-   *   The bundle.
-   */
-  public function getEntityType(EntityInterface $node) {
-    return $node->type->entity;
   }
 
 }
