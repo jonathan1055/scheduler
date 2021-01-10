@@ -341,47 +341,6 @@ class SchedulerManager {
   }
 
   /**
-   * Get the title of an entity.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return string
-   *   The title of the entity.
-   */
-  public function getEntityTitle(EntityInterface $entity) {
-    if (method_exists($entity, 'getTitle')) {
-      return $entity->getTitle();
-    }
-    if (method_exists($entity, 'getName')) {
-      return $entity->getName();
-    }
-    return '';
-  }
-
-  /**
-   * Get third-party setting from entity type (via an Entity).
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   * @param string $setting
-   *   The setting to retrieve.
-   * @param mixed $default
-   *   The default value for setting if none is found.
-   *
-   * @return mixed
-   *   The value of the setting.
-   */
-  public function getThirdPartySetting(EntityInterface $entity, $setting, $default) {
-    if (!empty($entity->type)) {
-      return $entity->type->entity->getThirdPartySetting('scheduler', $setting, $default);
-    }
-    if (!empty($entity->bundle)) {
-      return $entity->bundle->entity->getThirdPartySetting('scheduler', $setting, $default);
-    }
-  }
-
-  /**
    * Unpublish scheduled entities.
    *
    * @return bool
@@ -655,6 +614,49 @@ class SchedulerManager {
   }
 
   /**
+   * Get the title of an entity from the entity object.
+   *
+   * Use function getTitle() first. If that does not exist use getName().
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return string
+   *   The title of the entity.
+   */
+  public function getEntityTitle(EntityInterface $entity) {
+    if (method_exists($entity, 'getTitle')) {
+      return $entity->getTitle();
+    }
+    if (method_exists($entity, 'getName')) {
+      return $entity->getName();
+    }
+    return '';
+  }
+
+  /**
+   * Get third-party setting for and entity type, via the entity object.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param string $setting
+   *   The setting to retrieve.
+   * @param mixed $default
+   *   The default value for setting if none is found.
+   *
+   * @return mixed
+   *   The value of the setting.
+   */
+  public function getThirdPartySetting(EntityInterface $entity, $setting, $default) {
+    if (!empty($entity->type)) {
+      return $entity->type->entity->getThirdPartySetting('scheduler', $setting, $default);
+    }
+    if (!empty($entity->bundle)) {
+      return $entity->bundle->entity->getThirdPartySetting('scheduler', $setting, $default);
+    }
+  }
+
+  /**
    * Helper method to load latest revision of each entity.
    *
    * @param array $ids
@@ -739,10 +741,10 @@ class SchedulerManager {
   }
 
   /**
-   * Get list of entity types supported by each scheduler plugin.
+   * Get all entity types supported.
    *
    * @return array
-   *   A list of the entity tupes supported by the registered scheduler plugins.
+   *   A list of the entity types supported by the registered scheduler plugins.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
@@ -796,7 +798,7 @@ class SchedulerManager {
    *   The entity type.
    *
    * @return mixed
-   *   The plugin object associated with a specific entity.
+   *   The plugin object associated with a specific entity, or NULL if none.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
@@ -807,6 +809,7 @@ class SchedulerManager {
         return $plugin;
       }
     }
+    return NULL;
   }
 
   /**

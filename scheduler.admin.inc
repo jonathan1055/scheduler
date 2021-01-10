@@ -140,7 +140,7 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
 
   // The 'entity_edit_layout' fieldset contains options to alter the layout of
-  // node edit pages.
+  // entity edit pages.
   $form['scheduler']['entity_edit_layout'] = [
     '#type' => 'details',
     '#title' => t('Entity edit page'),
