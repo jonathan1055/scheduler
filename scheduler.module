@@ -353,10 +353,10 @@ function scheduler_form_language_content_settings_form_alter(array &$form, FormS
  */
 function _scheduler_translation_validate($form, FormStateInterface $form_state) {
   $settings = $form_state->getValues()['settings'];
-  /** @var \Drupal\scheduler\SchedulerManager $manager */
-  $manager = \Drupal::service('scheduler.manager');
+  /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
+  $scheduler_manager = \Drupal::service('scheduler.manager');
   foreach ($settings as $entity_type => $content_types) {
-    $plugin = $manager->getPlugin($entity_type);
+    $plugin = $scheduler_manager->getPlugin($entity_type);
     if (empty($plugin)) {
       continue;
     }
@@ -789,12 +789,12 @@ function _scheduler_get_scheduler_enabled_node_types($action) {
  * Implements hook_modules_installed().
  */
 function scheduler_modules_installed($modules) {
-  /** @var \Drupal\scheduler\SchedulerManager $manager */
-  $manager = \Drupal::service('scheduler.manager');
-  $manager->invalidatePluginCache();
-  $plugins = $manager->getPluginEntityTypes();
+  /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $scheduler_manager->invalidatePluginCache();
+  $plugins = $scheduler_manager->getPluginEntityTypes();
   $matches = array_intersect($modules, $plugins);
   if (!empty($matches)) {
-    $manager->updateEntities();
+    $scheduler_manager->updateEntities();
   }
 }
