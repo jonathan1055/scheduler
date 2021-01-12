@@ -74,6 +74,17 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the id of the Devel Generate form for this entity type.
+   *
+   * @return string
+   *   The form id.
+   */
+  public function develGenerateForm() {
+    // Some entity types may not have a Devel Generate form, so allow for none.
+    return $this->pluginDefinition['develGenerateForm'] ?? NULL;
+  }
+
+  /**
    * Get the form IDs for entity add/edit forms.
    */
   abstract public function entityFormIds();

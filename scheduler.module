@@ -57,16 +57,22 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_form_alter().
  */
 function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $entity_form_ids = \Drupal::service('scheduler.manager')->getEntityFormIds();
-  $entity_type_form_ids = \Drupal::service('scheduler.manager')->getEntityTypeFormIds();
+  $scheduler_manager = \Drupal::service('scheduler.manager');
 
-  if (in_array($form_id, $entity_form_ids)) {
+  if (in_array($form_id, $scheduler_manager->getEntityFormIds())) {
     _scheduler_entity_form_alter($form, $form_state, $form_id);
   }
-  elseif (in_array($form_id, $entity_type_form_ids)) {
+  elseif (in_array($form_id, $scheduler_manager->getEntityTypeFormIds())) {
     // Load the real code only when needed.
     module_load_include('inc', 'scheduler', 'scheduler.admin');
     _scheduler_entity_type_form_alter($form, $form_state, $form_id);
+  }
+  elseif ($entityTypeId = array_search($form_id, $scheduler_manager->getDevelGenerateFormIds())) {
+    // Devel Generate forms are different from the other types above. There is
+    // only one form id per entity type, but also no direct way to get the
+    // entity from the form. Hence we add the entityTypeId as a key in the array
+    // of returned possible form ids, and pass that on to the helper function.
+    _scheduler_devel_generate_form_alter($form, $form_state, $form_id, $entityTypeId);
   }
 }
 
@@ -267,17 +273,22 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
 }
 
 /**
- * Implements hook_form_FORM_ID_alter() for devel_generate_form_content.
+ * Form alter handling for Devel Generate forms.
  */
-function scheduler_form_devel_generate_form_content_alter(array &$form, FormStateInterface $form_state) {
+function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $form_state, $form_id, $entityTypeId) {
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  // Get the plugin for this entity. We know it is guaranteed to be supported.
+  $plugin = $scheduler_manager->getPlugin($entityTypeId);
+
   // Add an extra column to the node_types table to show which type are enabled
   // for scheduled publishing and unpublishing.
-  $publishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('publish'));
-  $unpublishing_enabled_types = array_keys(_scheduler_get_scheduler_enabled_node_types('unpublish'));
+  $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
+  $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
 
-  $form['node_types']['#header']['scheduler'] = t('Scheduler settings');
+  $type_table = $entityTypeId . '_types';
+  $form[$type_table]['#header']['scheduler'] = t('Scheduler settings');
 
-  foreach (array_keys($form['node_types']['#options']) as $type) {
+  foreach (array_keys($form[$type_table]['#options']) as $type) {
     $items = [];
     if (in_array($type, $publishing_enabled_types)) {
       $items[] = t('Enabled for publishing');
@@ -296,16 +307,16 @@ function scheduler_form_devel_generate_form_content_alter(array &$form, FormStat
         ],
       ];
     }
-    $form['node_types']['#options'][$type]['scheduler'] = $scheduler_settings;
+    $form[$type_table]['#options'][$type]['scheduler'] = $scheduler_settings;
   }
 
-  // Add form items to specify what proportion of generated nodes should have a
-  // publish-on and unpublish-on date assigned. See hook_node_presave() for the
-  // code which sets the node values.
+  // Add form items to specify what proportion of generated entities should have
+  // a publish-on and/or unpublish-on date assigned. See hook_entity_presave()
+  // for the code that sets these values in the generated entity.
   $form['scheduler_publishing'] = [
     '#type' => 'number',
     '#title' => t('Publishing date for Scheduler'),
-    '#description' => t('Enter the percentage of randomly selected Scheduler-enabled nodes to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at node creation date, up to a time in the future matching the same span as selected above for node creation date.'),
+    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at entity creation date, up to a time in the future matching the same span as selected above for creation date.'),
     '#default_value' => 50,
     '#required' => TRUE,
     '#min' => 0,
@@ -314,7 +325,7 @@ function scheduler_form_devel_generate_form_content_alter(array &$form, FormStat
   $form['scheduler_unpublishing'] = [
     '#type' => 'number',
     '#title' => t('Unpublishing date for Scheduler'),
-    '#description' => t('Enter the percentage of randomly selected Scheduler-enabled nodes to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of node creation date and publish-on date, up to a time in the future matching the same span as selected above for node creation date.'),
+    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of entity creation date and publish-on date, up to a time in the future matching the same span as selected above for creation date.'),
     '#default_value' => 50,
     '#required' => TRUE,
     '#min' => 0,

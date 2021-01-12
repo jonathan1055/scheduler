@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  typeFieldName = "bundle",
  *  dependency = "media",
  *  idListFunction = "scheduler_media_list",
+ *  develGenerateForm = "devel_generate_form_media",
  * )
  */
 class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {

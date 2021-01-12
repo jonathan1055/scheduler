@@ -792,6 +792,24 @@ class SchedulerManager {
   }
 
   /**
+   * Gets the supported Devel Generate form IDs.
+   *
+   * @return array
+   *   List of form IDs used by Devel Generate.
+   */
+  public function getDevelGenerateFormIds() {
+    $plugins = $this->getPlugins();
+    $form_ids = [];
+    foreach ($plugins as $plugin) {
+      // Use entityType as key so we can get back from form_id to entity.
+      $form_ids[$plugin->entityType()] = $plugin->develGenerateForm();
+    }
+    // If an entity is not supported by Devel Generate then the form id will be
+    // empty, so filter out these.
+    return array_filter($form_ids);
+  }
+
+  /**
    * Get a plugin for a specific entity type.
    *
    * @param string $entity_type

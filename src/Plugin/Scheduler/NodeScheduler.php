@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  typeFieldName = "type",
  *  dependency = "node",
  *  idListFunction = "scheduler_nid_list",
+ *  develGenerateForm = "devel_generate_form_content",
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
