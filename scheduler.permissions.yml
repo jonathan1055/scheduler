@@ -7,3 +7,5 @@
 'view scheduled content':
   title: 'View scheduled content list'
   description: 'Allows users to see all content which is scheduled.'
+permission_callbacks:
+  - Drupal\scheduler\SchedulerPermissions::permissions
