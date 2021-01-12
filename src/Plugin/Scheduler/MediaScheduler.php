@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @SchedulerPlugin(
  *  id = "media_scheduler",
  *  label = @Translation("Media Scheduler Plugin"),
+ *  description = @Translation("Provides support for scheduling media entities"),
  *  entityType = "media",
  *  typeFieldName = "bundle",
  *  dependency = "media",
