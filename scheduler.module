@@ -563,20 +563,20 @@ function scheduler_entity_presave(EntityInterface $entity) {
   $date_formatter = \Drupal::service('date.formatter');
   if ($publish_message && $unpublish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time and unpublished @unpublish_time.', [
-      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '%title' => $entity->label(),
       '@publish_time' => $date_formatter->format($entity->publish_on->value, 'long'),
       '@unpublish_time' => $date_formatter->format($entity->unpublish_on->value, 'long'),
     ]), 'status', FALSE);
   }
   elseif ($publish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time.', [
-      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '%title' => $entity->label(),
       '@publish_time' => $date_formatter->format($entity->publish_on->value, 'long'),
     ]), 'status', FALSE);
   }
   elseif ($unpublish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be unpublished @unpublish_time.', [
-      '%title' => $scheduler_manager->getEntityTitle($entity),
+      '%title' => $entity->label(),
       '@unpublish_time' => $date_formatter->format($entity->unpublish_on->value, 'long'),
     ]), 'status', FALSE);
   }

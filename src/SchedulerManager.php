@@ -232,7 +232,7 @@ class SchedulerManager {
           if (empty($entity->publish_on->value)) {
             $field_definitions = $this->entityTypeManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
             $field = (string) $field_definitions['publish_on']->getLabel();
-            throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $entity->id(), $this->getEntityTitle($entity), $field));
+            throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $entity->id(), $entity->label(), $field));
           }
 
           // Trigger the PRE_PUBLISH Scheduler event so that modules can react
@@ -289,7 +289,7 @@ class SchedulerManager {
           $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
-            '%title' => $this->getEntityTitle($entity),
+            '%title' => $entity->label(),
             'link' => $entity_type_link->toString() . ' ' . $view_link->toString(),
             '@hook' => 'hook_' . $hook,
           ];
@@ -475,7 +475,7 @@ class SchedulerManager {
           $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
-            '%title' => $this->getEntityTitle($entity),
+            '%title' => $entity->label(),
             'link' => $entity_type_link->toString() . ' ' . $view_link->toString(),
             '@hook' => 'hook_' . $hook,
           ];
@@ -611,27 +611,6 @@ class SchedulerManager {
    */
   protected function setting($key) {
     return $this->configFactory->get('scheduler.settings')->get($key);
-  }
-
-  /**
-   * Get the title of an entity from the entity object.
-   *
-   * Use function getTitle() first. If that does not exist use getName().
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity.
-   *
-   * @return string
-   *   The title of the entity.
-   */
-  public function getEntityTitle(EntityInterface $entity) {
-    if (method_exists($entity, 'getTitle')) {
-      return $entity->getTitle();
-    }
-    if (method_exists($entity, 'getName')) {
-      return $entity->getName();
-    }
-    return '';
   }
 
   /**
