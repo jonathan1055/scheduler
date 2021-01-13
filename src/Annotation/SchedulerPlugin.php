@@ -14,6 +14,13 @@ use Drupal\Component\Annotation\Plugin;
 class SchedulerPlugin extends Plugin {
 
   /**
+   * The name of the plugin.
+   *
+   * @var string
+   */
+  public $label;
+
+  /**
    * Description of plugin.
    *
    * @var \Drupal\Core\Annotation\Translation
