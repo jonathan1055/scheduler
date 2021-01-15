@@ -204,7 +204,9 @@ class SchedulerManager {
         // for scheduled publishing, so do not process these. This check can be
         // done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'publish_enable', $this->setting('default_publish_enable'))) {
-          throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be published because node type '%s' is not enabled for scheduled publishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), node_get_type_label($entity_multilingual)));
+          $plugin = $this->getPlugin($entity_multilingual->getEntityTypeId());
+          $bundle_field = $plugin->typeFieldName();
+          throw new SchedulerNodeTypeNotEnabledException(sprintf("Entity %d '%s' will not be published because entity type '%s' is not enabled for scheduled publishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), $entity_multilingual->$bundle_field->entity->label()));
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -392,7 +394,9 @@ class SchedulerManager {
         // The API calls could return entities of types which are not enabled
         // for scheduled unpublishing. Do not process these.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-          throw new SchedulerNodeTypeNotEnabledException(sprintf("Node %d '%s' will not be unpublished because node type '%s' is not enabled for scheduled unpublishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), node_get_type_label($entity_multilingual)));
+          $plugin = $this->getPlugin($entity_multilingual->getEntityTypeId());
+          $bundle_field = $plugin->typeFieldName();
+          throw new SchedulerNodeTypeNotEnabledException(sprintf("Entity %d '%s' will not be unpublished because entity type '%s' is not enabled for scheduled unpublishing", $entity_multilingual->id(), $entity_multilingual->getTitle(), $entity_multilingual->$bundle_field->entity->label()));
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
