@@ -74,6 +74,11 @@ interface SchedulerPluginInterface {
   public function entityFormIds();
 
   /**
+   * Get the list of entity type form IDs.
+   */
+  public function entityTypeFormIds();
+
+  /**
    * Get all the entity type/bundle objects.
    *
    * @return array
