@@ -14,8 +14,6 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
-use Drupal\scheduler\Exception\SchedulerMissingDateException;
-use Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -146,13 +144,53 @@ class SchedulerManager {
   }
 
   /**
+   * Handles throwing exceptions from publish/unpublish proceesing.
+   *
+   * @param Drupal\Core\Entity\EntityInterface $entity
+   *   The entity causing the exepction.
+   * @param string $exception_name
+   *   Which exception to throw.
+   * @param string $action
+   *   The action being performed (in past tense).
+   *
+   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
+   * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
+   */
+  private function throwSchedulerException(EntityInterface $entity, $exception_name, $action) {
+    $plugin = $this->getPlugin($entity->getEntityTypeId());
+
+    switch ($exception_name) {
+      case 'SchedulerEntityTypeNotEnabledException':
+        $message = "%s %d '%s' will not be %s because entity type '%s' is not enabled for scheduled publishing";
+        $bundle_field = $plugin->typeFieldName();
+        $extra = $entity->$bundle_field->entity->label();
+        break;
+
+      case 'SchedulerMissingDateException':
+        // @todo This may be removed since this exception can never be reached in publish()/unpublish()
+        $field_definitions = $this->entityTypeManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
+        $extra = (string) $field_definitions['publish_on']->getLabel();
+        $message = "%s %d '%s' will not be %s because field '%s' has no value";
+        break;
+    }
+
+    $class = "\\Drupal\\scheduler\\Exception\\$exception_name";
+    throw new $class(sprintf($message,
+      $entity->getEntityTypeId(),
+      $entity->id(),
+      $entity->label(),
+      $action,
+      $extra));
+  }
+
+  /**
    * Publish scheduled entities.
    *
    * @return bool
    *   TRUE if any entity has been published, FALSE otherwise.
    *
    * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
-   * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
+   * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   public function publish() {
     $result = FALSE;
@@ -204,13 +242,7 @@ class SchedulerManager {
         // for scheduled publishing, so do not process these. This check can be
         // done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'publish_enable', $this->setting('default_publish_enable'))) {
-          $plugin = $this->getPlugin($entity_multilingual->getEntityTypeId());
-          $bundle_field = $plugin->typeFieldName();
-          throw new SchedulerNodeTypeNotEnabledException(sprintf("%s %d '%s' will not be published because entity type '%s' is not enabled for scheduled publishing",
-            $entity_multilingual->getEntityTypeId(),
-            $entity_multilingual->id(),
-            $entity_multilingual->label(),
-            $entity_multilingual->$bundle_field->entity->label()));
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', 'published');
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -236,9 +268,7 @@ class SchedulerManager {
           // @todo This will now never be thrown due to the empty(publish_on)
           // check above to cater for translations. Remove this exception?
           if (empty($entity->publish_on->value)) {
-            $field_definitions = $this->entityTypeManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
-            $field = (string) $field_definitions['publish_on']->getLabel();
-            throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be published because field '%s' has no value", $entity->id(), $entity->label(), $field));
+            $this->throwSchedulerException($entity, 'SchedulerMissingDateException', 'published');
           }
 
           // Trigger the PRE_PUBLISH Scheduler event so that modules can react
@@ -353,7 +383,7 @@ class SchedulerManager {
    *   TRUE if any entity has been unpublished, FALSE otherwise.
    *
    * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
-   * @throws \Drupal\scheduler\Exception\SchedulerNodeTypeNotEnabledException
+   * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   public function unpublish() {
     $result = FALSE;
@@ -398,13 +428,7 @@ class SchedulerManager {
         // The API calls could return entities of types which are not enabled
         // for scheduled unpublishing. Do not process these.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-          $plugin = $this->getPlugin($entity_multilingual->getEntityTypeId());
-          $bundle_field = $plugin->typeFieldName();
-          throw new SchedulerNodeTypeNotEnabledException(sprintf("%s %d '%s' will not be unpublished because entity type '%s' is not enabled for scheduled unpublishing",
-            $entity_multilingual->getEntityTypeId(),
-            $entity_multilingual->id(),
-            $entity_multilingual->label(),
-            $entity_multilingual->$bundle_field->entity->label()));
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', 'unpublished');
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -439,9 +463,7 @@ class SchedulerManager {
           // @todo This will now never be thrown due to the empty(unpublish_on)
           // check above to cater for translations. Remove this exception?
           if (empty($unpublish_on)) {
-            $field_definitions = $this->entityTypeManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
-            $field = (string) $field_definitions['unpublish_on']->getLabel();
-            throw new SchedulerMissingDateException(sprintf("Node %d '%s' will not be unpublished because field '%s' has no value", $entity->id(), $entity->getTitle(), $field));
+            $this->throwSchedulerException($entity, 'SchedulerMissingDateException', 'unpublished');
           }
 
           // Trigger the PRE_UNPUBLISH Scheduler event so that modules can react

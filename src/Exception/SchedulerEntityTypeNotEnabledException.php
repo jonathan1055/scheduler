@@ -11,4 +11,4 @@ namespace Drupal\scheduler\Exception;
  * @see \Drupal\scheduler\SchedulerManager::publish()
  * @see \Drupal\scheduler\SchedulerManager::unpublish()
  */
-class SchedulerNodeTypeNotEnabledException extends \Exception {}
+class SchedulerEntityTypeNotEnabledException extends \Exception {}

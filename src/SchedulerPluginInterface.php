@@ -91,4 +91,5 @@ interface SchedulerPluginInterface {
    *   The type/bundle objects.
    */
   public function getEnabledTypes($action);
+
 }
