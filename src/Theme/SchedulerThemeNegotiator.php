@@ -14,8 +14,11 @@ class SchedulerThemeNegotiator implements ThemeNegotiatorInterface {
    * {@inheritdoc}
    */
   public function applies(RouteMatchInterface $route_match) {
-    // Use the Scheduler theme negotiator for the user 'scheduled' tab.
-    $applies = ($route_match->getRouteName() == 'view.scheduler_scheduled_content.user_page');
+    // Use the Scheduler theme negotiator for scheduler views on the user page.
+    $applies = (in_array($route_match->getRouteName(), [
+      'view.scheduler_scheduled_content.user_page',
+      'view.scheduler_scheduled_media.user_page',
+    ]));
     return $applies;
   }
 

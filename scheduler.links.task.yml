@@ -25,3 +25,16 @@ scheduler.scheduled_content:
   parent_id: system.admin_content
   # Overview seems to have weight 0 and moderated content is weight 1.
   weight: 5
+
+scheduler.media_overview:
+  # This is added so that we get an 'overview' sub-task link alongside the
+  # 'scheduled media' sub-task link.
+  title: 'Overview'
+  route_name: entity.media.collection
+  parent_id: entity.media.collection
+
+scheduler.scheduled_media:
+  title: 'Scheduled media'
+  route_name: scheduler.scheduled_media
+  parent_id: entity.media.collection
+  weight: 5
