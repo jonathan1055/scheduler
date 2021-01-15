@@ -74,26 +74,26 @@ interface SchedulerPluginInterface {
   public function entityFormIds();
 
   /**
-   * Get the list of entity type form IDs.
+   * Get the form IDs for entity type add/edit forms.
    */
   public function entityTypeFormIds();
 
   /**
-   * Get all the entity type/bundle objects.
+   * Get all the type/bundle objects for this entity.
    *
    * @return array
-   *   The entity type objects.
+   *   The type/bundle objects.
    */
   public function getTypes();
 
   /**
-   * Get all types/bundles enabled for the specified $action.
+   * Get the types/bundles enabled for the specified $action.
    *
    * @param string $action
    *   The action - publish|unpublish.
    *
    * @return array
-   *   The type/bundle objects.
+   *   The type/bundle objects enabled for the $action.
    */
   public function getEnabledTypes($action);
 
