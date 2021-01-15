@@ -168,7 +168,7 @@ class SchedulerManager {
 
       case 'SchedulerMissingDateException':
         // @todo This may be removed since this exception can never be reached in publish()/unpublish()
-        $field_definitions = $this->entityTypeManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
+        $field_definitions = $this->entityFieldManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
         $extra = (string) $field_definitions['publish_on']->getLabel();
         $message = "%s %d '%s' will not be %s because field '%s' has no value";
         break;
