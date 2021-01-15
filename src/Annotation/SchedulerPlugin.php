@@ -14,9 +14,18 @@ use Drupal\Component\Annotation\Plugin;
 class SchedulerPlugin extends Plugin {
 
   /**
-   * The name of the plugin.
+   * The internal id / machine name of the plugin.
    *
    * @var string
+   */
+  public $id;
+
+  /**
+   * The readable name of the plugin.
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
    */
   public $label;
 
@@ -28,13 +37,6 @@ class SchedulerPlugin extends Plugin {
    * @ingroup plugin_translatable
    */
   public $description;
-
-  /**
-   * Plugin settings.
-   *
-   * @var array
-   */
-  public $settings = [];
 
   /**
    * The entity type.
@@ -58,7 +60,7 @@ class SchedulerPlugin extends Plugin {
   public $dependency;
 
   /**
-   * The name of the function used to get id list.
+   * The name of the hook function used to get/alter the id list.
    *
    * @var string
    */
