@@ -153,7 +153,6 @@ class SchedulerManager {
    * @param string $action
    *   The action being performed (in past tense).
    *
-   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
    * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   private function throwSchedulerException(EntityInterface $entity, $exception_name, $action) {
@@ -182,7 +181,6 @@ class SchedulerManager {
    * @return bool
    *   TRUE if any entity has been published, FALSE otherwise.
    *
-   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
    * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   public function publish() {
@@ -366,7 +364,6 @@ class SchedulerManager {
    * @return bool
    *   TRUE if any entity has been unpublished, FALSE otherwise.
    *
-   * @throws \Drupal\scheduler\Exception\SchedulerMissingDateException
    * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   public function unpublish() {
