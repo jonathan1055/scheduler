@@ -165,13 +165,6 @@ class SchedulerManager {
         $bundle_field = $plugin->typeFieldName();
         $extra = $entity->$bundle_field->entity->label();
         break;
-
-      case 'SchedulerMissingDateException':
-        // @todo This may be removed since this exception can never be reached in publish()/unpublish()
-        $field_definitions = $this->entityFieldManager->getFieldDefinitions($plugin->entityType(), $entity->getType());
-        $extra = (string) $field_definitions['publish_on']->getLabel();
-        $message = "%s %d '%s' will not be %s because field '%s' has no value";
-        break;
     }
 
     $class = "\\Drupal\\scheduler\\Exception\\$exception_name";
@@ -260,15 +253,6 @@ class SchedulerManager {
           // Check that other modules allow the action on this entity.
           if (!$this->isAllowed($entity, $action)) {
             continue;
-          }
-
-          // $entity->setChangedTime($publish_on) will fail badly if an API call
-          // has removed the date. Trap this as an exception here and give a
-          // meaningful message.
-          // @todo This will now never be thrown due to the empty(publish_on)
-          // check above to cater for translations. Remove this exception?
-          if (empty($entity->publish_on->value)) {
-            $this->throwSchedulerException($entity, 'SchedulerMissingDateException', 'published');
           }
 
           // Trigger the PRE_PUBLISH Scheduler event so that modules can react
@@ -455,15 +439,6 @@ class SchedulerManager {
           // Check that other modules allow the action on this entity.
           if (!$this->isAllowed($entity, $action)) {
             continue;
-          }
-
-          // $entity->setChangedTime($unpublish_on) will fail badly if an API
-          // call has removed the date. Trap this as an exception here and give
-          // a meaningful message.
-          // @todo This will now never be thrown due to the empty(unpublish_on)
-          // check above to cater for translations. Remove this exception?
-          if (empty($unpublish_on)) {
-            $this->throwSchedulerException($entity, 'SchedulerMissingDateException', 'unpublished');
           }
 
           // Trigger the PRE_UNPUBLISH Scheduler event so that modules can react
