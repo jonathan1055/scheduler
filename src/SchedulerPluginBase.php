@@ -5,18 +5,9 @@ namespace Drupal\scheduler;
 use Drupal\Core\Plugin\PluginBase;
 
 /**
- * Abstract class for scheduler plugins.
+ * Base class for scheduler plugins.
  */
 abstract class SchedulerPluginBase extends PluginBase implements SchedulerPluginInterface {
-
-  /**
-   * Description of plugin.
-   *
-   * @inheritDoc
-   */
-  public function description() {
-    return $this->pluginDefinition['description'];
-  }
 
   /**
    * Get plugin label.
@@ -26,6 +17,15 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    */
   public function label() {
     return $this->pluginDefinition['label'];
+  }
+
+  /**
+   * Get the plugin description.
+   *
+   * @inheritDoc
+   */
+  public function description() {
+    return $this->pluginDefinition['description'];
   }
 
   /**
@@ -85,6 +85,14 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get all the type/bundle objects for this entity.
+   *
+   * @return array
+   *   The type/bundle objects.
+   */
+  abstract public function getTypes();
+
+  /**
    * Get the form IDs for entity add/edit forms.
    */
   abstract public function entityFormIds();
@@ -93,14 +101,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Get the form IDs for entity type add/edit forms.
    */
   abstract public function entityTypeFormIds();
-
-  /**
-   * Get all the type/bundle objects for this entity.
-   *
-   * @return array
-   *   The type/bundle objects.
-   */
-  abstract public function getTypes();
 
   /**
    * Get the types/bundles enabled for the specified $action.

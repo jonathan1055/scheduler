@@ -8,20 +8,20 @@ namespace Drupal\scheduler;
 interface SchedulerPluginInterface {
 
   /**
-   * Provide a description.
-   *
-   * @return mixed
-   *   The description.
-   */
-  public function description();
-
-  /**
-   * Provide a label.
+   * Get the label.
    *
    * @return mixed
    *   The label.
    */
   public function label();
+
+  /**
+   * Get the description.
+   *
+   * @return mixed
+   *   The description.
+   */
+  public function description();
 
   /**
    * Get the type of entity supported by this plugin.
@@ -69,6 +69,14 @@ interface SchedulerPluginInterface {
   public function develGenerateForm();
 
   /**
+   * Get all the type/bundle objects for this entity.
+   *
+   * @return array
+   *   The type/bundle objects.
+   */
+  public function getTypes();
+
+  /**
    * Get the form IDs for entity add/edit forms.
    */
   public function entityFormIds();
@@ -77,14 +85,6 @@ interface SchedulerPluginInterface {
    * Get the form IDs for entity type add/edit forms.
    */
   public function entityTypeFormIds();
-
-  /**
-   * Get all the type/bundle objects for this entity.
-   *
-   * @return array
-   *   The type/bundle objects.
-   */
-  public function getTypes();
 
   /**
    * Get the types/bundles enabled for the specified $action.
