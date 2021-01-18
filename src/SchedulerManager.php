@@ -144,35 +144,49 @@ class SchedulerManager {
   }
 
   /**
-   * Handles throwing exceptions from publish/unpublish proceesing.
+   * Handles throwing exceptions.
    *
    * @param Drupal\Core\Entity\EntityInterface $entity
    *   The entity causing the exepction.
    * @param string $exception_name
    *   Which exception to throw.
    * @param string $action
-   *   The action being performed (in past tense).
+   *   The action being performed (publish|unpublish).
    *
    * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
   private function throwSchedulerException(EntityInterface $entity, $exception_name, $action) {
     $plugin = $this->getPlugin($entity->getEntityTypeId());
 
+    // Exception messages are developer-facing and do not need to be translated
+    // from English. So it is accpetable to create words such as "{$action}ed"
+    // and "{$action}ing".
     switch ($exception_name) {
       case 'SchedulerEntityTypeNotEnabledException':
-        $message = "%s %d '%s' will not be %s because entity type '%s' is not enabled for scheduled publishing";
-        $bundle_field = $plugin->typeFieldName();
-        $extra = $entity->$bundle_field->entity->label();
+        $message = "'%s' (id %d) was not %s because %s %s '%s' is not enabled for scheduled %s. Check %s. Processing halted";
+        $p1 = $entity->label();
+        $p2 = $entity->id();
+        $p3 = "{$action}ed";
+        $p4 = $entity->getEntityTypeId();
+        $p5 = $plugin->typeFieldName();
+        $p6 = $entity->{$plugin->typeFieldName()}->entity->label();
+        $p7 = "{$action}ing";
+        // Get a list of the hook function implementations, as one of these will
+        // have caused this exception.
+        $hooks = [$plugin->idListFunction(), $plugin->idListFunction() . '_alter'];
+        $implementations = [];
+        foreach ($hooks as $hook) {
+          foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+            $implementations[] = $module . '_' . $hook;
+          }
+        }
+        $p8 = implode(', ', $implementations);
+
         break;
     }
 
     $class = "\\Drupal\\scheduler\\Exception\\$exception_name";
-    throw new $class(sprintf($message,
-      $entity->getEntityTypeId(),
-      $entity->id(),
-      $entity->label(),
-      $action,
-      $extra));
+    throw new $class(sprintf($message, $p1, $p2, $p3, $p4, $p5, $p6, $p7, $p8));
   }
 
   /**
@@ -212,7 +226,8 @@ class SchedulerManager {
       // Allow other modules to add to the list of entities to be published.
       foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
         $function = $module . '_' . $plugin->idListFunction();
-        $ids = array_merge($ids, $function($action));
+        // Cast each hook result as array, to protect from bad implementations.
+        $ids = array_merge($ids, (array) $function($action));
       }
 
       // Allow other modules to alter the list of entities to be published.
@@ -233,7 +248,7 @@ class SchedulerManager {
         // for scheduled publishing, so do not process these. This check can be
         // done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'publish_enable', $this->setting('default_publish_enable'))) {
-          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', 'published');
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $action);
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -394,7 +409,8 @@ class SchedulerManager {
       // Allow other modules to add to the list of entities to be unpublished.
       foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
         $function = $module . '_' . $plugin->idListFunction();
-        $ids = array_merge($ids, $function($action));
+        // Cast each hook result as array, to protect from bad implementations.
+        $ids = array_merge($ids, (array) $function($action));
       }
 
       // Allow other modules to alter the list of entities to be unpublished.
@@ -409,7 +425,7 @@ class SchedulerManager {
         // The API calls could return entities of types which are not enabled
         // for scheduled unpublishing. Do not process these.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', 'unpublished');
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $action);
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
