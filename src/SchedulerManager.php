@@ -706,7 +706,7 @@ class SchedulerManager {
    * Get instances of all scheduler plugins.
    *
    * @return array
-   *   A list of the registered scheduler plugins.
+   *   The registered plugin objects.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    */

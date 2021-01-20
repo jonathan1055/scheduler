@@ -73,6 +73,10 @@ class SchedulerAdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['description'] = [
+      '#markup' => '<p>' . $this->t('Most of the Scheduler options are set independently for each entity type and bundle. These can be accessed from the <a href="@link">admin structure</a> page or directly by using the drop-button', ['@link' => Url::fromRoute('system.admin_structure')->toString()]) . '</p>',
+    ];
+
     // Build a drop-button with links to configure all supported entity types.
     $plugins = $this->schedulerManager->getPlugins();
     $links = [];
@@ -102,6 +106,10 @@ class SchedulerAdminForm extends ConfigFormBase {
     $form['entity_type_links'] = [
       '#type' => 'dropbutton',
       '#links' => $links,
+    ];
+
+    $form['description2'] = [
+      '#markup' => '<p>' . $this->t('The settings below are common to all entity types.') . '</p>',
     ];
 
     // Options for setting date-only with default time.
