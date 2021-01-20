@@ -5,6 +5,7 @@ namespace Drupal\scheduler\Form;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -20,11 +21,27 @@ class SchedulerAdminForm extends ConfigFormBase {
   protected $dateFormatter;
 
   /**
+   * The scheduler manager service.
+   *
+   * @var \Drupal\scheduler\SchedulerManager
+   */
+  protected $schedulerManager;
+
+  /**
+   * Entity Type Manager service object.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->setDateFormatter($container->get('date.formatter'));
+    $instance->schedulerManager = $container->get('scheduler.manager');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
   }
 
@@ -56,6 +73,37 @@ class SchedulerAdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    // Build a drop-button with links to configure all supported entity types.
+    $plugins = $this->schedulerManager->getPlugins();
+    $links = [];
+    $links[] = [
+      'title' => 'Admin Structure Entity Types',
+      'url' => Url::fromRoute('system.admin_structure'),
+    ];
+    foreach ($plugins as $plugin) {
+      $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
+      $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
+      $types = $plugin->getTypes();
+      $bundle_id = reset($types)->bundle();
+      $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection')->__toString();
+      $links[] = ['title' => "-- $collection_label --"];
+      foreach ($types as $id => $type) {
+        $text = [];
+        in_array($id, $publishing_enabled_types) ? $text[] = 'publishing' : NULL;
+        in_array($id, $unpublishing_enabled_types) ? $text[] = 'unpublishing' : NULL;
+        $links[] = [
+          'title' => $type->label() . (!empty($text) ? ' (' . implode(', ', $text) . ')' : ''),
+          // Example: the route 'entity.media_type.edit_form' with parameter
+          // media_type={typeid} has url /admin/structure/media/manage/{typeid}.
+          'url' => Url::fromRoute("entity.$bundle_id.edit_form", [$bundle_id => $type->id()]),
+        ];
+      }
+    }
+    $form['entity_type_links'] = [
+      '#type' => 'dropbutton',
+      '#links' => $links,
+    ];
+
     // Options for setting date-only with default time.
     $form['date_only_fieldset'] = [
       '#type' => 'fieldset',
