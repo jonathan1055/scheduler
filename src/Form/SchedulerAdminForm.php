@@ -81,7 +81,7 @@ class SchedulerAdminForm extends ConfigFormBase {
     $plugins = $this->schedulerManager->getPlugins();
     $links = [];
     $links[] = [
-      'title' => 'Admin Structure Entity Types',
+      'title' => $this->t('Entity Types'),
       'url' => Url::fromRoute('system.admin_structure'),
     ];
     foreach ($plugins as $plugin) {
