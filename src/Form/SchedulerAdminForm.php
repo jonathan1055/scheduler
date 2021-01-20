@@ -143,6 +143,9 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#description' => $this->t('When entering a time, only show hours and minutes in the input field.'),
     ];
 
+    // Attach library for admin css file.
+    $form['#attached']['library'][] = 'scheduler/admin';
+
     return parent::buildForm($form, $form_state);
   }
 
