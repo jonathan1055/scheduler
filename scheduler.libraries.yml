@@ -9,3 +9,8 @@ default-time:
     js/scheduler_default_time.js: {}
   dependencies:
     - core/jquery
+
+admin:
+  css:
+    component:
+      css/style.css: { }
