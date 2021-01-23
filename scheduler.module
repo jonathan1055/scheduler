@@ -421,10 +421,40 @@ function scheduler_views_data_alter(array &$data) {
   // By default the 'is null' and 'is not null' operators are only added to the
   // list of filter options if the view contains a relationship. We want them to
   // be always available for the scheduler date fields.
-  $data['node_field_data']['publish_on']['filter']['allow empty'] = TRUE;
-  $data['node_field_data']['unpublish_on']['filter']['allow empty'] = TRUE;
-  $data['node_field_revision']['publish_on']['filter']['allow empty'] = TRUE;
-  $data['node_field_revision']['unpublish_on']['filter']['allow empty'] = TRUE;
+  $entity_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
+  foreach ($entity_types as $entityTypeId) {
+    // Not every entity that has a plugin will have a 'field_revision' table,
+    // but it does not matter that redundant rows are added to $data.
+    $data["{$entityTypeId}_field_data"]['publish_on']['filter']['allow empty'] = TRUE;
+    $data["{$entityTypeId}_field_data"]['unpublish_on']['filter']['allow empty'] = TRUE;
+    $data["{$entityTypeId}_field_revision"]['publish_on']['filter']['allow empty'] = TRUE;
+    $data["{$entityTypeId}_field_revision"]['unpublish_on']['filter']['allow empty'] = TRUE;
+  }
+
+  // Add a relationship from Media Field Revision back to Media Field Data.
+  // @todo This can be removed when the relationship is added to core.
+  // @see https://www.drupal.org/project/drupal/issues/3036192
+  // Replace the existing 'argument' item.
+  $data['media_field_revision']['mid']['argument'] = [
+    'id' => 'media_mid',
+    'numeric' => TRUE,
+  ];
+  // Add a 'relationship' item.
+  $data['media_field_revision']['mid']['relationship'] = [
+    'id' => 'standard',
+    'base' => 'media_field_data',
+    'field' => 'mid',
+    'base field' => 'mid',
+    'title' => t('Media Field Data'),
+    'help' => t('Relationship to access the Media fields that are not on Media Revision.'),
+    'label' => t('Media Field'),
+    'extra' => [
+      [
+        'field' => 'langcode',
+        'left_field' => 'langcode',
+      ],
+    ],
+  ];
 }
 
 /**
