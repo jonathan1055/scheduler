@@ -85,11 +85,34 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $node->id() . '/edit');
     $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
 
+    // Repeat the check with a timestamp value of zero. This is a valid date
+    // so the fieldset should be opened. It will not be used much on real sites
+    // but can occur when testing Rules which fail to set the date correctly and
+    // we get zero. Debugging Rules is easier if the fieldset opens as expected.
+    $options = [
+      'title' => 'Contains Publish-on date with timestamp value zero - ' . $this->randomMachineName(10),
+      'type' => $this->type,
+      'publish_on' => 0,
+    ];
+    $node = $this->drupalCreateNode($options);
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+
     // Check that the fieldset is expanded if the node has an unpublish-on date.
     $options = [
       'title' => 'Contains Unpublish-on date ' . $this->randomMachineName(10),
       'type' => $this->type,
       'unpublish_on' => strtotime('+1 day'),
+    ];
+    $node = $this->drupalCreateNode($options);
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+
+    // Repeat with a timestamp value of zero.
+    $options = [
+      'title' => 'Contains Unpublish-on date with timestamp value zero - ' . $this->randomMachineName(10),
+      'type' => $this->type,
+      'unpublish_on' => 0,
     ];
     $node = $this->drupalCreateNode($options);
     $this->drupalGet('node/' . $node->id() . '/edit');
