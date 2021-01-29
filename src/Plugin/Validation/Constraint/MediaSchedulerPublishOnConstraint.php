@@ -2,8 +2,6 @@
 
 namespace Drupal\scheduler\Plugin\Validation\Constraint;
 
-use Drupal\scheduler\Plugin\Validation\Constraint\BaseSchedulerPublishOnConstraint;
-
 /**
  * Validates publish on values.
  *
