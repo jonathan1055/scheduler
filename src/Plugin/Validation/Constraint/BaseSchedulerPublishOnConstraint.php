@@ -5,15 +5,9 @@ namespace Drupal\scheduler\Plugin\Validation\Constraint;
 use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
 
 /**
- * Validates publish on values.
- *
- * @Constraint(
- *   id = "SchedulerPublishOn",
- *   label = @Translation("Scheduler publish on", context = "Validation"),
- *   type = "entity:node"
- * )
+ * Base class for Publish On constraint.
  */
-class SchedulerPublishOnConstraint extends CompositeConstraintBase {
+class BaseSchedulerPublishOnConstraint extends CompositeConstraintBase {
 
   /**
    * Message shown when publish_on is not the future.

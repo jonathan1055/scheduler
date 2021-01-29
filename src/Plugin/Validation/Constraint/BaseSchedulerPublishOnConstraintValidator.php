@@ -8,7 +8,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 /**
  * Validates the SchedulerPublishOn constraint.
  */
-class SchedulerPublishOnConstraintValidator extends ConstraintValidator {
+class BaseSchedulerPublishOnConstraintValidator extends ConstraintValidator {
 
   /**
    * {@inheritdoc}
