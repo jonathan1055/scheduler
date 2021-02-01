@@ -5,9 +5,15 @@ namespace Drupal\scheduler\Plugin\Validation\Constraint;
 use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
 
 /**
- * Base class for Publish On constraint.
+ * Validates publish on values.
+ *
+ * @Constraint(
+ *   id = "MediaSchedulerPublishOn",
+ *   label = @Translation("Scheduler publish on", context = "Validation"),
+ *   type = "entity"
+ * )
  */
-class BaseSchedulerPublishOnConstraint extends CompositeConstraintBase {
+class SchedulerPublishOnConstraint extends CompositeConstraintBase {
 
   /**
    * Message shown when publish_on is not the future.

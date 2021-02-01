@@ -5,9 +5,15 @@ namespace Drupal\scheduler\Plugin\Validation\Constraint;
 use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
 
 /**
- * Base class for Unpublish on constraint.
+ * Validates unpublish on values.
+ *
+ * @Constraint(
+ *   id = "MediaSchedulerUnpublishOn",
+ *   label = @Translation("Scheduler unpublish on", context = "Validation"),
+ *   type = "entity"
+ * )
  */
-class BaseSchedulerUnpublishOnConstraint extends CompositeConstraintBase {
+class SchedulerUnpublishOnConstraint extends CompositeConstraintBase {
 
   /**
    * Message shown when unpublish_on is missing but publish_on has been entered.
