@@ -64,44 +64,48 @@ trait SchedulerMediaSetupTrait {
     /** @var MediaStorageInterface $mediaStorage */
     $this->mediaStorage = $this->container->get('entity_type.manager')->getStorage('media');
 
-    // Create an administrator user having the main admin permissions, full
-    // rights on all the test types and all of the Scheduler permissions.
-    // This will replace the adminUser created in SchedulerSetupTrait.
-    $this->adminUser = $this->drupalCreateUser([
-      'access content',
-      'access content overview',
-      'access site reports',
-      'administer nodes',
-      'administer site configuration',
-      'create ' . $this->type . ' content',
-      'edit any ' . $this->type . ' content',
-      'delete any ' . $this->type . ' content',
-      'create ' . $this->nonSchedulerNodeType->id() . ' content',
-      'edit any ' . $this->nonSchedulerNodeType->id() . ' content',
-      'delete any ' . $this->nonSchedulerNodeType->id() . ' content',
-      'create ' . $this->mediaTypeName . ' media',
-      'edit any ' . $this->mediaTypeName . ' media',
-      'delete any ' . $this->mediaTypeName . ' media',
-      'view own unpublished content',
-      'administer scheduler',
-      'schedule publishing of nodes',
-      'view scheduled content',
-    ]);
+    /** @var \Drupal\user\Entity\RoleStorageInterface $roleStorage */
+    $roleStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
 
-    // Create an ordinary Scheduler user, with permission to create and schedule
-    // all entity types but not with administrator permissions. This will
-    // replace the schedulerUser created in SchedulerSetupTrait.
-    $this->schedulerUser = $this->drupalCreateUser([
-      'create ' . $this->type . ' content',
-      'edit own ' . $this->type . ' content',
-      'delete own ' . $this->type . ' content',
+    // Add extra permisssions to the admin role assigned to the adminUser.
+    $admin_media_permissions = [
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
       'delete any ' . $this->mediaTypeName . ' media',
-      'view own unpublished content',
-      'schedule publishing of nodes',
-      'view scheduled content',
-    ]);
+      'create media',
+      'update any media',
+      'delete any media',
+      'schedule publishing of media',
+    ];
+    foreach ($this->adminUser->getRoles() as $rid) {
+      // The user will have two roles, 'authenticated' and one other.
+      if ($rid != 'authenticated') {
+        $role = $roleStorage->load($rid);
+        foreach ($admin_media_permissions as $permission) {
+          $role->grantPermission($permission);
+        }
+        $role->save();
+      }
+    }
+
+    // Add extra permisssions to the role assigned to the schedulerUser.
+    $user_media_permissions = [
+      'create ' . $this->mediaTypeName . ' media',
+      'edit any ' . $this->mediaTypeName . ' media',
+      'delete any ' . $this->mediaTypeName . ' media',
+      'schedule publishing of media',
+    ];
+    foreach ($this->schedulerUser->getRoles() as $rid) {
+      // The user will have two roles, 'authenticated' and one other.
+      if ($rid != 'authenticated') {
+        $role = $roleStorage->load($rid);
+        foreach ($user_media_permissions as $permission) {
+          $role->grantPermission($permission);
+        }
+        $role->save();
+      }
+    }
+
   }
 
   /**
@@ -123,6 +127,59 @@ trait SchedulerMediaSetupTrait {
     $media = $this->mediaStorage->create($values);
     $media->save();
     return $media;
+  }
+
+  /**
+   * Creates a test entity.
+   *
+   * This is called to generate a node or a media entity, for tests that process
+   * both types of entities, either in loops or via a data provider.
+   *
+   * @param string $entityType
+   *   The name of the entity type.
+   * @param string $bundle
+   *   The name of the bundle.
+   * @param array $values
+   *   Values for the new entity.
+   *
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The created entity object.
+   */
+  public function createEntity($entityType, $bundle = NULL, array $values = []) {
+
+    switch ($entityType) {
+      case 'media':
+        $bundle = $bundle ?? $this->mediaTypeName;
+        $values += ['type' => $bundle];
+        $entity = $this->createMediaItem($values);
+        break;
+
+      case 'node':
+      default:
+        $bundle = $bundle ?? $this->type;
+        $values += ['type' => $bundle];
+        $entity = $this->drupalCreateNode($values);
+        break;
+    }
+    return $entity;
+  }
+
+  /**
+   * Returns the stored entity type object from a type name string.
+   *
+   * This allows previous usage of the hard-coded $this->nodetype to be
+   * replaced with $this->entityTypeObject($entityType) when expanding the tests
+   * to cover media entity types.
+   *
+   * @param string $entityType
+   *   The name of the entity.
+   *
+   * @return \Drupal\Core\Entity\EntityTypeInterface
+   *   The stored entity type object.
+   */
+  public function entityTypeObject($entityType) {
+    // The properties are case-sensitive and do not follow the same pattern.
+    return ($entityType == 'media') ? $this->mediaType : $this->nodetype;
   }
 
 }
