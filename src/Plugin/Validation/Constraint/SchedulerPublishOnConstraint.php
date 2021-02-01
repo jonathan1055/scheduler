@@ -8,7 +8,7 @@ use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
  * Validates publish on values.
  *
  * @Constraint(
- *   id = "MediaSchedulerPublishOn",
+ *   id = "SchedulerPublishOn",
  *   label = @Translation("Scheduler publish on", context = "Validation"),
  *   type = "entity"
  * )

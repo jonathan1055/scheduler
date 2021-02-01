@@ -8,7 +8,7 @@ use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
  * Validates unpublish on values.
  *
  * @Constraint(
- *   id = "MediaSchedulerUnpublishOn",
+ *   id = "SchedulerUnpublishOn",
  *   label = @Translation("Scheduler unpublish on", context = "Validation"),
  *   type = "entity"
  * )
