@@ -2,32 +2,12 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
-
 /**
  * Tests the validation when editing a node.
  *
  * @group scheduler
  */
 class SchedulerValidationTest extends SchedulerBrowserTestBase {
-
-  use SchedulerMediaSetupTrait;
-
-  /**
-   * Additional modules required.
-   *
-   * @var array
-   */
-  protected static $modules = ['media'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    // Run the setup routine for Media entities.
-    $this->SchedulerMediaSetup();
-  }
 
   /**
    * Tests the validation when editing a node.

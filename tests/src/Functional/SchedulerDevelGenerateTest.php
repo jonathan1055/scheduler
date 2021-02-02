@@ -2,8 +2,6 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
-
 /**
  * Tests the Scheduler interaction with Devel Generate module.
  *
@@ -15,14 +13,12 @@ use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
  */
 class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
-  use SchedulerMediaSetupTrait;
-
   /**
    * Additional modules required.
    *
    * @var array
    */
-  protected static $modules = ['devel_generate', 'media'];
+  protected static $modules = ['devel_generate'];
 
   /**
    * {@inheritdoc}
@@ -42,9 +38,6 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'access content overview',
       'access media overview',
     ]);
-
-    // Run the setup routine for Media entities.
-    $this->SchedulerMediaSetup();
 
   }
 

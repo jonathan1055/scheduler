@@ -5,13 +5,12 @@ namespace Drupal\Tests\scheduler\Traits;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 
 /**
- * Additonal setup trait for Scheduler tests that use Media.
+ * Additional setup trait for Scheduler tests that use Media.
  *
  * This builds on the standard SchedulerSetupTrait.
  */
 trait SchedulerMediaSetupTrait {
 
-  use SchedulerSetupTrait;
   use MediaTypeCreationTrait;
 
   /**

@@ -2,31 +2,12 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
-use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
-
 /**
  * Tests the modules primary functions with a Media entity type.
  *
  * @group scheduler
  */
 class SchedulerBasicMediaTest extends SchedulerBrowserTestBase {
-
-  use SchedulerMediaSetupTrait;
-
-  /**
-   * Additional modules required.
-   *
-   * @var array
-   */
-  protected static $modules = ['media'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-    $this->SchedulerMediaSetup();
-  }
 
   /**
    * Tests scheduled publishing of a media entity.
