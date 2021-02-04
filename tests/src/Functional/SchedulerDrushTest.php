@@ -40,22 +40,22 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Tests scheduled publishing via Drush command.
+   * Tests scheduled publishing and unpublishing of entities via Drush.
+   *
+   * @dataProvider dataDrushCronPublishing()
    */
-  public function testDrushCronPublishing() {
-    // Create a node which is scheduled for publishing.
-    $title1 = $this->randomMachineName(20);
-    $this->drupalCreateNode([
+  public function testDrushCronPublishing($entityType, $bundle, $typeFieldName) {
+    // Create an entity which is scheduled for publishing.
+    $title1 = $this->randomMachineName(20) . ' for publishing';
+    $entity = $this->createEntity($entityType, $bundle, [
       'title' => $title1,
-      'type' => $this->type,
       'publish_on' => strtotime('-3 hours'),
     ]);
 
-    // Create a node which is scheduled for unpublishing.
-    $title2 = $this->randomMachineName(20);
-    $this->drupalCreateNode([
+    // Create an entity which is scheduled for unpublishing.
+    $title2 = $this->randomMachineName(20) . ' for unpublishing';
+    $entity = $this->createEntity($entityType, $bundle, [
       'title' => $title2,
-      'type' => $this->type,
       'unpublish_on' => strtotime('-2 hours'),
     ]);
 
@@ -63,8 +63,25 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     // and unpublishing messages are found.
     $this->drush('scheduler:cron');
     $messages = $this->getErrorOutput();
-    $this->assertStringContainsString(sprintf('%s: scheduled publishing of %s', $this->typeName, $title1), $messages, 'Scheduled publishing message not found', TRUE);
-    $this->assertStringContainsString(sprintf('%s: scheduled unpublishing of %s', $this->typeName, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
+    $type_label = $entity->$typeFieldName->entity->label();
+    $this->assertStringContainsString(sprintf('%s: scheduled publishing of %s', $type_label, $title1), $messages, 'Scheduled publishing message not found', TRUE);
+    $this->assertStringContainsString(sprintf('%s: scheduled unpublishing of %s', $type_label, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
+  }
+
+  /**
+   * Provides data for testMetaInformation().
+   *
+   * @return array
+   *   Each array item has the values: [entity type, bundle id, type fieldname].
+   */
+  public function dataDrushCronPublishing() {
+    // The data provider does not have access to $this so we have to hard-code
+    // the entity bundle id.
+    $data = [
+      'Content' => ['node', 'testpage', 'type'],
+      'Media' => ['media', 'test_media_image', 'bundle'],
+    ];
+    return $data;
   }
 
 }
