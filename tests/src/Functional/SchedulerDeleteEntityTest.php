@@ -10,7 +10,7 @@ namespace Drupal\Tests\scheduler\Functional;
  *
  * @group scheduler
  */
-class SchedulerDeleteNodeTest extends SchedulerBrowserTestBase {
+class SchedulerDeleteEntityTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests the deletion of an entity when the scheduler dates are required.
