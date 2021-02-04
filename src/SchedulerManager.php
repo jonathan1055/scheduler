@@ -649,12 +649,8 @@ class SchedulerManager {
    *   The value of the setting.
    */
   public function getThirdPartySetting(EntityInterface $entity, $setting, $default) {
-    if (!empty($entity->type)) {
-      return $entity->type->entity->getThirdPartySetting('scheduler', $setting, $default);
-    }
-    if (!empty($entity->bundle)) {
-      return $entity->bundle->entity->getThirdPartySetting('scheduler', $setting, $default);
-    }
+    $typeFieldName = $this->getPlugin($entity->getEntityTypeId())->typeFieldName();
+    return $entity->$typeFieldName->entity->getThirdPartySetting('scheduler', $setting, $default);
   }
 
   /**
