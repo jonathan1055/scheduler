@@ -465,6 +465,12 @@ function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDis
   // header for search engines. Only do this when the current page is the
   // full-page view of the node.
   // @see https://googleblog.blogspot.be/2007/07/robots-exclusion-protocol-now-with-even.html
+  //
+  // This function does not need conversion into a general hook_entity_view
+  // when the only other entity supported is 'Media' because media items are not
+  // viewable as pages in their own right, they are attached to nodes or appear
+  // in views. Hence using a media unpublish date to set the page metadata would
+  // be incorrect.
   if (!empty($node->unpublish_on->value) && node_is_page($node)) {
     $unavailable_after = date(DATE_RFC850, $node->unpublish_on->value);
     $build['#attached']['http_header'][] = ['X-Robots-Tag', 'unavailable_after: ' . $unavailable_after];
