@@ -20,7 +20,6 @@ class SchedulerBasicMediaTest extends SchedulerBrowserTestBase {
     $values = [
       'name' => 'Publish This Media',
       'publish_on' => $this->requestTime + 3600,
-      'status' => 1,
     ];
     // Create a media entity with the scheduler fields populated as required.
     $entity = $this->createMediaItem($values);
@@ -54,7 +53,6 @@ class SchedulerBasicMediaTest extends SchedulerBrowserTestBase {
     $values = [
       'name' => 'Unpublish This Media',
       'unpublish_on' => $this->requestTime + 3600,
-      'status' => 1,
     ];
     // Create a media entity with the scheduler fields populated as required.
     $entity = $this->createMediaItem($values);

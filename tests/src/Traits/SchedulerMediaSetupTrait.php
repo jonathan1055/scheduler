@@ -148,15 +148,20 @@ trait SchedulerMediaSetupTrait {
 
     switch ($entityType) {
       case 'media':
-        $bundle = $bundle ?? $this->mediaTypeName;
-        $values += ['type' => $bundle];
+        $values += ['bundle' => $bundle ?? $this->mediaTypeName];
+        // For Media, the title is stored in the 'name' field, so get the title
+        // when the 'name' is not defined, to allow the same $value parameters
+        // as for Node.
+        if (isset($values['title'])) {
+          $values['name'] = $values['name'] ?? $values['title'];
+          unset($values['title']);
+        }
         $entity = $this->createMediaItem($values);
         break;
 
       case 'node':
       default:
-        $bundle = $bundle ?? $this->type;
-        $values += ['type' => $bundle];
+        $values += ['type' => $bundle ?? $this->type];
         $entity = $this->drupalCreateNode($values);
         break;
     }

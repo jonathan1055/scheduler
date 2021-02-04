@@ -70,7 +70,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Provides data for testDevelGenerate().
+   * Provides data for testValidationDuringEdit().
    *
    * @return array
    *   Each array item has the values: [entity type, bundle id].
