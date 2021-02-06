@@ -99,7 +99,7 @@ class EventSubscriber implements EventSubscriberInterface {
     $node = $event->getNode();
     // After publishing a node promote it to the front page.
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
-      $node->setPromoted(TRUE);
+      $node->setPromoted(TRUE)->save();
       $event->setNode($node);
     }
   }
@@ -115,7 +115,7 @@ class EventSubscriber implements EventSubscriberInterface {
     $node = $event->getNode();
     // After unpublishing a node remove it from the front page.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
-      $node->setPromoted(FALSE);
+      $node->setPromoted(FALSE)->save();
       $event->setNode($node);
     }
   }
