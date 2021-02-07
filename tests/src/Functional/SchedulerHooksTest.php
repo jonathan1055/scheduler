@@ -5,11 +5,14 @@ namespace Drupal\Tests\scheduler\Functional;
 use Drupal\node\Entity\NodeType;
 
 /**
- * Tests the API of the Scheduler module.
+ * Tests the API hook functions of the Scheduler module.
+ *
+ * This class covers the eight hook functions that Scheduler provides, allowing
+ * other modules to interact with editting, scheduling and processing via cron.
  *
  * @group scheduler
  */
-class SchedulerApiTest extends SchedulerBrowserTestBase {
+class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
@@ -42,7 +45,6 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
       'edit any ' . $this->customName . ' content',
       'schedule publishing of nodes',
     ]);
-
   }
 
   /**
@@ -200,73 +202,6 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers six events.
-   *
-   * The events allow other modules to react to the Scheduler process being run.
-   * The API test implementations of the event listeners alter the nodes
-   * 'promote' and 'sticky' settings and changes the title.
-   */
-  public function testApiNodeAction() {
-    $this->drupalLogin($this->schedulerUser);
-
-    // Create a test node. Having the 'approved' fields here would complicate
-    // the tests, so use the ordinary page type.
-    $settings = [
-      'publish_on' => strtotime('-1 day'),
-      'type' => $this->type,
-      'promote' => FALSE,
-      'sticky' => FALSE,
-      'title' => 'API TEST node action',
-    ];
-    $node = $this->drupalCreateNode($settings);
-
-    // Check that the 'sticky' and 'promote' fields are off for the new node.
-    $this->assertFalse($node->isSticky(), 'The unpublished node is not sticky.');
-    $this->assertFalse($node->isPromoted(), 'The unpublished node is not promoted.');
-
-    // Run cron and check that hook_scheduler_api() has executed correctly, by
-    // verifying that the node has become promoted and is sticky.
-    scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isSticky(), 'API action "PRE_PUBLISH" has changed the node to sticky.');
-    $this->assertTrue($node->isPromoted(), 'API action "PUBLISH" has changed the node to promoted.');
-
-    // Now set a date for unpublishing the node. Ensure 'sticky' and 'promote'
-    // are set, so that the assertions are not affected by any failures above.
-    $node->set('unpublish_on', strtotime('-1 day'))
-      ->set('sticky', TRUE)->set('promote', TRUE)->save();
-
-    // Run cron and check that hook_scheduler_api() has executed correctly, by
-    // verifying that the node is not promoted and no longer sticky.
-    scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertFalse($node->isSticky(), 'API action "PRE_UNPUBLISH" has changed the node to not sticky.');
-    $this->assertFalse($node->isPromoted(), 'API action "UNPUBLISH" has changed the node to not promoted.');
-
-    // Turn on immediate publication when a publish date is in the past.
-    $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
-
-    // Ensure 'sticky' and 'promote' are not set, so that the assertions are not
-    // affected by any failures above.
-    $node->set('sticky', FALSE)->set('promote', FALSE)->save();
-
-    // Edit the node and set a publish-on date in the past.
-    $edit = [
-      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
-      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
-    ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
-    // Verify that the values have been altered as expected.
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isSticky(), 'API action "PRE_PUBLISH_IMMEDIATELY" has changed the node to sticky.');
-    $this->assertTrue($node->isPromoted(), 'API action "PUBLISH_IMMEDIATELY" has changed the node to promoted.');
-    $this->assertEquals('Published immediately', $node->title->value, 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
-  }
-
-  /**
    * Covers hook_scheduler_nid_list($action)
    *
    * Hook_scheduler_nid_list() allows other modules to add more node ids into
@@ -378,10 +313,10 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Test the hooks which allow hiding of scheduler input fields.
+   * Tests the hooks which allow hiding of scheduler input fields.
    *
-   * This covers hook_scheduler_hide_publish_on_field and
-   * hook_scheduler_hide_unpublish_on_field.
+   * Covers hook_scheduler_hide_publish_on_field() and
+   * hook_scheduler_hide_unpublish_on_field().
    */
   public function testHideField() {
     $this->drupalLogin($this->schedulerUser);
@@ -429,10 +364,10 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Test when other modules process the publish and unpublish actions.
+   * Tests when other modules process the 'publish' and 'unpublish' actions.
    *
-   * This covers hook_scheduler_publish_action and
-   * hook_scheduler_unpublish_action.
+   * This covers hook_scheduler_publish_action() and
+   * hook_scheduler_unpublish_action().
    */
   public function testHookPublishUnpublishAction() {
     $this->drupalLogin($this->schedulerUser);
