@@ -45,6 +45,18 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       'edit any ' . $this->customName . ' content',
       'schedule publishing of nodes',
     ]);
+
+    // Temporary: Create media entities scheduled for publishing and
+    // unpublishing, to interfere with tests as they stand, to prove that
+    // changes are needed.
+    $this->createMediaItem([
+      'name' => 'Publish This Media',
+      'publish_on' => $this->requestTime - 3600,
+    ]);
+    $this->createMediaItem([
+      'name' => 'Unpublish This Media',
+      'unpublish_on' => $this->requestTime - 3600,
+    ]);
   }
 
   /**

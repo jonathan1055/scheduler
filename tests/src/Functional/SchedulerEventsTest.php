@@ -21,6 +21,25 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
   protected static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
 
   /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    // Temporary: Create media entities scheduled for publishing and
+    // unpublishing, to interfere with tests as they stand, to prove that
+    // changes are needed.
+    $this->createMediaItem([
+      'name' => 'Publish This Media',
+      'publish_on' => $this->requestTime - 3600,
+    ]);
+    $this->createMediaItem([
+      'name' => 'Unpublish This Media',
+      'unpublish_on' => $this->requestTime - 3600,
+    ]);
+  }
+
+  /**
    * Covers six events.
    *
    * The events allow other modules to react to the Scheduler process being run.
