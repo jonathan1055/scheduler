@@ -144,6 +144,35 @@ class SchedulerManager {
   }
 
   /**
+   * Dispatch Scheduler events for an event_id.
+   *
+   * This function dispatches the identified event for all entity types, using
+   * the SchedulerEntityEvents class. Additionally, for backwards compatibility
+   * it also dispatches the original 'node-only' event in SchedulerEvents class.
+   * The $entity is passed by reference so that any changes made are
+   * automatically stored and passed forward.
+   *
+   * @param Drupal\Core\Entity\EntityInterface $entity
+   *   The entity object.
+   * @param string $event_id
+   *   The short text id the event, for example 'PUBLISH' or 'PRE_UNPUBLISH'.
+   */
+  public function dispatchEvents(EntityInterface &$entity, string $event_id) {
+    // The SchedulerEntityEvents event is dispatched for every type of entity.
+    $dispatch_list = [constant(SchedulerEntityEvents::class . "::$event_id")];
+    if ($entity->getEntityTypeId() == 'node') {
+      // For backwards-compatibility the corresponding original SchedulerEvents
+      // event is dispatched just for node entities. Process this first.
+      array_unshift($dispatch_list, constant(SchedulerEvents::class . "::$event_id"));
+    }
+    foreach ($dispatch_list as $event_name) {
+      $event = new SchedulerEvent($entity);
+      $this->dispatch($event, $event_name);
+      $entity = $event->getEntity();
+    }
+  }
+
+  /**
    * Handles throwing exceptions.
    *
    * @param Drupal\Core\Entity\EntityInterface $entity
@@ -270,9 +299,7 @@ class SchedulerManager {
 
           // Trigger the PRE_PUBLISH Scheduler event so that modules can react
           // before the entity is published.
-          $event = new SchedulerEvent($entity);
-          $this->dispatch($event, SchedulerEvents::PRE_PUBLISH);
-          $entity = $event->getEntity();
+          $this->dispatchEvents($entity, 'PRE_PUBLISH');
 
           // Update 'changed' timestamp.
           $entity->setChangedTime($publish_on);
@@ -358,11 +385,9 @@ class SchedulerManager {
 
           // Trigger the PUBLISH Scheduler event so that modules can react after
           // the entity is published.
-          $event = new SchedulerEvent($entity);
-          $this->dispatch($event, SchedulerEvents::PUBLISH);
+          $this->dispatchEvents($entity, 'PUBLISH');
 
           // Use the standard actions system to publish and save the entity.
-          $entity = $event->getEntity();
           $action_id = $plugin->entityType() . '_publish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
@@ -462,9 +487,7 @@ class SchedulerManager {
 
           // Trigger the PRE_UNPUBLISH Scheduler event so that modules can react
           // before the entity is unpublished.
-          $event = new SchedulerEvent($entity);
-          $this->dispatch($event, SchedulerEvents::PRE_UNPUBLISH);
-          $entity = $event->getEntity();
+          $this->dispatchEvents($entity, 'PRE_UNPUBLISH');
 
           // Update 'changed' timestamp.
           $entity->setChangedTime($unpublish_on);
@@ -540,11 +563,9 @@ class SchedulerManager {
 
           // Trigger the UNPUBLISH Scheduler event so that modules can react
           // after the entity is unpublished.
-          $event = new SchedulerEvent($entity);
-          $this->dispatch($event, SchedulerEvents::UNPUBLISH);
+          $this->dispatchEvents($entity, 'UNPUBLISH');
 
           // Use the standard actions system to unpublish and save the entity.
-          $entity = $event->getEntity();
           $action_id = $plugin->entityType() . '_unpublish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
