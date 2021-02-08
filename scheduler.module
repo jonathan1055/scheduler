@@ -80,6 +80,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
 
   /** @var \Drupal\Core\Entity\EntityInterface $entity */
   $entity = $form_state->getFormObject()->getEntity();
+  $entityTypeId = $entity->getEntityTypeId();
 
   $publishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'publish_enable', $config->get('default_publish_enable'));
   $unpublishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'unpublish_enable', $config->get('default_unpublish_enable'));
@@ -89,22 +90,34 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $publishing_displayed = !empty($display->getComponent('publish_on'));
   $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
 
-  // Invoke all implementations of hook_scheduler_hide_publish_on_field() to
-  // allow other modules to hide the field on the entity edit form.
+  // Invoke all implementations of hook_scheduler_entity_hide_publish_on_field()
+  // to allow other modules to hide the field on the entity edit form.
   if ($publishing_enabled && $publishing_displayed) {
-    $hook = 'scheduler_hide_publish_on_field';
-    foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-      $function = $module . '_' . $hook;
-      $publishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $publishing_displayed;
+    $hooks = ['scheduler_entity_hide_publish_on_field'];
+    if ($entityTypeId == 'node') {
+      // Add the original hook function for Node types only.
+      $hooks[] = 'scheduler_hide_publish_on_field';
+    }
+    foreach ($hooks as $hook) {
+      foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+        $function = $module . '_' . $hook;
+        $publishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $publishing_displayed;
+      }
     }
   }
-  // Invoke all implementations of hook_scheduler_hide_unpublish_on_field() to
-  // allow other modules to hide the field on the entity edit form.
+  // Invoke implementations of hook_scheduler_entity_hide_unpublish_on_field()
+  // to allow other modules to hide the field on the entity edit form.
   if ($unpublishing_enabled && $unpublishing_displayed) {
-    $hook = 'scheduler_hide_unpublish_on_field';
-    foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
-      $function = $module . '_' . $hook;
-      $unpublishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $unpublishing_displayed;
+    $hooks = ['scheduler_entity_hide_unpublish_on_field'];
+    if ($entityTypeId == 'node') {
+      // Add the original hook function for Node types only.
+      $hooks[] = 'scheduler_hide_unpublish_on_field';
+    }
+    foreach ($hooks as $hook) {
+      foreach (\Drupal::moduleHandler()->getImplementations($hook) as $module) {
+        $function = $module . '_' . $hook;
+        $unpublishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $unpublishing_displayed;
+      }
     }
   }
 
@@ -251,7 +264,6 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   foreach ($fields_to_check as $field) {
     $actual_widget_id = $display->getComponent($field)['type'];
     if ($actual_widget_id != $correct_widget_id) {
-      $entityTypeId = $entity->getEntityTypeId();
       $link = \Drupal::moduleHandler()->moduleExists('field_ui') ?
         Url::fromRoute("entity.entity_form_display.$entityTypeId.default", ["{$entityTypeId}_type" => $entity->bundle()])->toString()
         : '#';
