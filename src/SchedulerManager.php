@@ -303,17 +303,23 @@ class SchedulerManager {
           // subsequent calls to $entity->save().
           $entity->publish_on->value = NULL;
 
-          // Invoke all implementations of hook_scheduler_publish_action() to
-          // allow other modules to do the "publishing" process instead of
+          // Invoke implementations of hook_scheduler_entity_publish_action()
+          // to allow other modules to do the "publishing" process instead of
           // Scheduler.
-          $hook = 'scheduler_publish_action';
+          $hooks = ['scheduler_entity_publish_action'];
+          if ($entity->getEntityTypeid() == 'node') {
+            // Add the original hook function for Node types only, at the start.
+            array_unshift($hooks, 'scheduler_publish_action');
+          }
           $processed = FALSE;
           $failed = FALSE;
-          foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-            $function = $module . '_' . $hook;
-            $return = $function($entity);
-            $processed = $processed || ($return === 1);
-            $failed = $failed || ($return === -1);
+          foreach ($hooks as $hook) {
+            foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+              $function = $module . '_' . $hook;
+              $return = $function($entity);
+              $processed = $processed || ($return === 1);
+              $failed = $failed || ($return === -1);
+            }
           }
 
           // Log the fact that a scheduled publication is about to take place.
@@ -478,17 +484,23 @@ class SchedulerManager {
           // subsequent calls to $entity->save().
           $entity->unpublish_on->value = NULL;
 
-          // Invoke all implementations of hook_scheduler_unpublish_action() to
-          // allow other modules to do the "unpublishing" process instead of
+          // Invoke implementations of hook_scheduler_entity_unpublish_action()
+          // to allow other modules to do the "unpublishing" process instead of
           // Scheduler.
-          $hook = 'scheduler_unpublish_action';
+          $hooks = ['scheduler_entity_unpublish_action'];
+          if ($entity->getEntityTypeid() == 'node') {
+            // Add the original hook function for Node types only, at the start.
+            array_unshift($hooks, 'scheduler_unpublish_action');
+          }
           $processed = FALSE;
           $failed = FALSE;
-          foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-            $function = $module . '_' . $hook;
-            $return = $function($entity);
-            $processed = $processed || ($return === 1);
-            $failed = $failed || ($return === -1);
+          foreach ($hooks as $hook) {
+            foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+              $function = $module . '_' . $hook;
+              $return = $function($entity);
+              $processed = $processed || ($return === 1);
+              $failed = $failed || ($return === -1);
+            }
           }
 
           // Set up the log variables.
@@ -552,8 +564,11 @@ class SchedulerManager {
    * Checks whether a scheduled action on an entity is allowed.
    *
    * This provides a way for other modules to prevent scheduled publishing or
-   * unpublishing, by implementing hook_scheduler_allow_publishing() or
-   * hook_scheduler_allow_unpublishing().
+   * unpublishing, by implementing hook_scheduler_entity_allow_publishing() or
+   * hook_scheduler_entity_allow_unpublishing().
+   *
+   * For Node entities only, to maintain backwards-compatibility we have
+   * hook_scheduler_allow_publishing() and hook_scheduler_allow_unpublishing().
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity on which the action is to be performed.
@@ -565,15 +580,23 @@ class SchedulerManager {
    *
    * @see hook_scheduler_allow_publishing()
    * @see hook_scheduler_allow_unpublishing()
+   * @see hook_scheduler_entity_allow_publishing()
+   * @see hook_scheduler_entity_allow_unpublishing()
    */
   public function isAllowed(EntityInterface $entity, $action) {
     // Default to TRUE.
     $result = TRUE;
     // Check that other modules allow the action.
-    $hook = 'scheduler_allow_' . $action . 'ing';
-    foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-      $function = $module . '_' . $hook;
-      $result &= $function($entity);
+    $hooks = ['scheduler_entity_allow_' . $action . 'ing'];
+    if ($entity->getEntityTypeid() == 'node') {
+      // Add the original hook function for Node types only, to be done first.
+      array_unshift($hooks, 'scheduler_allow_' . $action . 'ing');
+    }
+    foreach ($hooks as $hook) {
+      foreach ($this->moduleHandler->getImplementations($hook) as $module) {
+        $function = $module . '_' . $hook;
+        $result &= $function($entity);
+      }
     }
 
     return $result;
