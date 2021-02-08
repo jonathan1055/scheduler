@@ -3,7 +3,7 @@
 namespace Drupal\scheduler;
 
 /**
- * Contains all events dispatched by Scheduler.
+ * Lists the six events dispatched by Scheduler relating to node entities.
  *
  * Ideally the namespace should have been Drupal\scheduler\Event and all the
  * event-related files stored in a src/Event folder. This cannot be chnaged now
