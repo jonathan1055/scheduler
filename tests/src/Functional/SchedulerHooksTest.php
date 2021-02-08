@@ -373,6 +373,16 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $node4->id() . '/edit');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
+
+    // TEMPORARY Create test media.
+    // This is done to show that when fixed, the existing hooks are not called
+    // for Media and no runtime errrors are produced.
+    // @todo Convert this test to cover the four cases above properly.
+    // Expand the API module to implement the new hooks.
+    // Use a data provider.
+    $media1 = $this->createEntity('media');
+    $this->drupalGet('media/' . $media1->id() . '/edit');
+
   }
 
   /**
