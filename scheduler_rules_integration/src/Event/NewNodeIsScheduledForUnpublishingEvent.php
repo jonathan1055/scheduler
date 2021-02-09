@@ -2,8 +2,6 @@
 
 namespace Drupal\scheduler_rules_integration\Event;
 
-use Drupal\scheduler\NodeEventBase;
-
 /**
  * A new node is scheduled for unpublishing.
  *

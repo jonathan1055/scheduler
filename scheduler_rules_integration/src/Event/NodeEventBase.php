@@ -1,18 +1,14 @@
 <?php
 
-namespace Drupal\scheduler;
+namespace Drupal\scheduler_rules_integration\Event;
 
 use Drupal\node\NodeInterface;
+use Drupal\scheduler\SchedulerEvent;
 
 /**
- * Base class on which all node events are extended.
- *
- * This is used for Scheduler events and scheduler_rules_integration events.
- *
- * @todo Can this be moved into scheduler_rules_integration? It may not be
- * needed for Scheduler's own events.
+ * Base class on which all Rules node events are extended.
  */
-class NodeEventBase extends EventBase {
+class NodeEventBase extends SchedulerEvent {
 
   /**
    * The node which is being processed.
