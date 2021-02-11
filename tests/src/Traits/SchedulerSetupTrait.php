@@ -57,7 +57,7 @@ trait SchedulerSetupTrait {
    *
    * @var \Drupal\node\Entity\NodeType
    */
-  protected $nonSchedulerNodetype;
+  protected $nonSchedulerNodeType;
 
   /**
    * The node storage object.
