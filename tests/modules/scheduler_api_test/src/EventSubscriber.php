@@ -57,38 +57,6 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Operations to perform before Scheduler unpublishes a node.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   *   The scheduler event.
-   */
-  public function apiTestPreUnpublish(SchedulerEvent $event) {
-    /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
-    if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
-      // Before unpublishing a node make it unsticky.
-      $node->setSticky(FALSE);
-      $event->setNode($node);
-    }
-  }
-
-  /**
-   * Operations before Scheduler publishes a node immediately not via cron.
-   *
-   * @param \Drupal\scheduler\SchedulerEvent $event
-   *   The scheduler event.
-   */
-  public function apiTestPrePublishImmediately(SchedulerEvent $event) {
-    /** @var \Drupal\node\Entity\Node $node */
-    $node = $event->getNode();
-    // Before publishing immediately set the node to sticky.
-    if (!$node->isPromoted() && strpos($node->title->value, 'API TEST') === 0) {
-      $node->setSticky(TRUE);
-      $event->setNode($node);
-    }
-  }
-
-  /**
    * Operations to perform after Scheduler publishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
@@ -105,6 +73,22 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Operations to perform before Scheduler unpublishes a node.
+   *
+   * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestPreUnpublish(SchedulerEvent $event) {
+    /** @var \Drupal\node\Entity\Node $node */
+    $node = $event->getNode();
+    // Before unpublishing a node make it unsticky.
+    if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
+      $node->setSticky(FALSE);
+      $event->setNode($node);
+    }
+  }
+
+  /**
    * Operations to perform after Scheduler unpublishes a node.
    *
    * @param \Drupal\scheduler\SchedulerEvent $event
@@ -116,6 +100,22 @@ class EventSubscriber implements EventSubscriberInterface {
     // After unpublishing a node remove it from the front page.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
       $node->setPromoted(FALSE);
+      $event->setNode($node);
+    }
+  }
+
+  /**
+   * Operations before Scheduler publishes a node immediately not via cron.
+   *
+   * @param \Drupal\scheduler\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestPrePublishImmediately(SchedulerEvent $event) {
+    /** @var \Drupal\node\Entity\Node $node */
+    $node = $event->getNode();
+    // Before publishing immediately set the node to sticky.
+    if (!$node->isPromoted() && strpos($node->title->value, 'API TEST') === 0) {
+      $node->setSticky(TRUE);
       $event->setNode($node);
     }
   }
