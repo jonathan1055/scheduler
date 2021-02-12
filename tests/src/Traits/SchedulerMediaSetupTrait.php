@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\Traits;
 
 use Drupal\file\Entity\File;
+use Drupal\media\Entity\MediaType;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 
 /**
@@ -78,7 +79,7 @@ trait SchedulerMediaSetupTrait {
     // Create a test media type for images.
     $this->mediaTypeName = 'test_media_image';
     $this->mediaTypeLabel = 'Test Image';
-    /** @var MediaTypeInterface $mediaType */
+    /** @var \Drupal\media\Entity\MediaTypeInterface $mediaType */
     $this->mediaType = $this->createMediaType('image', [
       'id' => $this->mediaTypeName,
       'label' => $this->mediaTypeLabel,
@@ -91,7 +92,7 @@ trait SchedulerMediaSetupTrait {
 
     // Create a test media type for audio which is not enabled for scheduling.
     $this->nonSchedulerMediaTypeName = 'test_audio';
-    /** @var MediaTypeInterface $nonSchedulerMediaType */
+    /** @var \Drupal\media\Entity\MediaTypeInterface $nonSchedulerMediaType */
     $this->nonSchedulerMediaType = $this->createMediaType('audio_file', [
       'id' => $this->nonSchedulerMediaTypeName,
       'label' => 'Test Audio',
@@ -269,12 +270,12 @@ trait SchedulerMediaSetupTrait {
    *
    * This is required to allow the entity form to pass validation and be saved.
    *
-   * @param string $entityType
+   * @param \Drupal\media\Entity\MediaType $entityType
    *   The entity type object. Media 'image' and 'audio' are supported.
    * @param Drupal\file\Entity\File $file
    *   The file object to attach. Optional, defaults to the correct stored file.
    */
-  public function attachMediaFile(string $entityType, File $file = NULL) {
+  public function attachMediaFile(MediaType $entityType, File $file = NULL) {
     $source_id = $entityType->get('source');
     // If no file object is given, select the correct default for the source.
     $file = $file ?? (($source_id == 'audio_file') ? $this->audioFile : $this->imageFile);
