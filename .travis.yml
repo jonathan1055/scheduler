@@ -155,4 +155,9 @@ script:
   - $DRUPAL_ROOT/vendor/bin/phpcs -e
 
   # Show the violations in detail, plus summary and source report.
-  - $DRUPAL_ROOT/vendor/bin/phpcs . --report-full --report-summary --report-source -s
+  # Do not fail the build for coding stanards when running Core 8.8
+  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
+      $DRUPAL_ROOT/vendor/bin/phpcs . --report-full --report-summary --report-source -s --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1;
+    else
+      $DRUPAL_ROOT/vendor/bin/phpcs . --report-full --report-summary --report-source -s;
+    fi
