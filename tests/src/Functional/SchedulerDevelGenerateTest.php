@@ -120,6 +120,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
     $this->drupalGet('admin/content/media');
+    $this->drupalGet('admin/content/media/scheduled');
 
     // Delete all content for this type and generate new content with only
     // publish-on dates. Use 100% as this is how we can count the expected
@@ -140,6 +141,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
     $this->drupalGet('admin/content/media');
+    $this->drupalGet('admin/content/media/scheduled');
 
     // Check we have the expected number of nodes scheduled for publishing only
     // and verify that that the dates are within the time range specified.
@@ -160,6 +162,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
     $this->drupalGet('admin/content/media');
+    $this->drupalGet('admin/content/media/scheduled');
 
     // Check we have the expected number of nodes scheduled for unpublishing
     // only, and verify that that the dates are within the time range specified.
@@ -179,10 +182,15 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     // The data provider does not have acces to $this so we have to hard-code
     // the entity bundle id.
     $data = [
-      'Enabled node' => ['node', 'testpage', 'content', TRUE],
-      'Non-enabled node' => ['node', 'not-for-scheduler', 'content', FALSE],
-      'Media' => ['media', 'test_media_image', 'media', TRUE],
+      0 => ['node', 'testpage', 'content', TRUE],
+      1 => ['node', 'not-for-scheduler', 'content', FALSE],
+      2 => ['media', 'test-video', 'media', TRUE],
+      3 => ['media', 'test-audio', 'media', FALSE],
     ];
+
+    // Use unset($data[n]) to remove a temporarily unwanted item, use
+    // return [$data[n]] to selectively test just one item, or have the default
+    // return $data to test everything.
     return $data;
   }
 

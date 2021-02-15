@@ -165,8 +165,8 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     ];
 
     // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the
-    // default return $data to test everything.
+    // return [$data[n]] to selectively test just one item, or have the default
+    // return $data to test everything.
     return $data;
 
   }

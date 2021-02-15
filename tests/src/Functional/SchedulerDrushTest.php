@@ -78,9 +78,13 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     // The data provider does not have access to $this so we have to hard-code
     // the entity bundle id.
     $data = [
-      'Content' => ['node', 'testpage', 'type'],
-      'Media' => ['media', 'test_media_image', 'bundle'],
+      0 => ['node', 'testpage', 'type'],
+      1 => ['media', 'test-video', 'bundle'],
     ];
+
+    // Use unset($data[n]) to remove a temporarily unwanted item, use
+    // return [$data[n]] to selectively test just one item, or have the default
+    // return $data to test everything.
     return $data;
   }
 
