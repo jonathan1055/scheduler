@@ -31,24 +31,24 @@ jobs:
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (212)
-        # 173 EventDispatcher (in Rules module)
-        #  27 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
+        # --- Remaining self deprecation notices (295)
+        # 247 EventDispatcher (in Rules module)
+        #  36 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
         #  12 StatementWrapper::fetchColumn
         # --- Remaining direct deprecation notices (10)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush
-        - DEPRECATIONS=222
+        #   5 Passing command as string in drush (none now at 9.1+?)
+        - DEPRECATIONS=300
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
         # --- Remaining self deprecation notices (6)
         #   6 StatementWrapper::fetchColumn
-        # --- Remaining direct deprecation notices (10)
+        # --- Remaining direct deprecation notices (5)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush
-        - DEPRECATIONS=16
+        #   5 Passing command as string in drush (none now at 9.1+?)
+        - DEPRECATIONS=11
         - RULES=NO
     - php: 7.4
       env:
@@ -56,10 +56,10 @@ jobs:
         # --- Remaining self deprecation notices (7)
         #   6 StatementWrapper::fetchColumn
         #   1 BrowserTestBase::drupalGetHeader()
-        # --- Remaining direct deprecation notices (10)
+        # --- Remaining direct deprecation notices (5)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush
-        - DEPRECATIONS=17
+        #   5 Passing command as string in drush (none now at 9.1+?)
+        - DEPRECATIONS=12
         - RULES=NO
 
 # Be sure to cache composer downloads.
