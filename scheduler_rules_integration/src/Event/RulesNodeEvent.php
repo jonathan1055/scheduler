@@ -16,11 +16,11 @@ class RulesNodeEvent extends SchedulerEvent {
    * To retain backwards compatibility the event names for node events remain as
    * originally specified in scheduler_rules_integration.rules.events.yml. The
    * format is different from the new events derived for other entity types.
-   * However, the identifiers (PUBLISH, NEW_FOR_PUBLISHING, etc) are the same
-   * for all types and this is how the actual event names are retrieved.
+   * However, the identifiers (CRON_PUBLISHED, NEW_FOR_PUBLISHING, etc) are the
+   * same for all types and this is how the actual event names are retrieved.
    */
-  const PUBLISH = 'scheduler_has_published_this_node_event';
-  const UNPUBLISH = 'scheduler_has_unpublished_this_node_event';
+  const CRON_PUBLISHED = 'scheduler_has_published_this_node_event';
+  const CRON_UNPUBLISHED = 'scheduler_has_unpublished_this_node_event';
   const NEW_FOR_PUBLISHING = 'scheduler_new_node_is_scheduled_for_publishing_event';
   const NEW_FOR_UNPUBLISHING = 'scheduler_new_node_is_scheduled_for_unpublishing_event';
   const EXISTING_FOR_PUBLISHING = 'scheduler_existing_node_is_scheduled_for_publishing_event';

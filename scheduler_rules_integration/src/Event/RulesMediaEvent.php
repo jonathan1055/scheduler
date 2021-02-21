@@ -16,11 +16,11 @@ class RulesMediaEvent extends SchedulerEvent {
    * The final event names here are defined in the event deriver and are
    * different in format from the event names for node events, as originally
    * coded long-hand in scheduler_rules_integration.rules.events.yml.
-   * However, the identifiers (PUBLISH, NEW_FOR_PUBLISHING, etc) are the same
-   * for all types and this is how the actual event names are retrieved.
+   * However, the identifiers (CRON_PUBLISHED, NEW_FOR_PUBLISHING, etc) are the
+   * same for all types and this is how the actual event names are retrieved.
    */
-  const PUBLISH = 'scheduler:media_has_been_published_via_cron';
-  const UNPUBLISH = 'scheduler:media_has_been_unpublished_via_cron';
+  const CRON_PUBLISHED = 'scheduler:media_has_been_published_via_cron';
+  const CRON_UNPUBLISHED = 'scheduler:media_has_been_unpublished_via_cron';
   const NEW_FOR_PUBLISHING = 'scheduler:new_media_is_scheduled_for_publishing';
   const NEW_FOR_UNPUBLISHING = 'scheduler:new_media_is_scheduled_for_unpublishing';
   const EXISTING_FOR_PUBLISHING = 'scheduler:existing_media_is_scheduled_for_publishing';

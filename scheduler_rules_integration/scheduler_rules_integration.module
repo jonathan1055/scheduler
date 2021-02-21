@@ -85,7 +85,7 @@ function scheduler_rules_integration_entity_update(EntityInterface $entity) {
 function _scheduler_rules_integration_dispatch_cron_event(EntityInterface $entity, $event_type) {
   $scheduler_manager = \Drupal::service('scheduler.manager');
 
-  $event_id = strtoupper($event_type);
+  $event_id = strtoupper("CRON_{$event_type}ED");
   $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
     . ucfirst($entity->getEntityTypeId()) . 'Event';
   $event = new $event_class($entity);

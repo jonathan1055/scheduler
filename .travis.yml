@@ -35,9 +35,8 @@ jobs:
         # 247 EventDispatcher (in Rules module)
         #  36 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
         #  12 StatementWrapper::fetchColumn
-        # --- Remaining direct deprecation notices (10)
+        # --- Remaining direct deprecation notices (5)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush (none now at 9.1+?)
         - DEPRECATIONS=300
     - php: 7.4
       env:
@@ -47,7 +46,6 @@ jobs:
         #   6 StatementWrapper::fetchColumn
         # --- Remaining direct deprecation notices (5)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush (none now at 9.1+?)
         - DEPRECATIONS=11
         - RULES=NO
     - php: 7.4
@@ -58,7 +56,6 @@ jobs:
         #   1 BrowserTestBase::drupalGetHeader()
         # --- Remaining direct deprecation notices (5)
         #   5 inheritEnvironmentVariables
-        #   5 Passing command as string in drush (none now at 9.1+?)
         - DEPRECATIONS=12
         - RULES=NO
 
