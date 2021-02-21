@@ -125,9 +125,10 @@ trait SchedulerMediaSetupTrait {
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
       'delete any ' . $this->mediaTypeName . ' media',
-      'create media',
-      'update any media',
-      'delete any media',
+      'create ' . $this->nonSchedulerMediaTypeName . ' media',
+      'edit any ' . $this->nonSchedulerMediaTypeName . ' media',
+      'delete any ' . $this->nonSchedulerMediaTypeName . ' media',
+      'view own unpublished media',
       'schedule publishing of media',
     ];
     foreach ($this->adminUser->getRoles() as $rid) {
@@ -146,6 +147,7 @@ trait SchedulerMediaSetupTrait {
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
       'delete any ' . $this->mediaTypeName . ' media',
+      'view own unpublished media',
       'schedule publishing of media',
     ];
     foreach ($this->schedulerUser->getRoles() as $rid) {
@@ -158,6 +160,14 @@ trait SchedulerMediaSetupTrait {
         $role->save();
       }
     }
+
+    // By default, media items cannot be viewed directly, and the url media/mid
+    // gives a 404 not found. Changing this setting makes testing easier.
+    \Drupal::configFactory()
+      ->getEditable('media.settings')
+      ->set('standalone_url', TRUE)
+      ->save(TRUE);
+    $this->container->get('router.builder')->rebuild();
 
   }
 
@@ -305,6 +315,27 @@ trait SchedulerMediaSetupTrait {
     $file = $file ?? (($source_id == 'video_file') ? $this->videoFile : $this->audioFile);
     $source_field = $entityType->getSource()->getConfiguration()['source_field'];
     $this->getSession()->getPage()->attachFileToField("files[{$source_field}_0]", $file->uri->value);
+  }
+
+  /**
+   * Gets the newest media item from storage.
+   *
+   * Returns the media item with the highest mid value. For nodes, there is the
+   * standard drupalGetNodeByTitle() but nothing similar exists to help Media
+   * testing. This function could be expanded to filter by name instead, if that
+   * becomes a requirement as Media testing expands. However, this is nearly
+   * always called directly after creating the entity, so the one with the
+   * highest mid value is often what is needed.
+   *
+   * @return \Drupal\media\MediaInterface
+   *   The media object.
+   */
+  public function getMediaItem() {
+    $result = $this->mediaStorage->getQuery()
+      ->sort('mid', 'DESC')
+      ->execute();
+    $media_id = reset($result);
+    return $this->mediaStorage->load($media_id);
   }
 
 }
