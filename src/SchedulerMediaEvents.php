@@ -3,15 +3,12 @@
 namespace Drupal\scheduler;
 
 /**
- * Lists the six events dispatched by Scheduler for all supported entity types.
- *
- * These events are dispatched for all types of entity not just node entities.
- * The original node-only events remain in class SchedulerEvents.
+ * Lists the six events dispatched by Scheduler relating to Media entities.
  */
-final class SchedulerEntityEvents {
+final class SchedulerMediaEvents {
 
   /**
-   * The event triggered after an entity is published immediately.
+   * The event triggered after a media item is published immediately.
    *
    * This event allows modules to react after an entity is published
    * immediately when being saved after editing. The event listener method
@@ -19,28 +16,28 @@ final class SchedulerEntityEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const PUBLISH_IMMEDIATELY = 'scheduler.entity_publish_immediately';
+  const PUBLISH_IMMEDIATELY = 'scheduler.media_publish_immediately';
 
   /**
-   * The event triggered after an entity is published by cron.
+   * The event triggered after a media item is published by cron.
    *
    * This event allows modules to react after an entity is published by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const PUBLISH = 'scheduler.entity_publish';
+  const PUBLISH = 'scheduler.media_publish';
 
   /**
-   * The event triggered before an entity is published immediately.
+   * The event triggered before a media item is published immediately.
    *
    * This event allows modules to react before an entity is published
    * immediately when being saved after editing. The event listener method
@@ -48,52 +45,52 @@ final class SchedulerEntityEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const PRE_PUBLISH_IMMEDIATELY = 'scheduler.entity_pre_publish_immediately';
+  const PRE_PUBLISH_IMMEDIATELY = 'scheduler.media_pre_publish_immediately';
 
   /**
-   * The event triggered before an entity is published by cron.
+   * The event triggered before a media item is published by cron.
    *
    * This event allows modules to react before an entity is published by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const PRE_PUBLISH = 'scheduler.entity_pre_publish';
+  const PRE_PUBLISH = 'scheduler.media_pre_publish';
 
   /**
-   * The event triggered before an entity is unpublished by cron.
+   * The event triggered before a media item is unpublished by cron.
    *
    * This event allows modules to react before an entity is unpublished by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const PRE_UNPUBLISH = 'scheduler.entity_pre_unpublish';
+  const PRE_UNPUBLISH = 'scheduler.media_pre_unpublish';
 
   /**
-   * The event triggered after an entity is unpublished by cron.
+   * The event triggered after a media item is unpublished by cron.
    *
    * This event allows modules to react after an entity is unpublished by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEntityEvent
+   * @see \Drupal\scheduler\SchedulerEvent
    *
    * @var string
    */
-  const UNPUBLISH = 'scheduler.entity_unpublish';
+  const UNPUBLISH = 'scheduler.media_unpublish';
 
 }

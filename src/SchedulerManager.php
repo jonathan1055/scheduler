@@ -144,13 +144,18 @@ class SchedulerManager {
   }
 
   /**
-   * Dispatch Scheduler events for an event_id.
+   * Dispatches a Scheduler event for an entity.
    *
-   * This function dispatches the identified event for all entity types, using
-   * the SchedulerEntityEvents class. Additionally, for backwards compatibility
-   * it also dispatches the original 'node-only' event in SchedulerEvents class.
-   * The $entity is passed by reference so that any changes made are
-   * automatically stored and passed forward.
+   * This function dispatches a Scheduler event, identified by $event_id, for
+   * the entity type of the provided $entity. Each entity type has its own
+   * events class Scheduler{EntityType}Events, for example SchedulerNodeEvents,
+   * SchedulerMediaEvents, etc. This class contains constants (with mames
+   * matching the $event_id parameter) which uniquely define the final event
+   * name string to be dispatched. The actual event object dispatched is always
+   * of class SchedulerEvent.
+   *
+   * The $entity is passed by reference so that any changes made in the event
+   * subsriber implementations are automatically stored and passed forward.
    *
    * @param Drupal\Core\Entity\EntityInterface $entity
    *   The entity object.
@@ -158,18 +163,15 @@ class SchedulerManager {
    *   The short text id the event, for example 'PUBLISH' or 'PRE_UNPUBLISH'.
    */
   public function dispatchEvents(EntityInterface &$entity, string $event_id) {
-    // The SchedulerEntityEvents event is dispatched for every type of entity.
-    $dispatch_list = [constant(SchedulerEntityEvents::class . "::$event_id")];
-    if ($entity->getEntityTypeId() == 'node') {
-      // For backwards-compatibility the corresponding original SchedulerEvents
-      // event is dispatched just for node entities. Process this first.
-      array_unshift($dispatch_list, constant(SchedulerEvents::class . "::$event_id"));
-    }
-    foreach ($dispatch_list as $event_name) {
-      $event = new SchedulerEvent($entity);
-      $this->dispatch($event, $event_name);
-      $entity = $event->getEntity();
-    }
+    // Build a string to hold fully named-spaced events class name, for use in
+    // the constant() function.
+    $event_class = '\Drupal\scheduler\Scheduler' . ucfirst($entity->getEntityTypeId()) . 'Events';
+    $event_name = constant("$event_class::$event_id");
+
+    // Create the event object and dispatch the required event_name.
+    $event = new SchedulerEvent($entity);
+    $this->dispatch($event, $event_name);
+    $entity = $event->getEntity();
   }
 
   /**

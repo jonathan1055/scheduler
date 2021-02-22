@@ -1,106 +1,19 @@
 <?php
 
-namespace Drupal\scheduler;
+/**
+ * @file
+ * Creates alias for SchedulerEvents class to maintain backwards-compatibility.
+ */
 
 /**
- * Lists the six events dispatched by Scheduler relating to node entities.
+ * Lists the six Scheduler events dispatched for Node entities.
  *
- * Class SchedulerEntityEvents contains six equivalent events that are
- * dispatched for all entity types.
- *
- * Ideally the namespace should have been Drupal\scheduler\Event and all the
- * event-related files stored in a src/Event folder. This cannot be chnaged now
- * as it would break the API which is being used by 3rd-party modules
- * subscribing to scheduler's events.
+ * This class, named 'SchedulerEvents', must remain for backwards-compatibility
+ * with existing implementations of event subscribers for Node events. However
+ * each supported entity type now has a specific class Scheduler{Type}Events
+ * and so the original SchedulerEvents is now an alias for the Node version.
+ * This makes it clearer that SchedulerNodeEvents is for nodes, and also
+ * simplifies the dispatching process when each class name has the same format.
  */
-final class SchedulerEvents {
 
-  /**
-   * The event triggered after a node is published immediately.
-   *
-   * This event allows modules to react after a node is published immediately.
-   * The event listener method receives a \Drupal\Core\Entity\EntityInterface
-   * instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const PUBLISH_IMMEDIATELY = 'scheduler.publish_immediately';
-
-  /**
-   * The event triggered after a node is published via cron.
-   *
-   * This event allows modules to react after a node is published. The event
-   * listener method receives a \Drupal\Core\Entity\EntityInterface instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const PUBLISH = 'scheduler.publish';
-
-  /**
-   * The event triggered before a node is published immediately.
-   *
-   * This event allows modules to react before a node is published immediately.
-   * The event listener method receives a \Drupal\Core\Entity\EntityInterface
-   * instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const PRE_PUBLISH_IMMEDIATELY = 'scheduler.pre_publish_immediately';
-
-  /**
-   * The event triggered before a node is published via cron.
-   *
-   * This event allows modules to react before a node is published. The event
-   * listener method receives a \Drupal\Core\Entity\EntityInterface
-   * instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const PRE_PUBLISH = 'scheduler.pre_publish';
-
-  /**
-   * The event triggered before a node is unpublished via cron.
-   *
-   * This event allows modules to react before a node is unpublished. The
-   * event listener method receives a \Drupal\Core\Entity\EntityInterface
-   * instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const PRE_UNPUBLISH = 'scheduler.pre_unpublish';
-
-  /**
-   * The event triggered after a node is unpublished via cron.
-   *
-   * This event allows modules to react after a node is unpublished. The event
-   * listener method receives a \Drupal\Core\Entity\EntityInterface instance.
-   *
-   * @Event
-   *
-   * @see \Drupal\scheduler\SchedulerEvent
-   *
-   * @var string
-   */
-  const UNPUBLISH = 'scheduler.unpublish';
-
-}
+class_alias('Drupal\scheduler\SchedulerNodeEvents', 'Drupal\scheduler\SchedulerEvents');
