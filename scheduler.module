@@ -557,7 +557,7 @@ function scheduler_entity_presave(EntityInterface $entity) {
     if ($publication_allowed && $publish_immediately && $entity->publish_on->value <= $request_time) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
       // before the node has been published.
-      $scheduler_manager->dispatchEvents($entity, 'PRE_PUBLISH_IMMEDIATELY');
+      $scheduler_manager->dispatchSchedulerEvent($entity, 'PRE_PUBLISH_IMMEDIATELY');
 
       // Set the 'changed' timestamp to match what would have been done had this
       // content been published via cron.
@@ -572,7 +572,7 @@ function scheduler_entity_presave(EntityInterface $entity) {
 
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
       // the node has been published.
-      $scheduler_manager->dispatchEvents($entity, 'PUBLISH_IMMEDIATELY');
+      $scheduler_manager->dispatchSchedulerEvent($entity, 'PUBLISH_IMMEDIATELY');
     }
     else {
       // Ensure the node is unpublished as it will be published by cron later.

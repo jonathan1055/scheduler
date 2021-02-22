@@ -162,7 +162,7 @@ class SchedulerManager {
    * @param string $event_id
    *   The short text id the event, for example 'PUBLISH' or 'PRE_UNPUBLISH'.
    */
-  public function dispatchEvents(EntityInterface &$entity, string $event_id) {
+  public function dispatchSchedulerEvent(EntityInterface &$entity, string $event_id) {
     // Build a string to hold fully named-spaced events class name, for use in
     // the constant() function.
     $event_class = '\Drupal\scheduler\Scheduler' . ucfirst($entity->getEntityTypeId()) . 'Events';
@@ -301,7 +301,7 @@ class SchedulerManager {
 
           // Trigger the PRE_PUBLISH Scheduler event so that modules can react
           // before the entity is published.
-          $this->dispatchEvents($entity, 'PRE_PUBLISH');
+          $this->dispatchSchedulerEvent($entity, 'PRE_PUBLISH');
 
           // Update 'changed' timestamp.
           $entity->setChangedTime($publish_on);
@@ -387,7 +387,7 @@ class SchedulerManager {
 
           // Trigger the PUBLISH Scheduler event so that modules can react after
           // the entity is published.
-          $this->dispatchEvents($entity, 'PUBLISH');
+          $this->dispatchSchedulerEvent($entity, 'PUBLISH');
 
           // Use the standard actions system to publish and save the entity.
           $action_id = $plugin->entityType() . '_publish_action';
@@ -489,7 +489,7 @@ class SchedulerManager {
 
           // Trigger the PRE_UNPUBLISH Scheduler event so that modules can react
           // before the entity is unpublished.
-          $this->dispatchEvents($entity, 'PRE_UNPUBLISH');
+          $this->dispatchSchedulerEvent($entity, 'PRE_UNPUBLISH');
 
           // Update 'changed' timestamp.
           $entity->setChangedTime($unpublish_on);
@@ -565,7 +565,7 @@ class SchedulerManager {
 
           // Trigger the UNPUBLISH Scheduler event so that modules can react
           // after the entity is unpublished.
-          $this->dispatchEvents($entity, 'UNPUBLISH');
+          $this->dispatchSchedulerEvent($entity, 'UNPUBLISH');
 
           // Use the standard actions system to unpublish and save the entity.
           $action_id = $plugin->entityType() . '_unpublish_action';
