@@ -21,36 +21,16 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
   protected static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
 
   /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Temporary: Create media entities scheduled for publishing and
-    // unpublishing, to interfere with tests as they stand, to prove that
-    // changes are needed.
-    $this->createMediaItem([
-      'name' => 'Publish This Media',
-      'publish_on' => $this->requestTime - 3600,
-    ]);
-    $this->createMediaItem([
-      'name' => 'Unpublish This Media',
-      'unpublish_on' => $this->requestTime - 3600,
-    ]);
-  }
-
-  /**
-   * Covers six events.
+   * Covers six events for nodes.
    *
    * The events allow other modules to react to the Scheduler process being run.
    * The API test implementations of the event listeners alter the nodes
    * 'promote' and 'sticky' settings and changes the title.
    */
-  public function testApiNodeAction() {
+  public function testNodeEvents() {
     $this->drupalLogin($this->schedulerUser);
 
-    // Create a test node. Having the 'approved' fields here would complicate
-    // the tests, so use the ordinary page type.
+    // Create a test node.
     $settings = [
       'publish_on' => strtotime('-1 day'),
       'type' => $this->type,
@@ -97,13 +77,65 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     // Verify that the values have been altered as expected.
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isSticky(), 'API event "PRE_PUBLISH_IMMEDIATELY" has changed the node to sticky.');
     $this->assertTrue($node->isPromoted(), 'API event "PUBLISH_IMMEDIATELY" has changed the node to promoted.');
     $this->assertEquals('Published immediately', $node->title->value, 'API action "PUBLISH_IMMEDIATELY" has changed the node title correctly.');
+  }
+
+  /**
+   * Covers six events for media entities.
+   */
+  public function testMediaEvents() {
+    $this->drupalLogin($this->schedulerUser);
+
+    // Create a media item.
+    $media = $this->createMediaItem([
+      'name' => 'API TEST MEDIA',
+      'publish_on' => strtotime('-1 day'),
+    ]);
+    // Run cron and check that the events have been dispatched correctly. The
+    // name is first changed by a PRE_PUBLISH event subscriber, then a second
+    // time by a PUBLISH event watcher. Checking the final value tests both.
+    scheduler_cron();
+    $this->mediaStorage->resetCache([$media->id()]);
+    $media = $this->mediaStorage->load($media->id());
+    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "PUBLISH" event');
+
+    // Create a media item with an unpublish-on date.
+    $media = $this->createMediaItem([
+      'name' => 'API TEST MEDIA',
+      'unpublish_on' => strtotime('-1 day'),
+    ]);
+    // Run cron and check that the events have been dispatched correctly.
+    scheduler_cron();
+    $this->mediaStorage->resetCache([$media->id()]);
+    $media = $this->mediaStorage->load($media->id());
+    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "UNPUBLISH" event');
+
+    // Turn on immediate publishing when a publish date is in the past.
+    $this->mediaType->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
+
+    // Create an unpublished media item.
+    $media = $this->createMediaItem([
+      'name' => 'API TEST MEDIA',
+      'status' => FALSE,
+    ]);
+    // Edit the media item, setting a publish-on date in the past.
+    $edit = [
+      'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
+      'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
+    ];
+    $this->drupalGet('media/' . $media->id() . '/edit');
+    $this->submitForm($edit, 'Save');
+    // Verify that the values have been altered as expected, without cron.
+    $this->mediaStorage->resetCache([$media->id()]);
+    $media = $this->mediaStorage->load($media->id());
+    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "PUBLISH_IMMEDIATELY" event');
   }
 
 }
