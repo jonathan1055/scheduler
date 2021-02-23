@@ -3,7 +3,7 @@
 namespace Drupal\scheduler_api_test;
 
 use Drupal\scheduler\SchedulerEvent;
-use Drupal\scheduler\SchedulerEvents;
+use Drupal\scheduler\SchedulerNodeEvents;
 use Drupal\scheduler\SchedulerMediaEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -37,12 +37,12 @@ class EventSubscriber implements EventSubscriberInterface {
 
     // The values in the arrays give the function names below.
     // These six events are the originals, dispatched for Nodes.
-    $events[SchedulerEvents::PRE_PUBLISH][] = ['apiTestNodePrePublish'];
-    $events[SchedulerEvents::PUBLISH][] = ['apiTestNodePublish'];
-    $events[SchedulerEvents::PRE_UNPUBLISH][] = ['apiTestNodePreUnpublish'];
-    $events[SchedulerEvents::UNPUBLISH][] = ['apiTestNodeUnpublish'];
-    $events[SchedulerEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestNodePrePublishImmediately'];
-    $events[SchedulerEvents::PUBLISH_IMMEDIATELY][] = ['apiTestNodePublishImmediately'];
+    $events[SchedulerNodeEvents::PRE_PUBLISH][] = ['apiTestNodePrePublish'];
+    $events[SchedulerNodeEvents::PUBLISH][] = ['apiTestNodePublish'];
+    $events[SchedulerNodeEvents::PRE_UNPUBLISH][] = ['apiTestNodePreUnpublish'];
+    $events[SchedulerNodeEvents::UNPUBLISH][] = ['apiTestNodeUnpublish'];
+    $events[SchedulerNodeEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestNodePrePublishImmediately'];
+    $events[SchedulerNodeEvents::PUBLISH_IMMEDIATELY][] = ['apiTestNodePublishImmediately'];
 
     // These six events are dispatched for Media entity types only.
     $events[SchedulerMediaEvents::PRE_PUBLISH][] = ['apiTestMediaPrePublish'];
