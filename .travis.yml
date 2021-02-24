@@ -68,6 +68,20 @@ cache:
     - $HOME/.composer
 
 before_script:
+  # At job start-up Composer is installed at 1.8.4 then self-update is run. From
+  # 24 October 2020 this bumped the version to Composer 2. Drupal Core 8.8 has
+  # plugins that only run with composer-plugin-api ^1.0 so revert to Composer 1.
+  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
+      travis_retry composer self-update --1;
+    fi
+  # On 23 Feb 2021 Composer 2.0.10 was released which broke core 8.9 and 9.0
+  # with error 'Class Composer\Package\AliasPackage contains 3 abstract methods
+  # and must therefore be declared abstract'. So roll back to version 2.0.9.
+  - if [[ "$DRUPAL_CORE" == "8.9.x" || "$DRUPAL_CORE" == "9.0.x" ]]; then
+      travis_retry composer self-update 2.0.9;
+    fi
+  - composer --version
+
   - echo $MODULE
 
   # Remove Xdebug as we don't need it and it causes
@@ -104,12 +118,7 @@ before_script:
       travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
     fi
 
-  # At job start-up Composer is installed at 1.8.4 then self-update is run. From
-  # 24 October 2020 this bumped the version to Composer 2. Drupal Core 8.8 has
-  # plugins that only run with composer-plugin-api ^1.0 so revert to Composer 1.
-  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
-      travis_retry composer self-update --1;
-    fi
+  # Install the site dependencies via Composer.
   - travis_retry composer install
 
   # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
