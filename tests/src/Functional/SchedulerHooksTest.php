@@ -60,6 +60,117 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Covers hook_scheduler_nid_list($action)
+   *
+   * Hook_scheduler_nid_list() allows other modules to add more node ids into
+   * the list to be processed. In real scenarios, the third-party module would
+   * likely have more complex data structures and/or tables from which to
+   * identify nodes to add. In this test, to keep it simple, we identify nodes
+   * by the text of the title.
+   */
+  public function testNidList() {
+    $this->drupalLogin($this->schedulerUser);
+
+    // Create test nodes. Use the ordinary page type for this test, as having
+    // the 'approved' fields here would unnecessarily complicate the processing.
+    // Node 1 is not published and has no publishing date set. The test API
+    // module will add node 1 into the list to be published.
+    $node1 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list publish me',
+    ]);
+    // Node 2 is published and has no unpublishing date set. The test API module
+    // will add node 2 into the list to be unpublished.
+    $node2 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list unpublish me',
+    ]);
+
+    // Before cron, check node 1 is unpublished and node 2 is published.
+    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
+    $this->assertTrue($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is published.');
+
+    // Run cron and refresh the nodes.
+    scheduler_cron();
+    $this->nodeStorage->resetCache();
+    $node1 = $this->nodeStorage->load($node1->id());
+    $node2 = $this->nodeStorage->load($node2->id());
+
+    // Check node 1 is published and node 2 is unpublished.
+    $this->assertTrue($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is published.');
+    $this->assertFalse($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is unpublished.');
+  }
+
+  /**
+   * Covers hook_scheduler_nid_list_alter($action)
+   *
+   * This hook allows other modules to add or remove node ids from the list to
+   * be processed. As in testNidList() we make it simple by using the title text
+   * to identify which nodes to act on.
+   */
+  public function testNidListAlter() {
+    $this->drupalLogin($this->schedulerUser);
+
+    // Create test nodes. Use the ordinary page type for this test, as having
+    // the 'approved' fields here would unnecessarily complicate the processing.
+    // Node 1 is set for scheduled publishing, but will be removed by the test
+    // API hook_nid_list_alter().
+    $node1 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list_alter do not publish me',
+      'publish_on' => strtotime('-1 day'),
+    ]);
+
+    // Node 2 is not published and has no publishing date set. The test API
+    // module will add node 2 into the list to be published.
+    $node2 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => FALSE,
+      'title' => 'API TEST nid_list_alter publish me',
+    ]);
+
+    // Node 3 is set for scheduled unpublishing, but will be removed by the test
+    // API hook_nid_list_alter().
+    $node3 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list_alter do not unpublish me',
+      'unpublish_on' => strtotime('-1 day'),
+    ]);
+
+    // Node 4 is published and has no unpublishing date set. The test API module
+    // will add node 4 into the list to be unpublished.
+    $node4 = $this->drupalCreateNode([
+      'type' => $this->type,
+      'status' => TRUE,
+      'title' => 'API TEST nid_list_alter unpublish me',
+    ]);
+
+    // Check node 1 and 2 are unpublished and node 3 and 4 are published.
+    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
+    $this->assertFalse($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is unpublished.');
+    $this->assertTrue($node3->isPublished(), 'Before cron, node 3 "' . $node3->title->value . '" is published.');
+    $this->assertTrue($node4->isPublished(), 'Before cron, node 4 "' . $node4->title->value . '" is published.');
+
+    // Run cron and refresh the nodes.
+    scheduler_cron();
+    $this->nodeStorage->resetCache();
+    $node1 = $this->nodeStorage->load($node1->id());
+    $node2 = $this->nodeStorage->load($node2->id());
+    $node3 = $this->nodeStorage->load($node3->id());
+    $node4 = $this->nodeStorage->load($node4->id());
+
+    // Check node 2 and 3 are published and node 1 and 4 are unpublished.
+    $this->assertFalse($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is still unpublished.');
+    $this->assertTrue($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is published.');
+    $this->assertTrue($node3->isPublished(), 'After cron, node 3 "' . $node3->title->value . '" is still published.');
+    $this->assertFalse($node4->isPublished(), 'After cron, node 4 "' . $node4->title->value . '" is unpublished.');
+  }
+
+  /**
    * Covers hook_scheduler_allow_publishing()
    *
    * This hook can allow or deny the publishing of individual nodes. This test
@@ -211,117 +322,6 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->nodeStorage->resetCache([$nid]);
     $node = $this->nodeStorage->load($nid);
     $node->set($field_name, TRUE)->save();
-  }
-
-  /**
-   * Covers hook_scheduler_nid_list($action)
-   *
-   * Hook_scheduler_nid_list() allows other modules to add more node ids into
-   * the list to be processed. In real scenarios, the third-party module would
-   * likely have more complex data structures and/or tables from which to
-   * identify nodes to add. In this test, to keep it simple, we identify nodes
-   * by the text of the title.
-   */
-  public function testNidList() {
-    $this->drupalLogin($this->schedulerUser);
-
-    // Create test nodes. Use the ordinary page type for this test, as having
-    // the 'approved' fields here would unnecessarily complicate the processing.
-    // Node 1 is not published and has no publishing date set. The test API
-    // module will add node 1 into the list to be published.
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => FALSE,
-      'title' => 'API TEST nid_list publish me',
-    ]);
-    // Node 2 is published and has no unpublishing date set. The test API module
-    // will add node 2 into the list to be unpublished.
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => TRUE,
-      'title' => 'API TEST nid_list unpublish me',
-    ]);
-
-    // Before cron, check node 1 is unpublished and node 2 is published.
-    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
-    $this->assertTrue($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is published.');
-
-    // Run cron and refresh the nodes.
-    scheduler_cron();
-    $this->nodeStorage->resetCache();
-    $node1 = $this->nodeStorage->load($node1->id());
-    $node2 = $this->nodeStorage->load($node2->id());
-
-    // Check node 1 is published and node 2 is unpublished.
-    $this->assertTrue($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is published.');
-    $this->assertFalse($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is unpublished.');
-  }
-
-  /**
-   * Covers hook_scheduler_nid_list_alter($action)
-   *
-   * This hook allows other modules to add or remove node ids from the list to
-   * be processed. As in testNidList() we make it simple by using the title text
-   * to identify which nodes to act on.
-   */
-  public function testNidListAlter() {
-    $this->drupalLogin($this->schedulerUser);
-
-    // Create test nodes. Use the ordinary page type for this test, as having
-    // the 'approved' fields here would unnecessarily complicate the processing.
-    // Node 1 is set for scheduled publishing, but will be removed by the test
-    // API hook_nid_list_alter().
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => FALSE,
-      'title' => 'API TEST nid_list_alter do not publish me',
-      'publish_on' => strtotime('-1 day'),
-    ]);
-
-    // Node 2 is not published and has no publishing date set. The test API
-    // module will add node 2 into the list to be published.
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => FALSE,
-      'title' => 'API TEST nid_list_alter publish me',
-    ]);
-
-    // Node 3 is set for scheduled unpublishing, but will be removed by the test
-    // API hook_nid_list_alter().
-    $node3 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => TRUE,
-      'title' => 'API TEST nid_list_alter do not unpublish me',
-      'unpublish_on' => strtotime('-1 day'),
-    ]);
-
-    // Node 4 is published and has no unpublishing date set. The test API module
-    // will add node 4 into the list to be unpublished.
-    $node4 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'status' => TRUE,
-      'title' => 'API TEST nid_list_alter unpublish me',
-    ]);
-
-    // Check node 1 and 2 are unpublished and node 3 and 4 are published.
-    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
-    $this->assertFalse($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is unpublished.');
-    $this->assertTrue($node3->isPublished(), 'Before cron, node 3 "' . $node3->title->value . '" is published.');
-    $this->assertTrue($node4->isPublished(), 'Before cron, node 4 "' . $node4->title->value . '" is published.');
-
-    // Run cron and refresh the nodes.
-    scheduler_cron();
-    $this->nodeStorage->resetCache();
-    $node1 = $this->nodeStorage->load($node1->id());
-    $node2 = $this->nodeStorage->load($node2->id());
-    $node3 = $this->nodeStorage->load($node3->id());
-    $node4 = $this->nodeStorage->load($node4->id());
-
-    // Check node 2 and 3 are published and node 1 and 4 are unpublished.
-    $this->assertFalse($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is still unpublished.');
-    $this->assertTrue($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is published.');
-    $this->assertTrue($node3->isPublished(), 'After cron, node 3 "' . $node3->title->value . '" is still published.');
-    $this->assertFalse($node4->isPublished(), 'After cron, node 4 "' . $node4->title->value . '" is unpublished.');
   }
 
   /**
