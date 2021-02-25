@@ -46,17 +46,24 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       'schedule publishing of nodes',
     ]);
 
-    // Temporary: Create media entities scheduled for publishing and
-    // unpublishing, to interfere with tests as they stand, to prove that
-    // changes are needed.
-    $this->createMediaItem([
-      'name' => 'Publish This Media',
-      'publish_on' => $this->requestTime - 3600,
-    ]);
-    $this->createMediaItem([
-      'name' => 'Unpublish This Media',
-      'unpublish_on' => $this->requestTime - 3600,
-    ]);
+  }
+
+  /**
+   * Provides test data for some tests in this class.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataHookTestData() {
+    $data = [
+      0 => ['node', 'testpage'],
+      1 => ['media', 'test-video'],
+    ];
+
+    // Use unset($data[n]) to remove a temporarily unwanted item, use
+    // return [$data[n]] to selectively test just one item, or have the default
+    // return $data to test everything.
+    return $data;
   }
 
   /**
@@ -67,107 +74,109 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    * likely have more complex data structures and/or tables from which to
    * identify nodes to add. In this test, to keep it simple, we identify nodes
    * by the text of the title.
+   *
+   * This test also covers hook_scheduler_media_list($action).
+   *
+   * @dataProvider dataHookTestData()
    */
-  public function testNidList() {
+  public function testIdList($entityTypeId, $bundle) {
+    $storage = $this->entityStorageObject($entityTypeId);
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->schedulerUser);
 
-    // Create test nodes. Use the ordinary page type for this test, as having
-    // the 'approved' fields here would unnecessarily complicate the processing.
-    // Node 1 is not published and has no publishing date set. The test API
-    // module will add node 1 into the list to be published.
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Create test entities using the standard scheduler test entity types.
+    // Entity 1 is not published and has no publishing date set. The test API
+    // module will add this entity into the list to be published.
+    $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST nid_list publish me',
+      "$titleField" => 'API TEST id list publish me',
     ]);
-    // Node 2 is published and has no unpublishing date set. The test API module
-    // will add node 2 into the list to be unpublished.
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Entity 2 is published and has no unpublishing date set. The test API
+    // module will add this entity into the list to be unpublished.
+    $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'API TEST nid_list unpublish me',
+      "$titleField" => 'API TEST id list unpublish me',
     ]);
 
-    // Before cron, check node 1 is unpublished and node 2 is published.
-    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
-    $this->assertTrue($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is published.');
+    // Before cron, check entity 1 is unpublished and entity 2 is published.
+    $this->assertFalse($entity1->isPublished(), "Before cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
+    $this->assertTrue($entity2->isPublished(), "Before cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
 
-    // Run cron and refresh the nodes.
+    // Run cron and refresh the entities.
     scheduler_cron();
-    $this->nodeStorage->resetCache();
-    $node1 = $this->nodeStorage->load($node1->id());
-    $node2 = $this->nodeStorage->load($node2->id());
+    $storage->resetCache();
+    $entity1 = $storage->load($entity1->id());
+    $entity2 = $storage->load($entity2->id());
 
-    // Check node 1 is published and node 2 is unpublished.
-    $this->assertTrue($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is published.');
-    $this->assertFalse($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is unpublished.');
+    // Check entity 1 is published and entity 2 is unpublished.
+    $this->assertTrue($entity1->isPublished(), "After cron, $entityTypeId 1 '{$entity1->label()}' should be published.");
+    $this->assertFalse($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
   }
 
   /**
    * Covers hook_scheduler_nid_list_alter($action)
    *
    * This hook allows other modules to add or remove node ids from the list to
-   * be processed. As in testNidList() we make it simple by using the title text
-   * to identify which nodes to act on.
+   * be processed.
+   *
+   * This test also covers hook_scheduler_media_list_alter($action).
+   *
+   * @dataProvider dataHookTestData()
    */
-  public function testNidListAlter() {
+  public function testIdListAlter($entityTypeId, $bundle) {
+    $storage = $this->entityStorageObject($entityTypeId);
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->schedulerUser);
 
-    // Create test nodes. Use the ordinary page type for this test, as having
-    // the 'approved' fields here would unnecessarily complicate the processing.
-    // Node 1 is set for scheduled publishing, but will be removed by the test
-    // API hook_nid_list_alter().
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Create test entities using the standard scheduler test entity types.
+    // Entity 1 is set for scheduled publishing, but will be removed by the test
+    // API list_alter() function.
+    $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST nid_list_alter do not publish me',
+      "$titleField" => 'API TEST list_alter do not publish me',
       'publish_on' => strtotime('-1 day'),
     ]);
-
-    // Node 2 is not published and has no publishing date set. The test API
-    // module will add node 2 into the list to be published.
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Entity 2 is not published and has no publishing date set. The test module
+    // will add a date and add the id into the list to be published.
+    $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST nid_list_alter publish me',
+      "$titleField" => 'API TEST list_alter publish me',
     ]);
 
-    // Node 3 is set for scheduled unpublishing, but will be removed by the test
-    // API hook_nid_list_alter().
-    $node3 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Entity 3 is set for scheduled unpublishing, but will be removed by the
+    // test API list_alter() function.
+    $entity3 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'API TEST nid_list_alter do not unpublish me',
+      "$titleField" => 'API TEST list_alter do not unpublish me',
       'unpublish_on' => strtotime('-1 day'),
     ]);
 
-    // Node 4 is published and has no unpublishing date set. The test API module
-    // will add node 4 into the list to be unpublished.
-    $node4 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Entity 4 is published and has no unpublishing date set. The test module
+    // will add a date and add the id into the list to be unpublished.
+    $entity4 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'API TEST nid_list_alter unpublish me',
+      "$titleField" => 'API TEST list_alter unpublish me',
     ]);
 
-    // Check node 1 and 2 are unpublished and node 3 and 4 are published.
-    $this->assertFalse($node1->isPublished(), 'Before cron, node 1 "' . $node1->title->value . '" is unpublished.');
-    $this->assertFalse($node2->isPublished(), 'Before cron, node 2 "' . $node2->title->value . '" is unpublished.');
-    $this->assertTrue($node3->isPublished(), 'Before cron, node 3 "' . $node3->title->value . '" is published.');
-    $this->assertTrue($node4->isPublished(), 'Before cron, node 4 "' . $node4->title->value . '" is published.');
+    // Before cron, check 1 and 2 are unpublished and 3 and 4 are published.
+    $this->assertFalse($entity1->isPublished(), "Before cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
+    $this->assertFalse($entity2->isPublished(), "Before cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
+    $this->assertTrue($entity3->isPublished(), "Before cron, $entityTypeId 3 '{$entity3->label()}' should be published.");
+    $this->assertTrue($entity4->isPublished(), "Before cron, $entityTypeId 4 '{$entity4->label()}' should be published.");
 
-    // Run cron and refresh the nodes.
+    // Run cron and refresh the entities from storage.
     scheduler_cron();
-    $this->nodeStorage->resetCache();
-    $node1 = $this->nodeStorage->load($node1->id());
-    $node2 = $this->nodeStorage->load($node2->id());
-    $node3 = $this->nodeStorage->load($node3->id());
-    $node4 = $this->nodeStorage->load($node4->id());
+    $storage->resetCache();
+    $entity1 = $storage->load($entity1->id());
+    $entity2 = $storage->load($entity2->id());
+    $entity3 = $storage->load($entity3->id());
+    $entity4 = $storage->load($entity4->id());
 
-    // Check node 2 and 3 are published and node 1 and 4 are unpublished.
-    $this->assertFalse($node1->isPublished(), 'After cron, node 1 "' . $node1->title->value . '" is still unpublished.');
-    $this->assertTrue($node2->isPublished(), 'After cron, node 2 "' . $node2->title->value . '" is published.');
-    $this->assertTrue($node3->isPublished(), 'After cron, node 3 "' . $node3->title->value . '" is still published.');
-    $this->assertFalse($node4->isPublished(), 'After cron, node 4 "' . $node4->title->value . '" is unpublished.');
+    // Check entity 2 and 3 are published and entity 1 and 4 are unpublished.
+    $this->assertFalse($entity1->isPublished(), "After cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
+    $this->assertTrue($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
+    $this->assertTrue($entity3->isPublished(), "After cron, $entityTypeId 3 '{$entity3->label()}' should be published.");
+    $this->assertFalse($entity4->isPublished(), "After cron, $entityTypeId 4 '{$entity4->label()}' should be unpublished.");
   }
 
   /**

@@ -3,9 +3,14 @@
 /**
  * @file
  * Hook implementations of the Scheduler API Test module.
+ *
+ * Scheduler provides eight hook functions. Each entity type has its own hook
+ * function names, to keep them distinct when processing different entity types.
+ * Hence this test module has 8 implementations for Nodes and 8 for Media.
  */
 
 use Drupal\node\Entity\Node;
+use Drupal\media\Entity\Media;
 use Drupal\node\NodeInterface;
 
 /**
@@ -13,21 +18,19 @@ use Drupal\node\NodeInterface;
  */
 function scheduler_api_test_scheduler_nid_list($action) {
   $nids = [];
-
-  // Check to see what test nodes exist.
-  $query = \Drupal::entityQuery('node');
-  $nodes = Node::loadMultiple($query->execute());
   $request_time = \Drupal::time()->getRequestTime();
-  foreach ($nodes as $nid => $node) {
+  // Check to see what test nodes exist.
+  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  foreach ($results as $nid => $node) {
     // If publishing and this is the publish test node, set a date and add
     // the node id to the list.
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list publish me') {
+    if ($action == 'publish' && $node->title->value == 'API TEST id list publish me') {
       $node->set('publish_on', $request_time)->save();
       $nids[] = $nid;
     }
     // If unpublishing and this is the unpublish test node, set a date and add
     // the node id to the list.
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST id list unpublish me') {
       $node->set('unpublish_on', $request_time)->save();
       $nids[] = $nid;
     }
@@ -36,33 +39,83 @@ function scheduler_api_test_scheduler_nid_list($action) {
 }
 
 /**
+ * Implements hook_scheduler_media_list().
+ */
+function scheduler_api_test_scheduler_media_list($action) {
+  $ids = [];
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  foreach ($results as $mid => $media) {
+    // If publishing and this is the publish test media, set a date and add the
+    // id to the list.
+    if ($action == 'publish' && $media->label() == 'API TEST id list publish me') {
+      $media->set('publish_on', $request_time)->save();
+      $ids[] = $mid;
+    }
+    // If unpublishing and this is the unpublish test media, set a date and add
+    // the id to the list.
+    if ($action == 'unpublish' && $media->label() == 'API TEST id list unpublish me') {
+      $media->set('unpublish_on', $request_time)->save();
+      $ids[] = $mid;
+    }
+  }
+  return $ids;
+}
+
+/**
  * Implements hook_scheduler_nid_list_alter().
  */
 function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
-  $query = \Drupal::entityQuery('node');
-  $nodes = Node::loadMultiple($query->execute());
   $request_time = \Drupal::time()->getRequestTime();
-  foreach ($nodes as $nid => $node) {
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter do not publish me') {
+  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  foreach ($results as $nid => $node) {
+    if ($action == 'publish' && $node->title->value == 'API TEST list_alter do not publish me') {
       // Remove the node id.
       $nids = array_diff($nids, [$nid]);
     }
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter publish me') {
+    if ($action == 'publish' && $node->title->value == 'API TEST list_alter publish me') {
       // Set a publish_on date and add the node id.
       $node->set('publish_on', $request_time)->save();
       $nids[] = $nid;
     }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter do not unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST list_alter do not unpublish me') {
       // Remove the node id.
       $nids = array_diff($nids, [$nid]);
     }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter unpublish me') {
+    if ($action == 'unpublish' && $node->title->value == 'API TEST list_alter unpublish me') {
       // Set an unpublish_on date and add the node id.
       $node->set('unpublish_on', $request_time)->save();
       $nids[] = $nid;
     }
   }
-  return $nids;
+}
+
+/**
+ * Implements hook_scheduler_media_list_alter().
+ */
+function scheduler_api_test_scheduler_media_list_alter(&$ids, $action) {
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  foreach ($results as $mid => $media) {
+    if ($action == 'publish' && $media->label() == 'API TEST list_alter do not publish me') {
+      // Remove the id.
+      $ids = array_diff($ids, [$mid]);
+    }
+    if ($action == 'publish' && $media->label() == 'API TEST list_alter publish me') {
+      // Set a publish_on date and add the id.
+      $media->set('publish_on', $request_time)->save();
+      $ids[] = $mid;
+    }
+    if ($action == 'unpublish' && $media->label() == 'API TEST list_alter do not unpublish me') {
+      // Remove the id.
+      $ids = array_diff($ids, [$mid]);
+    }
+    if ($action == 'unpublish' && $media->label() == 'API TEST list_alter unpublish me') {
+      // Set an unpublish_on date and add the id.
+      $media->set('unpublish_on', $request_time)->save();
+      $ids[] = $mid;
+    }
+  }
 }
 
 /**
