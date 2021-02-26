@@ -12,25 +12,40 @@
  * module config and content on uninstalling. Plus, when developing this module
  * and enabling it manually as a real module, this code is needed to clean up,
  * otherwise a re-install fails.
+ *
+ * The entity types, custom fields and storage are deleted automatically by
+ * having 'enforced: module: - scheduler_api_test' in the config/install/*.yml
+ * files. However, we have to delete the actual entity content here.
  */
 function scheduler_api_test_uninstall() {
 
-  // Delete any content that may have been created for the custom node type.
-  $nids_query = \Drupal::database()->select('node', 'n')
+  // Delete any node content of the custom node type.
+  $ids_query = \Drupal::database()->select('node', 'n')
     ->fields('n', ['nid'])
     ->condition('n.type', ['scheduler_api_test'], 'IN')
     ->execute();
-  if ($nids = $nids_query->fetchCol()) {
+  if ($ids = $ids_query->fetchCol()) {
     $storage = \Drupal::entityTypeManager()->getStorage('node');
-    $entities = $storage->loadMultiple($nids);
+    $entities = $storage->loadMultiple($ids);
+    $entity = reset($entities);
     $storage->delete($entities);
-    \Drupal::messenger()->addMessage(t('@number %type node(s) have been deleted.', [
-      '@number' => count($nids),
-      '%type' => 'scheduler_api_test',
+    \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural(count($ids), '1 %type node has been deleted.', '@count %type nodes have been deleted.', [
+      '%type' => $entity->type->entity->label(),
     ]));
   }
 
-  // The content type, custom fields and storage are deleted automatically by
-  // having 'enforced: module: - scheduler_api_test' in the
-  // config/install/*.yml files.
+  // Delete any media items of the custom media type.
+  $ids_query = \Drupal::database()->select('media', 'm')
+    ->fields('m', ['mid'])
+    ->condition('m.bundle', ['scheduler_api_media_test'], 'IN')
+    ->execute();
+  if ($ids = $ids_query->fetchCol()) {
+    $storage = \Drupal::entityTypeManager()->getStorage('media');
+    $entities = $storage->loadMultiple($ids);
+    $entity = reset($entities);
+    $storage->delete($entities);
+    \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural(count($ids), '1 %type item has been deleted.', '@count %type items have been deleted.', [
+      '%type' => $entity->bundle->entity->label(),
+    ]));
+  }
 }

@@ -46,6 +46,9 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
+    // @todo this function is called from everywhere! eg admin/modules/install
+    // admin/people, admin/appearance, the front page. Is there anything we can
+    // do to reduce the number of calls?
     $mediaTypes = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
     return $mediaTypes;
   }
