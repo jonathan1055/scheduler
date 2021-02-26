@@ -14,23 +14,6 @@ targetEntityType: media
 bundle: scheduler_api_media_test
 mode: default
 content:
-  name:
-    type: string
-    weight: 0
-    region: content
-    label: above
-    settings:
-      link_to_entity: false
-    third_party_settings: {  }
-  field_media_image_api:
-    label: visually_hidden
-    weight: 1
-    settings:
-      image_style: large
-      image_link: ''
-    third_party_settings: {  }
-    type: image
-    region: content
   field_approved_publishing:
     weight: 2
     label: above
@@ -51,6 +34,23 @@ content:
     third_party_settings: {  }
     type: boolean
     region: content
+  field_media_image_api:
+    label: visually_hidden
+    weight: 1
+    settings:
+      image_style: large
+      image_link: ''
+    third_party_settings: {  }
+    type: image
+    region: content
+  name:
+    type: string
+    weight: 0
+    region: content
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
 hidden:
   created: true
   thumbnail: true
