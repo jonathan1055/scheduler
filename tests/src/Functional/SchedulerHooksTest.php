@@ -49,12 +49,12 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Provides test data for some tests in this class.
+   * Provides test data containing the standard entity types.
    *
    * @return array
    *   Each array item has the values: [entity type id, bundle id].
    */
-  public function dataHookTestData() {
+  public function dataStandardTypes() {
     $data = [
       0 => ['node', 'testpage'],
       1 => ['media', 'test-video'],
@@ -77,7 +77,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * This test also covers hook_scheduler_media_list($action).
    *
-   * @dataProvider dataHookTestData()
+   * @dataProvider dataStandardTypes()
    */
   public function testIdList($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -121,7 +121,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * This test also covers hook_scheduler_media_list_alter($action).
    *
-   * @dataProvider dataHookTestData()
+   * @dataProvider dataStandardTypes()
    */
   public function testIdListAlter($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -202,7 +202,8 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalPostForm('node/add/' . $this->customName, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->customName);
+    $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains('is scheduled for publishing, but will not be published until approved.');
 
     // Create a node that is scheduled but not approved for publication. Then
@@ -239,7 +240,8 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Check that a node can be approved and published via edit form.
     $node = $this->createUnapprovedNode('publish_on');
-    $this->drupalPostForm('node/' . $node->id() . '/edit', ['field_approved_publishing[value]' => '1'], 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm(['field_approved_publishing[value]' => '1'], 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately after saving via edit form.');
@@ -269,7 +271,8 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalPostForm('node/add/' . $this->customName, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->customName);
+    $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains('is scheduled for unpublishing, but will not be unpublished until approved.');
 
     // Create a node that is scheduled but not approved for unpublication. Then
