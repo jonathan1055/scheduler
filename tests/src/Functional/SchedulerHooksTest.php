@@ -60,7 +60,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       // needed. Investigation required. Fix when working on permissions test.
       // 'schedule publishing of media'.
     ]);
-
+    $this->webUser->set('name', 'Wenlock the Web user')->save();
   }
 
   /**
@@ -110,7 +110,6 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   public function testIdList($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->schedulerUser);
 
     // Create test entities using the standard scheduler test entity types.
@@ -118,13 +117,13 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // module will add this entity into the list to be published.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      "$titleField" => 'API TEST id list publish me',
+      'title' => 'API TEST id list publish me',
     ]);
     // Entity 2 is published and has no unpublishing date set. The test API
     // module will add this entity into the list to be unpublished.
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      "$titleField" => 'API TEST id list unpublish me',
+      'title' => 'API TEST id list unpublish me',
     ]);
 
     // Before cron, check entity 1 is unpublished and entity 2 is published.
@@ -154,7 +153,6 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   public function testIdListAlter($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->schedulerUser);
 
     // Create test entities using the standard scheduler test entity types.
@@ -162,21 +160,21 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // API list_alter() function.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      "$titleField" => 'API TEST list_alter do not publish me',
+      'title' => 'API TEST list_alter do not publish me',
       'publish_on' => strtotime('-1 day'),
     ]);
     // Entity 2 is not published and has no publishing date set. The test module
     // will add a date and add the id into the list to be published.
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      "$titleField" => 'API TEST list_alter publish me',
+      'title' => 'API TEST list_alter publish me',
     ]);
 
     // Entity 3 is set for scheduled unpublishing, but will be removed by the
     // test API list_alter() function.
     $entity3 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      "$titleField" => 'API TEST list_alter do not unpublish me',
+      'title' => 'API TEST list_alter do not unpublish me',
       'unpublish_on' => strtotime('-1 day'),
     ]);
 
@@ -184,7 +182,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // will add a date and add the id into the list to be unpublished.
     $entity4 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      "$titleField" => 'API TEST list_alter unpublish me',
+      'title' => 'API TEST list_alter unpublish me',
     ]);
 
     // Before cron, check 1 and 2 are unpublished and 3 and 4 are published.
@@ -379,96 +377,93 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   /**
    * Tests the hooks which allow hiding of scheduler input fields.
    *
-   * Covers hook_scheduler_hide_publish_on_field() and
-   * hook_scheduler_hide_unpublish_on_field().
+   * This test covers:
+   *   hook_scheduler_hide_publish_on_field()
+   *   hook_scheduler_hide_unpublish_on_field()
+   *   hook_scheduler_{type}_hide_publish_on_field()
+   *   hook_scheduler_{type}_hide_unpublish_on_field()
+   *
+   * @dataProvider dataStandardTypes()
    */
-  public function testHideField() {
+  public function testHideField($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
 
-    // Create test nodes.
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
-      'title' => 'Red will not have either field hidden',
+    // Create test entities.
+    $entity1 = $this->createEntity($entityTypeId, $bundle, [
+      'title' => 'Red will have neither field hidden',
     ]);
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
+    $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'title' => 'Orange will have the publish-on field hidden',
     ]);
-    $node3 = $this->drupalCreateNode([
-      'type' => $this->type,
+    $entity3 = $this->createEntity($entityTypeId, $bundle, [
       'title' => 'Yellow will have the unpublish-on field hidden',
     ]);
-    $node4 = $this->drupalCreateNode([
-      'type' => $this->type,
+    $entity4 = $this->createEntity($entityTypeId, $bundle, [
       'title' => 'Green will have both Scheduler fields hidden',
     ]);
+
+    // Set the scheduler fieldset to always expand, for ease during development.
+    $bundle_field_name = $entity1->getEntityType()->get('entity_keys')['bundle'];
+    $entity1->$bundle_field_name->entity->setThirdPartySetting('scheduler', 'expand_fieldset', 'always')->save();
 
     /** @var \Drupal\Tests\WebAssert $assert */
     $assert = $this->assertSession();
 
-    // Node 1 'red' should have both fields displayed.
-    $this->drupalGet('node/' . $node1->id() . '/edit');
+    // Entity 1 'Red' should have both fields displayed.
+    $this->drupalGet("{$entityTypeId}/{$entity1->id()}/edit");
     $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
-    // Node 2 'orange' should have only the publish-on field hidden.
-    $this->drupalGet('node/' . $node2->id() . '/edit');
+    // Entity 2 'Orange' should have only the publish-on field hidden.
+    $this->drupalGet("{$entityTypeId}/{$entity2->id()}/edit");
     $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
-    // Node 3 'yellow' should have only the unpublish-on field hidden.
-    $this->drupalGet('node/' . $node3->id() . '/edit');
+    // Entity 3 'Yellow' should have only the unpublish-on field hidden.
+    $this->drupalGet("{$entityTypeId}/{$entity3->id()}/edit");
     $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
-    // Node 4 'green' should have both publish-on and unpublish-on hidden.
-    $this->drupalGet('node/' . $node4->id() . '/edit');
+    // Entity 4 'Green' should have both publish-on and unpublish-on hidden.
+    $this->drupalGet("{$entityTypeId}/{$entity4->id()}/edit");
     $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
-
-    // TEMPORARY Create test media.
-    // This is done to show that when fixed, the existing hooks are not called
-    // for Media and no runtime errrors are produced.
-    // @todo Convert this test to cover the four cases above properly.
-    // Expand the API module to implement the new hooks.
-    // Use a data provider.
-    $media1 = $this->createEntity('media');
-    $this->drupalGet('media/' . $media1->id() . '/edit');
-
   }
 
   /**
    * Tests when other modules process the 'publish' and 'unpublish' actions.
    *
-   * This covers hook_scheduler_publish_action() and
-   * hook_scheduler_unpublish_action().
+   * This test covers:
+   *   hook_scheduler_publish_action()
+   *   hook_scheduler_unpublish_action()
+   *   hook_scheduler_{type}_publish_action()
+   *   hook_scheduler_{type}_unpublish_action()
+   *
+   * @dataProvider dataStandardTypes()
    */
-  public function testHookPublishUnpublishAction() {
+  public function testPublishUnpublishAction($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
+    $storage = $this->entityStorageObject($entityTypeId);
 
-    // Create test nodes.
-    $node1 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // Create test entities.
+    $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
       'title' => 'Red will cause a failure on publishing',
       'publish_on' => strtotime('-1 day'),
     ]);
-    $node2 = $this->drupalCreateNode([
-      'type' => $this->type,
+    $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
       'title' => 'Orange will be unpublished by the API test module not Scheduler',
       'unpublish_on' => strtotime('-1 day'),
     ]);
-    $node3 = $this->drupalCreateNode([
-      'type' => $this->type,
+    $entity3 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
       'title' => 'Yellow will be published by the API test module not Scheduler',
       'publish_on' => strtotime('-1 day'),
     ]);
-    // 'green' nodes will have both fields hidden so is harder to test manually.
-    // Therefore introduce a different colour.
-    $node4 = $this->drupalCreateNode([
-      'type' => $this->type,
+    // 'Green' will have both fields hidden so is harder to test manually.
+    // Therefore introduce a different colour - Blue.
+    $entity4 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
       'title' => 'Blue will cause a failure on unpublishing',
       'unpublish_on' => strtotime('-1 day'),
@@ -477,32 +472,31 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Simulate a cron run.
     scheduler_cron();
 
-    // Check the red node.
-    $this->nodeStorage->resetCache([$node1->id()]);
-    $node1 = $this->nodeStorage->load($node1->id());
-    $this->assertFalse($node1->isPublished(), 'The red node is still unpublished.');
-    $this->assertNotEmpty($node1->publish_on->value, 'The red node still has a publish-on date.');
+    // Check red.
+    $storage->resetCache([$entity1->id()]);
+    $entity1 = $storage->load($entity1->id());
+    $this->assertFalse($entity1->isPublished(), 'Red should remain unpublished.');
+    $this->assertNotEmpty($entity1->publish_on->value, 'Red should still has a publish-on date.');
 
-    // Check the orange node.
-    $this->nodeStorage->resetCache([$node2->id()]);
-    $node2 = $this->nodeStorage->load($node2->id());
-    $this->assertFalse($node2->isPublished(), 'The orange node was unpublished by the API test module.');
-    $this->assertNotEmpty(stristr($node2->title->value, 'unpublishing processed by API test module'), 'The orange node was processed by the API test module.');
-    $this->assertEmpty($node2->unpublish_on->value, 'The orange node no longer has an unpublish-on date.');
+    // Check orange.
+    $storage->resetCache([$entity2->id()]);
+    $entity2 = $storage->load($entity2->id());
+    $this->assertFalse($entity2->isPublished(), 'Orange should be unpublished.');
+    $this->assertNotEmpty(stristr($entity2->label(), 'unpublishing processed by API test module'), 'Orange was processed by the API test module.');
+    $this->assertEmpty($entity2->unpublish_on->value, 'Orange should not have an unpublish-on date.');
 
-    // Check the yellow node.
-    $this->nodeStorage->resetCache([$node3->id()]);
-    $node3 = $this->nodeStorage->load($node3->id());
-    $this->assertTrue($node3->isPublished(), 'The yellow node was published by the API test module.');
-    $this->assertNotEmpty(stristr($node3->title->value, 'publishing processed by API test module'), 'The yellow node was processed by the API test module.');
-    $this->assertEmpty($node3->publish_on->value, 'The yellow node no longer has a publish-on date.');
+    // Check yellow.
+    $storage->resetCache([$entity3->id()]);
+    $entity3 = $storage->load($entity3->id());
+    $this->assertTrue($entity3->isPublished(), 'Yellow should be published.');
+    $this->assertNotEmpty(stristr($entity3->label(), 'publishing processed by API test module'), 'Yellow was processed by the API test module.');
+    $this->assertEmpty($entity3->publish_on->value, 'Yellow should not have a publish-on date.');
 
-    // Check the blue node.
-    $this->nodeStorage->resetCache([$node4->id()]);
-    $node4 = $this->nodeStorage->load($node4->id());
-    $this->assertTrue($node4->isPublished(), 'The green node is still published.');
-    $this->assertNotEmpty($node4->unpublish_on->value, 'The green node still has an unpublish-on date.');
-
+    // Check blue.
+    $storage->resetCache([$entity4->id()]);
+    $entity4 = $storage->load($entity4->id());
+    $this->assertTrue($entity4->isPublished(), 'Blue should remain published.');
+    $this->assertNotEmpty($entity4->unpublish_on->value, 'Blue should still have an unpublish-on date.');
   }
 
 }

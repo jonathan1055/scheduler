@@ -141,6 +141,7 @@ trait SchedulerSetupTrait {
       'schedule publishing of nodes',
       'view scheduled content',
     ]);
+    $this->adminUser->set('name', 'Admolly the Admin user')->save();
 
     // Create an ordinary Scheduler user, with permission to create and schedule
     // content but not with administrator permissions.
@@ -152,6 +153,7 @@ trait SchedulerSetupTrait {
       'schedule publishing of nodes',
       'view scheduled content',
     ]);
+    $this->schedulerUser->set('name', 'Shelly the Scheduler user')->save();
 
     // Store the database connection for re-use in the actual tests.
     $this->database = $this->container->get('database');
