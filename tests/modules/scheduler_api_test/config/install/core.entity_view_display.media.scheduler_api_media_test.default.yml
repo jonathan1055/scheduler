@@ -16,7 +16,7 @@ mode: default
 content:
   field_approved_publishing:
     weight: 2
-    label: above
+    label: inline
     settings:
       format: default
       format_custom_false: ''
@@ -26,7 +26,7 @@ content:
     region: content
   field_approved_unpublishing:
     weight: 3
-    label: above
+    label: inline
     settings:
       format: default
       format_custom_false: ''

@@ -4,6 +4,7 @@ dependencies:
   config:
     - system.menu.admin
   module:
+    - media
     - scheduler
     - user
 id: scheduler_scheduled_media
