@@ -21,7 +21,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
    *
    * @var array
    */
-  protected static $modules = ['scheduler'];
+  protected static $modules = ['scheduler', 'media'];
 
   /**
    * The profile to install as a basis for testing.
