@@ -248,8 +248,11 @@ trait SchedulerMediaSetupTrait {
    * replaced with $this->entityTypeObject($entityType) when expanding the tests
    * to cover media entity types.
    *
+   * This function is not generic, it is only designed to be used with the
+   * standard scheduler-enabled node and media entity types.
+   *
    * @param string $entityTypeId
-   *   The machine id of the entity type.
+   *   The machine id of the entity type, 'node' or 'media'.
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface
    *   The stored entity type object.

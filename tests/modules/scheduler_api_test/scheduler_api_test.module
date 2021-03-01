@@ -12,6 +12,7 @@
 use Drupal\node\Entity\Node;
 use Drupal\media\Entity\Media;
 use Drupal\node\NodeInterface;
+use Drupal\media\MediaInterface;
 
 /**
  * Implements hook_scheduler_nid_list().
@@ -147,6 +148,38 @@ function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
 }
 
 /**
+ * Implements hook_scheduler_media_allow_publishing().
+ */
+function scheduler_api_test_scheduler_media_allow_publishing(MediaInterface $media) {
+  // If there is no 'Approved for Publishing' field then allow publishing.
+  if (!isset($media->field_approved_publishing)) {
+    $allowed = TRUE;
+  }
+  else {
+    // Only publish entities that have 'Approved for Publishing' set.
+    $allowed = $media->field_approved_publishing->value;
+    // If publishing is denied then inform the user why.
+    if (!$allowed) {
+      // Show a message when the entity is saved.
+      \Drupal::messenger()->addMessage(t('%title is scheduled for publishing @publish_time, but will not be published until approved.', [
+        '%title' => $media->label(),
+        '@publish_time' => \Drupal::service('date.formatter')->format($media->publish_on->value, 'long'),
+      ]), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this. Give a link to view the entity but
+      // cater for no id as the entity may be new and not yet saved.
+      if ($media->publish_on->value <= \Drupal::time()->getRequestTime()) {
+        \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
+          '%title' => $media->label(),
+          'link' => !empty($media->id()) ? $media->toLink(t('View media'))->toString() : '',
+        ]);
+      }
+    }
+  }
+  return $allowed;
+}
+
+/**
  * Implements hook_scheduler_allow_unpublishing().
  */
 function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
@@ -167,6 +200,38 @@ function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
         \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
           '%title' => $node->title->value,
           'link' => $node->id() ? $node->toLink(t('View node'))->toString() : '',
+        ]);
+      }
+    }
+  }
+  return $allowed;
+}
+
+/**
+ * Implements hook_scheduler_media_allow_unpublishing().
+ */
+function scheduler_api_test_scheduler_media_allow_unpublishing(MediaInterface $media) {
+  // If there is no 'Approved for Publishing' field then allow publishing.
+  if (!isset($media->field_approved_unpublishing)) {
+    $allowed = TRUE;
+  }
+  else {
+    // Only unpublish entities that have 'Approved for Unpublishing' set.
+    $allowed = $media->field_approved_unpublishing->value;
+    // If unpublishing is denied then inform the user why.
+    if (!$allowed) {
+      // Show a message when the entity is saved.
+      \Drupal::messenger()->addMessage(t('%title is scheduled for unpublishing @unpublish_time, but will not be unpublished until approved.', [
+        '%title' => $media->label(),
+        '@unpublish_time' => \Drupal::service('date.formatter')->format($media->unpublish_on->value, 'long'),
+      ]), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this. Give a link to view the entity but
+      // cater for no id as the entity may be new and not yet saved.
+      if ($media->unpublish_on->value <= \Drupal::time()->getRequestTime()) {
+        \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
+          '%title' => $media->label(),
+          'link' => !empty($media->id()) ? $media->toLink(t('View media'))->toString() : '',
         ]);
       }
     }

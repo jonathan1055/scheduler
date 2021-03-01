@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\node\Entity\NodeType;
+use Drupal\media\Entity\MediaType;
 
 /**
  * Tests the API hook functions of the Scheduler module.
@@ -37,13 +38,27 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->customNodetype = NodeType::load($this->customName);
 
     // Check that the custom node type has loaded OK.
-    $this->assertNotNull($this->customNodetype, 'Custom node type "' . $this->customName . '"  was created during install');
+    $this->assertNotNull($this->customNodetype, "Custom node type $this->customName failed to load during setUp");
 
-    // Create a web user for this content type.
+    // Load the custom media type.
+    $this->customMediaName = 'scheduler_api_media_test';
+    $this->customMediatype = MediaType::load($this->customMediaName);
+
+    // Check that the custom media type has loaded OK.
+    $this->assertNotNull($this->customMediatype, "Custom media type $this->customMediaName failed to load during setUp");
+
+    // Create a web user that has permission to create and edit and schedule
+    // the custom entity types.
     $this->webUser = $this->drupalCreateUser([
       'create ' . $this->customName . ' content',
       'edit any ' . $this->customName . ' content',
+      "create $this->customMediaName media",
+      "edit any $this->customMediaName media",
       'schedule publishing of nodes',
+      'view own unpublished media',
+      // @todo The permission 'schedule publishing of media' does not seem to be
+      // needed. Investigation required. Fix when working on permissions test.
+      // 'schedule publishing of media'.
     ]);
 
   }
@@ -63,6 +78,20 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Use unset($data[n]) to remove a temporarily unwanted item, use
     // return [$data[n]] to selectively test just one item, or have the default
     // return $data to test everything.
+    return $data;
+  }
+
+  /**
+   * Provides test data containing the custom entity types.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataCustomTypes() {
+    $data = [
+      0 => ['node', 'scheduler_api_test'],
+      1 => ['media', 'scheduler_api_media_test'],
+    ];
     return $data;
   }
 
@@ -182,158 +211,169 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   /**
    * Covers hook_scheduler_allow_publishing()
    *
-   * This hook can allow or deny the publishing of individual nodes. This test
+   * This hook can allow or deny the publishing of individual entities. The test
    * uses the customised content type which has checkboxes 'Approved for
-   * publication' and 'Approved for unpublication'.
+   * publishing' and 'Approved for unpublishing'.
+   *
+   * This test also covers hook_scheduler_media_allow_publishing().
    *
    * @todo Create and update the nodes through the interface so we can check if
    *   the correct messages are displayed.
+   *
+   * @dataProvider dataCustomTypes()
    */
-  public function testAllowedPublishing() {
+  public function testAllowedPublishing($entityTypeId, $bundle) {
+    $storage = $this->entityStorageObject($entityTypeId);
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
+
     // Check the 'approved for publishing' field is shown on the node form.
-    $this->drupalGet('node/add/' . $this->customName);
+    $this->drupalGet("$entityTypeId/add/$bundle");
     $this->assertSession()->fieldExists('edit-field-approved-publishing-value');
 
-    // Check that the message is shown when scheduling a node for publishing
+    // Check that the message is shown when scheduling an entity for publishing
     // which is not yet allowed to be published.
     $edit = [
-      'title[0][value]' => 'Set publish-on date without approval',
+      "{$titleField}[0][value]" => 'Set publish-on date without approval',
       'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalGet('node/add/' . $this->customName);
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains('is scheduled for publishing, but will not be published until approved.');
+    $this->assertSession()->pageTextMatches('/is scheduled for publishing.* but will not be published until approved/');
 
-    // Create a node that is scheduled but not approved for publication. Then
-    // simulate a cron run, and check that the node is still not published.
-    $node = $this->createUnapprovedNode('publish_on');
+    // Create an entity that is scheduled but not approved for publishing. Then
+    // run cron for scheduler, and check that the entity is still not published.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
     scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertFalse($node->isPublished(), 'An unapproved node is not published during cron processing.');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertFalse($entity->isPublished(), 'An unapproved entity is not published during cron processing.');
 
-    // Create a node and approve it for publication, simulate a cron run and
-    // check that the node is published. This is a stronger test than simply
-    // approving the previously used node above, as we do not know what publish
-    // state that may be in after the cron run above.
-    $node = $this->createUnapprovedNode('publish_on');
-    $this->approveNode($node->id(), 'field_approved_publishing');
-    $this->assertFalse($node->isPublished(), 'A new approved node is initially not published.');
+    // Create an entity and approve it for publishing, run cron for scheduler
+    // and check that the entity is published. This is a stronger test than
+    // simply approving the previously used entity above, as we do not know what
+    // publish state that may be in after the cron run above.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
+    $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
+    $this->assertFalse($entity->isPublished(), 'A new approved entity is initially not published.');
     scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'An approved node is published during cron processing.');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertTrue($entity->isPublished(), 'An approved entity is published during cron processing.');
 
-    // Turn on immediate publication of nodes with publication dates in the past
-    // and repeat the tests. It is not needed to simulate cron runs here.
-    $this->customNodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
-    $node = $this->createUnapprovedNode('publish_on');
-    $this->assertFalse($node->isPublished(), 'An unapproved node with a date in the past is not published immediately after saving.');
+    // Turn on immediate publishing when the date is in the past and repeat
+    // the tests. It is not needed to run cron jobs here.
+    $bundle_field_name = $entity->getEntityType()->get('entity_keys')['bundle'];
+    $entity->$bundle_field_name->entity->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
 
-    // Check that the node can be approved and published programatically.
-    $this->approveNode($node->id(), 'field_approved_publishing');
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately via $node->set()->save().');
+    // Check that an entity can be approved and published programatically.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
+    $this->assertFalse($entity->isPublished(), 'An unapproved entity with a date in the past is not published immediately after saving.');
+    $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertTrue($entity->isPublished(), 'An approved entity with a date in the past should be published immediately programatically.');
 
-    // Check that a node can be approved and published via edit form.
-    $node = $this->createUnapprovedNode('publish_on');
-    $this->drupalGet('node/' . $node->id() . '/edit');
+    // Check that an entity can be approved and published via edit form.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
+    $this->drupalGet("{$entityTypeId}/{$entity->id()}/edit");
     $this->submitForm(['field_approved_publishing[value]' => '1'], 'Save');
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'An approved node with a date in the past is published immediately after saving via edit form.');
-
-    // Show the dblog messages.
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/reports/dblog');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertTrue($entity->isPublished(), 'An approved entity with a date in the past is published immediately after saving via edit form.');
   }
 
   /**
    * Covers hook_scheduler_allow_unpublishing()
    *
-   * This hook can allow or deny the unpublishing of individual nodes. This test
-   * is simpler than the test sequence for allowed publishing, because the past
-   * date 'publish' option is not applicable.
+   * This hook can allow or deny the unpublishing of individual entities. This
+   * test is simpler than the test sequence for allowed publishing, because the
+   * past date 'publish' option is not applicable.
+   *
+   * The test also covers hook_scheduler_media_allow_unpublishing().
+   *
+   * @dataProvider dataCustomTypes()
    */
-  public function testAllowedUnpublishing() {
+  public function testAllowedUnpublishing($entityTypeId, $bundle) {
+    $storage = $this->entityStorageObject($entityTypeId);
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
+
     // Check the 'approved for unpublishing' field is shown on the node form.
-    $this->drupalGet('node/add/' . $this->customName);
+    $this->drupalGet("$entityTypeId/add/$bundle");
     $this->assertSession()->fieldExists('edit-field-approved-unpublishing-value');
 
-    // Check that the message is shown when scheduling a node for unpublishing
-    // which is not yet allowed to be unpublished.
+    // Check that the message is shown when scheduling an entity for
+    // unpublishing which is not yet allowed to be unpublished.
     $edit = [
-      'title[0][value]' => 'Set unpublish-on date without approval',
+      "{$titleField}[0][value]" => 'Set unpublish-on date without approval',
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalGet('node/add/' . $this->customName);
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains('is scheduled for unpublishing, but will not be unpublished until approved.');
+    $this->assertSession()->pageTextMatches('/is scheduled for unpublishing.* but will not be unpublished until approved/');
 
-    // Create a node that is scheduled but not approved for unpublication. Then
-    // simulate a cron run, and check that the node is still published.
-    $node = $this->createUnapprovedNode('unpublish_on');
+    // Create an entity that is scheduled but not approved for unpublishing, run
+    // cron for scheduler, and check that the entity is still published.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'unpublish_on');
     scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertTrue($node->isPublished(), 'An unapproved node is not unpublished during cron processing.');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertTrue($entity->isPublished(), 'An unapproved entity is not unpublished during cron processing.');
 
-    // Create a node, then approve it for unpublishing, simulate a cron run and
-    // check that the node is now unpublished.
-    $node = $this->createUnapprovedNode('unpublish_on');
-    $this->approveNode($node->id(), 'field_approved_unpublishing');
-    $this->assertTrue($node->isPublished(), 'A new approved node is initially published.');
+    // Create an entity and approve it for unpublishing, run cron for scheduler
+    // and check that the entity is unpublished.
+    $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'unpublish_on');
+    $this->approve($entityTypeId, $entity->id(), 'field_approved_unpublishing');
+    $this->assertTrue($entity->isPublished(), 'The new approved entity is initially published.');
     scheduler_cron();
-    $this->nodeStorage->resetCache([$node->id()]);
-    $node = $this->nodeStorage->load($node->id());
-    $this->assertFalse($node->isPublished(), 'An approved node is unpublished during cron processing.');
-
-    // Show the dblog messages.
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/reports/dblog');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertFalse($entity->isPublished(), 'An approved entity is unpublished during cron processing.');
   }
 
   /**
-   * Creates a new node that is not approved.
+   * Creates a new entity that is not approved.
    *
-   * The node has a publish/unpublish date in the past to make sure it will be
-   * included in the next cron run.
+   * The entity will have a publish/unpublish date in the past to make sure it
+   * will be included in the next cron run.
    *
+   * @param string $entityTypeId
+   *   The entity type to create, 'node' or 'media'.
+   * @param string $bundle
+   *   The bundle to create, 'scheduler_api_test' or 'scheduler_api_media_test'.
    * @param string $date_field
    *   The Scheduler date field to set, either 'publish_on' or 'unpublish_on'.
    *
-   * @return \Drupal\node\NodeInterface
-   *   A node object.
+   * @return \Drupal\Core\Entity\EntityInterface
+   *   The created entity object.
    */
-  protected function createUnapprovedNode($date_field) {
+  protected function createUnapprovedEntity($entityTypeId, $bundle, $date_field) {
     $settings = [
       'status' => ($date_field == 'unpublish_on'),
       $date_field => strtotime('-1 day'),
       'field_approved_publishing' => 0,
       'field_approved_unpublishing' => 0,
-      'type' => $this->customName,
     ];
-    return $this->drupalCreateNode($settings);
+    return $this->createEntity($entityTypeId, $bundle, $settings);
   }
 
   /**
-   * Approves a node for publication or unpublication.
+   * Approves an entity for publication or unpublication.
    *
-   * @param int $nid
-   *   The id of the node to approve.
+   * @param string $entityTypeId
+   *   The entity type to approve, 'node' or 'media'.
+   * @param int $id
+   *   The id of the entity to approve.
    * @param string $field_name
    *   The name of the field to set, either 'field_approved_publishing' or
    *   'field_approved_unpublishing'.
    */
-  protected function approveNode($nid, $field_name) {
-    $this->nodeStorage->resetCache([$nid]);
-    $node = $this->nodeStorage->load($nid);
-    $node->set($field_name, TRUE)->save();
+  protected function approve($entityTypeId, $id, $field_name) {
+    $storage = $this->entityStorageObject($entityTypeId);
+    $storage->resetCache([$id]);
+    $entity = $storage->load($id);
+    $entity->set($field_name, TRUE)->save();
   }
 
   /**
