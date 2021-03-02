@@ -64,30 +64,12 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Provides test data containing the standard entity types.
-   *
-   * @return array
-   *   Each array item has the values: [entity type id, bundle id].
-   */
-  public function dataStandardTypes() {
-    $data = [
-      0 => ['node', 'testpage'],
-      1 => ['media', 'test-video'],
-    ];
-
-    // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the default
-    // return $data to test everything.
-    return $data;
-  }
-
-  /**
    * Provides test data containing the custom entity types.
    *
    * @return array
    *   Each array item has the values: [entity type id, bundle id].
    */
-  public function dataCustomTypes() {
+  public function dataCustomEntityTypes() {
     $data = [
       0 => ['node', 'scheduler_api_test'],
       1 => ['media', 'scheduler_api_media_test'],
@@ -106,7 +88,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * This test also covers hook_scheduler_media_list($action).
    *
-   * @dataProvider dataStandardTypes()
+   * @dataProvider dataStandardEntityTypes()
    */
   public function testIdList($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -149,7 +131,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * This test also covers hook_scheduler_media_list_alter($action).
    *
-   * @dataProvider dataStandardTypes()
+   * @dataProvider dataStandardEntityTypes()
    */
   public function testIdListAlter($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -218,7 +200,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    * @todo Create and update the nodes through the interface so we can check if
    *   the correct messages are displayed.
    *
-   * @dataProvider dataCustomTypes()
+   * @dataProvider dataCustomEntityTypes()
    */
   public function testAllowedPublishing($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -290,7 +272,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * The test also covers hook_scheduler_media_allow_unpublishing().
    *
-   * @dataProvider dataCustomTypes()
+   * @dataProvider dataCustomEntityTypes()
    */
   public function testAllowedUnpublishing($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
@@ -383,7 +365,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *   hook_scheduler_{type}_hide_publish_on_field()
    *   hook_scheduler_{type}_hide_unpublish_on_field()
    *
-   * @dataProvider dataStandardTypes()
+   * @dataProvider dataStandardEntityTypes()
    */
   public function testHideField($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
@@ -439,7 +421,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *   hook_scheduler_{type}_publish_action()
    *   hook_scheduler_{type}_unpublish_action()
    *
-   * @dataProvider dataStandardTypes()
+   * @dataProvider dataStandardEntityTypes()
    */
   public function testPublishUnpublishAction($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);

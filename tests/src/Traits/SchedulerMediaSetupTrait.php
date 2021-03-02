@@ -341,4 +341,20 @@ trait SchedulerMediaSetupTrait {
     return $this->mediaStorage->load($media_id);
   }
 
+  /**
+   * Provides test data containing the standard entity types.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataStandardEntityTypes() {
+    // The data provider does not have access to $this so we have to hard-code
+    // the bundle ids instead of using $this->type or $this->mediaTypeName.
+    $data = [
+      0 => ['node', 'testpage'],
+      1 => ['media', 'test-video'],
+    ];
+    return $data;
+  }
+
 }

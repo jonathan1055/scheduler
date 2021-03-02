@@ -19,7 +19,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
    *   $messageUnpublishOnRequiredIfPublishing
    *   $messageUnpublishOnTooEarly.
    *
-   * @dataProvider dataValidationDuringEdit()
+   * @dataProvider dataStandardEntityTypes()
    */
   public function testValidationDuringEdit($entityType, $bundle) {
     $this->drupalLogin($this->adminUser);
@@ -67,26 +67,6 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // earlier than the publish-on date.
     $this->assertSession()->pageTextContains("The 'unpublish on' date must be later than the 'publish on' date.");
     $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $bundle, $entity->label()));
-  }
-
-  /**
-   * Provides data for testValidationDuringEdit().
-   *
-   * @return array
-   *   Each array item has the values: [entity type, bundle id].
-   */
-  public function dataValidationDuringEdit() {
-    // The data provider does not have access to $this so we have to hard-code
-    // the entity bundle id.
-    $data = [
-      0 => ['node', 'testpage'],
-      1 => ['media', 'test-video'],
-    ];
-
-    // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the default
-    // return $data to test everything.
-    return $data;
   }
 
 }

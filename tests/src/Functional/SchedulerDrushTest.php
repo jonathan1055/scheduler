@@ -42,19 +42,19 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
   /**
    * Tests scheduled publishing and unpublishing of entities via Drush.
    *
-   * @dataProvider dataDrushCronPublishing()
+   * @dataProvider dataStandardEntityTypes()
    */
-  public function testDrushCronPublishing($entityType, $bundle, $typeFieldName) {
+  public function testDrushCronPublishing($entityTypeId, $bundle) {
     // Create an entity which is scheduled for publishing.
     $title1 = $this->randomMachineName(20) . ' for publishing';
-    $entity = $this->createEntity($entityType, $bundle, [
+    $entity = $this->createEntity($entityTypeId, $bundle, [
       'title' => $title1,
       'publish_on' => strtotime('-3 hours'),
     ]);
 
     // Create an entity which is scheduled for unpublishing.
     $title2 = $this->randomMachineName(20) . ' for unpublishing';
-    $entity = $this->createEntity($entityType, $bundle, [
+    $entity = $this->createEntity($entityTypeId, $bundle, [
       'title' => $title2,
       'unpublish_on' => strtotime('-2 hours'),
     ]);
@@ -63,29 +63,10 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     // and unpublishing messages are found.
     $this->drush('scheduler:cron');
     $messages = $this->getErrorOutput();
-    $type_label = $entity->$typeFieldName->entity->label();
+    $bundle_field = $entity->getEntityType()->get('entity_keys')['bundle'];
+    $type_label = $entity->$bundle_field->entity->label();
     $this->assertStringContainsString(sprintf('%s: scheduled publishing of %s', $type_label, $title1), $messages, 'Scheduled publishing message not found', TRUE);
     $this->assertStringContainsString(sprintf('%s: scheduled unpublishing of %s', $type_label, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
-  }
-
-  /**
-   * Provides data for testMetaInformation().
-   *
-   * @return array
-   *   Each array item has the values: [entity type, bundle id, type fieldname].
-   */
-  public function dataDrushCronPublishing() {
-    // The data provider does not have access to $this so we have to hard-code
-    // the entity bundle id.
-    $data = [
-      0 => ['node', 'testpage', 'type'],
-      1 => ['media', 'test-video', 'bundle'],
-    ];
-
-    // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the default
-    // return $data to test everything.
-    return $data;
   }
 
 }
