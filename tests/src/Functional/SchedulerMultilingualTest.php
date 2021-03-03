@@ -38,7 +38,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create a user with the required translation permissions.
+    // Add four extra permissions for the adminUser -
     // 'administer languages' for url admin/config/regional/content-language.
     // 'administer content translation' to show the list of content fields at
     // url admin/config/regional/content-language.
@@ -46,21 +46,13 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     // url node/*/translations.
     // 'translate any entity' for the 'add translation' link on the translations
     // page, url node/*/translations/add/.
-    $this->translatorUser = $this->drupalCreateUser([
+    $this->addPermissionsToUser($this->adminUser, [
       'administer languages',
       'administer content translation',
       'create content translations',
       'translate any entity',
     ]);
-
-    // Get the additional role already assigned to the scheduler admin user
-    // created in SchedulerBrowserTestBase and add this role to the translator
-    // user, to avoid switching between users throughout this test.
-    $admin_roles = $this->adminUser->getRoles();
-    // Key 0 is 'authenticated' role. Key 1 is the first real role.
-    $this->translatorUser->addRole($admin_roles[1]);
-    $this->translatorUser->save();
-    $this->drupalLogin($this->translatorUser);
+    $this->drupalLogin($this->adminUser);
 
     // Allow scheduler dates in the past to be published on next cron run.
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
