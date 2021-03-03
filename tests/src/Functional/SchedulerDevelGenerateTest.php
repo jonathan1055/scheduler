@@ -26,17 +26,9 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create a user with devel permission. Only 'administer devel_generate' is
-    // actually required for these tests, but the others are useful for debug.
-    // 'access content overview' is needed for /admin/content
-    // 'access media overview' is needed for /admin/content/media
-    // 'view scheduled content' is required for /admin/content/scheduled.
-    // @todo update this when there is a url for scheduled media.
-    $this->develUser = $this->drupalCreateUser([
+    // Add Devel Generate permission to the admin user.
+    $this->addPermissionsToUser($this->adminUser, [
       'administer devel_generate',
-      'view scheduled content',
-      'access content overview',
-      'access media overview',
     ]);
 
   }
@@ -107,7 +99,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    * @dataProvider dataDevelGenerate()
    */
   public function testDevelGenerate($entityType, $bundle, $url_part, $enabled) {
-    $this->drupalLogin($this->develUser);
+    $this->drupalLogin($this->adminUser);
 
     // Use the minimum required settings to see what happens when everything
     // else is left as default.

@@ -22,14 +22,9 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create a custom user with admin permissions but also permission to use
-    // the field_ui module 'node form display' tab.
-    $this->adminUser2 = $this->drupalCreateUser([
-      'access content',
-      'administer content types',
+    // Give adminUser permission to use field_ui module 'node form display' tab.
+    $this->addPermissionsToUser($this->adminUser, [
       'administer node form display',
-      'create ' . $this->type . ' content',
-      'schedule publishing of nodes',
     ]);
   }
 
@@ -131,7 +126,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * This test covers scheduler_entity_extra_field_info().
    */
   public function testManageFormDisplay() {
-    $this->drupalLogin($this->adminUser2);
+    $this->drupalLogin($this->adminUser);
 
     // Check that the weight input field is displayed when the content type is
     // enabled for scheduling. This field still exists even with tabledrag on.
@@ -152,7 +147,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * This test covers scheduler_form_node_form_alter().
    */
   public function testDisabledFields() {
-    $this->drupalLogin($this->adminUser2);
+    $this->drupalLogin($this->adminUser);
 
     /** @var \Drupal\Tests\WebAssert $assert */
     $assert = $this->assertSession();

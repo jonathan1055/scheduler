@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\scheduler\Traits;
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\file\Entity\File;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 
@@ -117,11 +118,8 @@ trait SchedulerMediaSetupTrait {
     /** @var MediaStorageInterface $mediaStorage */
     $this->mediaStorage = $this->container->get('entity_type.manager')->getStorage('media');
 
-    /** @var \Drupal\user\Entity\RoleStorageInterface $roleStorage */
-    $roleStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
-
-    // Add extra permisssions to the admin role assigned to the adminUser.
-    $admin_media_permissions = [
+    // Add extra permisssions to the role assigned to the adminUser.
+    $this->addPermissionsToUser($this->adminUser, [
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
       'delete any ' . $this->mediaTypeName . ' media',
@@ -130,36 +128,16 @@ trait SchedulerMediaSetupTrait {
       'delete any ' . $this->nonSchedulerMediaTypeName . ' media',
       'view own unpublished media',
       'schedule publishing of media',
-    ];
-    foreach ($this->adminUser->getRoles() as $rid) {
-      // The user will have two roles, 'authenticated' and one other.
-      if ($rid != 'authenticated') {
-        $role = $roleStorage->load($rid);
-        foreach ($admin_media_permissions as $permission) {
-          $role->grantPermission($permission);
-        }
-        $role->save();
-      }
-    }
+    ]);
 
     // Add extra permisssions to the role assigned to the schedulerUser.
-    $user_media_permissions = [
+    $this->addPermissionsToUser($this->schedulerUser, [
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
       'delete any ' . $this->mediaTypeName . ' media',
       'view own unpublished media',
       'schedule publishing of media',
-    ];
-    foreach ($this->schedulerUser->getRoles() as $rid) {
-      // The user will have two roles, 'authenticated' and one other.
-      if ($rid != 'authenticated') {
-        $role = $roleStorage->load($rid);
-        foreach ($user_media_permissions as $permission) {
-          $role->grantPermission($permission);
-        }
-        $role->save();
-      }
-    }
+    ]);
 
     // By default, media items cannot be viewed directly, and the url media/mid
     // gives a 404 not found. Changing this setting makes testing easier.
@@ -169,6 +147,37 @@ trait SchedulerMediaSetupTrait {
       ->save(TRUE);
     $this->container->get('router.builder')->rebuild();
 
+  }
+
+  /**
+   * Adds a set of permissions to an existing user.
+   *
+   * This avoids having to create new users when a test requires additional
+   * permissions, as that leads to having a list of existing permissions which
+   * has to be kept in sync with the standard user permissions.
+   *
+   * Each test user has two roles, 'authenticated' and one other randomly-named
+   * role assigned when the user is created, and unique to that user. This is
+   * the role to which these permissions are added.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $user
+   *   The user object.
+   * @param array $permissions
+   *   The machine names of new permissions to add to the user's unique role.
+   */
+  public function addPermissionsToUser(AccountInterface $user, array $permissions) {
+    /** @var \Drupal\user\Entity\RoleStorageInterface $roleStorage */
+    $roleStorage = $this->container->get('entity_type.manager')->getStorage('user_role');
+    foreach ($user->getRoles() as $rid) {
+      // The user will have two roles, 'authenticated' and one other.
+      if ($rid != 'authenticated') {
+        $role = $roleStorage->load($rid);
+        foreach ($permissions as $permission) {
+          $role->grantPermission($permission);
+        }
+        $role->save();
+      }
+    }
   }
 
   /**

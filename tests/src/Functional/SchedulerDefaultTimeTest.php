@@ -144,15 +144,13 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
-    // Log in as a user with permission to create and schedule this type.
-    $this->drupalLogin($this->drupalCreateUser([
+    // Add permissions for this custom type to the standard schedulerUser.
+    $this->addPermissionsToUser($this->schedulerUser, [
       'create ' . $type . ' content',
       'edit own ' . $type . ' content',
       'delete own ' . $type . ' content',
-      'view own unpublished content',
-      'schedule publishing of nodes',
-      'view scheduled content',
-    ]));
+    ]);
+    $this->drupalLogin($this->schedulerUser);
 
     // Allow the user to enter only a date with no time.
     $this->config('scheduler.settings')->set('allow_date_only', TRUE)->save();
