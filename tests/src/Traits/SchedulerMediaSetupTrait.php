@@ -330,24 +330,62 @@ trait SchedulerMediaSetupTrait {
   }
 
   /**
-   * Gets the newest media item from storage.
+   * Gets a media item from storage.
    *
-   * Returns the media item with the highest mid value. For nodes, there is the
-   * standard drupalGetNodeByTitle() but nothing similar exists to help Media
-   * testing. This function could be expanded to filter by name instead, if that
-   * becomes a requirement as Media testing expands. However, this is nearly
-   * always called directly after creating the entity, so the one with the
-   * highest mid value is often what is needed.
+   * For nodes, there is drupalGetNodeByTitle() but nothing similar exists to
+   * help Media testing. But this function goes one better - if a name is given,
+   * then a match will be attempted on the name, and fail if none found. But if
+   * no name is supplied then the media entity with the highest id value (the
+   * newest item created) is returned, as this is often what is required.
+   *
+   * @param string $name
+   *   Optional name text to match on. If given and no match, returns NULL.
+   *   If no $name is given then returns the media with the highest id value.
    *
    * @return \Drupal\media\MediaInterface
    *   The media object.
    */
-  public function getMediaItem() {
-    $result = $this->mediaStorage->getQuery()
-      ->sort('mid', 'DESC')
-      ->execute();
-    $media_id = reset($result);
-    return $this->mediaStorage->load($media_id);
+  public function getMediaItem(string $name = NULL) {
+    $query = $this->mediaStorage->getQuery()
+      ->sort('mid', 'DESC');
+    if (!empty($name)) {
+      $query->condition('name', $name);
+    }
+    $result = $query->execute();
+    if (count($result)) {
+      $media_id = reset($result);
+      return $this->mediaStorage->load($media_id);
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  /**
+   * Gets an entity by title, a direct replacement of drupalGetNodeByTitle().
+   *
+   * This allows the same test code to be run for Nodes and Media types.
+   *
+   * @param string $entityTypeId
+   *   The machine id of the entity type, for example 'node' or 'media'.
+   * @param string $title
+   *   The title to match with.
+   *
+   * @return mixed
+   *   Either a node object or a media object.
+   */
+  public function getEntityByTitle($entityTypeId, $title) {
+    switch ($entityTypeId) {
+      case 'node':
+        return $this->drupalGetNodeByTitle($title);
+
+      case 'media':
+        return $this->getMediaItem($title);
+
+      default:
+        // Incorrect parameter value.
+        throw new \Exception(sprintf('Unrecognised entityTypeId value "%s" passed to getEntityByTitle()', $entityTypeId));
+    }
   }
 
   /**
