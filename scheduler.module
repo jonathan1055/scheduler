@@ -203,20 +203,24 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   // When hiding the seconds on time input, we need to remove the seconds from
   // the form value, as some browsers HTML5 rendering still show the seconds.
   // We can use the same jQuery drupal behaviors file as for default time.
+  // This functionality is not covered by tests.
   if ($config->get('hide_seconds')) {
     // If there is a publish_on time, then use jQuery to remove the seconds.
-    if (isset($node->publish_on->value)) {
+    if (isset($entity->publish_on->value)) {
       $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $node->publish_on->value);
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $entity->publish_on->value);
     }
     // Likewise for the unpublish_on time.
-    if (isset($node->unpublish_on->value)) {
+    if (isset($entity->unpublish_on->value)) {
       $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $node->unpublish_on->value);
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $entity->unpublish_on->value);
     }
   }
 
-  if (!\Drupal::currentUser()->hasPermission('schedule publishing of nodes')) {
+  // Derive the correct permission name to check depending on entity type. To
+  // maintain backwards-compatibility the node string has to have 'nodes'.
+  $permission = 'schedule publishing of ' . ($entityTypeId == 'node' ? 'nodes' : $entityTypeId);
+  if (!\Drupal::currentUser()->hasPermission($permission)) {
     // Do not show the scheduler fields for users who do not have permission.
     // Setting #access to FALSE for 'scheduler_settings' is enough to hide the
     // fields. Setting FALSE for the individual fields is necessary to keep any
