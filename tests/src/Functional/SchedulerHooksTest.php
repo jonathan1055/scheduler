@@ -55,10 +55,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       "create $this->customMediaName media",
       "edit any $this->customMediaName media",
       'schedule publishing of nodes',
-      'view own unpublished media',
-      // @todo The permission 'schedule publishing of media' does not seem to be
-      // needed. Investigation required. Fix when working on permissions test.
-      // 'schedule publishing of media'.
+      'schedule publishing of media',
     ]);
     $this->webUser->set('name', 'Wenlock the Web user')->save();
   }
