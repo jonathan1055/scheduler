@@ -332,14 +332,15 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
  */
 function scheduler_form_language_content_settings_form_alter(array &$form, FormStateInterface $form_state) {
   // Add our validation function for the translation field settings form at
-  // admin/config/regional/content-language.
+  // admin/config/regional/content-language
+  // This hook function caters for all entity types, not just nodes.
   $form['#validate'][] = '_scheduler_translation_validate';
 }
 
 /**
  * Validation handler for language_content_settings_form.
  *
- * If the content type is translatable and the field is enabled for Scheduler
+ * For each entity type, if it is translatable and also enabled for Scheduler,
  * but the translation setting for the publish_on / unpublish_on field does not
  * match the 'published status' field setting then throw a validation error.
  *
@@ -362,14 +363,15 @@ function _scheduler_translation_validate($form, FormStateInterface $form_state) 
       $enabled['unpublish_on'] = in_array($name, $unpublishing_enabled_types);
       if ($settings['translatable'] && ($enabled['publish_on'] || $enabled['unpublish_on'])) {
         $params = [
+          '@entity' => $form['settings'][$entity_type]['#bundle_label'],
           '@type' => $form['settings'][$entity_type][$name]['settings']['#label'],
-          '@status' => $form['settings'][$entity_type][$name]['fields']['status']['#label'],
+          '%status' => $form['settings'][$entity_type][$name]['fields']['status']['#label'],
         ];
         foreach (['publish_on', 'unpublish_on'] as $var) {
           $mismatch = $enabled[$var] && ($settings['fields'][$var] <> $settings['fields']['status']);
           if ($mismatch) {
-            $params['@scheduler_field'] = $form['settings'][$entity_type][$name]['fields'][$var]['#label'];
-            $message = t("Content type '@type' - Translatable settings for status field '@status' and Scheduler field '@scheduler_field' should match, either both on or both off", $params);
+            $params['%scheduler_field'] = $form['settings'][$entity_type][$name]['fields'][$var]['#label'];
+            $message = t("There is a problem with @entity '@type' - The translatable settings for status field '%status' and Scheduler field '%scheduler_field' should match, either both on or both off", $params);
             $form_state->setErrorByName("settings][$entity_type][$name][fields][status", $message);
             $form_state->setErrorByName("settings][$entity_type][$name][fields][$var", $message);
           }
