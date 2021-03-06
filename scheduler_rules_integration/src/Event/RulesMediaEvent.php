@@ -3,7 +3,7 @@
 namespace Drupal\scheduler_rules_integration\Event;
 
 use Drupal\media\MediaInterface;
-use Drupal\scheduler\SchedulerEvent;
+use Drupal\scheduler\Event\SchedulerEvent;
 
 /**
  * Class for all Rules media events.

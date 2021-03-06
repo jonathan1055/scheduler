@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler;
+namespace Drupal\scheduler\Event;
 
 /**
  * Lists the six events dispatched by Scheduler relating to Media entities.
@@ -16,7 +16,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -30,7 +30,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -45,7 +45,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -59,7 +59,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -73,7 +73,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -87,7 +87,7 @@ final class SchedulerMediaEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */

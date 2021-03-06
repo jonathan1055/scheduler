@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler;
+namespace Drupal\scheduler\Event;
 
 use Drupal\Core\Entity\EntityInterface;
 

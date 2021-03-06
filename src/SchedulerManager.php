@@ -165,7 +165,7 @@ class SchedulerManager {
   public function dispatchSchedulerEvent(EntityInterface &$entity, string $event_id) {
     // Build a string to hold fully named-spaced events class name, for use in
     // the constant() function.
-    $event_class = '\Drupal\scheduler\Scheduler' . ucfirst($entity->getEntityTypeId()) . 'Events';
+    $event_class = '\Drupal\scheduler\Event\Scheduler' . ucfirst($entity->getEntityTypeId()) . 'Events';
     $event_name = constant("$event_class::$event_id");
 
     // Create the event object and dispatch the required event_name.

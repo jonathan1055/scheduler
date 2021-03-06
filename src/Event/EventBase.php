@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler;
+namespace Drupal\scheduler\Event;
 
 // Drupal\Component\EventDispatcher\Event was introduced in Drupal core 9.1 to
 // assist with deprecations and the transition to Symfony 5.

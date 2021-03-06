@@ -3,8 +3,8 @@
 namespace Drupal\scheduler_api_test;
 
 use Drupal\scheduler\SchedulerEvent;
-use Drupal\scheduler\SchedulerNodeEvents;
-use Drupal\scheduler\SchedulerMediaEvents;
+use Drupal\scheduler\Event\SchedulerNodeEvents;
+use Drupal\scheduler\Event\SchedulerMediaEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -58,7 +58,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform before Scheduler publishes a node.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodePrePublish(SchedulerEvent $event) {
@@ -74,7 +74,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform after Scheduler publishes a node.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodePublish(SchedulerEvent $event) {
@@ -90,7 +90,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform before Scheduler unpublishes a node.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodePreUnpublish(SchedulerEvent $event) {
@@ -106,7 +106,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform after Scheduler unpublishes a node.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodeUnpublish(SchedulerEvent $event) {
@@ -122,7 +122,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations before Scheduler publishes a node immediately not via cron.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodePrePublishImmediately(SchedulerEvent $event) {
@@ -138,7 +138,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations after Scheduler publishes a node immediately not via cron.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestNodePublishImmediately(SchedulerEvent $event) {
@@ -156,7 +156,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform before Scheduler publishes a media item.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPrePublish(SchedulerEvent $event) {
@@ -172,7 +172,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform after Scheduler publishes a media item.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPublish(SchedulerEvent $event) {
@@ -188,7 +188,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform before Scheduler unpublishes a media item.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPreUnpublish(SchedulerEvent $event) {
@@ -204,7 +204,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations to perform after Scheduler unpublishes a media item.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaUnpublish(SchedulerEvent $event) {
@@ -220,7 +220,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations before Scheduler publishes a media immediately not via cron.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPrePublishImmediately(SchedulerEvent $event) {
@@ -234,7 +234,7 @@ class EventSubscriber implements EventSubscriberInterface {
   /**
    * Operations after Scheduler publishes a media immediately not via cron.
    *
-   * @param \Drupal\scheduler\SchedulerEvent $event
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPublishImmediately(SchedulerEvent $event) {

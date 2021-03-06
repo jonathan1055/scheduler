@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\scheduler;
+namespace Drupal\scheduler\Event;
 
 /**
  * Lists the six events dispatched by Scheduler relating to node entities.
@@ -21,7 +21,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -35,7 +35,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -50,7 +50,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -65,7 +65,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -80,7 +80,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
@@ -94,7 +94,7 @@ class SchedulerNodeEvents {
    *
    * @Event
    *
-   * @see \Drupal\scheduler\SchedulerEvent
+   * @see \Drupal\scheduler\Event\SchedulerEvent
    *
    * @var string
    */
