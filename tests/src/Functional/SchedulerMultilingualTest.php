@@ -130,23 +130,23 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     // The submit shows the updated values, so no need for second get.
     $this->submitForm($settings, 'Save configuration');
 
-    $early_return = FALSE;
     if ($publish_on_translatable <> $status_translatable) {
       // Check for validation form error on status and publish_on.
       $this->assertSession()->elementExists('xpath', '//input[@id = "edit-settings-node-' . $this->type . '-fields-publish-on" and contains(@class, "error")]');
       $this->assertSession()->elementExists('xpath', '//input[@id = "edit-settings-node-' . $this->type . '-fields-status" and contains(@class, "error")]');
-      $early_return = TRUE;
     }
     if ($unpublish_on_translatable <> $status_translatable) {
       // Check for validation form error on status and unpublish_on.
       $this->assertSession()->elementExists('xpath', '//input[@id = "edit-settings-node-' . $this->type . '-fields-unpublish-on" and contains(@class, "error")]');
       $this->assertSession()->elementExists('xpath', '//input[@id = "edit-settings-node-' . $this->type . '-fields-status" and contains(@class, "error")]');
-      $early_return = TRUE;
     }
-    if ($early_return) {
+
+    if (empty($expected_status_values_before)) {
+      // The test data on this run was to verify the validation messages above.
       // The rest of the test is meaningless so skip it and move to the next.
       return;
     }
+    $this->assertSession()->pageTextContains('Settings successfully updated.');
 
     // Create a node in the 'original' language, before any translations. It is
     // unpublished with no scheduled date.
@@ -249,9 +249,11 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
   /**
    * Provides data for testPublishingTranslations().
    *
-   * Case 1 when the date is translatable and can differ between translations.
-   * Case 2 when the date is not translatable and the behavior should be
+   * Case 1 when the dates are translatable and can differ between translations.
+   * Case 2 when the dates are not translatable and the behavior should be
    *   consistent over all translations.
+   * Case 3 - 8 when there are differences in the settings and the validation
+   *   should prevent the form being saved.
    *
    * @return array
    *   The test data. Each array element has the format:
@@ -262,8 +264,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
    *   Expected status of four translations after cron
    */
   public function dataPublishingTranslations() {
-    // The key text relates to which fields are translatable.
-    return [
+    // The key text is just for info, and shows which fields are translatable.
+    $data = [
       'all fields' => [TRUE, TRUE, TRUE,
         [FALSE, TRUE, FALSE, FALSE],
         [FALSE, TRUE, FALSE, TRUE],
@@ -280,6 +282,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
       'publish_on and status' => [TRUE, FALSE, TRUE, [], []],
       'unpublish_on and status' => [FALSE, TRUE, TRUE, [], []],
     ];
+    return $data;
   }
 
 }

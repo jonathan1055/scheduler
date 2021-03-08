@@ -93,8 +93,8 @@ class SchedulerAdminForm extends ConfigFormBase {
       $links[] = ['title' => "-- $collection_label --"];
       foreach ($types as $id => $type) {
         $text = [];
-        in_array($id, $publishing_enabled_types) ? $text[] = 'publishing' : NULL;
-        in_array($id, $unpublishing_enabled_types) ? $text[] = 'unpublishing' : NULL;
+        in_array($id, $publishing_enabled_types) ? $text[] = $this->t('publishing') : NULL;
+        in_array($id, $unpublishing_enabled_types) ? $text[] = $this->t('unpublishing') : NULL;
         $links[] = [
           'title' => $type->label() . (!empty($text) ? ' (' . implode(', ', $text) . ')' : ''),
           // Example: the route 'entity.media_type.edit_form' with parameter

@@ -82,7 +82,7 @@ class EventDeriver extends DeriverBase implements ContainerDeriverInterface {
       // Define the values that are the same for all events of this entity type.
       $defaults = [
         'entity_type_id' => $entity_type_id,
-        'category' => $entity_type->getLabel() . ' (Scheduler)',
+        'category' => $entity_type->getLabel() . ' (' . $this->t('Scheduler') . ')',
         'context_definitions' => [
           $entity_type_id => [
             'type' => "entity:$entity_type_id",
