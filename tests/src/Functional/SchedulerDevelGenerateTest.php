@@ -171,13 +171,11 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *     [entity type, bundle/type id, url part, enabled for Scheduler].
    */
   public function dataDevelGenerate() {
-    // The data provider does not have acces to $this so we have to hard-code
-    // the entity bundle id.
     $data = [
-      0 => ['node', 'testpage', 'content', TRUE],
-      1 => ['node', 'not-for-scheduler', 'content', FALSE],
-      2 => ['media', 'test-video', 'media', TRUE],
-      3 => ['media', 'test-audio', 'media', FALSE],
+      0 => ['node', $this->type, 'content', TRUE],
+      1 => ['node', $this->nonSchedulerType, 'content', FALSE],
+      2 => ['media', $this->mediaTypeName, 'media', TRUE],
+      3 => ['media', $this->nonSchedulerMediaTypeName, 'media', FALSE],
     ];
 
     // Use unset($data[n]) to remove a temporarily unwanted item, use

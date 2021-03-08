@@ -20,14 +20,14 @@ trait SchedulerMediaSetupTrait {
    *
    * @var string
    */
-  protected $mediaTypeName;
+  protected $mediaTypeName = 'test_video';
 
   /**
    * The readable label of the standard media type created for testing.
    *
    * @var string
    */
-  protected $mediaTypeLabel;
+  protected $mediaTypeLabel = 'Test Video';
 
   /**
    * The media type object which is enabled for scheduling.
@@ -41,7 +41,14 @@ trait SchedulerMediaSetupTrait {
    *
    * @var string
    */
-  protected $nonSchedulerMediaTypeName;
+  protected $nonSchedulerMediaTypeName = 'test_audio';
+
+  /**
+   * The readable label of the media type not enabled for scheduling.
+   *
+   * @var string
+   */
+  protected $nonSchedulerMediaTypeLabel = 'Test Audio - not for scheduling';
 
   /**
    * The media type object which is not enabled for scheduling.
@@ -79,8 +86,6 @@ trait SchedulerMediaSetupTrait {
     // Create a test media type that will be enabled for scheduling. Image files
     // are validated on attaching and saving, and generated files fail. But for
     // video files the only validation is the file extension, hence use video.
-    $this->mediaTypeName = 'test-video';
-    $this->mediaTypeLabel = 'Test Video';
     /** @var \Drupal\media\Entity\MediaTypeInterface $mediaType */
     $this->mediaType = $this->createMediaType('video_file', [
       'id' => $this->mediaTypeName,
@@ -93,11 +98,10 @@ trait SchedulerMediaSetupTrait {
       ->save();
 
     // Create a test media type for audio which is not enabled for scheduling.
-    $this->nonSchedulerMediaTypeName = 'test-audio';
     /** @var \Drupal\media\Entity\MediaTypeInterface $nonSchedulerMediaType */
     $this->nonSchedulerMediaType = $this->createMediaType('audio_file', [
       'id' => $this->nonSchedulerMediaTypeName,
-      'label' => 'Test Audio',
+      'label' => $this->nonSchedulerMediaTypeLabel,
     ]);
 
     // Create an video file for attaching to video media entities.
@@ -217,8 +221,8 @@ trait SchedulerMediaSetupTrait {
    * @param string $entityType
    *   The name of the entity type, for example 'node' or 'media'.
    * @param string $bundle
-   *   The name of the bundle, for example 'testpage'. Optional, will default
-   *   to $this->type for nodes or $this->mediaTypeName for media.
+   *   The name of the bundle. Optional, will default to $this->type for nodes
+   *   or $this->mediaTypeName for media.
    * @param array $values
    *   Values for the new entity.
    *
@@ -395,11 +399,11 @@ trait SchedulerMediaSetupTrait {
    *   Each array item has the values: [entity type id, bundle id].
    */
   public function dataStandardEntityTypes() {
-    // The data provider does not have access to $this so we have to hard-code
-    // the bundle ids instead of using $this->type or $this->mediaTypeName.
+    // The data provider has access to $this where the values are set in the
+    // property definition.
     $data = [
-      0 => ['node', 'testpage'],
-      1 => ['media', 'test-video'],
+      0 => ['node', $this->type],
+      1 => ['media', $this->mediaTypeName],
     ];
     return $data;
   }
