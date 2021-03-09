@@ -40,7 +40,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // Create node B which is published but not enabled for Scheduling.
     $this->node_b = $this->drupalCreateNode([
       'title' => 'Something Else',
-      'type' => $this->nonSchedulerNodeType->id(),
+      'type' => $this->nonSchedulerType,
       'uid' => $this->adminUser->id(),
       'status' => TRUE,
     ]);
@@ -185,7 +185,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New non-enabled node - Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->nonSchedulerNodeType->id(), $edit, 'Save');
+    $this->drupalPostForm('node/add/' . $this->nonSchedulerType, $edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New non-enabled node - Trigger Action Rule 1');
     // Check that rule 1 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -382,7 +382,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New non-enabled node - Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->nonSchedulerNodeType->id(), $edit, 'Save');
+    $this->drupalPostForm('node/add/' . $this->nonSchedulerType, $edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New non-enabled node - Trigger Action Rule 3');
     // Check that rule 3 issued a warning message.
     $assert->pageTextContains('warning message');
