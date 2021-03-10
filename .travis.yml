@@ -74,12 +74,6 @@ before_script:
   - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
       travis_retry composer self-update --1;
     fi
-  # On 23 Feb 2021 Composer 2.0.10 was released which broke core 8.9 and 9.0
-  # with error 'Class Composer\Package\AliasPackage contains 3 abstract methods
-  # and must therefore be declared abstract'. So roll back to version 2.0.9.
-  - if [[ "$DRUPAL_CORE" == "8.9.x" || "$DRUPAL_CORE" == "9.0.x" ]]; then
-      travis_retry composer self-update 2.0.9;
-    fi
   - composer --version
 
   - echo $MODULE
