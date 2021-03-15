@@ -52,18 +52,16 @@ class SchedulerPermissions implements ContainerInjectionInterface {
    * Build permissions for each entity type.
    *
    * @return array|array[]
-   *   The list of permissions.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   *   The full list of permissions to schedule and to view each entity type.
    */
   public function permissions() {
     $permissions = [];
     $types = $this->schedulerManager->getPluginEntityTypes();
     foreach ($types as $entity_type_id) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      // For backwards-compatibility with existing permissions, the Node perm
-      // names have to end with 'nodes' and 'content'. For all other plugins we
-      // use $entity_type_id for both permissions.
+      // For backwards-compatibility with existing permissions, the node
+      // permission names have to end with 'nodes' and 'content'. For all other
+      // entity types we use $entity_type_id for both permissions.
       if ($entity_type_id == 'node') {
         $edit_key = 'nodes';
         $view_key = 'content';

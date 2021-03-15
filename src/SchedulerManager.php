@@ -721,9 +721,6 @@ class SchedulerManager {
    *
    * @return array
    *   Array of loaded entities.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function loadEntities(array $ids, $type) {
     $storage = $this->entityTypeManager->getStorage($type);
@@ -761,8 +758,6 @@ class SchedulerManager {
    *
    * @return array
    *   The registered plugin objects.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getPlugins() {
     $cache = \Drupal::cache()->get('scheduler.plugins');
@@ -800,8 +795,6 @@ class SchedulerManager {
    *
    * @return array
    *   A list of the entity types supported by the registered scheduler plugins.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getPluginEntityTypes() {
     $plugins = $this->getPlugins();
@@ -817,8 +810,6 @@ class SchedulerManager {
    *
    * @return array
    *   List of entity add/edit form IDs for all registered scheduler plugins.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getEntityFormIds() {
     $plugins = $this->getPlugins();
@@ -834,8 +825,6 @@ class SchedulerManager {
    *
    * @return array
    *   List of entity type add/edit form IDs for registered scheduler plugins.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getEntityTypeFormIds() {
     $plugins = $this->getPlugins();
@@ -872,8 +861,6 @@ class SchedulerManager {
    *
    * @return mixed
    *   The plugin object associated with a specific entity, or NULL if none.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
    */
   public function getPlugin($entity_type) {
     $plugins = $this->getPlugins();
