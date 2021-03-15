@@ -103,22 +103,15 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
   public function testRulesNodeEventsNone() {
     // Create a node without any scheduled dates, using node/add/ not
     // drupalCreateNode(), and check that no events are triggered.
-    $edit = [
-      'title[0][value]' => 'A. Create node with no dates',
-      'body[0][value]' => $this->randomString(30),
-    ];
+    $title = 'A. Create node with no dates';
     $this->drupalGet('node/add/' . $this->type);
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['title[0][value]' => $title], 'Save');
     $this->checkMessages();
 
     // Edit the node and check that no events are triggered.
-    $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    $edit = [
-      'title[0][value]' => 'B. Edit node with no dates',
-      'body[0][value]' => $this->randomString(30),
-    ];
+    $node = $this->drupalGetNodeByTitle($title);
     $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['title[0][value]' => 'B. Edit node with no dates'], 'Save');
     $this->checkMessages();
   }
 
@@ -132,7 +125,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'C. Create node with publish-on date',
       'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
-      'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalGet('node/add/' . $this->type);
     $this->submitForm($edit, 'Save');
@@ -140,12 +132,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 
     // Edit this node and check that only event 2 is triggered.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
-    $edit = [
-      'title[0][value]' => 'D. Edit node with publish-on date',
-      'body[0][value]' => $this->randomString(30),
-    ];
     $this->drupalGet('node/' . $node->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['title[0][value]' => 'D. Edit node with publish-on date'], 'Save');
     $this->checkMessages([2]);
 
     // Delay to ensure that the date entered is now in the past so that the node
@@ -166,7 +154,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'E. Create node with unpublish-on date',
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
-      'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalGet('node/add/' . $this->type);
     $this->submitForm($edit, 'Save');
@@ -176,7 +163,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $edit = [
       'title[0][value]' => 'F. Edit node with unpublish-on date',
-      'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->submitForm($edit, 'Save');
@@ -202,7 +188,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 4),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 4),
-      'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalGet('node/add/' . $this->type);
     $this->submitForm($edit, 'Save');
@@ -212,7 +197,6 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $edit = [
       'title[0][value]' => 'H. Edit node with both dates',
-      'body[0][value]' => $this->randomString(30),
     ];
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->submitForm($edit, 'Save');
@@ -232,21 +216,14 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
   public function testRulesMediaEventsNone() {
     // Create a media item with no scheduled dates and check that no events are
     // triggered.
-    $edit = [
-      'name[0][value]' => 'I. Create media with no dates',
-    ];
     $this->drupalGet('media/add/' . $this->mediaTypeName);
-    $this->attachMediaFile($this->mediaType);
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['name[0][value]' => 'I. Create media with no dates'], 'Save');
     $this->checkMessages();
 
     // Edit the media and check that no events are triggered.
     $media = $this->getMediaItem();
-    $edit = [
-      'name[0][value]' => 'J. Edit media with no dates',
-    ];
     $this->drupalGet('media/' . $media->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['name[0][value]' => 'J. Edit media with no dates'], 'Save');
     $this->checkMessages();
   }
 
@@ -262,17 +239,13 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
     $this->drupalGet('media/add/' . $this->mediaTypeName);
-    $this->attachMediaFile($this->mediaType);
     $this->submitForm($edit, 'Save');
     $this->checkMessages([7]);
 
     // Edit the media and check that only event 8 is triggered.
     $media = $this->getMediaItem();
-    $edit = [
-      'name[0][value]' => 'L. Edit media with publish-on date',
-    ];
     $this->drupalGet('media/' . $media->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['name[0][value]' => 'L. Edit media with publish-on date'], 'Save');
     $this->checkMessages([8]);
 
     // Delay to ensure that the date is now in the past so that the media item
@@ -295,19 +268,14 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
     $this->drupalGet('media/add/' . $this->mediaTypeName);
-    $this->attachMediaFile($this->mediaType);
     $this->submitForm($edit, 'Save');
     $this->checkMessages([10]);
 
     // Edit the media and check that only event 11 is triggered.
     $media = $this->getMediaItem();
-    $edit = [
-      'name[0][value]' => 'N. Edit media with unpublish-on date',
-    ];
     $this->drupalGet('media/' . $media->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['name[0][value]' => 'N. Edit media with unpublish-on date'], 'Save');
     $this->checkMessages([11]);
-    // $this->drupalGet('media/' . $media->id());
 
     // Delay to ensure that the date is now in the past so that the media item
     // will be processed during cron, and assert only event 12 is triggered.
@@ -331,17 +299,13 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 4),
     ];
     $this->drupalGet('media/add/' . $this->mediaTypeName);
-    $this->attachMediaFile($this->mediaType);
     $this->submitForm($edit, 'Save');
     $this->checkMessages([7, 10]);
 
     // Edit the media and check that only events 8 and 11 are triggered.
     $media = $this->getMediaItem();
-    $edit = [
-      'name[0][value]' => 'N. Edit media with publish-on date',
-    ];
     $this->drupalGet('media/' . $media->id() . '/edit');
-    $this->submitForm($edit, 'Save');
+    $this->submitForm(['name[0][value]' => 'N. Edit media with publish-on date'], 'Save');
     $this->checkMessages([8, 11]);
 
     // Delay to ensure that the dates are in the past so that the media will be

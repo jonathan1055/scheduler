@@ -21,7 +21,6 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     $bundle = $entityType->id();
     $storage = $this->entityStorageObject($type);
     $titleField = ($type == 'media') ? 'name' : 'title';
-    $page = $this->getSession()->getPage();
 
     // The 'default' case specifically checks the behavior of the unchanged
     // settings, so only change these when not running the default test.
@@ -36,12 +35,12 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     $entityType->setThirdPartySetting('scheduler', 'publish_required', !$publishing_enabled)->save();
     $entityType->setThirdPartySetting('scheduler', 'unpublish_required', !$unpublishing_enabled)->save();
 
-    // Create info string to show what combinations are being tested.
-    $info = 'Publishing ' . ($publishing_enabled ? 'enabled' : 'not enabled')
-      . ', Unpublishing ' . ($unpublishing_enabled ? 'enabled' : 'not enabled')
-      . ', ' . $description;
+    // Allow dates in the past to be valid on saving the entity, to simplify the
+    // testing process.
+    $entityType->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
 
-    // Check that the field(s) are displayed only for the correct settings.
+    // Create a new entity via the add/bundle url, and check that the correct
+    // fields are displayed on the form depending on the enabled settings.
     $this->drupalGet("$type/add/$bundle");
     if ($publishing_enabled) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
@@ -57,29 +56,28 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       $this->assertSession()->fieldNotExists('unpublish_on[0][value][date]');
     }
 
-    // Fill in the title field.
-    $title = $id . 'a - ' . $info;
-    $page->fillField("edit-{$titleField}-0-value", $title);
-    // If this is a media then we also need to attach a source file.
-    if ($type == 'media') {
-      $this->attachMediaFile($entityType);
-    }
-    // Save and check that the entity has saved OK.
-    $page->pressButton('Save');
+    // Fill in the title field and check that the entity can be saved OK.
+    $title = $id . 'a - ' . $description;
+    $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $string = sprintf('%s %s has been created.', $entityType->get('name'), $title);
     $this->assertSession()->pageTextContains($string);
 
     // Create an unpublished entity with a publishing date, which mimics what
     // could be done by a third-party module, or a by-product of the entity type
     // being enabled for publishing then being disabled before it got published.
-    $title = $id . 'b - ' . $info;
-    $edit = [
+    $title = $id . 'b - ' . $description;
+    $values = [
       "$titleField" => $title,
       'status' => FALSE,
-      'publish_on' => $this->requestTime - 2,
+      'publish_on' => $this->requestTime - 120,
     ];
-    $entity = $this->createEntity($type, $bundle, $edit);
-    $this->drupalPostForm("$type/{$entity->id()}/edit", [], 'Save');
+    $entity = $this->createEntity($type, $bundle, $values);
+
+    // Check that the entity can be edited and saved OK.
+    $this->drupalGet("$type/{$entity->id()}/edit");
+    $this->submitForm([], 'Save');
+    $string = sprintf('%s %s has been updated.', $entityType->get('name'), $title);
+    $this->assertSession()->pageTextContains($string);
 
     // Run cron and display the dblog.
     $this->cronRun();
@@ -90,22 +88,36 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     $entity = $storage->load($entity->id());
     // Check if the entity has been published or remains unpublished.
     if ($publishing_enabled) {
-      $this->assertTrue($entity->isPublished(), "The unpublished entity has been published: '$title'");
+      $this->assertTrue($entity->isPublished(), "The unpublished entity '$title' should now be published");
     }
     else {
-      $this->assertFalse($entity->isPublished(), "The unpublished entity remains unpublished: '$title'");
+      $this->assertFalse($entity->isPublished(), "The unpublished entity '$title' should remain unpublished");
     }
 
-    // Do the same for unpublishing.
-    $title = $id . 'c - ' . $info;
-    $edit = [
+    // Do the same for unpublishing - create a published entity with an
+    // unpublishing date in the future, to be valid for editing and saving.
+    $title = $id . 'c - ' . $description;
+    $values = [
       "$titleField" => $title,
       'status' => TRUE,
-      'unpublish_on' => $this->requestTime - 1,
+      'unpublish_on' => $this->requestTime + 180,
     ];
-    $entity = $this->createEntity($type, $bundle, $edit);
+    $entity = $this->createEntity($type, $bundle, $values);
 
-    // Run cron and display the dblog.
+    // Check that the entity can be edited and saved.
+    $this->drupalGet("$type/{$entity->id()}/edit");
+    $this->submitForm([], 'Save');
+    $string = sprintf('%s %s has been updated.', $entityType->get('name'), $title);
+    $this->assertSession()->pageTextContains($string);
+
+    // Create a published entity with a date in the past, then run cron.
+    $title = $id . 'd - ' . $description;
+    $values = [
+      "$titleField" => $title,
+      'status' => TRUE,
+      'unpublish_on' => $this->requestTime - 120,
+    ];
+    $entity = $this->createEntity($type, $bundle, $values);
     $this->cronRun();
     $this->drupalGet('admin/reports/dblog');
 
@@ -114,17 +126,25 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     $entity = $storage->load($entity->id());
     // Check if the entity has been unpublished or remains published.
     if ($unpublishing_enabled) {
-      $this->assertFalse($entity->isPublished(), "The published entity has been unpublished: '$title'");
+      $this->assertFalse($entity->isPublished(), "The published entity '$title' should now be unpublished");
     }
     else {
-      $this->assertTrue($entity->isPublished(), "The published entity remains published: '$title'");
+      $this->assertTrue($entity->isPublished(), "The published entity '$title' should remain published");
     }
 
     // Display the full content list and the scheduled list. Calls to these
-    // pages are for information and debug only. They could be removed.
-    $this->drupalGet('admin/content');
-    $this->drupalGet('admin/content/scheduled');
-    $this->drupalGet('admin/content/media/scheduled');
+    // pages are for information and debug only.
+    switch ($type) {
+      case 'node':
+        $this->drupalGet('admin/content');
+        $this->drupalGet('admin/content/scheduled');
+        break;
+
+      case 'media':
+        $this->drupalGet('admin/content/media');
+        $this->drupalGet('admin/content/media/scheduled');
+        break;
+    }
   }
 
   /**

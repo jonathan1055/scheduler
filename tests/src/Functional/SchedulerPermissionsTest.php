@@ -76,10 +76,6 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     // Check that the new entity can be saved and published.
     $title = $this->randomString(15);
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => TRUE];
-    // If this is a media then we also need to attach a source file.
-    if ($entityTypeId == 'media') {
-      $this->attachMediaFile($bundle);
-    }
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->entityTypeObject($entityTypeId)->label(), $title));
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));
@@ -89,9 +85,6 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     $title = $this->randomString(15);
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => FALSE];
     $this->drupalGet("$entityTypeId/add/$bundle");
-    if ($entityTypeId == 'media') {
-      $this->attachMediaFile($bundle);
-    }
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->entityTypeObject($entityTypeId)->label(), $title));
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));

@@ -3,7 +3,6 @@
 namespace Drupal\Tests\scheduler\Traits;
 
 use Drupal\Core\Session\AccountInterface;
-use Drupal\file\Entity\File;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 
 /**
@@ -65,20 +64,6 @@ trait SchedulerMediaSetupTrait {
   protected $mediaStorage;
 
   /**
-   * A stored video file.
-   *
-   * @var Drupal\file\Entity\File
-   */
-  protected $videoFile;
-
-  /**
-   * A stored audio file.
-   *
-   * @var Drupal\file\Entity\File
-   */
-  protected $audioFile;
-
-  /**
    * Set common properties, define content types and create users.
    */
   public function schedulerMediaSetUp() {
@@ -104,20 +89,6 @@ trait SchedulerMediaSetupTrait {
       'label' => $this->nonSchedulerMediaTypeLabel,
     ]);
 
-    // Create an video file for attaching to video media entities.
-    $filename = $this->randomMachineName() . '.mp4';
-    $uri = 'public://' . $filename;
-    file_put_contents($uri, str_repeat('v', 10));
-    $this->videoFile = File::create(['uri' => $uri, 'filename' => $filename]);
-    $this->videoFile->save();
-
-    // Create an audio file for attaching to audio media entities.
-    $filename = $this->randomMachineName() . '.mp3';
-    $uri = 'public://' . $filename;
-    file_put_contents($uri, str_repeat('a', 10));
-    $this->audioFile = File::create(['uri' => $uri, 'filename' => $filename]);
-    $this->audioFile->save();
-
     // Define mediaStorage for use in many tests.
     /** @var MediaStorageInterface $mediaStorage */
     $this->mediaStorage = $this->container->get('entity_type.manager')->getStorage('media');
@@ -130,6 +101,7 @@ trait SchedulerMediaSetupTrait {
       'create ' . $this->nonSchedulerMediaTypeName . ' media',
       'edit any ' . $this->nonSchedulerMediaTypeName . ' media',
       'delete any ' . $this->nonSchedulerMediaTypeName . ' media',
+      'access media overview',
       'view own unpublished media',
       'schedule publishing of media',
     ]);
@@ -145,12 +117,20 @@ trait SchedulerMediaSetupTrait {
 
     // By default, media items cannot be viewed directly, and the url media/mid
     // gives a 404 not found. Changing this setting makes testing easier.
-    \Drupal::configFactory()
-      ->getEditable('media.settings')
+    $configFactory = \Drupal::configFactory();
+    $configFactory->getEditable('media.settings')
       ->set('standalone_url', TRUE)
       ->save(TRUE);
     $this->container->get('router.builder')->rebuild();
 
+    // Set the media file attachments to be optional not required, to simplify
+    // editing and saving media entities.
+    $configFactory->getEditable('field.field.media.test_video.field_media_video_file')
+      ->set('required', FALSE)
+      ->save(TRUE);
+    $configFactory->getEditable('field.field.media.test_audio.field_media_audio_file')
+      ->set('required', FALSE)
+      ->save(TRUE);
   }
 
   /**
@@ -199,13 +179,6 @@ trait SchedulerMediaSetupTrait {
       'bundle' => $this->mediaTypeName,
       'name' => $this->randomstring(12),
     ];
-    // Add the source file, so that the entity passes form validation.
-    if ($values['bundle'] == $this->mediaTypeName) {
-      $values['field_media_video_file'] = ['target_id' => $this->videoFile->id()];
-    }
-    elseif ($values['bundle'] == $this->nonSchedulerMediaTypeName) {
-      $values['field_media_audio_file'] = ['target_id' => $this->audioFile->id()];
-    }
     /** @var \Drupal\media\MediaInterface $media */
     $media = $this->mediaStorage->create($values);
     $media->save();
@@ -290,47 +263,6 @@ trait SchedulerMediaSetupTrait {
    */
   public function entityStorageObject(string $entityTypeId) {
     return ($entityTypeId == 'media') ? $this->mediaStorage : $this->nodeStorage;
-  }
-
-  /**
-   * Attaches a file to a form field while editing a media entity.
-   *
-   * This is required to allow the entity form to pass validation and be saved.
-   *
-   * @param mixed $entityType
-   *   The entity type object of class \Drupal\media\Entity\MediaType,
-   *   or a string matching the entity type name or the media plugin name.
-   * @param Drupal\file\Entity\File $file
-   *   The file object to attach. Optional, defaults to the correct stored file.
-   */
-  public function attachMediaFile($entityType, File $file = NULL) {
-    // Cater for $entityType being passed as a string or an object.
-    if (is_string($entityType)) {
-      switch ($entityType) {
-        case 'video_file':
-        case "$this->mediaTypeName":
-          $entityType = $this->mediaType;
-          break;
-
-        case 'audio_file':
-        case "$this->nonSchedulerMediaTypeName":
-          $entityType = $this->nonSchedulerMediaType;
-          break;
-
-        default:
-          // Incorrect parameter string value.
-          throw new \Exception(sprintf('Unrecognised parameter value "%s" passed to attachMediaFile()', $entityType));
-      }
-    }
-    elseif (!is_object($entityType) || get_class($entityType) != 'Drupal\media\Entity\MediaType') {
-      // Incorrect parameter type / class.
-      throw new \Exception(sprintf('Incorrect object for $entityType passed to attachMediaFile()'));
-    }
-    $source_id = $entityType->get('source');
-    // If no file object is given, select the correct default for the source.
-    $file = $file ?? (($source_id == 'video_file') ? $this->videoFile : $this->audioFile);
-    $source_field = $entityType->getSource()->getConfiguration()['source_field'];
-    $this->getSession()->getPage()->attachFileToField("files[{$source_field}_0]", $file->uri->value);
   }
 
   /**
