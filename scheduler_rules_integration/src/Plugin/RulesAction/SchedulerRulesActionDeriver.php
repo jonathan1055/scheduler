@@ -65,14 +65,14 @@ class SchedulerRulesActionDeriver extends DeriverBase implements ContainerDerive
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    // Get all entity types supported by Scheduler pluins.
+    // Get all entity types supported by Scheduler plugins.
     $base_plugin_id = $base_plugin_definition['id'];
     foreach ($this->schedulerManager->getPluginEntityTypes() as $entity_type_id) {
       // Node actions are the originals, and for backwards-compatibility those
       // action ids must remain the same, which can not be done using this
       // deriver. Hence the node actions are defined in the 'Legacy' classes.
       if ($entity_type_id == 'node') {
-        break;
+        continue;
       }
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 

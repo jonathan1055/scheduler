@@ -750,7 +750,12 @@ class SchedulerManager {
    *   A list of definitions for the registered scheduler plugins.
    */
   public function getPluginDefinitions() {
-    return $this->pluginManager->getDefinitions();
+    $plugin_definitions = $this->pluginManager->getDefinitions();
+    // Sort in reverse order so that we have 'node_scheduler' followed by
+    // 'media_scheduler'. When a third entity type plugin gets implemented it
+    // would be possible to add a 'weight' property and sort by that.
+    arsort($plugin_definitions);
+    return $plugin_definitions;
   }
 
   /**
@@ -773,7 +778,7 @@ class SchedulerManager {
       if ($dependency && !\Drupal::moduleHandler()->moduleExists($dependency)) {
         continue;
       }
-      $plugins[] = $plugin;
+      $plugins[$plugin->getPluginId()] = $plugin;
     }
 
     \Drupal::cache()->set('scheduler.plugins', $plugins);

@@ -71,11 +71,13 @@ class EventDeriver extends DeriverBase implements ContainerDeriverInterface {
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    // Get all entity types supported by Scheduler pluins.
+    // Get all entity types supported by Scheduler plugins.
     foreach ($this->schedulerManager->getPluginEntityTypes() as $entity_type_id) {
-      // No need to derive events for Nodes.
+      // Node events are the originals, and for backwards-compatibility those
+      // event ids must remain unchanged, which cannot be done with the deriver.
+      // So they remain defined in scheduler_rules_integration.rules.events.yml.
       if ($entity_type_id == 'node') {
-        break;
+        continue;
       }
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 
