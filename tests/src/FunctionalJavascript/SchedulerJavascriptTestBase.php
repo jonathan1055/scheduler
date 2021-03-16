@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
+use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 
 /**
@@ -13,6 +14,7 @@ use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
 
   use SchedulerSetupTrait;
+  use SchedulerMediaSetupTrait;
 
   /**
    * The standard modules to load for all javascript tests.
@@ -40,8 +42,9 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    // Call the common set-up function defined in the trait.
+    // Call the common set-up functions defined in the traits.
     $this->schedulerSetUp();
+    $this->schedulerMediaSetUp();
   }
 
   /**
