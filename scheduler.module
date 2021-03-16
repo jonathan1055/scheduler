@@ -358,17 +358,17 @@ function _scheduler_translation_validate($form, FormStateInterface $form_state) 
     $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
     $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
     $enabled = [];
-    foreach ($content_types as $name => $settings) {
+    foreach ($content_types as $name => $options) {
       $enabled['publish_on'] = in_array($name, $publishing_enabled_types);
       $enabled['unpublish_on'] = in_array($name, $unpublishing_enabled_types);
-      if ($settings['translatable'] && ($enabled['publish_on'] || $enabled['unpublish_on'])) {
+      if ($options['translatable'] && ($enabled['publish_on'] || $enabled['unpublish_on'])) {
         $params = [
           '@entity' => $form['settings'][$entity_type]['#bundle_label'],
           '@type' => $form['settings'][$entity_type][$name]['settings']['#label'],
           '%status' => $form['settings'][$entity_type][$name]['fields']['status']['#label'],
         ];
         foreach (['publish_on', 'unpublish_on'] as $var) {
-          $mismatch = $enabled[$var] && ($settings['fields'][$var] <> $settings['fields']['status']);
+          $mismatch = $enabled[$var] && ($options['fields'][$var] <> $options['fields']['status']);
           if ($mismatch) {
             $params['%scheduler_field'] = $form['settings'][$entity_type][$name]['fields'][$var]['#label'];
             $message = t("There is a problem with @entity '@type' - The translatable settings for status field '%status' and Scheduler field '%scheduler_field' should match, either both on or both off", $params);
@@ -608,24 +608,6 @@ function scheduler_entity_presave(EntityInterface $entity) {
       '@unpublish_time' => $date_formatter->format($entity->unpublish_on->value, 'long'),
     ]), 'status', FALSE);
   }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_insert() for node entities.
- */
-function scheduler_node_insert(EntityInterface $node) {
-  // Removed RULES code but keep the function. There may be code to add here.
-  // @todo remove this comment when done. JSS Sep 2016.
-}
-
-/**
- * Implements hook_ENTITY_TYPE_update() for node entities.
- */
-function scheduler_node_update(EntityInterface $node) {
-  // Removed RULES code but keep the function. There may be code to add here.
-  // This function is currently called by actions SetPublishingDate and
-  // SetUnpublishingDate.
-  // @todo remove this comment when done. JSS Sep 2016.
 }
 
 /**

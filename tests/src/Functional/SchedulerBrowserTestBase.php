@@ -40,10 +40,9 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-
+    // Call the common set-up functions defined in the traits.
     $this->schedulerSetUp();
     $this->schedulerMediaSetUp();
-
   }
 
 }

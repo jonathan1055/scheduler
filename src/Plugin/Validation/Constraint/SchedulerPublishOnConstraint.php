@@ -16,7 +16,7 @@ use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
 class SchedulerPublishOnConstraint extends CompositeConstraintBase {
 
   /**
-   * Message shown when publish_on is not the future.
+   * Message shown when publish_on is not in the future.
    *
    * @var string
    */

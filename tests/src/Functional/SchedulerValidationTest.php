@@ -40,7 +40,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents entering a publish-on date with no
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("If you set a 'publish on' date then you must also set an 'unpublish on' date.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $bundle, $entity->label()));
+    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
 
     // Create an unpublished entity.
     $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
@@ -51,7 +51,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents publishing the entity directly without an
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("Either you must set an 'unpublish on' date or save this node as unpublished.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $bundle, $entity->label()));
+    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
 
     // Create an unpublished entity, and try to edit and save with a publish-on
     // date later than the unpublish-on date.
@@ -66,7 +66,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     // Check that validation prevents entering an unpublish-on date which is
     // earlier than the publish-on date.
     $this->assertSession()->pageTextContains("The 'unpublish on' date must be later than the 'publish on' date.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s %s has been updated.', $bundle, $entity->label()));
+    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
   }
 
 }
