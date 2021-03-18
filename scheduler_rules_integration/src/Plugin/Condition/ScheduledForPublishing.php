@@ -2,34 +2,30 @@
 
 namespace Drupal\scheduler_rules_integration\Plugin\Condition;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\rules\Core\RulesConditionBase;
 
 /**
- * Provides 'Node is scheduled for publishing' condition.
+ * Provides 'Entity is scheduled for publishing' condition.
  *
  * @Condition(
- *   id = "scheduler_condition_node_scheduled_for_publishing",
- *   label = @Translation("Node is scheduled for publishing"),
- *   category = @Translation("Scheduler"),
- *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
- *       label = @Translation("Scheduled Node"),
- *       description = @Translation("The node to test for having a scheduled publishing date. Enter 'node' or use data selection.")
- *     )
- *   }
+ *   id = "scheduler_entity_is_scheduled_for_publishing",
+ *   deriver = "Drupal\scheduler_rules_integration\Plugin\Condition\ConditionDeriver"
  * )
  */
-class NodeIsScheduledForPublishing extends RulesConditionBase {
+class ScheduledForPublishing extends RulesConditionBase {
 
   /**
-   * Determines whether a node is scheduled for publishing.
+   * Determines whether an entity is scheduled for publishing.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be checked.
    *
    * @return bool
-   *   TRUE if the node is scheduled for publishing, FALSE if not.
+   *   TRUE if the entity is scheduled for publishing, FALSE if not.
    */
-  protected function doEvaluate() {
-    $node = $this->getContextValue('node');
-    return !empty($node->publish_on->value);
+  public function doEvaluate(EntityInterface $entity) {
+    return isset($entity->publish_on->value);
   }
 
 }

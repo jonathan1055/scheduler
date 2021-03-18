@@ -2,34 +2,30 @@
 
 namespace Drupal\scheduler_rules_integration\Plugin\Condition;
 
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\rules\Core\RulesConditionBase;
 
 /**
- * Provides 'Node is scheduled for unpublishing' condition.
+ * Provides 'Entity is scheduled for publishing' condition.
  *
  * @Condition(
- *   id = "scheduler_condition_node_scheduled_for_unpublishing",
- *   label = @Translation("Node is scheduled for unpublishing"),
- *   category = @Translation("Scheduler"),
- *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
- *       label = @Translation("Scheduled Node"),
- *       description = @Translation("The node to test for having a scheduled unpublishing date. Enter 'node' or use data selection.")
- *     )
- *   }
+ *   id = "scheduler_entity_is_scheduled_for_unpublishing",
+ *   deriver = "Drupal\scheduler_rules_integration\Plugin\Condition\ConditionDeriver"
  * )
  */
-class NodeIsScheduledForUnpublishing extends RulesConditionBase {
+class ScheduledForUnpublishing extends RulesConditionBase {
 
   /**
-   * Determines whether a node is scheduled for unpublishing.
+   * Determines whether an entity is scheduled for unpublishing.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity to be checked.
    *
    * @return bool
-   *   TRUE if the node is scheduled for unpublishing, FALSE if not.
+   *   TRUE if the entity is scheduled for unpublishing, FALSE if not.
    */
-  protected function doEvaluate() {
-    $node = $this->getContextValue('node');
-    return !empty($node->unpublish_on->value);
+  public function doEvaluate(EntityInterface $entity) {
+    return isset($entity->unpublish_on->value);
   }
 
 }

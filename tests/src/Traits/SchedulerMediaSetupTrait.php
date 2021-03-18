@@ -109,8 +109,8 @@ trait SchedulerMediaSetupTrait {
     // Add extra permisssions to the role assigned to the schedulerUser.
     $this->addPermissionsToUser($this->schedulerUser, [
       'create ' . $this->mediaTypeName . ' media',
-      'edit any ' . $this->mediaTypeName . ' media',
-      'delete any ' . $this->mediaTypeName . ' media',
+      'edit own ' . $this->mediaTypeName . ' media',
+      'delete own ' . $this->mediaTypeName . ' media',
       'view own unpublished media',
       'schedule publishing of media',
     ]);
@@ -228,24 +228,39 @@ trait SchedulerMediaSetupTrait {
   }
 
   /**
-   * Returns the stored entity type object from a type name string.
+   * Returns the stored entity type object from a type id and bundle id.
    *
-   * This allows previous usage of the hard-coded $this->nodetype to be
-   * replaced with $this->entityTypeObject($entityType) when expanding the tests
-   * to cover media entity types.
-   *
-   * This function is not generic, it is only designed to be used with the
-   * standard scheduler-enabled node and media entity types.
+   * This allows previous usages of $this->nodetype to be replaced by
+   * entityTypeObject($entityTypeId) or entityTypeObject($entityTypeId, $bundle)
+   * when expanding tests to cover Media entities.
    *
    * @param string $entityTypeId
-   *   The machine id of the entity type, 'node' or 'media'.
+   *   The machine name of the entity type, for example 'node' or 'media'.
+   * @param string $bundle
+   *   The machine name of the bundle, for example 'testpage', 'test_video',
+   *   'not_for_scheduler', etc. Optional. Defaults to the enabled bundle.
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface
    *   The stored entity type object.
    */
-  public function entityTypeObject(string $entityTypeId) {
-    // The properties are case-sensitive and do not follow the same pattern.
-    return ($entityTypeId == 'media') ? $this->mediaType : $this->nodetype;
+  public function entityTypeObject(string $entityTypeId, string $bundle = NULL) {
+    switch (TRUE) {
+      case ($entityTypeId == 'node' && (empty($bundle) || $bundle == $this->type)):
+        return $this->nodetype;
+
+      case ($entityTypeId == 'node' && $bundle == $this->nonSchedulerType):
+        return $this->nonSchedulerNodeType;
+
+      case ($entityTypeId == 'media' && (empty($bundle) || $bundle == $this->mediaTypeName)):
+        return $this->mediaType;
+
+      case ($entityTypeId == 'media' && $bundle == $this->nonSchedulerMediaTypeName):
+        return $this->$nonSchedulerMediaType;
+
+      default:
+        // Incorrect parameter values.
+        throw new \Exception(sprintf('Unrecognised entityTypeId and bundle combination "%s" and "%s" passed to entityTypeObject()', $entityTypeId, $bundle));
+    }
   }
 
   /**
