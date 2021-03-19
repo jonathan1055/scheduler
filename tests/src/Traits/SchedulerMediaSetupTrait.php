@@ -255,7 +255,7 @@ trait SchedulerMediaSetupTrait {
         return $this->mediaType;
 
       case ($entityTypeId == 'media' && $bundle == $this->nonSchedulerMediaTypeName):
-        return $this->$nonSchedulerMediaType;
+        return $this->nonSchedulerMediaType;
 
       default:
         // Incorrect parameter values.
