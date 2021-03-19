@@ -40,7 +40,7 @@ trait SchedulerMediaSetupTrait {
    *
    * @var string
    */
-  protected $nonSchedulerMediaTypeName = 'test_audio';
+  protected $nonSchedulerMediaTypeName = 'test_audio_not_enabled';
 
   /**
    * The readable label of the media type not enabled for scheduling.
@@ -128,7 +128,7 @@ trait SchedulerMediaSetupTrait {
     $configFactory->getEditable('field.field.media.test_video.field_media_video_file')
       ->set('required', FALSE)
       ->save(TRUE);
-    $configFactory->getEditable('field.field.media.test_audio.field_media_audio_file')
+    $configFactory->getEditable('field.field.media.test_audio_not_enabled.field_media_audio_file')
       ->set('required', FALSE)
       ->save(TRUE);
   }
@@ -238,7 +238,9 @@ trait SchedulerMediaSetupTrait {
    *   The machine name of the entity type, for example 'node' or 'media'.
    * @param string $bundle
    *   The machine name of the bundle, for example 'testpage', 'test_video',
-   *   'not_for_scheduler', etc. Optional. Defaults to the enabled bundle.
+   *   'not_for_scheduler', etc. Optional. Defaults to the enabled bundle. Also
+   *   accepts the fixed string 'non-enabled' to indicate the non-enabled bundle
+   *   for the entity type.
    *
    * @return \Drupal\Core\Entity\EntityTypeInterface
    *   The stored entity type object.
@@ -248,13 +250,13 @@ trait SchedulerMediaSetupTrait {
       case ($entityTypeId == 'node' && (empty($bundle) || $bundle == $this->type)):
         return $this->nodetype;
 
-      case ($entityTypeId == 'node' && $bundle == $this->nonSchedulerType):
+      case ($entityTypeId == 'node' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerType)):
         return $this->nonSchedulerNodeType;
 
       case ($entityTypeId == 'media' && (empty($bundle) || $bundle == $this->mediaTypeName)):
         return $this->mediaType;
 
-      case ($entityTypeId == 'media' && $bundle == $this->nonSchedulerMediaTypeName):
+      case ($entityTypeId == 'media' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerMediaTypeName)):
         return $this->nonSchedulerMediaType;
 
       default:

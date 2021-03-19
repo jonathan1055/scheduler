@@ -14,9 +14,9 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataNonEnabledType()
    */
-  public function testNonEnabledType($id, $entityTypeProperty, $description, $publishing_enabled, $unpublishing_enabled) {
+  public function testNonEnabledType($id, $entityTypeId, $description, $publishing_enabled, $unpublishing_enabled) {
     $this->drupalLogin($this->adminUser);
-    $entityType = $this->$entityTypeProperty;
+    $entityType = $this->entityTypeObject($entityTypeId, 'non-enabled');
     $type = $entityType->getEntityType()->getBundleOf();
     $bundle = $entityType->id();
     $storage = $this->entityStorageObject($type);
@@ -153,8 +153,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
    * @return array
    *   Each item in the test data array has the follow elements:
    *     id                     - (int) a sequential id for use in titles
-   *     entityTypePropertyName - (string) the name of the property of the
-   *                                       entity type to be tested
+   *     entityTypeId           - (string) The type to test - 'node' or 'media'
    *     description            - (string) describing the scenario being checked
    *     publishing_enabled     - (bool) whether publishing is enabled
    *     unpublishing_enabled   - (bool) whether unpublishing is enabled
@@ -162,26 +161,26 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
   public function dataNonEnabledType() {
     $data = [
       // By default check that the scheduler date fields are not displayed.
-      0 => [0, 'nonSchedulerNodeType', 'Default', FALSE, FALSE],
+      0 => [0, 'node', 'Default', FALSE, FALSE],
 
       // Explicitly disable this content type for both settings.
-      1 => [1, 'nonSchedulerNodeType', 'Disabling both settings', FALSE, FALSE],
+      1 => [1, 'node', 'Disabling both settings', FALSE, FALSE],
 
       // Turn on scheduled publishing only.
-      2 => [2, 'nonSchedulerNodeType', 'Enabling publishing only', TRUE, FALSE],
+      2 => [2, 'node', 'Enabling publishing only', TRUE, FALSE],
 
       // Turn on scheduled unpublishing only.
-      3 => [3, 'nonSchedulerNodeType', 'Enabling unpublishing only', FALSE, TRUE],
+      3 => [3, 'node', 'Enabling unpublishing only', FALSE, TRUE],
 
       // For completeness turn on both scheduled publishing and unpublishing.
-      4 => [4, 'nonSchedulerNodeType', 'Enabling both publishing and unpublishing', TRUE, TRUE],
+      4 => [4, 'node', 'Enabling both publishing and unpublishing', TRUE, TRUE],
 
       // Repeat the above cases for media audio.
-      5 => [5, 'nonSchedulerMediaType', 'Default', FALSE, FALSE],
-      6 => [6, 'nonSchedulerMediaType', 'Disabling both settings', FALSE, FALSE],
-      7 => [7, 'nonSchedulerMediaType', 'Enabling publishing only', TRUE, FALSE],
-      8 => [8, 'nonSchedulerMediaType', 'Enabling unpublishing only', FALSE, TRUE],
-      9 => [9, 'nonSchedulerMediaType', 'Enabling both publishing and unpublishing', TRUE, TRUE],
+      5 => [5, 'media', 'Default', FALSE, FALSE],
+      6 => [6, 'media', 'Disabling both settings', FALSE, FALSE],
+      7 => [7, 'media', 'Enabling publishing only', TRUE, FALSE],
+      8 => [8, 'media', 'Enabling unpublishing only', FALSE, TRUE],
+      9 => [9, 'media', 'Enabling both publishing and unpublishing', TRUE, TRUE],
     ];
 
     // Use unset($data[n]) to remove a temporarily unwanted item, use
