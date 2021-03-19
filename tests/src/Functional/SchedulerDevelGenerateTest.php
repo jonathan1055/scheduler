@@ -38,35 +38,37 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @param string $type
    *   The machine-name for the entity type to be checked.
+   * @param string $bundle_field
+   *   The name of the field which contains the bundle.
    * @param string $bundle
    *   The machine-name for the bundle/content type to be checked.
-   * @param string $field
+   * @param string $scheduler_field
    *   The field name to count, either 'publish_on' or 'unpublish_on'.
    * @param int $num_total
    *   The total number of entities that should exist.
    * @param int $num_scheduled
-   *   The number of those nodes which should be scheduled with a $field.
+   *   The number of entities which should have a value in $scheduler_field.
    * @param int $time_range
    *   Optional time range from the devel form. The generated scheduler dates
    *   should be in a range of +/- this value from the current time.
    */
-  protected function countScheduledEntities($type, $bundle, $field, $num_total, $num_scheduled, $time_range = NULL) {
-    $storage = ($type == 'media') ? $this->mediaStorage : $this->nodeStorage;
-    $type_field = ($type == 'media') ? 'bundle' : 'type';
+  protected function countScheduledEntities($type, $bundle_field, $bundle, $scheduler_field, $num_total, $num_scheduled, $time_range = NULL) {
+    $storage = $this->entityStorageObject($type);
+
     // Check that the expected number of entities have been created.
     $count = $storage->getQuery()
-      ->condition($type_field, $bundle)
+      ->condition($bundle_field, $bundle)
       ->count()
       ->execute();
     $this->assertEquals($num_total, $count, sprintf('The expected number of %s %s is %s, found %s', $bundle, $type, $num_total, $count));
 
     // Check that the expected number of entities have been scheduled.
     $count = $storage->getQuery()
-      ->condition($type_field, $bundle)
-      ->exists($field)
+      ->condition($bundle_field, $bundle)
+      ->exists($scheduler_field)
       ->count()
       ->execute();
-    $this->assertEquals($num_scheduled, $count, sprintf('The expected number of %s %s with scheduled %s is %s, found %s', $bundle, $type, $field, $num_total, $count));
+    $this->assertEquals($num_scheduled, $count, sprintf('The expected number of %s %s with scheduled %s is %s, found %s', $bundle, $type, $scheduler_field, $num_total, $count));
 
     if (isset($time_range) && $num_scheduled > 0) {
       // Define the minimum and maximum times that we expect the scheduled dates
@@ -80,16 +82,16 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
       $query = $storage->getAggregateQuery();
       $result = $query
-        ->condition($type_field, $bundle)
-        ->aggregate($field, 'min')
-        ->aggregate($field, 'max')
+        ->condition($bundle_field, $bundle)
+        ->aggregate($scheduler_field, 'min')
+        ->aggregate($scheduler_field, 'max')
         ->execute();
-      $min_found = $result[0]["{$field}_min"];
-      $max_found = $result[0]["{$field}_max"];
+      $min_found = $result[0]["{$scheduler_field}_min"];
+      $max_found = $result[0]["{$scheduler_field}_max"];
 
       // Assert that the found values are within the expected range.
-      $this->assertGreaterThanOrEqual($min, $min_found, sprintf('The minimum value found for %s is %s, earlier than the expected %s', $field, $this->dateFormatter->format($min_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($min, 'custom', 'j M, H:i:s')));
-      $this->assertLessThanOrEqual($max, $max_found, sprintf('The maximum value found for %s is %s, later than the expected %s', $field, $this->dateFormatter->format($max_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($max, 'custom', 'j M, H:i:s')));
+      $this->assertGreaterThanOrEqual($min, $min_found, sprintf('The minimum value found for %s is %s, earlier than the expected %s', $scheduler_field, $this->dateFormatter->format($min_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($min, 'custom', 'j M, H:i:s')));
+      $this->assertLessThanOrEqual($max, $max_found, sprintf('The maximum value found for %s is %s, later than the expected %s', $scheduler_field, $this->dateFormatter->format($max_found, 'custom', 'j M, H:i:s'), $this->dateFormatter->format($max, 'custom', 'j M, H:i:s')));
     }
   }
 
@@ -98,13 +100,17 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataDevelGenerate()
    */
-  public function testDevelGenerate($entityType, $bundle, $url_part, $enabled) {
+  public function testDevelGenerate($entityTypeId, $url_part, $enabled) {
     $this->drupalLogin($this->adminUser);
+    $entityType = $this->entityTypeObject($entityTypeId, $enabled ? NULL : 'non-enabled');
+    $bundle = $entityType->id();
+    $bundle_field = $this->container->get('entity_type.manager')
+      ->getDefinition($entityTypeId)->get('entity_keys')['bundle'];
 
     // Use the minimum required settings to see what happens when everything
     // else is left as default.
     $generate_settings = [
-      "{$entityType}_types[$bundle]" => TRUE,
+      "{$entityTypeId}_types[$bundle]" => TRUE,
     ];
     $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
     // Display the full content list and the scheduled list. Calls to these
@@ -121,7 +127,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     // undefined index 'users' is available and we switch to using 8.x-3.0
     // See https://www.drupal.org/project/devel/issues/3076613
     $generate_settings = [
-      "{$entityType}_types[$bundle]" => TRUE,
+      "{$entityTypeId}_types[$bundle]" => TRUE,
       'num' => 40,
       'kill' => TRUE,
       'time_range' => 3600,
@@ -137,13 +143,13 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Check we have the expected number of nodes scheduled for publishing only
     // and verify that that the dates are within the time range specified.
-    $this->countScheduledEntities($entityType, $bundle, 'publish_on', 40, $enabled ? 40 : 0, $generate_settings['time_range']);
-    $this->countScheduledEntities($entityType, $bundle, 'unpublish_on', 40, 0);
+    $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'publish_on', 40, $enabled ? 40 : 0, $generate_settings['time_range']);
+    $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'unpublish_on', 40, 0);
 
     // Do similar for unpublish_on date. Delete all then generate new content
     // with only unpublish-on dates. Time range 86400 is one day.
     $generate_settings = [
-      "{$entityType}_types[$bundle]" => TRUE,
+      "{$entityTypeId}_types[$bundle]" => TRUE,
       'num' => 30,
       'kill' => TRUE,
       'time_range' => 86400,
@@ -158,8 +164,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Check we have the expected number of nodes scheduled for unpublishing
     // only, and verify that that the dates are within the time range specified.
-    $this->countScheduledEntities($entityType, $bundle, 'publish_on', 30, 0);
-    $this->countScheduledEntities($entityType, $bundle, 'unpublish_on', 30, $enabled ? 30 : 0, $generate_settings['time_range']);
+    $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'publish_on', 30, 0);
+    $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'unpublish_on', 30, $enabled ? 30 : 0, $generate_settings['time_range']);
 
   }
 
@@ -168,14 +174,14 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @return array
    *   Each array item has the values:
-   *     [entity type, bundle/type id, url part, enabled for Scheduler].
+   *     [entity type id, generate url part, enabled for Scheduler].
    */
   public function dataDevelGenerate() {
     $data = [
-      0 => ['node', $this->type, 'content', TRUE],
-      1 => ['node', $this->nonSchedulerType, 'content', FALSE],
-      2 => ['media', $this->mediaTypeName, 'media', TRUE],
-      3 => ['media', $this->nonSchedulerMediaTypeName, 'media', FALSE],
+      0 => ['node', 'content', TRUE],
+      1 => ['node', 'content', FALSE],
+      2 => ['media', 'media', TRUE],
+      3 => ['media', 'media', FALSE],
     ];
 
     // Use unset($data[n]) to remove a temporarily unwanted item, use
