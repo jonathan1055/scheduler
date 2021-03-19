@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Scheduler publishes and unpublishes nodes on dates specified by the user.
+ * Scheduler publishes and unpublishes entities on dates specified by the user.
  */
 
 use Drupal\Component\Utility\Xss;
@@ -22,7 +22,7 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.scheduler':
       $output = '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of nodes at specified future dates.') . '</p>';
+      $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of entities, such and nodes and media items, at specified future dates.') . '</p>';
       $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
         '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
         '@project' => 'https://drupal.org/project/scheduler',
@@ -274,8 +274,8 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
   // Get the plugin for this entity. We know it is guaranteed to be supported.
   $plugin = $scheduler_manager->getPlugin($entityTypeId);
 
-  // Add an extra column to the node_types table to show which type are enabled
-  // for scheduled publishing and unpublishing.
+  // Add an extra column to the table to show which types are enabled for
+  // scheduled publishing and unpublishing.
   $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
   $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
 
@@ -540,15 +540,15 @@ function scheduler_entity_presave(EntityInterface $entity) {
   // date then check if publishing is allowed and if the content needs to be
   // published immediately.
   if ($publishing_enabled && !empty($entity->publish_on->value)) {
-    // Check that other modules allow the action on this node.
+    // Check that other modules allow the action on this entity.
     $publication_allowed = $scheduler_manager->isAllowed($entity, 'publish');
 
-    // Publish the node immediately if the publication date is in the past.
+    // Publish the entity immediately if the publication date is in the past.
     $publish_immediately = $scheduler_manager->getThirdPartySetting($entity, 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
 
     if ($publication_allowed && $publish_immediately && $entity->publish_on->value <= $request_time) {
       // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
-      // before the node has been published.
+      // before the entity has been published.
       $scheduler_manager->dispatchSchedulerEvent($entity, 'PRE_PUBLISH_IMMEDIATELY');
 
       // Set the 'changed' timestamp to match what would have been done had this
@@ -563,15 +563,15 @@ function scheduler_entity_presave(EntityInterface $entity) {
       $entity->setPublished();
 
       // Trigger the PUBLISH_IMMEDIATELY event so that modules can react after
-      // the node has been published.
+      // the entity has been published.
       $scheduler_manager->dispatchSchedulerEvent($entity, 'PUBLISH_IMMEDIATELY');
     }
     else {
-      // Ensure the node is unpublished as it will be published by cron later.
+      // Ensure the entity is unpublished as it will be published by cron later.
       $entity->setUnpublished();
 
-      // Only inform the user that the node is scheduled if publication has not
-      // been prevented by other modules. Those modules have to display a
+      // Only inform the user that the entity is scheduled if publication has
+      // not been prevented by other modules. Those modules have to display a
       // message themselves explaining why publication is denied.
       $publish_message = ($publication_allowed && $scheduler_manager->getThirdPartySetting($entity, 'show_message_after_update', $config->get('default_show_message_after_update')));
     }
@@ -586,8 +586,8 @@ function scheduler_entity_presave(EntityInterface $entity) {
   }
 
   // Give one message, which will include the publish_on date, the unpublish_on
-  // date or both dates. Cannot make the title into a link here when the node
-  // is being created. But the node module gives the link in the next message.
+  // date or both dates. Cannot make the title into a link here when the entity
+  // is being created. But core provides the link in the subsequent message.
   $date_formatter = \Drupal::service('date.formatter');
   if ($publish_message && $unpublish_message) {
     \Drupal::messenger()->addMessage(t('%title is scheduled to be published @publish_time and unpublished @unpublish_time.', [
@@ -737,14 +737,14 @@ function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundl
     if ($publishing_enabled) {
       $targets['publish_on'] = [
         'name' => t('Scheduler: publish on'),
-        'description' => t('The date when the Scheduler module will publish the node.'),
+        'description' => t('The date when the Scheduler module will publish the content.'),
         'callback' => 'scheduler_feeds_set_target',
       ];
     }
     if ($unpublishing_enabled) {
       $targets['unpublish_on'] = [
         'name' => t('Scheduler: unpublish on'),
-        'description' => t('The date when the Scheduler module will unpublish the node.'),
+        'description' => t('The date when the Scheduler module will unpublish the content.'),
         'callback' => 'scheduler_feeds_set_target',
       ];
     }
@@ -776,8 +776,8 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
     $timestamp = $value;
   }
 
-  // If the timestamp is valid then use it to set the target field in the node.
-  if (is_numeric($timestamp) && $timestamp > 0) {
+  // If the timestamp is valid, use it to set the target field in the entity.
+  if (is_numeric($timestamp)) {
     $entity->$target = $timestamp;
   }
 }
