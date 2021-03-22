@@ -5,6 +5,12 @@ namespace Drupal\Tests\scheduler\Functional;
 /**
  * Tests the permissions of the Scheduler module.
  *
+ * These tests check the permissions when adding and editing a scheduled-enabled
+ * node or media entity type.
+ *
+ * @todo The permission to view the scheduled list of items is not covered here.
+ * Update this test, or change this comment when ContentListAccess is converted.
+ *
  * @group scheduler
  */
 class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
@@ -15,30 +21,30 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create two users who can create and edit the standard scheduler-enabled
-    // node and media entity types. One user can schedule nodes but not media,
-    // the other can schedule media but not nodes.
+    // Create a user who can add and edit the standard scheduler-enabled node
+    // and media entity types, but only schedule nodes not media. The permission
+    // 'administer nodes' is needed when setting the node status field on edit.
     $this->nodeUser = $this->drupalCreateUser([
-      'access content',
       'administer nodes',
       'create ' . $this->type . ' content',
       'edit own ' . $this->type . ' content',
       'create ' . $this->mediaTypeName . ' media',
       'edit own ' . $this->mediaTypeName . ' media',
       'schedule publishing of nodes',
-      'view own unpublished content',
     ]);
     $this->nodeUser->set('name', 'Noddy the Node Editor')->save();
 
+    // Create a user who can add and edit the standard scheduler-enabled node
+    // and media entity types, but only schedule media not nodes. The permission
+    // 'administer nodes' is needed when setting the node status field on edit.
+    // There is no corresponding separate permission for media entity edit.
     $this->mediaUser = $this->drupalCreateUser([
-      'access content',
       'administer nodes',
       'create ' . $this->type . ' content',
       'edit own ' . $this->type . ' content',
       'create ' . $this->mediaTypeName . ' media',
       'edit own ' . $this->mediaTypeName . ' media',
       'schedule publishing of media',
-      'view own unpublished media',
     ]);
     $this->mediaUser->set('name', 'Medina the Media Editor')->save();
   }
