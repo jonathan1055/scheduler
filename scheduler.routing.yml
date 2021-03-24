@@ -25,11 +25,3 @@ scheduler.lightweight_cron:
     no_cache: TRUE
   requirements:
     _custom_access: '\Drupal\scheduler\Controller\LightweightCronController::access'
-
-scheduler.scheduled_media:
-  path: 'admin/content/media/scheduled'
-  title: 'Scheduled Media'
-  options:
-    _admin_route: TRUE
-  requirements:
-    _permission: 'access media overview'
