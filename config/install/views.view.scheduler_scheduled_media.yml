@@ -5,7 +5,6 @@ dependencies:
     - system.menu.admin
   module:
     - media
-    - scheduler
     - user
 id: scheduler_scheduled_media
 label: 'Scheduled media'
@@ -22,7 +21,9 @@ display:
     position: 0
     display_options:
       access:
-        type: scheduler
+        type: perm
+        options:
+          perm: 'view scheduled media'
       cache:
         type: tag
         options: {  }
@@ -1008,7 +1009,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
+        - user.permissions
       tags: {  }
   overview:
     display_plugin: page
@@ -1024,7 +1025,7 @@ display:
         title: 'Scheduled Media'
         description: ''
         expanded: false
-        parent: 'views_view:views.scheduler_scheduled_content.overview'
+        parent: 'admin_toolbar_tools.extra_links:media_page'
         weight: 0
         context: '0'
         menu_name: admin
@@ -1035,7 +1036,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
+        - user.permissions
       tags: {  }
   user_page:
     display_plugin: page
@@ -1070,6 +1071,7 @@ display:
       defaults:
         empty: false
         arguments: false
+        access: false
       arguments:
         uid:
           id: uid
@@ -1078,6 +1080,10 @@ display:
           entity_type: media
           entity_field: uid
           plugin_id: numeric
+      access:
+        type: none
+        options: {  }
+      display_comment: 'Access to the user view is controllled via a custom RouteSubscriber'
     cache_metadata:
       max-age: 0
       contexts:
@@ -1085,5 +1091,4 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
       tags: {  }

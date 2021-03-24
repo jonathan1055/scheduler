@@ -5,7 +5,6 @@ dependencies:
     - system.menu.admin
   module:
     - node
-    - scheduler
     - user
 id: scheduler_scheduled_content
 label: 'Scheduled content'
@@ -18,7 +17,9 @@ display:
   default:
     display_options:
       access:
-        type: scheduler
+        type: perm
+        options:
+          perm: 'view scheduled content'
       cache:
         type: tag
         options: {  }
@@ -987,8 +988,8 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
         - 'user.node_grants:view'
+        - user.permissions
       max-age: 0
       tags: {  }
   overview:
@@ -996,7 +997,7 @@ display:
       path: admin/content/scheduled
       menu:
         type: normal
-        title: Scheduled
+        title: 'Scheduled Content'
         description: 'Content scheduled for publishing and unpublishing'
         expanded: false
         parent: system.admin_content
@@ -1022,8 +1023,8 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
         - 'user.node_grants:view'
+        - user.permissions
       max-age: 0
       tags: {  }
   user_page:
@@ -1033,7 +1034,7 @@ display:
         type: tab
         title: Scheduled
         description: ''
-        parent: system.admin_content
+        parent: user.page
         weight: -10
         context: '0'
         menu_name: admin
@@ -1049,7 +1050,7 @@ display:
         filters: true
         filter_groups: true
         arguments: false
-        access: true
+        access: false
         empty: false
       arguments:
         uid:
@@ -1106,8 +1107,12 @@ display:
           tokenize: true
           content: 'No scheduled content for user {{ arguments.uid }}'
           plugin_id: text_custom
+      access:
+        type: none
+        options: {  }
+      display_comment: 'Access to the user view is controllled via a custom RouteSubscriber'
     display_plugin: page
-    display_title: 'User profile tab'
+    display_title: User
     id: user_page
     position: 2
     cache_metadata:
@@ -1116,7 +1121,6 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
-        - user
         - 'user.node_grants:view'
       max-age: 0
       tags: {  }
