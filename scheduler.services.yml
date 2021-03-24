@@ -15,11 +15,6 @@ services:
     class: Drupal\Core\Logger\LoggerChannel
     factory: logger.factory:get
     arguments: ['scheduler']
-  access_checker.scheduler_content:
-    class: Drupal\scheduler\Access\ScheduledListAccess
-    arguments: ['@current_route_match']
-    tags:
-      - { name: access_check }
   theme.negotiator.scheduler:
     class: Drupal\scheduler\Theme\SchedulerThemeNegotiator
     tags:
@@ -27,3 +22,7 @@ services:
   plugin.manager.scheduler:
     class: Drupal\scheduler\SchedulerPluginManager
     parent: default_plugin_manager
+  scheduler.route_subscriber:
+    class: Drupal\scheduler\Routing\SchedulerRouteSubscriber
+    tags:
+      - { name: event_subscriber }
