@@ -104,6 +104,7 @@ trait SchedulerMediaSetupTrait {
       'access media overview',
       'view own unpublished media',
       'schedule publishing of media',
+      'view scheduled media',
     ]);
 
     // Add extra permisssions to the role assigned to the schedulerUser.

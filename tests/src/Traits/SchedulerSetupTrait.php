@@ -165,7 +165,6 @@ trait SchedulerSetupTrait {
       'delete own ' . $this->type . ' content',
       'view own unpublished content',
       'schedule publishing of nodes',
-      'view scheduled content',
     ]);
     $this->schedulerUser->set('name', 'Shelly the Scheduler user')->save();
 

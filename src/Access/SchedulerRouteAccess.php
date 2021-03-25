@@ -58,7 +58,7 @@ class SchedulerRouteAccess implements AccessCheckInterface {
     }
     if (!$viewing_own_page && $account->hasPermission("view scheduled $view_key") && $account->hasPermission('access user profiles')) {
       $other_user = User::load($user_being_viewed);
-      if ($other_user->hasPermission("schedule publishing of $edit_key")) {
+      if ($other_user && $other_user->hasPermission("schedule publishing of $edit_key")) {
         return AccessResult::allowed();
       }
     }
