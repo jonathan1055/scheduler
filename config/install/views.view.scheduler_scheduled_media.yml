@@ -974,17 +974,6 @@ display:
           plugin_id: text_custom
       arguments: {  }
       relationships:
-        revision_user:
-          id: revision_user
-          table: media_revision
-          field: revision_user
-          relationship: none
-          group_type: group
-          admin_label: User
-          required: true
-          entity_type: media
-          entity_field: revision_user
-          plugin_id: standard
         mid:
           id: mid
           table: media_field_revision
