@@ -7,7 +7,7 @@ namespace Drupal\Tests\scheduler\Functional;
  *
  * @group scheduler
  */
-class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
+class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
 
   // @todo This is temporary, to allow commented out long lines. TO BE REMOVED.
   // phpcs:disable Drupal.Files.LineLength.TooLong
