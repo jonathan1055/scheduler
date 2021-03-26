@@ -33,7 +33,6 @@ class SchedulerScheduledContentListAccessTest extends SchedulerBrowserTestBase {
       $edit_key = $view_key = $entityTypeId;
     }
     $base_permissions = [
-      "create $bundle $view_key",
       "view own unpublished $view_key",
     ];
 
