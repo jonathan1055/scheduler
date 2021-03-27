@@ -9,9 +9,6 @@ namespace Drupal\Tests\scheduler\Functional;
  */
 class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
 
-  // @todo This is temporary, to allow commented out long lines. TO BE REMOVED.
-  // phpcs:disable Drupal.Files.LineLength.TooLong
-
   /**
    * Additional modules required.
    *
@@ -86,7 +83,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert = $this->assertSession();
 
     // Try to access a scheduled content user tab as an anonymous visitor. This
-    // should not be allowed, and give "403 Access Denied".
+    // should not be allowed, and will give "403 Access Denied".
     $this->drupalGet("user/{$this->schedulerEditor->id()}/$url_end");
     $assert->statusCodeEquals(403);
 
@@ -111,17 +108,13 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $this->drupalGet("user/{$this->schedulerViewer->id()}/$url_end");
     $assert->statusCodeEquals(403);
 
-    // Access a user's own scheduled content tab when the user has only
-    // 'view scheduled content' permission.
-    // @todo This is now not allowed as there wont be anything there, so do not
-    // want to show the tab? maybe? Adjust this when permission rules are finalised.
+    // Try to access a user's own scheduled content tab when that user only has
+    // 'view scheduled {type}' and not 'schedule publishing of {type}'. This is
+    // not allowed and the tab will not be availbale as that view will always be
+    // empty because the user will never have any scheduled content.
     $this->drupalLogin($this->schedulerViewer);
     $this->drupalGet("user/{$this->schedulerViewer->id()}/$url_end");
-    // $assert->statusCodeEquals(200);
-    // $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for publishing");
-    // $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
-    // $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
-    // $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
+    $assert->statusCodeEquals(403);
 
     // Access another user's scheduled content tab. This should not be possible
     // and will give "403 Access Denied".
@@ -129,7 +122,8 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->statusCodeEquals(403);
 
     // Log in as Admin who has 'access user profiles' permission and access the
-    // user who can schedule content. This is allowed.
+    // user who can schedule content. This is allowed and the content just for
+    // that user should be listed.
     $this->drupalLogin($this->adminUser);
     $this->drupalGet("user/{$this->schedulerEditor->id()}/$url_end");
     $assert->statusCodeEquals(200);
@@ -138,9 +132,8 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->pageTextNotContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextNotContains("$entityTypeId created by Scheduler Viewer for unpublishing");
 
-    // Access the scheduled tab for a user who cannot shedule any content.
-    // @todo This is currently not allowed as the tab will be empty, nothing there
-    // Alter this if necessary when the permissions are finalised.
+    // Try to access the scheduled tab for a user who cannot schedule content.
+    // No tab will be shown and access is denied as it will always be empty.
     $this->drupalGet("user/{$this->schedulerViewer->id()}/$url_end");
     $assert->statusCodeEquals(403);
   }
