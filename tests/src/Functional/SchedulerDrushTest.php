@@ -14,7 +14,7 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
   use DrushTestTrait;
 
   /**
-   * Tests the Scheduler Drush messages.
+   * Tests the messages from Scheduler Drush cron.
    */
   public function testDrushCronMessages() {
     // Run the plain command using the full scheduler:cron command name, and
@@ -67,6 +67,18 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
     $type_label = $entity->$bundle_field->entity->label();
     $this->assertStringContainsString(sprintf('%s: scheduled publishing of %s', $type_label, $title1), $messages, 'Scheduled publishing message not found', TRUE);
     $this->assertStringContainsString(sprintf('%s: scheduled unpublishing of %s', $type_label, $title2), $messages, 'Scheduled unpublishing message not found', TRUE);
+  }
+
+  /**
+   * Tests the Entity Update command.
+   */
+  public function testDrushEntityUpdate() {
+    // This test could be expanded to check the full functionality of the
+    // entityUpdate() function. But initially, just call the function to check
+    // that it runs, and produces the 'nothing to update' message.
+    $this->drush('scheduler:entity-update');
+    $messages = $this->getErrorOutput();
+    $this->assertStringContainsString('Scheduler entity update - nothing to update', $messages, 'Error! Entity update message not found', TRUE);
   }
 
 }
