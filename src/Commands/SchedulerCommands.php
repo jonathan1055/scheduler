@@ -62,22 +62,17 @@ class SchedulerCommands extends DrushCommands {
   }
 
   /**
-   * Update entities - add scheduler db fields for entities covered by plugins.
+   * Entity Update - add Scheduler fields for entities covered by plugins.
    *
-   * @param array $options
-   *   An associative array of options whose values come from cli, aliases,
-   *   config, etc.
+   * Use the standard drush parameter -q for quiet mode (no terminal output).
    *
-   * @option nomsg
-   *   Do not write any confirmation message to the terminal.
-   *
-   * @command scheduler:update-entities
-   * @aliases sch-upd-ent, scheduler-update-entities
+   * @command scheduler:entity-update
+   * @aliases sch-ent-upd, scheduler-entity-update
    */
-  public function updateEntities(array $options = ['nomsg' => NULL]) {
-    $result = $this->schedulerManager->updateEntities();
-    $updated = $result ? implode(',', $result) : dt('Nothing to update');
-    $options['nomsg'] ? NULL : $this->messenger->addMessage(dt('Scheduler updated entities: @updated', ['@updated' => $updated]));
+  public function entityUpdate() {
+    $result = $this->schedulerManager->entityUpdate();
+    $updated = $result ? implode(', ', $result) : dt('nothing to update');
+    $this->messenger->addMessage(dt('Scheduler entity update - @updated', ['@updated' => $updated]));
   }
 
 }

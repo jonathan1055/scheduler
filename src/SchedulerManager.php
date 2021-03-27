@@ -881,17 +881,12 @@ class SchedulerManager {
    * Updates db tables for entities that should have the Scheduler fields.
    *
    * This is called from hook_modules_installed. It can also be called manually
-   * via drush command scheduler-update-entities.
-   *
-   * @param array $options
-   *   Array of options, passed as keys.
+   * via drush command scheduler-entity-update.
    *
    * @return array
    *   Labels of the entity types updated.
-   *
-   * @todo Add logging and messenger output. Cater for 'nomsg' option.
    */
-  public function updateEntities(array $options = []) {
+  public function entityUpdate() {
     $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
     $updated = [];
     $list = $entityUpdateManager->getChangeList();
@@ -904,6 +899,11 @@ class SchedulerManager {
         }
         $updated[] = (string) $entity_type->getLabel();
       }
+    }
+    if (!empty($updated)) {
+      $this->logger->notice('Publish-on and unpublish-on fields added for @updated', [
+        '@updated' => implode(',', $updated),
+      ]);
     }
     return $updated;
   }

@@ -790,8 +790,10 @@ function scheduler_modules_installed($modules) {
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->invalidatePluginCache();
   $plugins = $scheduler_manager->getPluginEntityTypes();
+  // If there is a Scheduler plugin for a newly installed module then update
+  // the base fields to add publish_on and unpublish_on for that entity type.
   $matches = array_intersect($modules, $plugins);
   if (!empty($matches)) {
-    $scheduler_manager->updateEntities();
+    $scheduler_manager->entityUpdate();
   }
 }
