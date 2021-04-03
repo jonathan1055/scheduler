@@ -37,18 +37,17 @@ services:
         chmod -R g+w $DRUPAL_DOCROOT/sites/default/files
 
         # Enable modules.
-        ln -sv vendor/bin/drush drush
-        drush --yes pm:enable media
-        drush --yes pm:enable scheduler devel devel_generate
+        vendor/bin/drush --yes pm:enable media
+        vendor/bin/drush --yes pm:enable scheduler devel devel_generate
         composer show drupal/scheduler | egrep 'name |vers'
-        drush pml | grep scheduler
+        vendor/bin/drush pml | grep scheduler
         composer show drupal/devel | egrep 'name |vers'
-        drush pml | grep devel
+        vendor/bin/drush pml | grep devel
 
         # Scheduler general settings.
-        drush -y config-set scheduler.settings allow_date_only 1
-        drush -y config-set scheduler.settings default_time '22:06:00'
-        drush config-get scheduler.settings
+        vendor/bin/drush -y config-set scheduler.settings allow_date_only 1
+        vendor/bin/drush -y config-set scheduler.settings default_time '22:06:00'
+        vendor/bin/drush config-get scheduler.settings
 
         # Scheduler content settings.
         vendor/bin/drush -y config-set node.type.article third_party_settings.scheduler.publish_enable 1
