@@ -87,7 +87,15 @@ class SchedulerAdminForm extends ConfigFormBase {
     foreach ($plugins as $plugin) {
       $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
       $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
-      $types = $plugin->getTypes();
+      // It should not be necessary to check that $plugin->getTypes() returns a
+      // non-empty array of values because the plugin will only be returned by
+      // schedulerManager->getPlugins() if the required module is enabled.
+      // However, when enabling a module via drush, the full cache is not
+      // automatically rebuilt and moduleHandler()->moduleExists('media') can
+      // return false. So give a useful exception message when that happens.
+      if (!$types = $plugin->getTypes()) {
+        throw new \Exception(sprintf('No entity types returned for %s (%s). Do a full cache clear via admin/config/development/performance or drush cr.', $plugin->label(), $plugin->getPluginId()));
+      }
       $bundle_id = reset($types)->bundle();
       $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection')->__toString();
       $links[] = ['title' => "-- $collection_label --"];
