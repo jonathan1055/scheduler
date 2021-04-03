@@ -21,7 +21,7 @@ services:
         composer config repositories.tugboat vcs $TUGBOAT_ROOT
         # Now we can require this module, specifing the branch name we created
         # above that uses the $TUGBOAT_REPO_ID environment variable.
-        composer require drupal/scheduler:dev-$TUGBOAT_REPO_ID --dev
+        composer require drupal/scheduler:dev-$TUGBOAT_REPO_ID
         composer require drupal/devel_generate
         # Install Drupal on the site.
         vendor/bin/drush \
@@ -37,18 +37,20 @@ services:
         chmod -R g+w $DRUPAL_DOCROOT/sites/default/files
 
         # Enable modules.
-        vendor/bin/drush --yes pm:enable scheduler devel devel_generate
-        vendor/bin/drush --yes pm:enable media
+        ln -sv vendor/bin/drush drush
+        drush --yes pm:enable media
+        drush --yes pm:enable scheduler devel devel_generate
         composer show drupal/scheduler | egrep 'name |vers'
-        vendor/bin/drush pml | grep scheduler
+        drush pml | grep scheduler
         composer show drupal/devel | egrep 'name |vers'
-        vendor/bin/drush pml | grep devel
+        drush pml | grep devel
 
-        # Scheduler general settings
-        vendor/bin/drush config-set scheduler.settings allow_date_only 1 -y
-        vendor/bin/drush config-set scheduler.settings default_time '22:06:00' -y
-        vendor/bin/drush config-get scheduler.settings
-        # Scheduler content settings
+        # Scheduler general settings.
+        drush -y config-set scheduler.settings allow_date_only 1
+        drush -y config-set scheduler.settings default_time '22:06:00'
+        drush config-get scheduler.settings
+
+        # Scheduler content settings.
         vendor/bin/drush -y config-set node.type.article third_party_settings.scheduler.publish_enable 1
         vendor/bin/drush -y config-set node.type.article third_party_settings.scheduler.unpublish_enable 1
         vendor/bin/drush -y config-set node.type.article third_party_settings.scheduler.expand_fieldset 'always'
@@ -79,6 +81,7 @@ services:
         vendor/bin/drush role-add-perm 'media_editor' 'schedule publishing of media'
         vendor/bin/drush role-create 'media_viewer' 'Media Viewer'
         vendor/bin/drush role-add-perm 'media_viewer' 'view scheduled media'
+
         # Add some permissions for all authenticated users.
         vendor/bin/drush role-add-perm 'authenticated' "create article content, edit any article content, delete any article content, access content overview, view own unpublished content, switch users"
         vendor/bin/drush role-add-perm 'authenticated' "create image media, edit any image media, delete any image media, access media overview, view own unpublished media"
@@ -98,6 +101,7 @@ services:
         vendor/bin/drush devel-generate-media 2 --media-types=image --verbose
 
         # @todo Place the 'Switch users' block in first sidebar.
+        # @todo Add 'content overview' and 'media overview' to tools menu.
 
       build: |
         set -eux
