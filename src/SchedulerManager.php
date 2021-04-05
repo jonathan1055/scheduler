@@ -759,10 +759,10 @@ class SchedulerManager {
   }
 
   /**
-   * Get instances of all scheduler plugins.
+   * Gets instances of applicable Scheduler plugins for the enabled modules.
    *
    * @return array
-   *   The registered plugin objects.
+   *   Array of plugin objects, keyed by the entity type the plugin supports.
    */
   public function getPlugins() {
     $cache = \Drupal::cache()->get('scheduler.plugins');
@@ -778,7 +778,7 @@ class SchedulerManager {
       if ($dependency && !\Drupal::moduleHandler()->moduleExists($dependency)) {
         continue;
       }
-      $plugins[$plugin->getPluginId()] = $plugin;
+      $plugins[$plugin->entityType()] = $plugin;
     }
 
     \Drupal::cache()->set('scheduler.plugins', $plugins);
@@ -796,18 +796,13 @@ class SchedulerManager {
   }
 
   /**
-   * Get all entity types supported.
+   * Gets the supported entity types applicable to the enabled modules.
    *
    * @return array
-   *   A list of the entity types supported by the registered scheduler plugins.
+   *   A list of the entity type ids.
    */
   public function getPluginEntityTypes() {
-    $plugins = $this->getPlugins();
-    $types = [];
-    foreach ($plugins as $plugin) {
-      $types[] = $plugin->entityType();
-    }
-    return $types;
+    return array_keys($this->getPlugins());
   }
 
   /**
@@ -869,12 +864,7 @@ class SchedulerManager {
    */
   public function getPlugin($entity_type) {
     $plugins = $this->getPlugins();
-    foreach ($plugins as $plugin) {
-      if ($plugin->entityType() == $entity_type) {
-        return $plugin;
-      }
-    }
-    return NULL;
+    return $plugins[$entity_type] ?? NULL;
   }
 
   /**
