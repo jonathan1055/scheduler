@@ -93,7 +93,7 @@ services:
         vendor/bin/drush user-create 'Madeline the media editor'
         vendor/bin/drush user-add-role 'media_editor' 'Madeline the media editor'
         vendor/bin/drush user-create 'Marvin the media viewer'
-        vendor/bin/drush user-add-role 'media_editor' 'Marvin the media viewer'
+        vendor/bin/drush user-add-role 'media_viewer' 'Marvin the media viewer'
 
         # Generate content.
         vendor/bin/drush devel-generate-content 2 --bundles=article --authors=1,2 --verbose
