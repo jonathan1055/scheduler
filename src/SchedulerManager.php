@@ -666,7 +666,8 @@ class SchedulerManager {
       else {
         $trigger = 'url';
       }
-      $this->logger->info('Lightweight cron run activated by @trigger.', ['@trigger' => $trigger]);
+      // This has to be 'notice' not 'info' so that drush can show the message.
+      $this->logger->notice('Lightweight cron run activated by @trigger.', ['@trigger' => $trigger]);
     }
     scheduler_cron();
     if (ob_get_level() > 0) {
@@ -677,7 +678,7 @@ class SchedulerManager {
     }
     if ($log) {
       $link = Link::fromTextAndUrl($this->t('settings'), Url::fromRoute('scheduler.cron_form'));
-      $this->logger->info('Lightweight cron run completed.', ['link' => $link->toString()]);
+      $this->logger->notice('Lightweight cron run completed.', ['link' => $link->toString()]);
     }
   }
 
