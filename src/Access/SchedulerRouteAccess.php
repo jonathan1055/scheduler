@@ -2,7 +2,6 @@
 
 namespace Drupal\scheduler\Access;
 
-use Drupal\Core\Access\AccessCheckInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -12,9 +11,7 @@ use Symfony\Component\Routing\Route;
 /**
  * Sets access for specific scheduler views routes.
  */
-class SchedulerRouteAccess implements AccessCheckInterface {
-  // @todo Both AccessInterface and AccessCheckInterface work here.
-  // Not sure which is the better/more correct class to use.
+class SchedulerRouteAccess {
 
   /**
    * {@inheritdoc}
@@ -24,7 +21,7 @@ class SchedulerRouteAccess implements AccessCheckInterface {
   }
 
   /**
-   * A custom access check for the scheduled views on the user page.
+   * Provides custom access checks for the scheduled views on the user page.
    *
    * A user is given access if either of the following conditions are met:
    * - they are viewing their own page and they have the permission
@@ -42,7 +39,7 @@ class SchedulerRouteAccess implements AccessCheckInterface {
     $user_being_viewed = $route_match->getParameter('user');
     $viewing_own_page = $user_being_viewed == $account->id();
     // For backwards-compatibility the node permission names have to end with
-    // 'nodes' and 'content'. For all other entity types we use $entity_type_id.
+    // 'nodes' and 'content'. For all other entity types we use entity type id.
     $view_id = $route_match->getParameter('view_id');
     if ($view_id == 'scheduler_scheduled_content') {
       $edit_key = 'nodes';

@@ -3,13 +3,11 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 /**
- * Tests the permissions of the Scheduler module.
+ * Tests some permissions of the Scheduler module.
  *
- * These tests check the permissions when adding and editing a scheduled-enabled
- * node or media entity type.
- *
- * @todo The permission to view the scheduled list of items is not covered here.
- * Update this test, or change this comment when ContentListAccess is converted.
+ * These tests check the permissions when adding and editing a scheduler-enabled
+ * node or media entity type. The permission to access the scheduled content
+ * overview and user tab views is covered in SchedulerViewsAccessTest.
  *
  * @group scheduler
  */
