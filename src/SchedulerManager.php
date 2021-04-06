@@ -894,7 +894,6 @@ class SchedulerManager {
         $updated[] = (string) $entity_type->getLabel();
       }
     }
-    }
     return $updated;
   }
 
