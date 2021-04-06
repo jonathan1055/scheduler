@@ -145,3 +145,19 @@ function scheduler_update_8103() {
     return t('No database fields had to be added.');
   }
 }
+
+/**
+ * Refresh views for supported entity types.
+ */
+function scheduler_update_8104() {
+  // The scheduled content view needs to be refreshed from source when upgrading
+  // to the entity plugin version of Scheduler. If the media module is already
+  // enabled then this will also load the new media view from source.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  if ($result = $scheduler_manager->viewsUpdate()) {
+    return t('Updated views: %updated.', ['%updated' => implode(', ', $result)]);
+  }
+  else {
+    return t('No views require updating.');
+  }
+}
