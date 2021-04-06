@@ -666,7 +666,7 @@ class SchedulerManager {
       else {
         $trigger = 'url';
       }
-      $this->logger->notice('Lightweight cron run activated by @trigger.', ['@trigger' => $trigger]);
+      $this->logger->info('Lightweight cron run activated by @trigger.', ['@trigger' => $trigger]);
     }
     scheduler_cron();
     if (ob_get_level() > 0) {
@@ -677,7 +677,7 @@ class SchedulerManager {
     }
     if ($log) {
       $link = Link::fromTextAndUrl($this->t('settings'), Url::fromRoute('scheduler.cron_form'));
-      $this->logger->notice('Lightweight cron run completed.', ['link' => $link->toString()]);
+      $this->logger->info('Lightweight cron run completed.', ['link' => $link->toString()]);
     }
   }
 
@@ -871,8 +871,8 @@ class SchedulerManager {
   /**
    * Updates db tables for entities that should have the Scheduler fields.
    *
-   * This is called from hook_modules_installed. It can also be called manually
-   * via drush command scheduler-entity-update.
+   * This is called from scheduler_modules_installed and scheduler_update_8103.
+   * It can also be called manually via drush command scheduler-entity-update.
    *
    * @return array
    *   Labels of the entity types updated.
@@ -888,13 +888,12 @@ class SchedulerManager {
         foreach ($fields as $field_name => $field_definition) {
           $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id, $field_definition);
         }
+        $this->logger->notice('Publish-on and unpublish-on fields added for %entity.', [
+          '%entity' => $entity_type->getLabel(),
+        ]);
         $updated[] = (string) $entity_type->getLabel();
       }
     }
-    if (!empty($updated)) {
-      $this->logger->notice('Publish-on and unpublish-on fields added for @updated', [
-        '@updated' => implode(',', $updated),
-      ]);
     }
     return $updated;
   }
