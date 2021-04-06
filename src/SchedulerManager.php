@@ -6,6 +6,7 @@ use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -894,6 +895,71 @@ class SchedulerManager {
       $this->logger->notice('Publish-on and unpublish-on fields added for @updated', [
         '@updated' => implode(',', $updated),
       ]);
+    }
+    return $updated;
+  }
+
+  /**
+   * Refreshes scheduler views from source.
+   *
+   * If the view exists in the site's active storage it will be updated from the
+   * source yml file. If the view is now required but does not exist in active
+   * storage it will be loaded.
+   *
+   * Called from scheduler_modules_installed() and scheduler_update_8104().
+   *
+   * @param array $only_these_types
+   *   List of entity types to restrict the update of views to these types only.
+   *   Optional. If none then revert/load all applicable scheduler views.
+   *
+   * @return array
+   *   Labels of the views that were updated.
+   */
+  public function viewsUpdate(array $only_these_types = []) {
+    $updated = [];
+    $definition = $this->entityTypeManager->getDefinition('view');
+    $view_storage = $this->entityTypeManager->getStorage('view');
+
+    // Get the supported entity type ids for the modules enabled on the site,
+    // and limit to specific types if required.
+    $entity_types = $this->getPluginEntityTypes();
+    if ($only_these_types) {
+      $entity_types = array_intersect($entity_types, $only_these_types);
+    }
+
+    foreach ($entity_types as $entity_type) {
+      $name = 'scheduler_scheduled_' . ($entity_type == 'node' ? 'content' : $entity_type);
+      $full_name = $definition->getConfigPrefix() . '.' . $name;
+
+      // Read the view definition from the .yml file.
+      $source_folder = drupal_get_path('module', 'scheduler') . '/config/install';
+      $source_storage = new FileStorage($source_folder);
+      if (!$source = $source_storage->read($full_name)) {
+        throw new \Exception(sprintf('Failed to read source file for %s from %s folder', $full_name, $source_folder));
+      };
+
+      // Try to read the view definition from active config storage.
+      /** @var \Drupal\Core\Config\StorageInterface $config_storage */
+      $config_storage = \Drupal::service('config.storage');
+      if ($config_storage->read($full_name)) {
+        // The view does exist in active storage, so load it, then replace the
+        // value with the source, but retain the _core and uuid values.
+        $view = $view_storage->load($name);
+        $core = $view->get('_core');
+        $uuid = $view->get('uuid');
+        $view = $view_storage->updateFromStorageRecord($view, $source);
+        $view->set('_core', $core);
+        $view->set('uuid', $uuid);
+        $view->save();
+        $this->logger->notice('%view view updated.', ['%view' => $source['label']]);
+      }
+      else {
+        // The view does not exist in active storage so import it from source.
+        $view = $view_storage->createFromStorageRecord($source);
+        $view->save();
+        $this->logger->notice('%view view loaded from source.', ['%view' => $source['label']]);
+      }
+      $updated[] = $source['label'];
     }
     return $updated;
   }
