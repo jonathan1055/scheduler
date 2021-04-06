@@ -806,6 +806,20 @@ class SchedulerManager {
   }
 
   /**
+   * Get a plugin for a specific entity type.
+   *
+   * @param string $entity_type
+   *   The entity type.
+   *
+   * @return mixed
+   *   The plugin object associated with a specific entity, or NULL if none.
+   */
+  public function getPlugin($entity_type) {
+    $plugins = $this->getPlugins();
+    return $plugins[$entity_type] ?? NULL;
+  }
+
+  /**
    * Gets list of entity add/edit form IDs.
    *
    * @return array
@@ -851,20 +865,6 @@ class SchedulerManager {
     // If an entity is not supported by Devel Generate then the form id will be
     // empty, so filter out these.
     return array_filter($form_ids);
-  }
-
-  /**
-   * Get a plugin for a specific entity type.
-   *
-   * @param string $entity_type
-   *   The entity type.
-   *
-   * @return mixed
-   *   The plugin object associated with a specific entity, or NULL if none.
-   */
-  public function getPlugin($entity_type) {
-    $plugins = $this->getPlugins();
-    return $plugins[$entity_type] ?? NULL;
   }
 
   /**
