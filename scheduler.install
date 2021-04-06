@@ -127,3 +127,21 @@ function scheduler_update_8102() {
     return t('The "Scheduled" tab is now a "Scheduled content" sub-task under the "Content" tab');
   }
 }
+
+/**
+ * Add date fields to any newly supported entity types.
+ */
+function scheduler_update_8103() {
+  // When the media module is already installed and Scheduler is then upgraded
+  // to a version which includes the entity plugins, this update function will
+  // add the missing db fields.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  if ($result = $scheduler_manager->entityUpdate()) {
+    return t('Added Scheduler date fields to the following entity types: %updated.', [
+      '%updated' => implode(', ', $result),
+    ]);
+  }
+  else {
+    return t('No database fields had to be added.');
+  }
+}
