@@ -930,11 +930,16 @@ class SchedulerManager {
       $name = 'scheduler_scheduled_' . ($entity_type == 'node' ? 'content' : $entity_type);
       $full_name = $definition->getConfigPrefix() . '.' . $name;
 
-      // Read the view definition from the .yml file.
-      $source_folder = drupal_get_path('module', 'scheduler') . '/config/install';
-      $source_storage = new FileStorage($source_folder);
+      // Read the view definition from the .yml file. First try the /optional
+      // folder, then the main /config folder.
+      $optional_folder = drupal_get_path('module', 'scheduler') . '/config/optional';
+      $source_storage = new FileStorage($optional_folder);
       if (!$source = $source_storage->read($full_name)) {
-        throw new \Exception(sprintf('Failed to read source file for %s from %s folder', $full_name, $source_folder));
+        $install_folder = drupal_get_path('module', 'scheduler') . '/config/install';
+        $source_storage = new FileStorage($install_folder);
+      }
+      if (!$source = $source_storage->read($full_name)) {
+        throw new \Exception(sprintf('Failed to read source file for %s from either %s or %s folders', $full_name, $install_folder, $optional_folder));
       };
 
       // Try to read the view definition from active config storage.
@@ -951,6 +956,9 @@ class SchedulerManager {
         $view->set('uuid', $uuid);
         $view->save();
         $this->logger->notice('%view view updated.', ['%view' => $source['label']]);
+        // @todo Need to invalidate the views config cache. The broken field
+        // handlers are fixed but cache needs to be cleared. Need the equivalent
+        // of 'drush cc bin default' as this does what is required.
       }
       else {
         // The view does not exist in active storage so import it from source.
