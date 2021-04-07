@@ -17,8 +17,8 @@ use Symfony\Component\Routing\Route;
  *
  * @ViewsAccess(
  *   id = "scheduler",
- *   title = @Translation("REDUNDANT. Scheduled content access"),
- *   help = @Translation("NOT USED. Replaced with SchedulerRouteAccess"),
+ *   title = @Translation("Scheduled content access. REDUNDANT, DO NOT USE THIS."),
+ *   help = @Translation("NOT USED"),
  * )
  */
 class Scheduler extends AccessPluginBase {

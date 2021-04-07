@@ -83,7 +83,7 @@ services:
 
         # Add some permissions for all authenticated users.
         vendor/bin/drush role-add-perm 'authenticated' "create article content, edit any article content, delete any article content, access content overview, view own unpublished content, switch users"
-        vendor/bin/drush role-add-perm 'authenticated' "create image media, edit any image media, delete any image media, access media overview, view own unpublished media"
+        vendor/bin/drush role-add-perm 'authenticated' "create media, update any media, delete any media, access media overview, view own unpublished media"
 
         # Create users.
         vendor/bin/drush user-create 'Eddy the content editor'
@@ -96,8 +96,8 @@ services:
         vendor/bin/drush user-add-role 'media_viewer' 'Marvin the media viewer'
 
         # Generate content.
-        vendor/bin/drush devel-generate-content 2 --bundles=article --authors=1,2 --verbose
-        vendor/bin/drush devel-generate-media 2 --media-types=image --verbose
+        vendor/bin/drush devel-generate-content 4 --bundles=article --authors=1,2 --verbose
+        vendor/bin/drush devel-generate-media 4 --media-types=image --verbose
 
         # @todo Place the 'Switch users' block in first sidebar.
         # @todo Add 'content overview' and 'media overview' to tools menu.
