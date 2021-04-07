@@ -1,4 +1,4 @@
 /* Without a width value, the button extends 100% of the form */
-#scheduler-admin-form > div.dropbutton-wrapper.dropbutton-multiple {
+.scheduler-admin-form > div.dropbutton-wrapper {
   width: 30%;
 }
