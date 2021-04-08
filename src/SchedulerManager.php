@@ -791,10 +791,7 @@ class SchedulerManager {
    * Reset the scheduler plugins cache.
    */
   public function invalidatePluginCache() {
-    $cache = \Drupal::cache()->get('scheduler.plugins');
-    if (!empty($cache) && !empty($cache->data)) {
-      \Drupal::cache()->set('scheduler.plugins', NULL);
-    }
+    \Drupal::cache()->invalidate('scheduler.plugins');
   }
 
   /**
