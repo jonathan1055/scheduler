@@ -6,6 +6,9 @@ dependencies:
   module:
     - media
     - user
+  enforced:
+    module:
+      - scheduler
 id: scheduler_scheduled_media
 label: 'Scheduled media'
 module: views

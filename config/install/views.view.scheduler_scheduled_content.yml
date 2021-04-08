@@ -6,6 +6,9 @@ dependencies:
   module:
     - node
     - user
+  enforced:
+    module:
+      - scheduler
 id: scheduler_scheduled_content
 label: 'Scheduled content'
 module: views
