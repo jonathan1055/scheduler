@@ -5,6 +5,7 @@ namespace Drupal\scheduler;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\Component\EventDispatcher\Event;
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -953,9 +954,6 @@ class SchedulerManager {
         $view->set('uuid', $uuid);
         $view->save();
         $this->logger->notice('%view view updated.', ['%view' => $source['label']]);
-        // @todo Need to invalidate the views config cache. The broken field
-        // handlers are fixed but cache needs to be cleared. Need the equivalent
-        // of 'drush cc bin default' as this does what is required.
       }
       else {
         // The view does not exist in active storage so import it from source.
@@ -965,6 +963,10 @@ class SchedulerManager {
       }
       $updated[] = $source['label'];
     }
+    // The views are loaded OK but the publish-on and unpublish-on views field
+    // handlers are not found if the module was previously enabled, disabled
+    // then re-enabled. Clearing the views data cache solves the problem.
+    Cache::invalidateTags(['views_data']);
     return $updated;
   }
 
