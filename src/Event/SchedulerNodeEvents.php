@@ -3,12 +3,11 @@
 namespace Drupal\scheduler\Event;
 
 /**
- * Lists the six events dispatched by Scheduler relating to node entities.
+ * Lists the six events dispatched by Scheduler relating to Node entities.
  *
- * Ideally the namespace should have been Drupal\scheduler\Event and all the
- * event-related files stored in a src/Event folder. This cannot be chnaged now
- * as it would break the API which is being used by 3rd-party modules
- * subscribing to scheduler's events.
+ * The event names here are the original six, when only nodes were supported.
+ * See SchedulerMediaEvents for the generic naming convention to follow for any
+ * new entity plugin implementations.
  */
 class SchedulerNodeEvents {
 
