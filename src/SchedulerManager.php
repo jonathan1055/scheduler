@@ -565,7 +565,7 @@ class SchedulerManager {
           $action_id = $plugin->entityType() . '_unpublish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
-            $action_id = 'state_change__node__archived';
+            $action_id = 'state_change__' . $plugin->entityType() . '__archived';
           }
           $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($entity);
 
@@ -964,8 +964,7 @@ class SchedulerManager {
       $updated[] = $source['label'];
     }
     // The views are loaded OK but the publish-on and unpublish-on views field
-    // handlers are not found if the module was previously enabled, disabled
-    // then re-enabled. Clearing the views data cache solves the problem.
+    // handlers are not found. Clearing the views data cache solves the problem.
     Cache::invalidateTags(['views_data']);
     return $updated;
   }
