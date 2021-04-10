@@ -34,7 +34,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Helper function to count scheduled nodes and assert the expected number.
+   * Helper function to count scheduled entities and assert the expected number.
    *
    * @param string $type
    *   The machine-name for the entity type to be checked.
@@ -113,17 +113,22 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       "{$entityTypeId}_types[$bundle]" => TRUE,
     ];
     $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
-    // Display the full content list and the scheduled list. Calls to these
-    // pages are for information and debug only. They could be removed.
-    $this->drupalGet('admin/content');
-    $this->drupalGet('admin/content/scheduled');
-    $this->drupalGet('admin/content/media');
-    $this->drupalGet('admin/content/media/scheduled');
+    // Display the full content list and the scheduled list for the entity type
+    // being generated. Calls to these pages are for information and debug only.
+    if ($entityTypeId == 'media') {
+      $admin_content_urls = ['admin/content/media', 'admin/content/media/scheduled'];
+    }
+    else {
+      $admin_content_urls = ['admin/content', 'admin/content/scheduled'];
+    }
+    foreach ($admin_content_urls as $url) {
+      $this->drupalGet($url);
+    }
 
     // Delete all content for this type and generate new content with only
     // publish-on dates. Use 100% as this is how we can count the expected
-    // number of scheduled nodes. The time range of 3600 is one hour.
-    // The number of nodes has to be lower than 50 until Devel issue with
+    // number of scheduled entities. The time range of 3600 is one hour.
+    // The number of entities has to be lower than 50 until the Devel issue with
     // undefined index 'users' is available and we switch to using 8.x-3.0
     // See https://www.drupal.org/project/devel/issues/3076613
     $generate_settings = [
@@ -135,14 +140,13 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_unpublishing' => 0,
     ];
     $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
-    // @todo Make this more specific when we have a scheduled media view.
-    $this->drupalGet('admin/content');
-    $this->drupalGet('admin/content/scheduled');
-    $this->drupalGet('admin/content/media');
-    $this->drupalGet('admin/content/media/scheduled');
+    // Display the full content list and the scheduled content list.
+    foreach ($admin_content_urls as $url) {
+      $this->drupalGet($url);
+    }
 
-    // Check we have the expected number of nodes scheduled for publishing only
-    // and verify that that the dates are within the time range specified.
+    // Check we have the expected number of entities scheduled for publishing
+    // only, and verify that that the dates are within the time range specified.
     $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'publish_on', 40, $enabled ? 40 : 0, $generate_settings['time_range']);
     $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'unpublish_on', 40, 0);
 
@@ -157,12 +161,12 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_unpublishing' => 100,
     ];
     $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
-    $this->drupalGet('admin/content');
-    $this->drupalGet('admin/content/scheduled');
-    $this->drupalGet('admin/content/media');
-    $this->drupalGet('admin/content/media/scheduled');
+    // Display the full content list and the scheduled content list.
+    foreach ($admin_content_urls as $url) {
+      $this->drupalGet($url);
+    }
 
-    // Check we have the expected number of nodes scheduled for unpublishing
+    // Check we have the expected number of entities scheduled for unpublishing
     // only, and verify that that the dates are within the time range specified.
     $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'publish_on', 30, 0);
     $this->countScheduledEntities($entityTypeId, $bundle_field, $bundle, 'unpublish_on', 30, $enabled ? 30 : 0, $generate_settings['time_range']);
