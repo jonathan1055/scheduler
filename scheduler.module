@@ -799,3 +799,10 @@ function scheduler_modules_installed($modules) {
     $scheduler_manager->viewsUpdate($matches);
   }
 }
+
+/**
+ * Implements hook_cache_flush().
+ */
+function scheduler_cache_flush() {
+  \Drupal::service('scheduler.manager')->invalidatePluginCache();
+}
