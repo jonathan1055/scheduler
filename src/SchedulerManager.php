@@ -868,6 +868,23 @@ class SchedulerManager {
   }
 
   /**
+   * Gets the routes for user profile page scheduled views.
+   *
+   * @todo Could these be found dynamically from route storage or view storage,
+   * getting all route matching 'scheduler_scheduled_*.user_page'? Or the route
+   * could be added to the plugin annotation and retrieved like the form id.
+   *
+   * @return array
+   *   List of routes for the user page scheduled views.
+   */
+  public function getUserPageViewRoutes() {
+    return [
+      'view.scheduler_scheduled_content.user_page',
+      'view.scheduler_scheduled_media.user_page',
+    ];
+  }
+
+  /**
    * Updates db tables for entities that should have the Scheduler fields.
    *
    * This is called from scheduler_modules_installed and scheduler_update_8103.
