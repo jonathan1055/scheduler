@@ -39,6 +39,9 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   /**
    * Get the available types/bundles for the entity type.
    *
+   * Do not use static or drupal_static here, because changes to third-party
+   * settings invalidate the saved values during phpunit testing.
+   *
    * @return array
    *   The node type objects.
    */
@@ -54,15 +57,18 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
    *   The list of form IDs.
    */
   public function entityFormIds() {
-    $ids = [
-      'node_add_form',
-      'node_edit_form',
-    ];
-    $types = array_keys($this->getTypes());
-    foreach ($types as $typeId) {
-      $ids[] = 'node_' . $typeId . '_form';
-      $ids[] = 'node_' . $typeId . '_add_form';
-      $ids[] = 'node_' . $typeId . '_edit_form';
+    static $ids;
+    if (!isset($ids)) {
+      $ids = [
+        'node_add_form',
+        'node_edit_form',
+      ];
+      $types = array_keys($this->getTypes());
+      foreach ($types as $typeId) {
+        $ids[] = 'node_' . $typeId . '_form';
+        $ids[] = 'node_' . $typeId . '_add_form';
+        $ids[] = 'node_' . $typeId . '_edit_form';
+      }
     }
     return $ids;
   }

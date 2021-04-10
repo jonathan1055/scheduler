@@ -40,15 +40,12 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    * Get the available types/bundles for the entity type.
    *
    * @return array
-   *   The media bundle objects.
+   *   The media bundle objects, or an empty array if Media is not enabled.
    */
   public function getTypes() {
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
-    // @todo this function is called from everywhere! eg admin/modules/install
-    // admin/people, admin/appearance, the front page. Is there anything we can
-    // do to reduce the number of calls?
     $mediaTypes = \Drupal::entityTypeManager()->getStorage('media_type')->loadMultiple();
     return $mediaTypes;
   }
@@ -57,23 +54,24 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    * Get the form IDs for media add/edit forms.
    *
    * @return array
-   *   The list of form IDs.
+   *   The list of form IDs, or an empty array if Media is not enabled.
    */
   public function entityFormIds() {
-
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
-
-    $ids = [
-      'media_add_form',
-      'media_edit_form',
-    ];
-    $types = array_keys($this->getTypes());
-    foreach ($types as $typeId) {
-      $ids[] = 'media_' . $typeId . '_form';
-      $ids[] = 'media_' . $typeId . '_add_form';
-      $ids[] = 'media_' . $typeId . '_edit_form';
+    static $ids;
+    if (!isset($ids)) {
+      $ids = [
+        'media_add_form',
+        'media_edit_form',
+      ];
+      $types = array_keys($this->getTypes());
+      foreach ($types as $typeId) {
+        $ids[] = 'media_' . $typeId . '_form';
+        $ids[] = 'media_' . $typeId . '_add_form';
+        $ids[] = 'media_' . $typeId . '_edit_form';
+      }
     }
     return $ids;
   }
@@ -82,14 +80,12 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
    * Get the form IDs for media type forms.
    *
    * @return array
-   *   The list of form IDs.
+   *   The list of form IDs, or an empty array if Media is not enabled.
    */
   public function entityTypeFormIds() {
-
     if (!\Drupal::moduleHandler()->moduleExists('media')) {
       return [];
     }
-
     return [
       'media_type_add_form',
       'media_type_edit_form',
