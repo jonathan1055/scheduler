@@ -235,15 +235,15 @@ class SchedulerManager {
     $action = 'publish';
     $plugins = $this->getPlugins();
 
-    foreach ($plugins as $plugin) {
+    foreach ($plugins as $entityTypeId => $plugin) {
       // Select all entities of the types that are enabled for scheduled
       // publishing and where publish_on is less than or equal to the current
       // time.
       $ids = [];
-      $scheduler_enabled_types = $this->getEnabledTypes($plugin->entityType(), $action);
+      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $action);
 
       if (!empty($scheduler_enabled_types)) {
-        $query = $this->entityTypeManager->getStorage($plugin->entityType())->getQuery()
+        $query = $this->entityTypeManager->getStorage($entityTypeId)->getQuery()
           ->exists('publish_on')
           ->condition('publish_on', $this->time->getRequestTime(), '<=')
           ->condition($plugin->typeFieldName(), $scheduler_enabled_types, 'IN')
@@ -273,7 +273,7 @@ class SchedulerManager {
       // the list of ids returned above may have some translations that need
       // processing now and others that do not.
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
-      $entities = $this->loadEntities($ids, $plugin->entityType());
+      $entities = $this->loadEntities($ids, $entityTypeId);
       foreach ($entities as $entity_multilingual) {
 
         // The API calls could return entities of types which are not enabled
@@ -346,7 +346,7 @@ class SchedulerManager {
           }
 
           // Log the fact that a scheduled publication is about to take place.
-          $entity_type = $this->entityTypeManager->getStorage($plugin->entityType() . '_type')->load($entity->bundle());
+          $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type @id', [
             '@type' => $entity->getEntityTypeId(),
             '@id' => $entity->id(),
@@ -387,10 +387,10 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'PUBLISH');
 
           // Use the standard actions system to publish and save the entity.
-          $action_id = $plugin->entityType() . '_publish_action';
+          $action_id = $entityTypeId . '_publish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
-            $action_id = 'state_change__' . $plugin->entityType() . '__published';
+            $action_id = 'state_change__' . $entityTypeId . '__published';
           }
           $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($entity);
 
@@ -416,15 +416,15 @@ class SchedulerManager {
     $action = 'unpublish';
     $plugins = $this->getPlugins();
 
-    foreach ($plugins as $plugin) {
+    foreach ($plugins as $entityTypeId => $plugin) {
       // Select all entities of the types for this plugin that are enabled for
       // scheduled unpublishing and where unpublish_on is less than or equal to
       // the current time.
       $ids = [];
-      $scheduler_enabled_types = $this->getEnabledTypes($plugin->entityType(), $action);
+      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $action);
 
       if (!empty($scheduler_enabled_types)) {
-        $query = $this->entityTypeManager->getStorage($plugin->entityType())->getQuery()
+        $query = $this->entityTypeManager->getStorage($entityTypeId)->getQuery()
           ->exists('unpublish_on')
           ->condition('unpublish_on', $this->time->getRequestTime(), '<=')
           ->condition($plugin->typeFieldName(), $scheduler_enabled_types, 'IN')
@@ -450,7 +450,7 @@ class SchedulerManager {
       $ids = array_unique($ids);
 
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
-      $entities = $this->loadEntities($ids, $plugin->entityType());
+      $entities = $this->loadEntities($ids, $entityTypeId);
       foreach ($entities as $entity_multilingual) {
         // The API calls could return entities of types which are not enabled
         // for scheduled unpublishing. Do not process these.
@@ -519,7 +519,7 @@ class SchedulerManager {
           }
 
           // Set up the log variables.
-          $entity_type = $this->entityTypeManager->getStorage($plugin->entityType() . '_type')->load($entity->bundle());
+          $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type @id', [
             '@type' => $entity->getEntityTypeId(),
             '@id' => $entity->id(),
@@ -561,10 +561,10 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'UNPUBLISH');
 
           // Use the standard actions system to unpublish and save the entity.
-          $action_id = $plugin->entityType() . '_unpublish_action';
+          $action_id = $entityTypeId . '_unpublish_action';
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
-            $action_id = 'state_change__' . $plugin->entityType() . '__archived';
+            $action_id = 'state_change__' . $entityTypeId . '__archived';
           }
           $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($entity);
 
@@ -883,9 +883,9 @@ class SchedulerManager {
   public function getDevelGenerateFormIds() {
     $plugins = $this->getPlugins();
     $form_ids = [];
-    foreach ($plugins as $plugin) {
-      // Use entityType as key so we can get back from form_id to entity.
-      $form_ids[$plugin->entityType()] = $plugin->develGenerateForm();
+    foreach ($plugins as $entityTypeId => $plugin) {
+      // Use entity type as key so we can get back from form_id to entity.
+      $form_ids[$entityTypeId] = $plugin->develGenerateForm();
     }
     // If an entity is not supported by Devel Generate then the form id will be
     // empty, so filter out these.

@@ -656,7 +656,7 @@ function scheduler_entity_extra_field_info() {
   // works for vertical tabs and separate fieldsets.
   $fields = [];
 
-  foreach ($plugins as $plugin) {
+  foreach ($plugins as $entityTypeId => $plugin) {
     $types = $plugin->getTypes();
     foreach ($types as $type) {
       $publishing_enabled = $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable'));
@@ -664,7 +664,7 @@ function scheduler_entity_extra_field_info() {
 
       if ($publishing_enabled || $unpublishing_enabled) {
         // Weight 20 puts this below the core fields by default.
-        $fields[$plugin->entityType()][$type->id()]['form']['scheduler_settings'] = [
+        $fields[$entityTypeId][$type->id()]['form']['scheduler_settings'] = [
           'label' => t('Scheduler Dates'),
           'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
           'weight' => 20,
