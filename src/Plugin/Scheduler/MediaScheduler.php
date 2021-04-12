@@ -62,13 +62,9 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
     }
     static $ids;
     if (!isset($ids)) {
-      $ids = [
-        'media_add_form',
-        'media_edit_form',
-      ];
+      $ids = [];
       $types = array_keys($this->getTypes());
       foreach ($types as $typeId) {
-        $ids[] = 'media_' . $typeId . '_form';
         $ids[] = 'media_' . $typeId . '_add_form';
         $ids[] = 'media_' . $typeId . '_edit_form';
       }

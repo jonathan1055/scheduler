@@ -59,14 +59,12 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
   public function entityFormIds() {
     static $ids;
     if (!isset($ids)) {
-      $ids = [
-        'node_add_form',
-        'node_edit_form',
-      ];
+      $ids = [];
       $types = array_keys($this->getTypes());
       foreach ($types as $typeId) {
+        // The node add form is named node_{type}_form. This is different from
+        // other entities, which have {entity}_{type}_add_form.
         $ids[] = 'node_' . $typeId . '_form';
-        $ids[] = 'node_' . $typeId . '_add_form';
         $ids[] = 'node_' . $typeId . '_edit_form';
       }
     }
