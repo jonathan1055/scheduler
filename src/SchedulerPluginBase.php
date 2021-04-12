@@ -102,22 +102,4 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    */
   abstract public function entityTypeFormIds();
 
-  /**
-   * Get the types/bundles enabled for the specified $action.
-   *
-   * @param string $action
-   *   The action - publish|unpublish.
-   *
-   * @return array
-   *   The type/bundle objects enabled for the $action.
-   */
-  public function getEnabledTypes($action) {
-    $config = \Drupal::config('scheduler.settings');
-    $types = $this->getTypes();
-    return array_filter($types, function ($bundle) use ($action, $config) {
-      /** @var \Drupal\Core\Entity\EntityTypeInterface $bundle */
-      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $config->get('default_' . $action . '_enable'));
-    });
-  }
-
 }

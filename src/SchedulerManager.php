@@ -233,7 +233,6 @@ class SchedulerManager {
   public function publish() {
     $result = FALSE;
     $action = 'publish';
-
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $plugin) {
@@ -241,7 +240,7 @@ class SchedulerManager {
       // publishing and where publish_on is less than or equal to the current
       // time.
       $ids = [];
-      $scheduler_enabled_types = array_keys($plugin->getEnabledTypes($action));
+      $scheduler_enabled_types = $this->getEnabledTypes($plugin->entityType(), $action);
 
       if (!empty($scheduler_enabled_types)) {
         $query = $this->entityTypeManager->getStorage($plugin->entityType())->getQuery()
@@ -415,7 +414,6 @@ class SchedulerManager {
   public function unpublish() {
     $result = FALSE;
     $action = 'unpublish';
-
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $plugin) {
@@ -423,7 +421,8 @@ class SchedulerManager {
       // scheduled unpublishing and where unpublish_on is less than or equal to
       // the current time.
       $ids = [];
-      $scheduler_enabled_types = array_keys($plugin->getEnabledTypes($action));
+      $scheduler_enabled_types = $this->getEnabledTypes($plugin->entityType(), $action);
+
       if (!empty($scheduler_enabled_types)) {
         $query = $this->entityTypeManager->getStorage($plugin->entityType())->getQuery()
           ->exists('unpublish_on')
@@ -817,6 +816,32 @@ class SchedulerManager {
   public function getPlugin($entity_type) {
     $plugins = $this->getPlugins();
     return $plugins[$entity_type] ?? NULL;
+  }
+
+  /**
+   * Gets the names of the types/bundles that are enabled for a specific action.
+   *
+   * If the entity type is not supported by Scheduler, or there are no enabled
+   * bundles for this action within the entity type, then an empty array is
+   * returned.
+   *
+   * @param string $entityTypeId
+   *   The entity type id, for example 'node' or 'media'.
+   * @param string $action
+   *   The action to check - 'publish' or 'unpublish'.
+   *
+   * @return array
+   *   The entity's type/bundle names that are enabled for the required action.
+   */
+  public function getEnabledTypes($entityTypeId, $action) {
+    if (!$plugin = $this->getPlugin($entityTypeId)) {
+      return [];
+    };
+    $types = $plugin->getTypes();
+    $types = array_filter($types, function ($bundle) use ($action) {
+      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $this->setting('default_' . $action . '_enable'));
+    });
+    return array_keys($types);
   }
 
   /**

@@ -84,9 +84,9 @@ class SchedulerAdminForm extends ConfigFormBase {
       'title' => $this->t('Entity Types'),
       'url' => Url::fromRoute('system.admin_structure'),
     ];
-    foreach ($plugins as $plugin) {
-      $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
-      $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
+    foreach ($plugins as $entityTypeId => $plugin) {
+      $publishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'publish');
+      $unpublishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'unpublish');
       // It should not be necessary to check that $plugin->getTypes() returns a
       // non-empty array of values because the plugin will only be returned by
       // schedulerManager->getPlugins() if the required module is enabled.

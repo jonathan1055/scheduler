@@ -270,14 +270,11 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
  * Form alter handling for Devel Generate forms.
  */
 function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $form_state, $form_id, $entityTypeId) {
-  $scheduler_manager = \Drupal::service('scheduler.manager');
-  // Get the plugin for this entity. We know it is guaranteed to be supported.
-  $plugin = $scheduler_manager->getPlugin($entityTypeId);
-
   // Add an extra column to the table to show which types are enabled for
   // scheduled publishing and unpublishing.
-  $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
-  $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'publish');
+  $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'unpublish');
 
   $type_table = $entityTypeId . '_types';
   $form[$type_table]['#header']['scheduler'] = t('Scheduler settings');
@@ -351,12 +348,12 @@ function _scheduler_translation_validate($form, FormStateInterface $form_state) 
   /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
   $scheduler_manager = \Drupal::service('scheduler.manager');
   foreach ($settings as $entity_type => $content_types) {
-    $plugin = $scheduler_manager->getPlugin($entity_type);
-    if (empty($plugin)) {
+    $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entity_type, 'publish');
+    $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entity_type, 'unpublish');
+    if (empty($publishing_enabled_types) && empty($publishing_enabled_types)) {
       continue;
     }
-    $publishing_enabled_types = array_keys($plugin->getEnabledTypes('publish'));
-    $unpublishing_enabled_types = array_keys($plugin->getEnabledTypes('unpublish'));
+
     $enabled = [];
     foreach ($content_types as $name => $options) {
       $enabled['publish_on'] = in_array($name, $publishing_enabled_types);
@@ -486,23 +483,15 @@ function scheduler_entity_presave(EntityInterface $entity) {
   $config = \Drupal::config('scheduler.settings');
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $request_time = \Drupal::time()->getRequestTime();
-  // Get the plugin for this entity. If null then the entity is not supported
-  // by Scheduler so we do not need to go further.
-  if (!$plugin = $scheduler_manager->getPlugin($entity->getEntityTypeId())) {
-    return;
-  }
 
-  $publish_message = FALSE;
-  $unpublish_message = FALSE;
-
-  $publishing_enabled_types = $plugin->getEnabledTypes('publish');
-  $unpublishing_enabled_types = $plugin->getEnabledTypes('unpublish');
-  $publishing_enabled = in_array($entity->bundle(), array_keys($publishing_enabled_types));
-  $unpublishing_enabled = in_array($entity->bundle(), array_keys($unpublishing_enabled_types));
+  $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entity->getEntityTypeId(), 'publish');
+  $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entity->getEntityTypeId(), 'unpublish');
+  $publishing_enabled = in_array($entity->bundle(), $publishing_enabled_types);
+  $unpublishing_enabled = in_array($entity->bundle(), $unpublishing_enabled_types);
 
   if (!$publishing_enabled && !$unpublishing_enabled) {
-    // Neither scheduled publishing nor unpublishing is enabled for this
-    // specific type, so end here.
+    // Neither scheduled publishing nor unpublishing are enabled for this
+    // specific bundle/type, so end here.
     return;
   }
 
@@ -535,6 +524,9 @@ function scheduler_entity_presave(EntityInterface $entity) {
       }
     }
   }
+
+  $publish_message = FALSE;
+  $unpublish_message = FALSE;
 
   // If the entity type is enabled for scheduled publishing and has a publish_on
   // date then check if publishing is allowed and if the content needs to be

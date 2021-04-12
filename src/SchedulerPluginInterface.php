@@ -86,15 +86,4 @@ interface SchedulerPluginInterface {
    */
   public function entityTypeFormIds();
 
-  /**
-   * Get the types/bundles enabled for the specified $action.
-   *
-   * @param string $action
-   *   The action - publish|unpublish.
-   *
-   * @return array
-   *   The type/bundle objects enabled for the $action.
-   */
-  public function getEnabledTypes($action);
-
 }
