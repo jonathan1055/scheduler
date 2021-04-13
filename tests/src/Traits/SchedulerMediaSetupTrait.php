@@ -68,9 +68,7 @@ trait SchedulerMediaSetupTrait {
    */
   public function schedulerMediaSetUp() {
 
-    // Create a test media type that will be enabled for scheduling. Image files
-    // are validated on attaching and saving, and generated files fail. But for
-    // video files the only validation is the file extension, hence use video.
+    // Create a test media type for video that is enabled for scheduling.
     /** @var \Drupal\media\Entity\MediaTypeInterface $mediaType */
     $this->mediaType = $this->createMediaType('video_file', [
       'id' => $this->mediaTypeName,
