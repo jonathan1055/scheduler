@@ -392,7 +392,11 @@ class SchedulerManager {
             // workbench_moderation_actions module uses a custom action instead.
             $action_id = 'state_change__' . $entityTypeId . '__published';
           }
-          $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($entity);
+          if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+            \Drupal::messenger()->addError($this->t('Action id "%s" is missing. Scheduled publishing halted.', ['%s' => $action_id]));
+            throw new \Exception(sprintf('Action id "%s" is missing. Scheduled publishing halted.', $action_id));
+          }
+          $loaded_action->getPlugin()->execute($entity);
 
           $result = TRUE;
         }
@@ -566,7 +570,11 @@ class SchedulerManager {
             // workbench_moderation_actions module uses a custom action instead.
             $action_id = 'state_change__' . $entityTypeId . '__archived';
           }
-          $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($entity);
+          if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+            \Drupal::messenger()->addError($this->t('Action id "%s" is missing. Scheduled unpublishing halted.', ['%s' => $action_id]));
+            throw new \Exception(sprintf('Action id "%s" is missing. Scheduled unpublishing halted.', $action_id));
+          }
+          $loaded_action->getPlugin()->execute($entity);
 
           $result = TRUE;
         }
