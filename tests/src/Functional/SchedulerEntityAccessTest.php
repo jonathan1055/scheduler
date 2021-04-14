@@ -10,7 +10,7 @@ namespace Drupal\Tests\scheduler\Functional;
  *
  * @group scheduler
  */
-class SchedulerNodeAccessTest extends SchedulerBrowserTestBase {
+class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
 
   /**
    * Additional modules required.
