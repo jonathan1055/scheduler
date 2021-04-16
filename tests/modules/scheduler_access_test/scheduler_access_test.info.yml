@@ -1,6 +1,6 @@
-name: 'Scheduler Node Access Test'
+name: 'Scheduler Entity Access Test'
 type: module
-description: 'Support module for Scheduler restricted node access testing.'
+description: 'Support module for Scheduler testing with restricted entity access.'
 package: Testing
 core: 8.x
 core_version_requirement: ^8 || ^9
