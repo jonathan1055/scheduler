@@ -5,11 +5,11 @@ services:
       - '@date.formatter'
       - '@logger.channel.scheduler'
       - '@module_handler'
-      - '@entity_field.manager'
       - '@entity_type.manager'
       - '@config.factory'
       - '@event_dispatcher'
       - '@datetime.time'
+      - '@entity_field.manager'
       - '@plugin.manager.scheduler'
   logger.channel.scheduler:
     class: Drupal\Core\Logger\LoggerChannel

@@ -94,11 +94,11 @@ class SchedulerManager {
   public function __construct(DateFormatterInterface $dateFormatter,
                               LoggerInterface $logger,
                               ModuleHandlerInterface $moduleHandler,
-                              EntityFieldManagerInterface $entityFieldManager,
                               EntityTypeManagerInterface $entityTypeManager,
                               ConfigFactoryInterface $configFactory,
                               ContainerAwareEventDispatcher $eventDispatcher,
                               TimeInterface $time,
+                              EntityFieldManagerInterface $entityFieldManager,
                               SchedulerPluginManager $pluginManager
   ) {
     $this->dateFormatter = $dateFormatter;
