@@ -393,8 +393,7 @@ class SchedulerManager {
             $action_id = 'state_change__' . $entityTypeId . '__published';
           }
           if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            \Drupal::messenger()->addError($this->t('Action id "%s" is missing. Scheduled publishing halted.', ['%s' => $action_id]));
-            throw new \Exception(sprintf('Action id "%s" is missing. Scheduled publishing halted.', $action_id));
+            $this->missingAction($action_id, $action);
           }
           $loaded_action->getPlugin()->execute($entity);
 
@@ -571,8 +570,7 @@ class SchedulerManager {
             $action_id = 'state_change__' . $entityTypeId . '__archived';
           }
           if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            \Drupal::messenger()->addError($this->t('Action id "%s" is missing. Scheduled unpublishing halted.', ['%s' => $action_id]));
-            throw new \Exception(sprintf('Action id "%s" is missing. Scheduled unpublishing halted.', $action_id));
+            $this->missingAction($action_id, $action);
           }
           $loaded_action->getPlugin()->execute($entity);
 
@@ -644,6 +642,51 @@ class SchedulerManager {
       $item = $item . '_' . $hook;
     });
     return $hook_implementations;
+  }
+
+  /**
+   * Gives details and throws exception when a required action is missing.
+   *
+   * This displays a screen error message which is useful if the cron run was
+   * initiated via the site UI. This will also be shown on the terminal if cron
+   * was run via drush. If the Config Update module is installed then a link is
+   * given to the actions report in Config UI, which lists the missing items and
+   * provides a button to import from source. If Config Update is not installed
+   * then a link is provided to its Drupal project page.
+   *
+   * @param string $action_id
+   *   The id of the missing action.
+   * @param string $process
+   *   The Scheduler process being run, 'publish' or 'unpublish'.
+   */
+  protected function missingAction(string $action_id, string $process) {
+    $logger_variables = ['%action_id' => $action_id];
+    // If the Config Update module is available then link to the UI report. If
+    // not then link to the project page on drupal.org.
+    if (\Drupal::moduleHandler()->moduleExists('config_update')) {
+      // If the report UI sub-module is enabled then link directly to the
+      // actions report. Otherwise link to 'Extend' so it can be enabled.
+      if (\Drupal::moduleHandler()->moduleExists('config_update_ui')) {
+        $link = Link::fromTextAndUrl($this->t('Config Update for actions'), Url::fromRoute('config_update_ui.report', [
+          'report_type' => 'type',
+          'name' => 'action',
+        ]));
+      }
+      else {
+        $link = Link::fromTextAndUrl($this->t('Enable Config Update Reports'), Url::fromRoute('system.modules_list', ['filter' => 'config_update']));
+      }
+      $logger_variables['link'] = $link->toString();
+      $logger_variables[':url'] = $link->getUrl()->toString();
+    }
+    else {
+      $project_page = 'https://www.drupal.org/project/config_update';
+      $logger_variables[':url'] = $project_page;
+      $logger_variables['link'] = Link::fromTextAndUrl('Config Update project page', Url::fromUri($project_page))->toString();
+    }
+
+    \Drupal::messenger()->addError($this->t("Action '%action_id' is missing. Use <a href=':url'>Config Update</a> to import the missing action.", $logger_variables));
+    $this->logger->warning("Action '%action_id' is missing. Use Config Update to import the missing action.", $logger_variables);
+    throw new \Exception("Action '{$action_id}' is missing. Scheduled $process halted.");
   }
 
   /**
