@@ -6,19 +6,11 @@ use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\user\Entity\User;
-use Symfony\Component\Routing\Route;
 
 /**
  * Sets access for specific scheduler views routes.
  */
 class SchedulerRouteAccess {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applies(Route $route) {
-    return NULL;
-  }
 
   /**
    * Provides custom access checks for the scheduled views on the user page.
