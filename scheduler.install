@@ -79,14 +79,6 @@ function scheduler_install() {
 }
 
 /**
- * Implements hook_uninstall().
- */
-function scheduler_uninstall() {
-  // Delete the scheduled content view.
-  \Drupal::configFactory()->getEditable('views.view.scheduler_scheduled_content')->delete();
-}
-
-/**
  * Reset date and time formats to default.
  */
 function scheduler_update_8001() {
