@@ -217,9 +217,8 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     }
   }
 
-  // Derive the correct permission name to check depending on entity type. To
-  // maintain backwards-compatibility the node string has to have 'nodes'.
-  $permission = 'schedule publishing of ' . ($entityTypeId == 'node' ? 'nodes' : $entityTypeId);
+  // Check the permission for entering scheduled dates.
+  $permission = $scheduler_manager->permissionName($entityTypeId, 'schedule');
   if (!\Drupal::currentUser()->hasPermission($permission)) {
     // Do not show the scheduler fields for users who do not have permission.
     // Setting #access to FALSE for 'scheduler_settings' is enough to hide the

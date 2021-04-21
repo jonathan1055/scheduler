@@ -951,13 +951,38 @@ class SchedulerManager {
    * could be added to the plugin annotation and retrieved like the form id.
    *
    * @return array
-   *   List of routes for the user page scheduled views.
+   *   List of routes for the user page scheduled views, keyed by entity type.
    */
   public function getUserPageViewRoutes() {
     return [
-      'view.scheduler_scheduled_content.user_page',
-      'view.scheduler_scheduled_media.user_page',
+      'node' => 'view.scheduler_scheduled_content.user_page',
+      'media' => 'view.scheduler_scheduled_media.user_page',
     ];
+  }
+
+  /**
+   * Derives the permission name for an entity type and permission type.
+   *
+   * This function is added because for backwards-compatibility the node
+   * permission names have to end with 'nodes' and 'content'. For all other
+   * newly-supported entity types it is $entityTypeId.
+   *
+   * @param string $entityTypeId
+   *   The entity type id, for example 'node', 'media' etc.
+   * @param string $permissionType
+   *   The type of permission - 'schedule' or 'view'.
+   *
+   * @return string
+   *   The internal name of the scheduler permission.
+   */
+  public function permissionName($entityTypeId, $permissionType) {
+    switch ($permissionType) {
+      case 'schedule':
+        return 'schedule publishing of ' . ($entityTypeId == 'node' ? 'nodes' : $entityTypeId);
+
+      case 'view':
+        return 'view scheduled ' . ($entityTypeId == 'node' ? 'content' : $entityTypeId);
+    }
   }
 
   /**

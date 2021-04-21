@@ -51,6 +51,9 @@ class SchedulerPermissions implements ContainerInjectionInterface {
   /**
    * Build permissions for each entity type.
    *
+   * SchedulerManager function permissionName() can be used to return the
+   * permission name for a given entity type and permission type.
+   *
    * @return array|array[]
    *   The full list of permissions to schedule and to view each entity type.
    */
