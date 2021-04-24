@@ -17,13 +17,12 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    * @param \Drupal\node\NodeInterface $node
    *   The node to schedule.
    * @param string $action
-   *   The action to perform: either 'publish' or 'unpublish'. Defaults to
-   *   'publish'.
+   *   The action to perform: either 'publish' or 'unpublish'.
    *
    * @return \Drupal\node\NodeInterface
    *   The updated node, after scheduled (un)publication via a cron run.
    */
-  protected function schedule(NodeInterface $node, $action = 'publish') {
+  protected function scheduleAndRunCron(NodeInterface $node, $action) {
     // Simulate scheduling by setting the (un)publication date in the past and
     // running cron.
     $node->{$action . '_on'} = strtotime('-5 hour', $this->requestTime);
@@ -47,44 +46,16 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertRevisionCount($nid, $value, $message = '') {
-    $count = \Drupal::database()->select('node_revision', 'r')
-      ->condition('nid', $nid)
-      ->countQuery()
-      ->execute()
-      ->fetchColumn();
+    // Because we are not deleting any revisions we can take a short cut and use
+    // getLatestRevisionId() which will effectively be the number of revisions.
+    $count = $this->nodeStorage->getLatestRevisionId($nid);
     return $this->assertEquals($value, (int) $count, $message);
-  }
-
-  /**
-   * Check if the latest revision log message of a node matches a given string.
-   *
-   * @param int $nid
-   *   The node id of the node to check.
-   * @param string $value
-   *   The value with which the log message will be compared.
-   * @param string $message
-   *   The message to display along with the assertion.
-   *
-   * @return bool
-   *   TRUE if the assertion succeeded, FALSE otherwise.
-   */
-  protected function assertRevisionLogMessage($nid, $value, $message = '') {
-    // Retrieve the latest revision log message for this node.
-    $log_message = $this->database->select('node_revision', 'r')
-      ->fields('r', ['revision_log'])
-      ->condition('nid', $nid)
-      ->orderBy('vid', 'DESC')
-      ->range(0, 1)
-      ->execute()
-      ->fetchColumn();
-
-    return $this->assertEquals($value, $log_message, $message);
   }
 
   /**
    * Tests the creation of new revisions on scheduling.
    */
-  public function testRevisioning() {
+  public function testNewRevision() {
     // Create a scheduled node that is not automatically revisioned.
     $created = strtotime('-2 day', $this->requestTime);
     $settings = [
@@ -98,11 +69,11 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
 
     // First test scheduled publication with revisioning disabled by default.
-    $node = $this->schedule($node);
+    $node = $this->scheduleAndRunCron($node, 'publish');
     $this->assertRevisionCount($node->id(), 1, 'No new revision is created by default when a node is published.');
 
     // Test scheduled unpublication.
-    $node = $this->schedule($node, 'unpublish');
+    $node = $this->scheduleAndRunCron($node, 'unpublish');
     $this->assertRevisionCount($node->id(), 1, 'No new revision is created by default when a node is unpublished.');
 
     // Enable revisioning.
@@ -111,18 +82,18 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
       ->save();
 
     // Test scheduled publication with revisioning enabled.
-    $node = $this->schedule($node);
+    $node = $this->scheduleAndRunCron($node, 'publish');
     $this->assertRevisionCount($node->id(), 2, 'A new revision was created when revisioning is enabled.');
     $expected_message = sprintf('Published by Scheduler. The scheduled publishing date was %s.',
-    $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
-    $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
+      $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
+    $this->assertEquals($node->getRevisionLogMessage(), $expected_message, 'The correct message was found in the node revision log after scheduled publishing.');
 
     // Test scheduled unpublication with revisioning enabled.
-    $node = $this->schedule($node, 'unpublish');
+    $node = $this->scheduleAndRunCron($node, 'unpublish');
     $this->assertRevisionCount($node->id(), 3, 'A new revision was created when a node was unpublished with revisioning enabled.');
     $expected_message = sprintf('Unpublished by Scheduler. The scheduled unpublishing date was %s.',
-    $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
-    $this->assertRevisionLogMessage($node->id(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
+      $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
+    $this->assertEquals($node->getRevisionLogMessage(), $expected_message, 'The correct message was found in the node revision log after scheduled unpublishing.');
   }
 
   /**
@@ -144,7 +115,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $this->assertFalse($node->isPublished(), 'The node is not published.');
 
     // Schedule the node for publishing and run cron.
-    $node = $this->schedule($node, 'publish');
+    $node = $this->scheduleAndRunCron($node, 'publish');
     // Get the created date from the node and check that it has not changed.
     $created_after_cron = $node->created->value;
     $this->assertTrue($node->isPublished(), 'The node has been published.');
@@ -154,7 +125,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $this->nodetype->setThirdPartySetting('scheduler', 'publish_touch', TRUE)->save();
 
     // Schedule the node again and run cron.
-    $node = $this->schedule($node, 'publish');
+    $node = $this->scheduleAndRunCron($node, 'publish');
     // Check that the created date has changed to match the publish_on date.
     $created_after_cron = $node->created->value;
     $this->assertEquals(strtotime('-5 hour', $this->requestTime), $created_after_cron, "With 'touch' option set, the node creation date is changed to match the publishing date.");
