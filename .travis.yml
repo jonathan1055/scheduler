@@ -56,7 +56,7 @@ jobs:
         #   1 BrowserTestBase::drupalGetHeader()
         # --- Remaining direct deprecation notices (6)
         #   6 inheritEnvironmentVariables
-        - DEPRECATIONS=13
+        - DEPRECATIONS=900
         - RULES=NO
 
 # Be sure to cache composer downloads.
