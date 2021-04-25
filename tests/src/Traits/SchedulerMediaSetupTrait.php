@@ -4,6 +4,7 @@ namespace Drupal\Tests\scheduler\Traits;
 
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
+use Drupal\Tests\node\Traits\NodeCreationTrait;
 
 /**
  * Additional setup trait for Scheduler tests that use Media.
@@ -13,6 +14,12 @@ use Drupal\Tests\media\Traits\MediaTypeCreationTrait;
 trait SchedulerMediaSetupTrait {
 
   use MediaTypeCreationTrait;
+  use NodeCreationTrait {
+    // Allow this trait to be used in Kernel tests (which do not use
+    // BrowserTestBase) and hence will not have these two functions.
+    getNodeByTitle as drupalGetNodeByTitle;
+    createNode as drupalCreateNode;
+  }
 
   /**
    * The internal name of the standard media type created for testing.
