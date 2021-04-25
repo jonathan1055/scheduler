@@ -773,26 +773,23 @@ class SchedulerManager {
    *   The type of entity.
    *
    * @return array
-   *   Array of loaded entities.
+   *   Array of loaded entity objects, keyed by id.
    */
-  protected function loadEntities(array $ids, $type) {
+  protected function loadEntities(array $ids, string $type) {
     $storage = $this->entityTypeManager->getStorage($type);
     $entities = [];
-
     foreach ($ids as $id) {
-      $entity = $storage->load($id);
-
-      // @todo Verify that entity type is revisionable
-      if (method_exists($storage, 'revisionIds')) {
-        $revision_ids = $storage->revisionIds($entity);
-        $vid = end($revision_ids);
-        $entities[] = $storage->loadRevision($vid);
+      // If the entity type is revisionable then load the latest revision. For
+      // moderated entities this may be an unpublished draft update of a
+      // currently published entity.
+      if (method_exists($storage, 'getLatestRevisionId')) {
+        $vid = $storage->getLatestRevisionId($id);
+        $entities[$id] = $storage->loadRevision($vid);
       }
       else {
-        $entities[] = $entity;
+        $entities[$id] = $storage->load($id);
       }
     }
-
     return $entities;
   }
 
