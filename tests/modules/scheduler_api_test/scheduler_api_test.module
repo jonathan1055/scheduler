@@ -148,9 +148,9 @@ function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
 }
 
 /**
- * Implements hook_scheduler_media_allow_publishing().
+ * Implements hook_scheduler_media_publishing_allowed().
  */
-function scheduler_api_test_scheduler_media_allow_publishing(MediaInterface $media) {
+function scheduler_api_test_scheduler_media_publishing_allowed(MediaInterface $media) {
   // If there is no 'Approved for Publishing' field then allow publishing.
   if (!isset($media->field_approved_publishing)) {
     $allowed = TRUE;
@@ -208,9 +208,9 @@ function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
 }
 
 /**
- * Implements hook_scheduler_media_allow_unpublishing().
+ * Implements hook_scheduler_media_unpublishing_allowed().
  */
-function scheduler_api_test_scheduler_media_allow_unpublishing(MediaInterface $media) {
+function scheduler_api_test_scheduler_media_unpublishing_allowed(MediaInterface $media) {
   // If there is no 'Approved for Publishing' field then allow publishing.
   if (!isset($media->field_approved_unpublishing)) {
     $allowed = TRUE;
@@ -240,12 +240,12 @@ function scheduler_api_test_scheduler_media_allow_unpublishing(MediaInterface $m
 }
 
 /**
- * Implements hook_scheduler_hide_publish_on_field().
+ * Implements hook_scheduler_hide_publish_date().
  */
-function scheduler_api_test_scheduler_hide_publish_on_field($form, $form_state, $node) {
-  // Hide the publish_on field if the node title contains orange or green.
-  if (stristr($node->title->value, 'orange') || stristr($node->title->value, 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange or green node titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_hide_publish_date($form, $form_state, $entity) {
+  // Hide the publish_on field if the title contains orange.
+  if (stristr($entity->label(), 'orange')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange titles of any entity type.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -254,12 +254,12 @@ function scheduler_api_test_scheduler_hide_publish_on_field($form, $form_state, 
 }
 
 /**
- * Implements hook_scheduler_media_hide_publish_on_field().
+ * Implements hook_scheduler_node_hide_publish_date().
  */
-function scheduler_api_test_scheduler_media_hide_publish_on_field($form, $form_state, $entity) {
-  // Hide the publish_on field if the title contains orange or green.
-  if (stristr($entity->label(), 'orange') || stristr($entity->label(), 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange or green titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_node_hide_publish_date($form, $form_state, $node) {
+  // Hide the publish_on field if the title contains green node.
+  if (stristr($node->title->value, 'green node')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for green node titles.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -268,12 +268,12 @@ function scheduler_api_test_scheduler_media_hide_publish_on_field($form, $form_s
 }
 
 /**
- * Implements hook_scheduler_hide_unpublish_on_field().
+ * Implements hook_scheduler_media_hide_publish_date().
  */
-function scheduler_api_test_scheduler_hide_unpublish_on_field($form, $form_state, $node) {
-  // Hide the publish_on field if the node title contains yellow or green.
-  if (stristr($node->title->value, 'yellow') || stristr($node->title->value, 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow or green node titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_media_hide_publish_date($form, $form_state, $entity) {
+  // Hide the publish_on field if the title contains green media.
+  if (stristr($entity->label(), 'green media')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for green media titles.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -282,12 +282,12 @@ function scheduler_api_test_scheduler_hide_unpublish_on_field($form, $form_state
 }
 
 /**
- * Implements hook_scheduler_media_hide_unpublish_on_field().
+ * Implements hook_scheduler_hide_unpublish_date().
  */
-function scheduler_api_test_scheduler_media_hide_unpublish_on_field($form, $form_state, $entity) {
-  // Hide the publish_on field if the title contains yellow or green.
-  if (stristr($entity->label(), 'yellow') || stristr($entity->label(), 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow or green titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_hide_unpublish_date($form, $form_state, $entity) {
+  // Hide the unpublish_on field if the title contains yellow.
+  if (stristr($entity->label(), 'yellow')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow titles of any entity type.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -296,17 +296,53 @@ function scheduler_api_test_scheduler_media_hide_unpublish_on_field($form, $form
 }
 
 /**
- * Implements hook_scheduler_publish_action().
+ * Implements hook_scheduler_node_hide_unpublish_date().
  */
-function scheduler_api_test_scheduler_publish_action($node) {
-  if (stristr($node->title->value, 'red')) {
-    // Nodes with red in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $node->set('title', $node->title->value . ' - publishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red nodes should cause Scheduler to abandon publishing.'), 'status', FALSE);
+function scheduler_api_test_scheduler_node_hide_unpublish_date($form, $form_state, $node) {
+  // Hide the unpublish_on field if the title contains green node.
+  if (stristr($node->title->value, 'green node')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for green node titles.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_media_hide_unpublish_date().
+ */
+function scheduler_api_test_scheduler_media_hide_unpublish_date($form, $form_state, $entity) {
+  // Hide the unpublish_on field if the title contains green media.
+  if (stristr($entity->label(), 'green media')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for green media titles.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_publish_process().
+ */
+function scheduler_api_test_scheduler_publish_process($entity) {
+  if (stristr($entity->label(), 'red')) {
+    // Any entity with red in the title is simulated to cause a failure and
+    // should then be skipped by Scheduler.
+    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $entity->set($label_field, $entity->label() . ' - publishing failed in API test module');
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red entities should cause Scheduler to abandon publishing.'), 'status', FALSE);
     return -1;
   }
-  elseif (stristr($node->title->value, 'yellow')) {
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_node_publish_process().
+ */
+function scheduler_api_test_scheduler_node_publish_process(NodeInterface $node) {
+  if (stristr($node->title->value, 'yellow node')) {
     // Nodes with yellow in the title are simulated to be processed by this
     // hook, and will not be published by Scheduler.
     $node->set('title', $node->title->value . ' - publishing processed by API test module');
@@ -318,41 +354,42 @@ function scheduler_api_test_scheduler_publish_action($node) {
 }
 
 /**
- * Implements hook_scheduler_media_publish_action().
+ * Implements hook_scheduler_media_publish_process().
  */
-function scheduler_api_test_scheduler_media_publish_action(MediaInterface $media) {
-  if (stristr($media->label(), 'red')) {
-    // Media with red in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $media->set('name', $media->label() . ' - publishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red should cause Scheduler to abandon publishing.'), 'status', FALSE);
-    return -1;
-  }
-  elseif (stristr($media->label(), 'yellow')) {
+function scheduler_api_test_scheduler_media_publish_process(MediaInterface $media) {
+  if (stristr($media->label(), 'yellow media')) {
     // Media with yellow in the title are simulated to be processed by this
     // hook, and will not be published by Scheduler.
     $media->set('name', $media->label() . ' - publishing processed by API test module');
     $media->setPublished();
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Yellow should not have publishing processed by Scheduler.'), 'status', FALSE);
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Yellow media should not have publishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }
   return 0;
 }
 
 /**
- * Implements hook_scheduler_unpublish_action().
+ * Implements hook_scheduler_unpublish_process().
  */
-function scheduler_api_test_scheduler_unpublish_action($node) {
-  if (stristr($node->title->value, 'blue')) {
-    // Nodes with blue in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $node->set('title', $node->title->value . ' - unpublishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue nodes should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
+function scheduler_api_test_scheduler_unpublish_process($entity) {
+  if (stristr($entity->label(), 'blue')) {
+    // Any entity with blue in the title is simulated to cause a failure and
+    // should then be skipped by Scheduler.
+    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $entity->set($label_field, $entity->label() . ' - unpublishing failed in API test module');
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue entities should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
     return -1;
   }
-  if (stristr($node->title->value, 'orange')) {
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_node_unpublish_process().
+ */
+function scheduler_api_test_scheduler_node_unpublish_process(NodeInterface $node) {
+  if (stristr($node->title->value, 'orange node')) {
     // Nodes with orange in the title are simulated to be processed by this
-    // hook, and will not be published by Scheduler.
+    // hook, and will not be unpublished by Scheduler.
     $node->set('title', $node->title->value . ' - unpublishing processed by API test module');
     $node->setUnpublished();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange nodes should not have unpublishing processed by Scheduler.'), 'status', FALSE);
@@ -360,24 +397,16 @@ function scheduler_api_test_scheduler_unpublish_action($node) {
   }
   return 0;
 }
-
 /**
- * Implements hook_scheduler_media_unpublish_action().
+ * Implements hook_scheduler_media_unpublish_process().
  */
-function scheduler_api_test_scheduler_media_unpublish_action(MediaInterface $media) {
-  if (stristr($media->label(), 'blue')) {
-    // Media with blue in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $media->set('name', $media->label() . ' - unpublishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
-    return -1;
-  }
-  if (stristr($media->label(), 'orange')) {
+function scheduler_api_test_scheduler_media_unpublish_process(MediaInterface $media) {
+  if (stristr($media->label(), 'orange media')) {
     // Media with orange in the title are simulated to be processed by this
-    // hook, and will not be published by Scheduler.
+    // hook, and will not be unpublished by Scheduler.
     $media->set('name', $media->label() . ' - unpublishing processed by API test module');
     $media->setUnpublished();
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange should not have unpublishing processed by Scheduler.'), 'status', FALSE);
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange media should not have unpublishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }
   return 0;
