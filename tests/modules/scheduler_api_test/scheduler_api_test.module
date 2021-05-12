@@ -120,9 +120,15 @@ function scheduler_api_test_scheduler_media_list_alter(&$ids, $action) {
 }
 
 /**
- * Implements hook_scheduler_allow_publishing().
+ * Implements hook_scheduler_publishing_allowed().
  */
-function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
+function scheduler_api_test_scheduler_publishing_allowed($entity) {
+}
+
+/**
+ * Implements hook_scheduler_node_publishing_allowed().
+ */
+function scheduler_api_test_scheduler_node_publishing_allowed(NodeInterface $node) {
   // If there is no 'Approved for Publishing' field then allow publishing.
   if (!isset($node->field_approved_publishing)) {
     $allowed = TRUE;
@@ -180,9 +186,15 @@ function scheduler_api_test_scheduler_media_publishing_allowed(MediaInterface $m
 }
 
 /**
- * Implements hook_scheduler_allow_unpublishing().
+ * Implements hook_scheduler_unpublishing_allowed().
  */
-function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
+function scheduler_api_test_scheduler_unpublishing_allowed($entity) {
+}
+
+/**
+ * Implements hook_scheduler_node_unpublishing_allowed().
+ */
+function scheduler_api_test_scheduler_node_unpublishing_allowed(NodeInterface $node) {
   // If there is no 'Approved for Unpublishing' field then allow unpublishing.
   if (!isset($node->field_approved_unpublishing)) {
     $allowed = TRUE;
@@ -397,6 +409,7 @@ function scheduler_api_test_scheduler_node_unpublish_process(NodeInterface $node
   }
   return 0;
 }
+
 /**
  * Implements hook_scheduler_media_unpublish_process().
  */

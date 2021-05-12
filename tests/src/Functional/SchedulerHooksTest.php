@@ -186,16 +186,11 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers hook_scheduler_allow_publishing()
+   * Covers hook_scheduler_{type}_publishing_allowed()
    *
-   * This hook can allow or deny the publishing of individual entities. The test
+   * This hook is used to deny the publishing of individual entities. The test
    * uses the customised content type which has checkboxes 'Approved for
    * publishing' and 'Approved for unpublishing'.
-   *
-   * This test also covers hook_scheduler_media_allow_publishing().
-   *
-   * @todo Create and update the nodes through the interface so we can check if
-   *   the correct messages are displayed.
    *
    * @dataProvider dataCustomEntityTypes()
    */
@@ -204,7 +199,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
 
-    // Check the 'approved for publishing' field is shown on the node form.
+    // Check the 'approved for publishing' field is shown on the entity form.
     $this->drupalGet("$entityTypeId/add/$bundle");
     $this->assertSession()->fieldExists('edit-field-approved-publishing-value');
 
@@ -261,13 +256,11 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers hook_scheduler_allow_unpublishing()
+   * Covers hook_scheduler_{type}_unpublishing_allowed()
    *
-   * This hook can allow or deny the unpublishing of individual entities. This
+   * This hook is used to deny the unpublishing of individual entities. This
    * test is simpler than the test sequence for allowed publishing, because the
    * past date 'publish' option is not applicable.
-   *
-   * The test also covers hook_scheduler_media_allow_unpublishing().
    *
    * @dataProvider dataCustomEntityTypes()
    */
@@ -276,7 +269,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
 
-    // Check the 'approved for unpublishing' field is shown on the node form.
+    // Check the 'approved for unpublishing' field is shown on the entity form.
     $this->drupalGet("$entityTypeId/add/$bundle");
     $this->assertSession()->fieldExists('edit-field-approved-unpublishing-value');
 
@@ -327,6 +320,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   protected function createUnapprovedEntity($entityTypeId, $bundle, $date_field) {
     $settings = [
+      'title' => "Unapproved $entityTypeId {$this->randomMachineName(10)}",
       'status' => ($date_field == 'unpublish_on'),
       $date_field => strtotime('-1 day'),
       'field_approved_publishing' => 0,
@@ -350,17 +344,19 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $storage = $this->entityStorageObject($entityTypeId);
     $storage->resetCache([$id]);
     $entity = $storage->load($id);
-    $entity->set($field_name, TRUE)->save();
+    $entity->set($field_name, TRUE);
+    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $entity->set($label_field, "Approved for publishing: {$entity->field_approved_publishing->value}, for unpublishing: {$entity->field_approved_unpublishing->value}")->save();
   }
 
   /**
    * Tests the hooks which allow hiding of scheduler input fields.
    *
    * This test covers:
-   *   hook_scheduler_hide_publish_on_field()
-   *   hook_scheduler_hide_unpublish_on_field()
-   *   hook_scheduler_{type}_hide_publish_on_field()
-   *   hook_scheduler_{type}_hide_unpublish_on_field()
+   *   hook_scheduler_hide_publish_date()
+   *   hook_scheduler_hide_unpublish_date()
+   *   hook_scheduler_{type}_hide_publish_date()
+   *   hook_scheduler_{type}_hide_unpublish_date()
    *
    * @dataProvider dataStandardEntityTypes()
    */
@@ -369,16 +365,16 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Create test entities.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
-      'title' => 'Red will have neither field hidden',
+      'title' => "Red $entityTypeId will have neither field hidden",
     ]);
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
-      'title' => 'Orange will have the publish-on field hidden',
+      'title' => "Orange $entityTypeId will have the publish-on field hidden",
     ]);
     $entity3 = $this->createEntity($entityTypeId, $bundle, [
-      'title' => 'Yellow will have the unpublish-on field hidden',
+      'title' => "Yellow $entityTypeId will have the unpublish-on field hidden",
     ]);
     $entity4 = $this->createEntity($entityTypeId, $bundle, [
-      'title' => 'Green will have both Scheduler fields hidden',
+      'title' => "Green $entityTypeId will have both Scheduler fields hidden",
     ]);
 
     // Set the scheduler fieldset to always expand, for ease during development.
@@ -410,41 +406,41 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Tests when other modules process the 'publish' and 'unpublish' actions.
+   * Tests when other modules execute the 'publish' and 'unpublish' processes.
    *
    * This test covers:
-   *   hook_scheduler_publish_action()
-   *   hook_scheduler_unpublish_action()
-   *   hook_scheduler_{type}_publish_action()
-   *   hook_scheduler_{type}_unpublish_action()
+   *   hook_scheduler_publish_process()
+   *   hook_scheduler_unpublish_process()
+   *   hook_scheduler_{type}_publish_process()
+   *   hook_scheduler_{type}_unpublish_process()
    *
    * @dataProvider dataStandardEntityTypes()
    */
-  public function testPublishUnpublishAction($entityTypeId, $bundle) {
+  public function testPublishUnpublishProcess($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
     $storage = $this->entityStorageObject($entityTypeId);
 
     // Create test entities.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'Red will cause a failure on publishing',
+      'title' => "Red $entityTypeId will cause a failure on publishing",
       'publish_on' => strtotime('-1 day'),
     ]);
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'Orange will be unpublished by the API test module not Scheduler',
+      'title' => "Orange $entityTypeId will be unpublished by the API test module not Scheduler",
       'unpublish_on' => strtotime('-1 day'),
     ]);
     $entity3 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'Yellow will be published by the API test module not Scheduler',
+      'title' => "Yellow $entityTypeId will be published by the API test module not Scheduler",
       'publish_on' => strtotime('-1 day'),
     ]);
     // 'Green' will have both fields hidden so is harder to test manually.
     // Therefore introduce a different colour - Blue.
     $entity4 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'Blue will cause a failure on unpublishing',
+      'title' => "Blue $entityTypeId will cause a failure on unpublishing",
       'unpublish_on' => strtotime('-1 day'),
     ]);
 

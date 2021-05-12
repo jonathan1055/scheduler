@@ -610,9 +610,11 @@ class SchedulerManager {
     // Get all implementations of the required hook function.
     $hook_implementations = $this->getHookImplementations($action . 'ing_allowed', $entity);
 
-    // Call the hook functions. If any return FALSE the overall result is FALSE.
+    // Call the hook functions. If any specifically return FALSE the overall
+    // result is FALSE. If a hook returns nothing it will not affect the result.
     foreach ($hook_implementations as $function) {
-      $result &= $function($entity);
+      $returned = $function($entity);
+      $result &= !(isset($returned) && $returned == FALSE);
     }
     return $result;
   }
