@@ -196,7 +196,7 @@ class SchedulerManager {
     // and "{$action}ing".
     switch ($exception_name) {
       case 'SchedulerEntityTypeNotEnabledException':
-        $message = "'%s' (id %d) was not %s because %s %s '%s' is not enabled for scheduled %s. Check %s. Processing halted";
+        $message = "'%s' (id %d) was not %s because %s %s '%s' is not enabled for scheduled %s. One of the following hook functions added the id incorrectly: %s. Processing halted";
         $p1 = $entity->label();
         $p2 = $entity->id();
         $p3 = "{$action}ed";
@@ -206,15 +206,12 @@ class SchedulerManager {
         $p7 = "{$action}ing";
         // Get a list of the hook function implementations, as one of these will
         // have caused this exception.
-        $hooks = [$plugin->idListFunction(), $plugin->idListFunction() . '_alter'];
-        $implementations = [];
-        foreach ($hooks as $hook) {
-          foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-            $implementations[] = $module . '_' . $hook;
-          }
-        }
-        $p8 = implode(', ', $implementations);
-
+        $hooks = array_merge(
+          $this->getHookImplementations('list', $entity),
+          $this->getHookImplementations('list_alter', $entity)
+        );
+        asort($hooks);
+        $p8 = implode(', ', $hooks);
         break;
     }
 
@@ -256,14 +253,17 @@ class SchedulerManager {
       }
 
       // Allow other modules to add to the list of entities to be published.
-      foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
-        $function = $module . '_' . $plugin->idListFunction();
+      $hook_implementations = $this->getHookImplementations('list', $entityTypeId);
+      foreach ($hook_implementations as $function) {
         // Cast each hook result as array, to protect from bad implementations.
-        $ids = array_merge($ids, (array) $function($action));
+        $ids = array_merge($ids, (array) $function($action, $entityTypeId));
       }
 
       // Allow other modules to alter the list of entities to be published.
-      $this->moduleHandler->alter($plugin->idListFunction(), $ids, $action);
+      $hook_implementations = $this->getHookImplementations('list_alter', $entityTypeId);
+      foreach ($hook_implementations as $function) {
+        $function($ids, $action, $entityTypeId);
+      }
 
       // Finally ensure that there are no duplicates in the list of ids.
       $ids = array_unique($ids);
@@ -333,10 +333,10 @@ class SchedulerManager {
           // subsequent calls to $entity->save().
           $entity->publish_on->value = NULL;
 
-          // Invoke implementations of hook_scheduler_{type}_publish_action()
-          // to allow other modules to do the "publishing" process instead of
-          // Scheduler.
-          $hook_implementations = $this->getHookImplementations('publish_action', $entity);
+          // Invoke all implementations of hook_scheduler_publish_process() and
+          // hook_scheduler_{type}_publish_process() to allow other modules to
+          // do the "publishing" process instead of Scheduler.
+          $hook_implementations = $this->getHookImplementations('publish_process', $entity);
           $processed = FALSE;
           $failed = FALSE;
           foreach ($hook_implementations as $function) {
@@ -440,14 +440,17 @@ class SchedulerManager {
       }
 
       // Allow other modules to add to the list of entities to be unpublished.
-      foreach ($this->moduleHandler->getImplementations($plugin->idListFunction()) as $module) {
-        $function = $module . '_' . $plugin->idListFunction();
+      $hook_implementations = $this->getHookImplementations('list', $entityTypeId);
+      foreach ($hook_implementations as $function) {
         // Cast each hook result as array, to protect from bad implementations.
-        $ids = array_merge($ids, (array) $function($action));
+        $ids = array_merge($ids, (array) $function($action, $entityTypeId));
       }
 
       // Allow other modules to alter the list of entities to be unpublished.
-      $this->moduleHandler->alter($plugin->idListFunction(), $ids, $action);
+      $hook_implementations = $this->getHookImplementations('list_alter', $entityTypeId);
+      foreach ($hook_implementations as $function) {
+        $function($ids, $action, $entityTypeId);
+      }
 
       // Finally ensure that there are no duplicates in the list of ids.
       $ids = array_unique($ids);
@@ -509,10 +512,10 @@ class SchedulerManager {
           // subsequent calls to $entity->save().
           $entity->unpublish_on->value = NULL;
 
-          // Invoke implementations of hook_scheduler_{type}_unpublish_action()
-          // to allow other modules to do the "unpublishing" process instead of
-          // Scheduler.
-          $hook_implementations = $this->getHookImplementations('unpublish_action', $entity);
+          // Invoke all implementations of hook_scheduler_unpublish_process()
+          // and hook_scheduler_{type}_unpublish_process() to allow other
+          // modules to do the "unpublishing" process instead of Scheduler.
+          $hook_implementations = $this->getHookImplementations('unpublish_process', $entity);
           $processed = FALSE;
           $failed = FALSE;
           foreach ($hook_implementations as $function) {
@@ -585,29 +588,27 @@ class SchedulerManager {
   /**
    * Checks whether a scheduled action on an entity is allowed.
    *
-   * This provides a way for other modules to prevent scheduled publishing or
-   * unpublishing, by implementing hook_scheduler_{type}_allow_publishing() or
-   * hook_scheduler_{type}_allow_unpublishing().
+   * Other modules can prevent scheduled publishing or unpublishing by
+   * implementing any or all of the following:
+   *   hook_scheduler_publishing_allowed()
+   *   hook_scheduler_unpublishing_allowed()
+   *   hook_scheduler_{type}_publishing_allowed()
+   *   hook_scheduler_{type}_unpublishing_allowed()
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity on which the action is to be performed.
    * @param string $action
-   *   The action that needs to be checked. Can be 'publish' or 'unpublish'.
+   *   The action that needs to be checked. Values are 'publish' or 'unpublish'.
    *
    * @return bool
    *   TRUE if the action is allowed, FALSE if not.
-   *
-   * @see hook_scheduler_allow_publishing()
-   * @see hook_scheduler_allow_unpublishing()
-   * @see hook_scheduler_{type}_allow_publishing()
-   * @see hook_scheduler_{type}_allow_unpublishing()
    */
   public function isAllowed(EntityInterface $entity, $action) {
     // Default to TRUE.
     $result = TRUE;
 
     // Get all implementations of the required hook function.
-    $hook_implementations = $this->getHookImplementations('allow_' . $action . 'ing', $entity);
+    $hook_implementations = $this->getHookImplementations($action . 'ing_allowed', $entity);
 
     // Call the hook functions. If any return FALSE the overall result is FALSE.
     foreach ($hook_implementations as $function) {
@@ -617,31 +618,56 @@ class SchedulerManager {
   }
 
   /**
-   * Returns an array of hook function names implemented for the entity type.
+   * Returns an array of hook function names implemented for a hook type.
+   *
+   * The return array will include all implementations of the general hook
+   * function called for all entity types, plus all implemented hooks for the
+   * specific type of entity being processed. In addition, for node entities,
+   * the original hook functions (prior to entity plugins) are added to maintain
+   * backwards-compatibility.
    *
    * @param string $hookType
-   *   The identifier of the hook function, for example 'publish_action' or
-   *   'allow_unpublishing' or 'hide_publish_on_field'.
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity which is being processed.
+   *   The identifier of the hook function, for example 'publish_process' or
+   *   'unpublishing_allowed' or 'hide_publish_date'.
+   * @param \Drupal\Core\Entity\EntityInterface|string $entity
+   *   The entity object which is being processed, or a string containing the
+   *   entity type id (for example 'node' or 'media').
    *
    * @return array
    *   An array of callable function names for the implementations of this hook
    *   function for the type of entity being processed.
    */
-  public function getHookImplementations(string $hookType, EntityInterface $entity) {
-    // For backwards compatibility the node hooks have to remain named as the
-    // original hooks functions. These do not have the {type} inserted.
-    $extra = ($entity->getEntityTypeid() != 'node') ? "_{$entity->getEntityTypeid()}" : '';
-    $hook = "scheduler{$extra}_$hookType";
+  public function getHookImplementations(string $hookType, $entity) {
+    $entityTypeId = (is_object($entity)) ? $entity->getEntityTypeid() : $entity;
+    $hooks = [$hookType, "{$entityTypeId}_{$hookType}"];
 
-    // Get all modules that implement this hook, then use array_walk to append
+    // For backwards compatibility the original node hook is also added.
+    if ($entityTypeId == 'node') {
+      $legacy_node_hooks = [
+        'hide_publish_date' => 'hide_publish_on_field',
+        'hide_unpublish_date' => 'hide_unpublish_on_field',
+        'list' => 'nid_list',
+        'list_alter' => 'nid_list_alter',
+        'publish_process' => 'publish_action',
+        'unpublish_process' => 'unpublish_action',
+        'publishing_allowed' => 'allow_publishing',
+        'unpublishing_allowed' => 'allow_unpublishing',
+      ];
+      $hooks[] = $legacy_node_hooks[$hookType];
+    }
+
+    // Get all modules that implement these hooks, then use array_walk to append
     // the $hook to the end of the module, thus giving the full function name.
-    $hook_implementations = $this->moduleHandler->getImplementations($hook);
-    array_walk($hook_implementations, function (&$item) use ($hook) {
-      $item = $item . '_' . $hook;
-    });
-    return $hook_implementations;
+    $all_hook_implementations = [];
+    foreach ($hooks as $hook) {
+      $hook = "scheduler_$hook";
+      $implementations = $this->moduleHandler->getImplementations($hook);
+      array_walk($implementations, function (&$item) use ($hook) {
+        $item = $item . '_' . $hook;
+      });
+      $all_hook_implementations = array_merge($all_hook_implementations, $implementations);
+    }
+    return $all_hook_implementations;
   }
 
   /**
@@ -779,6 +805,15 @@ class SchedulerManager {
     $storage = $this->entityTypeManager->getStorage($type);
     $entities = [];
     foreach ($ids as $id) {
+      // Avoid errors when an implementation of hook_scheduler_{type}_list has
+      // added an id of the wrong type.
+      if (!$entity = $storage->load($id)) {
+        $this->logger->notice('Entity id @id is not a @type entity. Processing skipped.', [
+          '@id' => $id,
+          '@type' => $type,
+        ]);
+        continue;
+      }
       // If the entity type is revisionable then load the latest revision. For
       // moderated entities this may be an unpublished draft update of a
       // currently published entity.
@@ -787,7 +822,7 @@ class SchedulerManager {
         $entities[$id] = $storage->loadRevision($vid);
       }
       else {
-        $entities[$id] = $storage->load($id);
+        $entities[$id] = $entity;
       }
     }
     return $entities;

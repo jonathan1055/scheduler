@@ -88,18 +88,20 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $publishing_displayed = !empty($display->getComponent('publish_on'));
   $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
 
-  // Invoke all implementations of hook_scheduler_{type}_hide_publish_on_field()
-  // to allow other modules to hide the field on the entity edit form.
+  // Invoke all implementations of hook_scheduler_hide_publish_date() and
+  // hook_scheduler_{type}_hide_publish_date() to allow other modules to hide
+  // the field on the entity edit form.
   if ($publishing_enabled && $publishing_displayed) {
-    $hook_implementations = $scheduler_manager->getHookImplementations('hide_publish_on_field', $entity);
+    $hook_implementations = $scheduler_manager->getHookImplementations('hide_publish_date', $entity);
     foreach ($hook_implementations as $function) {
       $publishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $publishing_displayed;
     }
   }
-  // Invoke implementations of hook_scheduler_{type}_hide_unpublish_on_field()
-  // to allow other modules to hide the field on the entity edit form.
+  // Invoke all implementations of hook_scheduler_hide_unpublish_date() and
+  // hook_scheduler_{type}_hide_unpublish_date() to allow other modules to hide
+  // the field on the entity edit form.
   if ($unpublishing_enabled && $unpublishing_displayed) {
-    $hook_implementations = $scheduler_manager->getHookImplementations('hide_unpublish_on_field', $entity);
+    $hook_implementations = $scheduler_manager->getHookImplementations('hide_unpublish_date', $entity);
     foreach ($hook_implementations as $function) {
       $unpublishing_displayed = ($function($form, $form_state, $entity) !== TRUE) && $unpublishing_displayed;
     }
