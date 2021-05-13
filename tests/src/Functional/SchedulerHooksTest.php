@@ -75,15 +75,12 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers hook_scheduler_nid_list($action)
+   * Covers hook_scheduler_list() and hook_scheduler_{type}_list()
    *
-   * Hook_scheduler_nid_list() allows other modules to add more node ids into
-   * the list to be processed. In real scenarios, the third-party module would
-   * likely have more complex data structures and/or tables from which to
-   * identify nodes to add. In this test, to keep it simple, we identify nodes
-   * by the text of the title.
-   *
-   * This test also covers hook_scheduler_media_list($action).
+   * These hooks allow other modules to add more entity ids into the list being
+   * processed. In real scenarios, the third-party module would likely have more
+   * complex data structures and/or tables from which to identify the ids to
+   * add. In this test, to keep it simple, we identify entities simply by title.
    *
    * @dataProvider dataStandardEntityTypes()
    */
@@ -93,40 +90,57 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Create test entities using the standard scheduler test entity types.
     // Entity 1 is not published and has no publishing date set. The test API
-    // module will add this entity into the list to be published.
+    // module will add this entity into the list to be published using an
+    // implementation of general hook_scheduler_list() function. Entity 2 is
+    // similar but will be added via the hook_scheduler_{type}_list() function.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST id list publish me',
+      'title' => "Pink $entityTypeId list publish me",
     ]);
-    // Entity 2 is published and has no unpublishing date set. The test API
-    // module will add this entity into the list to be unpublished.
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
-      'status' => TRUE,
-      'title' => 'API TEST id list unpublish me',
+      'status' => FALSE,
+      'title' => "Purple $entityTypeId list publish me",
     ]);
 
-    // Before cron, check entity 1 is unpublished and entity 2 is published.
+    // Entity 3 is published and has no unpublishing date set. The test API
+    // module will add this entity into the list to be unpublished.
+    $entity3 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => TRUE,
+      'title' => "Pink $entityTypeId list unpublish me",
+    ]);
+    $entity4 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => TRUE,
+      'title' => "Purple $entityTypeId list unpublish me",
+    ]);
+
+    // Before cron, check that entity 1 and 2 are unpublished and entity 3 and 4
+    // are published.
     $this->assertFalse($entity1->isPublished(), "Before cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
-    $this->assertTrue($entity2->isPublished(), "Before cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
+    $this->assertFalse($entity2->isPublished(), "Before cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
+    $this->assertTrue($entity3->isPublished(), "Before cron, $entityTypeId 3 '{$entity3->label()}' should be published.");
+    $this->assertTrue($entity4->isPublished(), "Before cron, $entityTypeId 4 '{$entity4->label()}' should be published.");
 
     // Run cron and refresh the entities.
     scheduler_cron();
     $storage->resetCache();
-    $entity1 = $storage->load($entity1->id());
-    $entity2 = $storage->load($entity2->id());
+    for ($i = 1; $i <= 4; $i++) {
+      ${"entity$i"} = $storage->load(${"entity$i"}->id());
+    }
 
-    // Check entity 1 is published and entity 2 is unpublished.
+    // Check tha entity 1 and 2 have been published.
     $this->assertTrue($entity1->isPublished(), "After cron, $entityTypeId 1 '{$entity1->label()}' should be published.");
-    $this->assertFalse($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
+    $this->assertTrue($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
+
+    // Check that entity 3 and 4 have been unpublished.
+    $this->assertFalse($entity3->isPublished(), "After cron, $entityTypeId 3 '{$entity3->label()}' should be unpublished.");
+    $this->assertFalse($entity4->isPublished(), "After cron, $entityTypeId 4 '{$entity4->label()}' should be unpublished.");
   }
 
   /**
-   * Covers hook_scheduler_nid_list_alter($action)
+   * Covers hook_scheduler_list_alter() and hook_scheduler_{type}_list_alter()
    *
-   * This hook allows other modules to add or remove node ids from the list to
-   * be processed.
-   *
-   * This test also covers hook_scheduler_media_list_alter($action).
+   * These hook allows other modules to add or remove entity ids from the list
+   * to be processed.
    *
    * @dataProvider dataStandardEntityTypes()
    */
@@ -136,53 +150,86 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Create test entities using the standard scheduler test entity types.
     // Entity 1 is set for scheduled publishing, but will be removed by the test
-    // API list_alter() function.
+    // API generic hook_scheduler_list_alter() function. Entity 2 is similar but
+    // is removed via the specifc hook_scheduler_{type}_list_alter() function.
     $entity1 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST list_alter do not publish me',
+      'title' => "Pink $entityTypeId list_alter do not publish me",
       'publish_on' => strtotime('-1 day'),
     ]);
-    // Entity 2 is not published and has no publishing date set. The test module
-    // will add a date and add the id into the list to be published.
     $entity2 = $this->createEntity($entityTypeId, $bundle, [
       'status' => FALSE,
-      'title' => 'API TEST list_alter publish me',
+      'title' => "Purple $entityTypeId list_alter do not publish me",
+      'publish_on' => strtotime('-1 day'),
     ]);
 
-    // Entity 3 is set for scheduled unpublishing, but will be removed by the
-    // test API list_alter() function.
+    // Entity 3 is not published and has no publishing date set. The test module
+    // generic hook_scheduler_list_alter() function will add a date and add the
+    // id into the list to be published. Entity 4 is similar but the date and id
+    // is added by the specifc hook_scheduler_{type}_list_alter() function.
     $entity3 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => FALSE,
+      'title' => "Pink $entityTypeId list_alter publish me",
+    ]);
+    $entity4 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => FALSE,
+      'title' => "Purple $entityTypeId list_alter publish me",
+    ]);
+
+    // Entity 5 is set for scheduled unpublishing, but will be removed by the
+    // generic hook_scheduler_list_alter() function. Entity 6 is similar but is
+    // removed by the specifc hook_scheduler_{type}_list_alter() function.
+    $entity5 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'API TEST list_alter do not unpublish me',
+      'title' => "Pink $entityTypeId list_alter do not unpublish me",
+      'unpublish_on' => strtotime('-1 day'),
+    ]);
+    $entity6 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => TRUE,
+      'title' => "Purple $entityTypeId list_alter do not unpublish me",
       'unpublish_on' => strtotime('-1 day'),
     ]);
 
-    // Entity 4 is published and has no unpublishing date set. The test module
-    // will add a date and add the id into the list to be unpublished.
-    $entity4 = $this->createEntity($entityTypeId, $bundle, [
+    // Entity 7 is published and has no unpublishing date set. The generic
+    // hook_scheduler_list_alter() will add a date and add the id into the list
+    // to be unpublished. Entity 8 is similar but the date and id will be added
+    // by the specifc hook_scheduler_{type}_list_alter() function.
+    $entity7 = $this->createEntity($entityTypeId, $bundle, [
       'status' => TRUE,
-      'title' => 'API TEST list_alter unpublish me',
+      'title' => "Pink $entityTypeId list_alter unpublish me",
+    ]);
+    $entity8 = $this->createEntity($entityTypeId, $bundle, [
+      'status' => TRUE,
+      'title' => "Purple $entityTypeId list_alter unpublish me",
     ]);
 
-    // Before cron, check 1 and 2 are unpublished and 3 and 4 are published.
+    // Before cron, check entities 1-4 are unpublished and 5-8 are published.
     $this->assertFalse($entity1->isPublished(), "Before cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
     $this->assertFalse($entity2->isPublished(), "Before cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
-    $this->assertTrue($entity3->isPublished(), "Before cron, $entityTypeId 3 '{$entity3->label()}' should be published.");
-    $this->assertTrue($entity4->isPublished(), "Before cron, $entityTypeId 4 '{$entity4->label()}' should be published.");
+    $this->assertFalse($entity3->isPublished(), "Before cron, $entityTypeId 3 '{$entity3->label()}' should be unpublished.");
+    $this->assertFalse($entity4->isPublished(), "Before cron, $entityTypeId 4 '{$entity4->label()}' should be unpublished.");
+    $this->assertTrue($entity5->isPublished(), "Before cron, $entityTypeId 5 '{$entity5->label()}' should be published.");
+    $this->assertTrue($entity6->isPublished(), "Before cron, $entityTypeId 6 '{$entity6->label()}' should be published.");
+    $this->assertTrue($entity7->isPublished(), "Before cron, $entityTypeId 7 '{$entity7->label()}' should be published.");
+    $this->assertTrue($entity8->isPublished(), "Before cron, $entityTypeId 8 '{$entity8->label()}' should be published.");
 
     // Run cron and refresh the entities from storage.
     scheduler_cron();
     $storage->resetCache();
-    $entity1 = $storage->load($entity1->id());
-    $entity2 = $storage->load($entity2->id());
-    $entity3 = $storage->load($entity3->id());
-    $entity4 = $storage->load($entity4->id());
+    for ($i = 1; $i <= 8; $i++) {
+      ${"entity$i"} = $storage->load(${"entity$i"}->id());
+    }
 
-    // Check entity 2 and 3 are published and entity 1 and 4 are unpublished.
+    // After cron, check that entities 1-2 remain unpublished, 3-4 have now
+    // been published, 5-6 remain published and 7-8 have been unpublished.
     $this->assertFalse($entity1->isPublished(), "After cron, $entityTypeId 1 '{$entity1->label()}' should be unpublished.");
-    $this->assertTrue($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
+    $this->assertFalse($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be unpublished.");
     $this->assertTrue($entity3->isPublished(), "After cron, $entityTypeId 3 '{$entity3->label()}' should be published.");
-    $this->assertFalse($entity4->isPublished(), "After cron, $entityTypeId 4 '{$entity4->label()}' should be unpublished.");
+    $this->assertTrue($entity4->isPublished(), "After cron, $entityTypeId 4 '{$entity4->label()}' should be published.");
+    $this->assertTrue($entity5->isPublished(), "After cron, $entityTypeId 5 '{$entity5->label()}' should be published.");
+    $this->assertTrue($entity6->isPublished(), "After cron, $entityTypeId 6 '{$entity6->label()}' should be published.");
+    $this->assertFalse($entity7->isPublished(), "After cron, $entityTypeId 7 '{$entity7->label()}' should be unpublished.");
+    $this->assertFalse($entity8->isPublished(), "After cron, $entityTypeId 8 '{$entity8->label()}' should be unpublished.");
   }
 
   /**

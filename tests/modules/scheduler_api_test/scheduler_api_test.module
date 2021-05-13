@@ -4,9 +4,11 @@
  * @file
  * Hook implementations of the Scheduler API Test module.
  *
- * Scheduler provides eight hook functions. Each entity type has its own hook
- * function names, to keep them distinct when processing different entity types.
- * Hence this test module has 8 implementations for Nodes and 8 for Media.
+ * Scheduler provides eight hook functions. Each has a non-specific version with
+ * no _{type}_ in the name, which is invoked for all entity types, and a version
+ * with _{type}_ in the name, which is invoked only when that entity types is
+ * being processed. Hence for complete test coverage this module has eight plain
+ * implementations, eight implementations for Nodes and eight for Media.
  */
 
 use Drupal\node\Entity\Node;
@@ -15,78 +17,142 @@ use Drupal\node\NodeInterface;
 use Drupal\media\MediaInterface;
 
 /**
- * Implements hook_scheduler_nid_list().
+ * Implements hook_scheduler_list().
  */
-function scheduler_api_test_scheduler_nid_list($action) {
-  $nids = [];
-  $request_time = \Drupal::time()->getRequestTime();
-  // Check to see what test nodes exist.
-  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
-  foreach ($results as $nid => $node) {
-    // If publishing and this is the publish test node, set a date and add
-    // the node id to the list.
-    if ($action == 'publish' && $node->title->value == 'API TEST id list publish me') {
-      $node->set('publish_on', $request_time)->save();
-      $nids[] = $nid;
-    }
-    // If unpublishing and this is the unpublish test node, set a date and add
-    // the node id to the list.
-    if ($action == 'unpublish' && $node->title->value == 'API TEST id list unpublish me') {
-      $node->set('unpublish_on', $request_time)->save();
-      $nids[] = $nid;
-    }
-  }
-  return $nids;
-}
-
-/**
- * Implements hook_scheduler_media_list().
- */
-function scheduler_api_test_scheduler_media_list($action) {
+function scheduler_api_test_scheduler_list($action, $entityTypeId) {
   $ids = [];
   $request_time = \Drupal::time()->getRequestTime();
-  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
-  foreach ($results as $mid => $media) {
-    // If publishing and this is the publish test media, set a date and add the
-    // id to the list.
-    if ($action == 'publish' && $media->label() == 'API TEST id list publish me') {
-      $media->set('publish_on', $request_time)->save();
-      $ids[] = $mid;
+  // Check to see what test entities exist.
+  if ($entityTypeId == 'media') {
+    $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  }
+  else {
+    $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  }
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($action == 'publish' && !$entity->isPublished() && $entity->label() == "Pink $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
     }
-    // If unpublishing and this is the unpublish test media, set a date and add
-    // the id to the list.
-    if ($action == 'unpublish' && $media->label() == 'API TEST id list unpublish me') {
-      $media->set('unpublish_on', $request_time)->save();
-      $ids[] = $mid;
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($action == 'unpublish' && $entity->isPublished() && $entity->label() == "Pink $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
     }
   }
   return $ids;
 }
 
 /**
- * Implements hook_scheduler_nid_list_alter().
+ * Implements hook_scheduler_node_list().
  */
-function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
+function scheduler_api_test_scheduler_node_list($action, $entityTypeId) {
+  $ids = [];
+  $request_time = \Drupal::time()->getRequestTime();
+  // Check to see what test nodes exist.
+  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($action == 'publish' && !$entity->isPublished() && $entity->label() == "Purple $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($action == 'unpublish' && $entity->isPublished() && $entity->label() == "Purple $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+  return $ids;
+}
+
+/**
+ * Implements hook_scheduler_media_list().
+ */
+function scheduler_api_test_scheduler_media_list($action, $entityTypeId) {
+  $ids = [];
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($action == 'publish' && !$entity->isPublished() && $entity->label() == "Purple $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($action == 'unpublish' && $entity->isPublished() && $entity->label() == "Purple $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+  return $ids;
+}
+
+/**
+ * Implements hook_scheduler_list_alter().
+ */
+function scheduler_api_test_scheduler_list_alter(&$ids, $action, $entityTypeId) {
+  $request_time = \Drupal::time()->getRequestTime();
+  // Check to see what test entities exist.
+  if ($entityTypeId == 'media') {
+    $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  }
+  else {
+    $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  }
+  foreach ($results as $id => $entity) {
+    if ($action == 'publish' && $entity->label() == "Pink $entityTypeId list_alter do not publish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($action == 'publish' && $entity->label() == "Pink $entityTypeId list_alter publish me") {
+      // Set a publish_on date and add the id.
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    if ($action == 'unpublish' && $entity->label() == "Pink $entityTypeId list_alter do not unpublish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($action == 'unpublish' && $entity->label() == "Pink $entityTypeId list_alter unpublish me") {
+      // Set an unpublish_on date and add the id.
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+}
+
+/**
+ * Implements hook_scheduler_node_list_alter().
+ */
+function scheduler_api_test_scheduler_node_list_alter(&$ids, $action, $entityTypeId) {
   $request_time = \Drupal::time()->getRequestTime();
   $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
-  foreach ($results as $nid => $node) {
-    if ($action == 'publish' && $node->title->value == 'API TEST list_alter do not publish me') {
-      // Remove the node id.
-      $nids = array_diff($nids, [$nid]);
+  foreach ($results as $id => $entity) {
+    if ($action == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
     }
-    if ($action == 'publish' && $node->title->value == 'API TEST list_alter publish me') {
-      // Set a publish_on date and add the node id.
-      $node->set('publish_on', $request_time)->save();
-      $nids[] = $nid;
+    if ($action == 'publish' && $entity->label() == "Purple $entityTypeId list_alter publish me") {
+      // Set a publish_on date and add the id.
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
     }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST list_alter do not unpublish me') {
-      // Remove the node id.
-      $nids = array_diff($nids, [$nid]);
+    if ($action == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter do not unpublish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
     }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST list_alter unpublish me') {
-      // Set an unpublish_on date and add the node id.
-      $node->set('unpublish_on', $request_time)->save();
-      $nids[] = $nid;
+    if ($action == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter unpublish me") {
+      // Set an unpublish_on date and add the id.
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
     }
   }
 }
@@ -94,27 +160,27 @@ function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
 /**
  * Implements hook_scheduler_media_list_alter().
  */
-function scheduler_api_test_scheduler_media_list_alter(&$ids, $action) {
+function scheduler_api_test_scheduler_media_list_alter(&$ids, $action, $entityTypeId) {
   $request_time = \Drupal::time()->getRequestTime();
   $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
-  foreach ($results as $mid => $media) {
-    if ($action == 'publish' && $media->label() == 'API TEST list_alter do not publish me') {
+  foreach ($results as $id => $entity) {
+    if ($action == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
       // Remove the id.
-      $ids = array_diff($ids, [$mid]);
+      $ids = array_diff($ids, [$id]);
     }
-    if ($action == 'publish' && $media->label() == 'API TEST list_alter publish me') {
+    if ($action == 'publish' && $entity->label() == "Purple $entityTypeId list_alter publish me") {
       // Set a publish_on date and add the id.
-      $media->set('publish_on', $request_time)->save();
-      $ids[] = $mid;
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
     }
-    if ($action == 'unpublish' && $media->label() == 'API TEST list_alter do not unpublish me') {
+    if ($action == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter do not unpublish me") {
       // Remove the id.
-      $ids = array_diff($ids, [$mid]);
+      $ids = array_diff($ids, [$id]);
     }
-    if ($action == 'unpublish' && $media->label() == 'API TEST list_alter unpublish me') {
+    if ($action == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter unpublish me") {
       // Set an unpublish_on date and add the id.
-      $media->set('unpublish_on', $request_time)->save();
-      $ids[] = $mid;
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
     }
   }
 }
@@ -123,6 +189,7 @@ function scheduler_api_test_scheduler_media_list_alter(&$ids, $action) {
  * Implements hook_scheduler_publishing_allowed().
  */
 function scheduler_api_test_scheduler_publishing_allowed($entity) {
+  // @todo Fill in this function and add test coverage.
 }
 
 /**
@@ -189,6 +256,7 @@ function scheduler_api_test_scheduler_media_publishing_allowed(MediaInterface $m
  * Implements hook_scheduler_unpublishing_allowed().
  */
 function scheduler_api_test_scheduler_unpublishing_allowed($entity) {
+  // @todo Fill in this function and add test coverage.
 }
 
 /**
