@@ -59,21 +59,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
-   * Get the name of the id list hook function.
-   *
-   * Implementations of this hook function allow other modules to add to the
-   * list of ids being published or unpublished. Further, implementations of
-   * it's corresponding 'alter' function allow full manipulation of the list,
-   * for adding and removing ids.
-   *
-   * @return string
-   *   The hook function name.
-   */
-  public function idListFunction() {
-    return $this->pluginDefinition['idListFunction'];
-  }
-
-  /**
    * Get the id of the Devel Generate form for this entity type.
    *
    * @return string

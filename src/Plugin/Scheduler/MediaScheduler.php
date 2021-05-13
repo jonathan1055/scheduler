@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  entityType = "media",
  *  typeFieldName = "bundle",
  *  dependency = "media",
- *  idListFunction = "scheduler_media_list",
  *  develGenerateForm = "devel_generate_form_media",
  * )
  */

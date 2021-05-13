@@ -60,13 +60,6 @@ class SchedulerPlugin extends Plugin {
   public $dependency;
 
   /**
-   * The name of the hook function used to get/alter the id list.
-   *
-   * @var string
-   */
-  public $idListFunction;
-
-  /**
    * The Form ID of the devel generate form.
    *
    * @var string

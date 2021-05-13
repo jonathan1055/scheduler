@@ -18,7 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  entityType = "node",
  *  typeFieldName = "type",
  *  dependency = "node",
- *  idListFunction = "scheduler_nid_list",
  *  develGenerateForm = "devel_generate_form_content",
  * )
  */
