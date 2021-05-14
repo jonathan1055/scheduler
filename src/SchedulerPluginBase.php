@@ -70,6 +70,17 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the route of the scheduled view on the user profile page.
+   *
+   * @return string
+   *   The route id.
+   */
+  public function userViewRoute() {
+    // Some entity types may not have a user view, so allow for none.
+    return $this->pluginDefinition['userViewRoute'] ?? NULL;
+  }
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array

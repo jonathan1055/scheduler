@@ -56,6 +56,14 @@ interface SchedulerPluginInterface {
   public function develGenerateForm();
 
   /**
+   * Get the route of the user page scheduled view.
+   *
+   * @return string
+   *   The route id.
+   */
+  public function userViewRoute();
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array

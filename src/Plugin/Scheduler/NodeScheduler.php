@@ -19,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  typeFieldName = "type",
  *  dependency = "node",
  *  develGenerateForm = "devel_generate_form_content",
+ *  userViewRoute = "view.scheduler_scheduled_content.user_page",
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {

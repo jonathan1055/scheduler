@@ -963,35 +963,37 @@ class SchedulerManager {
    * Gets the supported Devel Generate form IDs.
    *
    * @return array
-   *   List of form IDs used by Devel Generate.
+   *   List of form IDs used by Devel Generate, keyed by entity type.
    */
   public function getDevelGenerateFormIds() {
     $plugins = $this->getPlugins();
     $form_ids = [];
     foreach ($plugins as $entityTypeId => $plugin) {
+      // The devel_generate form id is optional so only save if a value exists.
       // Use entity type as key so we can get back from form_id to entity.
-      $form_ids[$entityTypeId] = $plugin->develGenerateForm();
+      if ($form_id = $plugin->develGenerateForm()) {
+        $form_ids[$entityTypeId] = $form_id;
+      }
     }
-    // If an entity is not supported by Devel Generate then the form id will be
-    // empty, so filter out these.
-    return array_filter($form_ids);
+    return $form_ids;
   }
 
   /**
    * Gets the routes for user profile page scheduled views.
    *
-   * @todo Could these be found dynamically from route storage or view storage,
-   * getting all route matching 'scheduler_scheduled_*.user_page'? Or the route
-   * could be added to the plugin annotation and retrieved like the form id.
-   *
    * @return array
-   *   List of routes for the user page scheduled views, keyed by entity type.
+   *   List of routes for the user page views, keyed by entity type.
    */
   public function getUserPageViewRoutes() {
-    return [
-      'node' => 'view.scheduler_scheduled_content.user_page',
-      'media' => 'view.scheduler_scheduled_media.user_page',
-    ];
+    $plugins = $this->getPlugins();
+    $routes = [];
+    foreach ($plugins as $entityTypeId => $plugin) {
+      // The user view is optional so only save if there is a value.
+      if ($route = $plugin->userViewRoute()) {
+        $routes[$entityTypeId] = $route;
+      }
+    }
+    return $routes;
   }
 
   /**
