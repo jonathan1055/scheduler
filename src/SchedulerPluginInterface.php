@@ -64,6 +64,17 @@ interface SchedulerPluginInterface {
   public function userViewRoute();
 
   /**
+   * Get the scheduler event class.
+   *
+   * Optional. If no class is defined, will default to the standard
+   * scheduler class '\Drupal\scheduler\Event\Scheduler{Type}Events'
+   *
+   * @return string
+   *   The event class.
+   */
+  public function schedulerEventClass();
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array

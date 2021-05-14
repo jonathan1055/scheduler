@@ -73,4 +73,11 @@ class SchedulerPlugin extends Plugin {
    */
   public $userViewRoute;
 
+  /**
+   * The event class for Scheduler events (optional).
+   *
+   * @var string
+   */
+  public $schedulerEventClass;
+
 }

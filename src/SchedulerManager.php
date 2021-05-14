@@ -165,14 +165,15 @@ class SchedulerManager {
    *   The short text id the event, for example 'PUBLISH' or 'PRE_UNPUBLISH'.
    */
   public function dispatchSchedulerEvent(EntityInterface &$entity, string $event_id) {
-    // Build a string to hold fully named-spaced events class name, for use in
-    // the constant() function.
-    $event_class = '\Drupal\scheduler\Event\Scheduler' . ucfirst($entity->getEntityTypeId()) . 'Events';
+    // Get the fully named-spaced event class name for the entity type, for use
+    // in the constant() function.
+    $event_class = $this->getPlugin($entity->getEntityTypeId())->schedulerEventClass();
     $event_name = constant("$event_class::$event_id");
 
     // Create the event object and dispatch the required event_name.
     $event = new SchedulerEvent($entity);
     $this->dispatch($event, $event_name);
+    // Get the entity, as it may have been modified by an event subscriber.
     $entity = $event->getEntity();
   }
 
