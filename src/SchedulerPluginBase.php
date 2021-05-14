@@ -39,16 +39,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
-   * Get module dependency.
-   *
-   * @return string
-   *   The name of the required module.
-   */
-  public function dependency() {
-    return $this->pluginDefinition['dependency'];
-  }
-
-  /**
    * Get the name of the "type" field for the entity.
    *
    * @return string
@@ -56,6 +46,16 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    */
   public function typeFieldName() {
     return $this->pluginDefinition['typeFieldName'];
+  }
+
+  /**
+   * Get module dependency.
+   *
+   * @return string
+   *   The name of the required module.
+   */
+  public function dependency() {
+    return $this->pluginDefinition['dependency'];
   }
 
   /**

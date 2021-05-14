@@ -60,7 +60,7 @@ class SchedulerPlugin extends Plugin {
   public $dependency;
 
   /**
-   * The Form ID of the devel generate form.
+   * The Form ID of the devel generate form (optional).
    *
    * @var string
    */

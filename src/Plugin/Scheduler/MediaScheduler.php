@@ -38,8 +38,12 @@ class MediaScheduler extends SchedulerPluginBase implements ContainerFactoryPlug
   /**
    * Get the available types/bundles for the entity type.
    *
+   * Do not use static or drupal_static here, because changes to third-party
+   * settings invalidate the saved values during phpunit testing.
+   *
    * @return array
-   *   The media bundle objects, or an empty array if Media is not enabled.
+   *   The media bundle objects, keyed by bundle name, or an empty array if
+   *   Media is not enabled.
    */
   public function getTypes() {
     if (!\Drupal::moduleHandler()->moduleExists('media')) {

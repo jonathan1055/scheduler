@@ -42,7 +42,7 @@ class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPlugi
    * settings invalidate the saved values during phpunit testing.
    *
    * @return array
-   *   The node type objects.
+   *   The node type objects, keyed by node type name.
    */
   public function getTypes() {
     $nodeTypes = \Drupal::entityTypeManager()->getStorage('node_type')->loadMultiple();

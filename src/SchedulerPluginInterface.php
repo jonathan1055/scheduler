@@ -32,20 +32,20 @@ interface SchedulerPluginInterface {
   public function entityType();
 
   /**
-   * Get module dependency.
-   *
-   * @return string
-   *   The name of the required module.
-   */
-  public function dependency();
-
-  /**
    * Get the name of the "type" field for the entity.
    *
    * @return string
    *   The name of the type/bundle field for this entity type.
    */
   public function typeFieldName();
+
+  /**
+   * Get module dependency.
+   *
+   * @return string
+   *   The name of the required module.
+   */
+  public function dependency();
 
   /**
    * Get the id of the Devel Generate form for this entity type.
@@ -65,11 +65,17 @@ interface SchedulerPluginInterface {
 
   /**
    * Get the form IDs for entity add/edit forms.
+   *
+   * @return array
+   *   A list of add/edit form ids for all bundles in this entity type.
    */
   public function entityFormIds();
 
   /**
    * Get the form IDs for entity type add/edit forms.
+   *
+   * @return array
+   *   A list of add/edit form ids for this entity type.
    */
   public function entityTypeFormIds();
 
