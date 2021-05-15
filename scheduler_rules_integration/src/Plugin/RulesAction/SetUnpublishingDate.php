@@ -27,7 +27,7 @@ class SetUnpublishingDate extends SchedulerRulesActionBase {
     $bundle_field = $entity->getEntityType()->get('entity_keys')['bundle'];
     if ($entity->$bundle_field->entity->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'))) {
       $entity->set('unpublish_on', $date);
-      // When this action is invoked and it operates on the entity being editted
+      // When this action is invoked and it operates on the entity being edited
       // then hook_entity_presave() will be executed automatically. But if this
       // action is being used to schedule a different entity then we need to
       // call the functions directly here.

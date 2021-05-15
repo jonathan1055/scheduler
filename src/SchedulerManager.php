@@ -151,13 +151,13 @@ class SchedulerManager {
    * This function dispatches a Scheduler event, identified by $event_id, for
    * the entity type of the provided $entity. Each entity type has its own
    * events class Scheduler{EntityType}Events, for example SchedulerNodeEvents,
-   * SchedulerMediaEvents, etc. This class contains constants (with mames
+   * SchedulerMediaEvents, etc. This class contains constants (with names
    * matching the $event_id parameter) which uniquely define the final event
    * name string to be dispatched. The actual event object dispatched is always
    * of class SchedulerEvent.
    *
    * The $entity is passed by reference so that any changes made in the event
-   * subsriber implementations are automatically stored and passed forward.
+   * subscriber implementations are automatically stored and passed forward.
    *
    * @param Drupal\Core\Entity\EntityInterface $entity
    *   The entity object.
@@ -234,9 +234,9 @@ class SchedulerManager {
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $entityTypeId => $plugin) {
-      // Select all entities of the types that are enabled for scheduled
-      // publishing and where publish_on is less than or equal to the current
-      // time.
+      // Select all entities of the types for this plugin that are enabled for
+      // scheduled publishing and where publish_on is less than or equal to the
+      // current time.
       $ids = [];
       $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $action);
 
@@ -381,7 +381,7 @@ class SchedulerManager {
 
           // Invoke event to tell Rules that Scheduler has published the entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-            _scheduler_rules_integration_dispatch_cron_event($entity, 'publish');
+            _scheduler_rules_integration_dispatch_cron_event($entity, $action);
           }
 
           // Trigger the PUBLISH Scheduler event so that modules can react after
@@ -402,7 +402,6 @@ class SchedulerManager {
           $result = TRUE;
         }
       }
-
     }
 
     return $result;
@@ -460,8 +459,10 @@ class SchedulerManager {
       /** @var \Drupal\Core\Entity\EntityInterface[] $entities */
       $entities = $this->loadEntities($ids, $entityTypeId);
       foreach ($entities as $entity_multilingual) {
+
         // The API calls could return entities of types which are not enabled
-        // for scheduled unpublishing. Do not process these.
+        // for scheduled unpublishing, so do not process these. This check can
+        // be done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
           $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $action);
         }
@@ -526,7 +527,7 @@ class SchedulerManager {
             $failed = $failed || ($return === -1);
           }
 
-          // Set up the log variables.
+          // Log the fact that a scheduled unpublication is about to take place.
           $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type', [
             '@type' => strtolower($entity_type->label()),
@@ -562,7 +563,7 @@ class SchedulerManager {
           // Invoke event to tell Rules that Scheduler has unpublished the
           // entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-            _scheduler_rules_integration_dispatch_cron_event($entity, 'unpublish');
+            _scheduler_rules_integration_dispatch_cron_event($entity, $action);
           }
 
           // Trigger the UNPUBLISH Scheduler event so that modules can react

@@ -540,7 +540,7 @@ function scheduler_entity_presave(EntityInterface $entity) {
     $publish_immediately = $scheduler_manager->getThirdPartySetting($entity, 'publish_past_date', $config->get('default_publish_past_date')) == 'publish';
 
     if ($publication_allowed && $publish_immediately && $entity->publish_on->value <= $request_time) {
-      // Trigger the PRE_PUBLISH_INMEDIATELY event so that modules can react
+      // Trigger the PRE_PUBLISH_IMMEDIATELY event so that modules can react
       // before the entity has been published.
       $scheduler_manager->dispatchSchedulerEvent($entity, 'PRE_PUBLISH_IMMEDIATELY');
 
