@@ -184,27 +184,27 @@ class SchedulerManager {
    *   The entity causing the exepction.
    * @param string $exception_name
    *   Which exception to throw.
-   * @param string $action
-   *   The action being performed (publish|unpublish).
+   * @param string $process
+   *   The process being performed (publish|unpublish).
    *
    * @throws \Drupal\scheduler\Exception\SchedulerEntityTypeNotEnabledException
    */
-  private function throwSchedulerException(EntityInterface $entity, $exception_name, $action) {
+  private function throwSchedulerException(EntityInterface $entity, $exception_name, $process) {
     $plugin = $this->getPlugin($entity->getEntityTypeId());
 
     // Exception messages are developer-facing and do not need to be translated
-    // from English. So it is accpetable to create words such as "{$action}ed"
-    // and "{$action}ing".
+    // from English. So it is accpetable to create words such as "{$process}ed"
+    // and "{$process}ing".
     switch ($exception_name) {
       case 'SchedulerEntityTypeNotEnabledException':
         $message = "'%s' (id %d) was not %s because %s %s '%s' is not enabled for scheduled %s. One of the following hook functions added the id incorrectly: %s. Processing halted";
         $p1 = $entity->label();
         $p2 = $entity->id();
-        $p3 = "{$action}ed";
+        $p3 = "{$process}ed";
         $p4 = $entity->getEntityTypeId();
         $p5 = $plugin->typeFieldName();
         $p6 = $entity->{$plugin->typeFieldName()}->entity->label();
-        $p7 = "{$action}ing";
+        $p7 = "{$process}ing";
         // Get a list of the hook function implementations, as one of these will
         // have caused this exception.
         $hooks = array_merge(
@@ -230,7 +230,7 @@ class SchedulerManager {
    */
   public function publish() {
     $result = FALSE;
-    $action = 'publish';
+    $process = 'publish';
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $entityTypeId => $plugin) {
@@ -238,7 +238,7 @@ class SchedulerManager {
       // scheduled publishing and where publish_on is less than or equal to the
       // current time.
       $ids = [];
-      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $action);
+      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $process);
 
       if (!empty($scheduler_enabled_types)) {
         $query = $this->entityTypeManager->getStorage($entityTypeId)->getQuery()
@@ -257,13 +257,13 @@ class SchedulerManager {
       $hook_implementations = $this->getHookImplementations('list', $entityTypeId);
       foreach ($hook_implementations as $function) {
         // Cast each hook result as array, to protect from bad implementations.
-        $ids = array_merge($ids, (array) $function($action, $entityTypeId));
+        $ids = array_merge($ids, (array) $function($process, $entityTypeId));
       }
 
       // Allow other modules to alter the list of entities to be published.
       $hook_implementations = $this->getHookImplementations('list_alter', $entityTypeId);
       foreach ($hook_implementations as $function) {
-        $function($ids, $action, $entityTypeId);
+        $function($ids, $process, $entityTypeId);
       }
 
       // Finally ensure that there are no duplicates in the list of ids.
@@ -281,7 +281,7 @@ class SchedulerManager {
         // for scheduled publishing, so do not process these. This check can be
         // done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'publish_enable', $this->setting('default_publish_enable'))) {
-          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $action);
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $process);
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -296,8 +296,8 @@ class SchedulerManager {
             continue;
           }
 
-          // Check that other modules allow the action on this entity.
-          if (!$this->isAllowed($entity, $action)) {
+          // Check that other modules allow the process on this entity.
+          if (!$this->isAllowed($entity, $process)) {
             continue;
           }
 
@@ -381,7 +381,7 @@ class SchedulerManager {
 
           // Invoke event to tell Rules that Scheduler has published the entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-            _scheduler_rules_integration_dispatch_cron_event($entity, $action);
+            _scheduler_rules_integration_dispatch_cron_event($entity, $process);
           }
 
           // Trigger the PUBLISH Scheduler event so that modules can react after
@@ -395,7 +395,7 @@ class SchedulerManager {
             $action_id = 'state_change__' . $entityTypeId . '__published';
           }
           if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            $this->missingAction($action_id, $action);
+            $this->missingAction($action_id, $process);
           }
           $loaded_action->getPlugin()->execute($entity);
 
@@ -417,7 +417,7 @@ class SchedulerManager {
    */
   public function unpublish() {
     $result = FALSE;
-    $action = 'unpublish';
+    $process = 'unpublish';
     $plugins = $this->getPlugins();
 
     foreach ($plugins as $entityTypeId => $plugin) {
@@ -425,7 +425,7 @@ class SchedulerManager {
       // scheduled unpublishing and where unpublish_on is less than or equal to
       // the current time.
       $ids = [];
-      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $action);
+      $scheduler_enabled_types = $this->getEnabledTypes($entityTypeId, $process);
 
       if (!empty($scheduler_enabled_types)) {
         $query = $this->entityTypeManager->getStorage($entityTypeId)->getQuery()
@@ -444,13 +444,13 @@ class SchedulerManager {
       $hook_implementations = $this->getHookImplementations('list', $entityTypeId);
       foreach ($hook_implementations as $function) {
         // Cast each hook result as array, to protect from bad implementations.
-        $ids = array_merge($ids, (array) $function($action, $entityTypeId));
+        $ids = array_merge($ids, (array) $function($process, $entityTypeId));
       }
 
       // Allow other modules to alter the list of entities to be unpublished.
       $hook_implementations = $this->getHookImplementations('list_alter', $entityTypeId);
       foreach ($hook_implementations as $function) {
-        $function($ids, $action, $entityTypeId);
+        $function($ids, $process, $entityTypeId);
       }
 
       // Finally ensure that there are no duplicates in the list of ids.
@@ -464,7 +464,7 @@ class SchedulerManager {
         // for scheduled unpublishing, so do not process these. This check can
         // be done once as the setting will be the same for all translations.
         if (!$this->getThirdPartySetting($entity_multilingual, 'unpublish_enable', $this->setting('default_unpublish_enable'))) {
-          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $action);
+          $this->throwSchedulerException($entity_multilingual, 'SchedulerEntityTypeNotEnabledException', $process);
         }
 
         $languages = $entity_multilingual->getTranslationLanguages();
@@ -488,8 +488,8 @@ class SchedulerManager {
             continue;
           }
 
-          // Check that other modules allow the action on this entity.
-          if (!$this->isAllowed($entity, $action)) {
+          // Check that other modules allow the process on this entity.
+          if (!$this->isAllowed($entity, $process)) {
             continue;
           }
 
@@ -563,7 +563,7 @@ class SchedulerManager {
           // Invoke event to tell Rules that Scheduler has unpublished the
           // entity.
           if ($this->moduleHandler->moduleExists('scheduler_rules_integration')) {
-            _scheduler_rules_integration_dispatch_cron_event($entity, $action);
+            _scheduler_rules_integration_dispatch_cron_event($entity, $process);
           }
 
           // Trigger the UNPUBLISH Scheduler event so that modules can react
@@ -577,7 +577,7 @@ class SchedulerManager {
             $action_id = 'state_change__' . $entityTypeId . '__archived';
           }
           if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            $this->missingAction($action_id, $action);
+            $this->missingAction($action_id, $process);
           }
           $loaded_action->getPlugin()->execute($entity);
 
@@ -590,7 +590,7 @@ class SchedulerManager {
   }
 
   /**
-   * Checks whether a scheduled action on an entity is allowed.
+   * Checks whether a scheduled process on an entity is allowed.
    *
    * Other modules can prevent scheduled publishing or unpublishing by
    * implementing any or all of the following:
@@ -600,19 +600,19 @@ class SchedulerManager {
    *   hook_scheduler_{type}_unpublishing_allowed()
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
-   *   The entity on which the action is to be performed.
-   * @param string $action
-   *   The action that needs to be checked. Values are 'publish' or 'unpublish'.
+   *   The entity on which the process is to be performed.
+   * @param string $process
+   *   The process to be checked. Values are 'publish' or 'unpublish'.
    *
    * @return bool
-   *   TRUE if the action is allowed, FALSE if not.
+   *   TRUE if the process is allowed, FALSE if not.
    */
-  public function isAllowed(EntityInterface $entity, $action) {
+  public function isAllowed(EntityInterface $entity, $process) {
     // Default to TRUE.
     $result = TRUE;
 
     // Get all implementations of the required hook function.
-    $hook_implementations = $this->getHookImplementations($action . 'ing_allowed', $entity);
+    $hook_implementations = $this->getHookImplementations($process . 'ing_allowed', $entity);
 
     // Call the hook functions. If any specifically return FALSE the overall
     // result is FALSE. If a hook returns nothing it will not affect the result.
@@ -908,27 +908,27 @@ class SchedulerManager {
   }
 
   /**
-   * Gets the names of the types/bundles that are enabled for a specific action.
+   * Gets the names of the types/bundles enabled for a specific process.
    *
    * If the entity type is not supported by Scheduler, or there are no enabled
-   * bundles for this action within the entity type, then an empty array is
+   * bundles for this process within the entity type, then an empty array is
    * returned.
    *
    * @param string $entityTypeId
    *   The entity type id, for example 'node' or 'media'.
-   * @param string $action
-   *   The action to check - 'publish' or 'unpublish'.
+   * @param string $process
+   *   The process to check - 'publish' or 'unpublish'.
    *
    * @return array
-   *   The entity's type/bundle names that are enabled for the required action.
+   *   The entity's type/bundle names that are enabled for the required process.
    */
-  public function getEnabledTypes($entityTypeId, $action) {
+  public function getEnabledTypes($entityTypeId, $process) {
     if (!$plugin = $this->getPlugin($entityTypeId)) {
       return [];
     };
     $types = $plugin->getTypes();
-    $types = array_filter($types, function ($bundle) use ($action) {
-      return $bundle->getThirdPartySetting('scheduler', $action . '_enable', $this->setting('default_' . $action . '_enable'));
+    $types = array_filter($types, function ($bundle) use ($process) {
+      return $bundle->getThirdPartySetting('scheduler', $process . '_enable', $this->setting('default_' . $process . '_enable'));
     });
     return array_keys($types);
   }
