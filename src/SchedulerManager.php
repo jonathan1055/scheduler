@@ -348,16 +348,17 @@ class SchedulerManager {
 
           // Log the fact that a scheduled publication is about to take place.
           $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
-          $view_link = $entity->toLink($this->t('View @type @id', [
-            '@type' => $entity->getEntityTypeId(),
-            '@id' => $entity->id(),
+          $view_link = $entity->toLink($this->t('View @type', [
+            '@type' => strtolower($entity_type->label()),
           ]));
-          $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
+          $entity_type_link = $entity_type->toLink($this->t('@label settings', [
+            '@label' => $entity_type->label(),
+          ]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
-            'link' => $entity_type_link->toString() . ' ' . $view_link->toString(),
             '@hook' => implode(', ', $hook_implementations),
+            'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
           ];
 
           if ($failed) {
@@ -527,16 +528,17 @@ class SchedulerManager {
 
           // Set up the log variables.
           $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
-          $view_link = $entity->toLink($this->t('View @type @id', [
-            '@type' => $entity->getEntityTypeId(),
-            '@id' => $entity->id(),
+          $view_link = $entity->toLink($this->t('View @type', [
+            '@type' => strtolower($entity_type->label()),
           ]));
-          $entity_type_link = $entity_type->toLink($this->t('@label settings', ['@label' => $entity_type->label()]), 'edit-form');
+          $entity_type_link = $entity_type->toLink($this->t('@label settings', [
+            '@label' => $entity_type->label(),
+          ]), 'edit-form');
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
-            'link' => $entity_type_link->toString() . ' ' . $view_link->toString(),
             '@hook' => implode(', ', $hook_implementations),
+            'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
           ];
 
           if ($failed) {
