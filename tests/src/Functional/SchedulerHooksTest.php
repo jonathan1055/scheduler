@@ -253,7 +253,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Check that the message is shown when scheduling an entity for publishing
     // which is not yet allowed to be published.
     $edit = [
-      "{$titleField}[0][value]" => 'Set publish-on date without approval',
+      "{$titleField}[0][value]" => "Blue $entityTypeId - Set publish-on date without approval",
       'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
@@ -266,7 +266,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertFalse($entity->isPublished(), 'An unapproved entity is not published during cron processing.');
+    $this->assertFalse($entity->isPublished(), "Unapproved '{$entity->label()}' should not be published during cron processing.");
 
     // Create an entity and approve it for publishing, run cron for scheduler
     // and check that the entity is published. This is a stronger test than
@@ -274,11 +274,11 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // publish state that may be in after the cron run above.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
     $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
-    $this->assertFalse($entity->isPublished(), 'A new approved entity is initially not published.');
+    $this->assertFalse($entity->isPublished(), "New approved '{$entity->label()}' should not be initially published.");
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertTrue($entity->isPublished(), 'An approved entity is published during cron processing.');
+    $this->assertTrue($entity->isPublished(), "Approved '{$entity->label()}' should be published during cron processing.");
 
     // Turn on immediate publishing when the date is in the past and repeat
     // the tests. It is not needed to run cron jobs here.
@@ -287,11 +287,11 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Check that an entity can be approved and published programatically.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
-    $this->assertFalse($entity->isPublished(), 'An unapproved entity with a date in the past is not published immediately after saving.');
+    $this->assertFalse($entity->isPublished(), "New unapproved '{$entity->label()}' with a date in the past should not be published immediately after saving.");
     $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertTrue($entity->isPublished(), 'An approved entity with a date in the past should be published immediately programatically.');
+    $this->assertTrue($entity->isPublished(), "New approved '{$entity->label()}' with a date in the past should be published immediately when created programatically.");
 
     // Check that an entity can be approved and published via edit form.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
@@ -299,7 +299,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->submitForm(['field_approved_publishing[value]' => '1'], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertTrue($entity->isPublished(), 'An approved entity with a date in the past is published immediately after saving via edit form.');
+    $this->assertTrue($entity->isPublished(), "Approved '{$entity->label()}' with a date in the past is published immediately after saving via edit form.");
   }
 
   /**
@@ -323,7 +323,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Check that the message is shown when scheduling an entity for
     // unpublishing which is not yet allowed to be unpublished.
     $edit = [
-      "{$titleField}[0][value]" => 'Set unpublish-on date without approval',
+      "{$titleField}[0][value]" => "Red $entityTypeId - Set unpublish-on date without approval",
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
@@ -336,17 +336,17 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertTrue($entity->isPublished(), 'An unapproved entity is not unpublished during cron processing.');
+    $this->assertTrue($entity->isPublished(), "Unapproved '{$entity->label()}' should not be unpublished during cron processing.");
 
     // Create an entity and approve it for unpublishing, run cron for scheduler
     // and check that the entity is unpublished.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'unpublish_on');
     $this->approve($entityTypeId, $entity->id(), 'field_approved_unpublishing');
-    $this->assertTrue($entity->isPublished(), 'The new approved entity is initially published.');
+    $this->assertTrue($entity->isPublished(), "New approved '{$entity->label()}' should initially remain published.");
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertFalse($entity->isPublished(), 'An approved entity is unpublished during cron processing.');
+    $this->assertFalse($entity->isPublished(), "Approved '{$entity->label()}' should be unpublished during cron processing.");
   }
 
   /**
@@ -367,7 +367,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   protected function createUnapprovedEntity($entityTypeId, $bundle, $date_field) {
     $settings = [
-      'title' => "Unapproved $entityTypeId {$this->randomMachineName(10)}",
+      'title' => (($date_field == 'publish_on') ? 'Blue' : 'Red') . " $entityTypeId {$this->randomMachineName(10)}",
       'status' => ($date_field == 'unpublish_on'),
       $date_field => strtotime('-1 day'),
       'field_approved_publishing' => 0,
@@ -393,7 +393,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $entity = $storage->load($id);
     $entity->set($field_name, TRUE);
     $label_field = $entity->getEntityType()->get('entity_keys')['label'];
-    $entity->set($label_field, "Approved for publishing: {$entity->field_approved_publishing->value}, for unpublishing: {$entity->field_approved_unpublishing->value}")->save();
+    $entity->set($label_field, $entity->label() . " - approved for publishing: {$entity->field_approved_publishing->value}, for unpublishing: {$entity->field_approved_unpublishing->value}")->save();
   }
 
   /**
