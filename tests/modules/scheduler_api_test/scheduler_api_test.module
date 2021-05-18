@@ -17,18 +17,25 @@ use Drupal\node\NodeInterface;
 use Drupal\media\MediaInterface;
 
 /**
+ * Helper function to return all entities of a given type.
+ */
+function _scheduler_api_test_get_entities($entityTypeId) {
+  if ($entityTypeId == 'media') {
+    $results = Media::loadMultiple(\Drupal::entityQuery('media')->accessCheck(FALSE)->execute());
+  }
+  else {
+    $results = Node::loadMultiple(\Drupal::entityQuery('node')->accessCheck(FALSE)->execute());
+  }
+  return $results;
+}
+
+/**
  * Implements hook_scheduler_list().
  */
 function scheduler_api_test_scheduler_list($process, $entityTypeId) {
   $ids = [];
   $request_time = \Drupal::time()->getRequestTime();
-  // Check to see what test entities exist.
-  if ($entityTypeId == 'media') {
-    $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
-  }
-  else {
-    $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
-  }
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     // If publishing and this is the 'publish me' test entity, set the date and
     // add the id to the list.
@@ -52,8 +59,7 @@ function scheduler_api_test_scheduler_list($process, $entityTypeId) {
 function scheduler_api_test_scheduler_node_list($process, $entityTypeId) {
   $ids = [];
   $request_time = \Drupal::time()->getRequestTime();
-  // Check to see what test nodes exist.
-  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     // If publishing and this is the 'publish me' test entity, set the date and
     // add the id to the list.
@@ -77,7 +83,7 @@ function scheduler_api_test_scheduler_node_list($process, $entityTypeId) {
 function scheduler_api_test_scheduler_media_list($process, $entityTypeId) {
   $ids = [];
   $request_time = \Drupal::time()->getRequestTime();
-  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     // If publishing and this is the 'publish me' test entity, set the date and
     // add the id to the list.
@@ -100,13 +106,7 @@ function scheduler_api_test_scheduler_media_list($process, $entityTypeId) {
  */
 function scheduler_api_test_scheduler_list_alter(&$ids, $process, $entityTypeId) {
   $request_time = \Drupal::time()->getRequestTime();
-  // Check to see what test entities exist.
-  if ($entityTypeId == 'media') {
-    $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
-  }
-  else {
-    $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
-  }
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     if ($process == 'publish' && $entity->label() == "Pink $entityTypeId list_alter do not publish me") {
       // Remove the id.
@@ -134,7 +134,7 @@ function scheduler_api_test_scheduler_list_alter(&$ids, $process, $entityTypeId)
  */
 function scheduler_api_test_scheduler_node_list_alter(&$ids, $process, $entityTypeId) {
   $request_time = \Drupal::time()->getRequestTime();
-  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
       // Remove the id.
@@ -162,7 +162,7 @@ function scheduler_api_test_scheduler_node_list_alter(&$ids, $process, $entityTy
  */
 function scheduler_api_test_scheduler_media_list_alter(&$ids, $process, $entityTypeId) {
   $request_time = \Drupal::time()->getRequestTime();
-  $results = Media::loadMultiple(\Drupal::entityQuery('media')->execute());
+  $results = _scheduler_api_test_get_entities($entityTypeId);
   foreach ($results as $id => $entity) {
     if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
       // Remove the id.

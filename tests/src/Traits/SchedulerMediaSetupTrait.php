@@ -306,6 +306,7 @@ trait SchedulerMediaSetupTrait {
    */
   public function getMediaItem(string $name = NULL) {
     $query = $this->mediaStorage->getQuery()
+      ->accessCheck(FALSE)
       ->sort('mid', 'DESC');
     if (!empty($name)) {
       $query->condition('name', $name);

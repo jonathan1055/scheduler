@@ -11,7 +11,6 @@
  * maintined for node entities only, and this file provides test coverage.
  */
 
-use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 
 /**
@@ -21,7 +20,7 @@ function scheduler_api_legacy_test_scheduler_nid_list($action) {
   $nids = [];
   $request_time = \Drupal::time()->getRequestTime();
   // Check to see what test nodes exist.
-  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  $results = _scheduler_api_test_get_entities('node');
   foreach ($results as $nid => $node) {
     // If publishing and this is the publish test node, set a date and add
     // the node id to the list.
@@ -44,7 +43,7 @@ function scheduler_api_legacy_test_scheduler_nid_list($action) {
  */
 function scheduler_api_legacy_test_scheduler_nid_list_alter(&$nids, $action) {
   $request_time = \Drupal::time()->getRequestTime();
-  $results = Node::loadMultiple(\Drupal::entityQuery('node')->execute());
+  $results = _scheduler_api_test_get_entities('node');
   foreach ($results as $nid => $node) {
     if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter do not publish me') {
       // Remove the node id.
