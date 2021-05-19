@@ -198,7 +198,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
     // Fourthly, edit a pre-existing entity which is not enabled for Scheduler,
@@ -219,7 +219,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the entity again, triggering rule 2.
@@ -234,7 +234,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(3, $log, 'There are now 3 watchdog warning messages from Scheduler');
     $this->drupalGet('admin/reports/dblog');
   }
@@ -391,7 +391,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
     // Fourthly, edit a pre-existing entity which is not enabled for Scheduler,
@@ -413,7 +413,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the entity again, triggering rule 4.
@@ -428,7 +428,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(3, $log, 'There are now 3 watchdog warning messages from Scheduler');
     $this->drupalGet('admin/reports/dblog');
   }
