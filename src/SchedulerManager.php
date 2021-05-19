@@ -823,7 +823,7 @@ class SchedulerManager {
       // If the entity type is revisionable then load the latest revision. For
       // moderated entities this may be an unpublished draft update of a
       // currently published entity.
-      if (method_exists($storage, 'getLatestRevisionId')) {
+      if ($entity->getEntityType()->isRevisionable()) {
         $vid = $storage->getLatestRevisionId($id);
         $entities[$id] = $storage->loadRevision($vid);
       }
