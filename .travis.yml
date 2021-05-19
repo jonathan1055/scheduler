@@ -30,12 +30,11 @@ jobs:
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (434)
+        # --- Remaining self deprecation notices (422)
         # 368 EventDispatcher (in Rules module)
         #  54 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
-        #  12 StatementWrapper::fetchColumn (in Rules module)
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=434
+        - DEPRECATIONS=422
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
