@@ -84,7 +84,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataStandardEntityTypes()
    */
-  public function testIdList($entityTypeId, $bundle) {
+  public function testList($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
     $this->drupalLogin($this->schedulerUser);
 
@@ -144,7 +144,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataStandardEntityTypes()
    */
-  public function testIdListAlter($entityTypeId, $bundle) {
+  public function testListAlter($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
     $this->drupalLogin($this->schedulerUser);
 
@@ -241,7 +241,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataCustomEntityTypes()
    */
-  public function testAllowedPublishing($entityTypeId, $bundle) {
+  public function testPublishingAllowed($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
@@ -273,7 +273,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // simply approving the previously used entity above, as we do not know what
     // publish state that may be in after the cron run above.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
-    $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
+    $this->approveEntity($entityTypeId, $entity->id(), 'field_approved_publishing');
     $this->assertFalse($entity->isPublished(), "New approved '{$entity->label()}' should not be initially published.");
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
@@ -288,7 +288,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Check that an entity can be approved and published programatically.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
     $this->assertFalse($entity->isPublished(), "New unapproved '{$entity->label()}' with a date in the past should not be published immediately after saving.");
-    $this->approve($entityTypeId, $entity->id(), 'field_approved_publishing');
+    $this->approveEntity($entityTypeId, $entity->id(), 'field_approved_publishing');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
     $this->assertTrue($entity->isPublished(), "New approved '{$entity->label()}' with a date in the past should be published immediately when created programatically.");
@@ -311,7 +311,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataCustomEntityTypes()
    */
-  public function testAllowedUnpublishing($entityTypeId, $bundle) {
+  public function testUnpublishingAllowed($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $this->drupalLogin($this->webUser);
@@ -341,7 +341,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     // Create an entity and approve it for unpublishing, run cron for scheduler
     // and check that the entity is unpublished.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'unpublish_on');
-    $this->approve($entityTypeId, $entity->id(), 'field_approved_unpublishing');
+    $this->approveEntity($entityTypeId, $entity->id(), 'field_approved_unpublishing');
     $this->assertTrue($entity->isPublished(), "New approved '{$entity->label()}' should initially remain published.");
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
@@ -387,7 +387,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *   The name of the field to set, either 'field_approved_publishing' or
    *   'field_approved_unpublishing'.
    */
-  protected function approve($entityTypeId, $id, $field_name) {
+  protected function approveEntity($entityTypeId, $id, $field_name) {
     $storage = $this->entityStorageObject($entityTypeId);
     $storage->resetCache([$id]);
     $entity = $storage->load($id);
@@ -407,7 +407,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataStandardEntityTypes()
    */
-  public function testHideField($entityTypeId, $bundle) {
+  public function testHideDateField($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
 
     // Create test entities.
