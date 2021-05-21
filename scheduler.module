@@ -652,22 +652,27 @@ function scheduler_views_data_alter(array &$data) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_view() for node entities.
+ * Implements hook_entity_view().
  */
-function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
-  // If the node is going to be unpublished, then add this information to the
-  // header for search engines. Only do this when the current page is the
-  // full-page view of the node.
+function scheduler_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, string $view_mode) {
+  // If the entity is going to be unpublished, then add this information to the
+  // http header for search engines. Only do this when the current page is the
+  // full-page view of the entity.
   // @see https://googleblog.blogspot.be/2007/07/robots-exclusion-protocol-now-with-even.html
-  //
-  // This function does not need conversion into a general hook_entity_view
-  // when the only other entity supported is 'Media' because media items are not
-  // viewable as pages in their own right, they are attached to nodes or appear
-  // in views. Hence using a media unpublish date to set the page metadata would
-  // be incorrect.
-  if (!empty($node->unpublish_on->value) && node_is_page($node)) {
-    $unavailable_after = date(DATE_RFC850, $node->unpublish_on->value);
+  if ($view_mode == 'full' && isset($entity->unpublish_on->value)) {
+    $unavailable_after = date(DATE_RFC850, $entity->unpublish_on->value);
     $build['#attached']['http_header'][] = ['X-Robots-Tag', 'unavailable_after: ' . $unavailable_after];
+
+    // Also add the information as a meta tag in the html head section.
+    $unavailable_meta_tag = [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'robots',
+        'content' => 'unavailable_after: ' . $unavailable_after,
+      ],
+    ];
+    // Any value seems to be OK for the second item, but it must not be omitted.
+    $build['#attached']['html_head'][] = [$unavailable_meta_tag, 'robots_unavailable_date'];
   }
 }
 

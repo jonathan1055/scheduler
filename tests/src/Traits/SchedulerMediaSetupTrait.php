@@ -122,8 +122,9 @@ trait SchedulerMediaSetupTrait {
     ]);
 
     // By default, media items cannot be viewed directly, and the url media/mid
-    // gives a 404 not found. Changing this setting makes testing easier.
-    $configFactory = \Drupal::configFactory();
+    // gives a 404 not found. Changing this setting makes debugging the tests
+    // easier. It is also required for the meta information test.
+    $configFactory = $this->container->get('config.factory');
     $configFactory->getEditable('media.settings')
       ->set('standalone_url', TRUE)
       ->save(TRUE);
