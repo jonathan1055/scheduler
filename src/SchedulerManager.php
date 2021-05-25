@@ -389,7 +389,10 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'PUBLISH');
 
           // Use the standard actions system to publish and save the entity.
-          $action_id = $entityTypeId . '_publish_action';
+          $action_id = $plugin->publishAction();
+          if (!$action_id) {
+            $action_id = $entityTypeId . '_publish_action';
+          }
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
             $action_id = 'state_change__' . $entityTypeId . '__published';
@@ -571,7 +574,11 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'UNPUBLISH');
 
           // Use the standard actions system to unpublish and save the entity.
-          $action_id = $entityTypeId . '_unpublish_action';
+          $action_id = $plugin->unpublishAction();
+          if (!$action_id) {
+            $action_id = $entityTypeId . '_unpublish_action';
+          }
+
           if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
             // workbench_moderation_actions module uses a custom action instead.
             $action_id = 'state_change__' . $entityTypeId . '__archived';

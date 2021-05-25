@@ -95,6 +95,26 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the publish action name of the entity type.
+   *
+   * @return string
+   *   The action name.
+   */
+  public function publishAction() {
+    return $this->pluginDefinition['publishAction'] ?? NULL;
+  }
+
+  /**
+   * Get the unpublish action name of the entity type.
+   *
+   * @return string
+   *   The action name.
+   */
+  public function unpublishAction() {
+    return $this->pluginDefinition['unpublishAction'] ?? NULL;
+  }
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array

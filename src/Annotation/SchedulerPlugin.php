@@ -80,4 +80,21 @@ class SchedulerPlugin extends Plugin {
    */
   public $schedulerEventClass;
 
+  /**
+   * The name of the publish action for the entity type (optional).
+   *
+   * This is used when the action name does not match the default pattern.
+   *
+   * @var string
+   */
+  public $publishAction;
+
+  /**
+   * The name of the unpublish action for the entity type (optional).
+   *
+   * This is used when the action name does not match the default pattern.
+   *
+   * @var string
+   */
+  public $unpublishAction;
 }
