@@ -75,6 +75,26 @@ interface SchedulerPluginInterface {
   public function schedulerEventClass();
 
   /**
+   * Get the publish action name of the entity type.
+   *
+   * Optional. Defaults to the commonly used {entity type id}_publish_action.
+   *
+   * @return string
+   *   The action name.
+   */
+  public function publishAction();
+
+  /**
+   * Get the unpublish action name of the entity type.
+   *
+   * Optional. Defaults to the commonly used {entity type id}_unpublish_action.
+   *
+   * @return string
+   *   The action name.
+   */
+  public function unpublishAction();
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array

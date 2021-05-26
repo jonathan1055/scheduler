@@ -83,7 +83,8 @@ class SchedulerPlugin extends Plugin {
   /**
    * The name of the publish action for the entity type (optional).
    *
-   * This is used when the action name does not match the default pattern.
+   * This is used when the action name does not match the default pattern of
+   * {entity type id}_publish_action.
    *
    * @var string
    */
@@ -92,7 +93,8 @@ class SchedulerPlugin extends Plugin {
   /**
    * The name of the unpublish action for the entity type (optional).
    *
-   * This is used when the action name does not match the default pattern.
+   * This is used when the action name does not match the default pattern of
+   * {entity type id}_unpublish_action.
    *
    * @var string
    */
