@@ -62,22 +62,20 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Get the id of the Devel Generate form for this entity type.
    *
    * @return string
-   *   The form id.
+   *   The form id, or an empty string if none.
    */
   public function develGenerateForm() {
-    // Some entity types may not have a Devel Generate form, so allow for none.
-    return $this->pluginDefinition['develGenerateForm'] ?? NULL;
+    return $this->pluginDefinition['develGenerateForm'];
   }
 
   /**
    * Get the route of the scheduled view on the user profile page.
    *
    * @return string
-   *   The route id.
+   *   The form id, or an empty string if none.
    */
   public function userViewRoute() {
-    // Some entity types may not have a user view, so allow for none.
-    return $this->pluginDefinition['userViewRoute'] ?? NULL;
+    return $this->pluginDefinition['userViewRoute'];
   }
 
   /**

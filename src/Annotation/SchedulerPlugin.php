@@ -64,14 +64,14 @@ class SchedulerPlugin extends Plugin {
    *
    * @var string
    */
-  public $develGenerateForm;
+  public $develGenerateForm = '';
 
   /**
    * The route of the scheduled view on the user profile page (optional).
    *
    * @var string
    */
-  public $userViewRoute;
+  public $userViewRoute = '';
 
   /**
    * The event class for Scheduler events relating to activity on the entity.

@@ -48,7 +48,7 @@ interface SchedulerPluginInterface {
   public function dependency();
 
   /**
-   * Get the id of the Devel Generate form for this entity type.
+   * Get the id of the Devel Generate form for this entity type. Optional.
    *
    * @return string
    *   The form id.
@@ -56,7 +56,7 @@ interface SchedulerPluginInterface {
   public function develGenerateForm();
 
   /**
-   * Get the route of the user page scheduled view.
+   * Get the route of the user page scheduled view. Optional.
    *
    * @return string
    *   The route id.
