@@ -12,15 +12,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Drupal\Scheduler\Plugin\Scheduler
  *
  * @SchedulerPlugin(
- *  id = "commerce_product__scheduler",
+ *  id = "commerce_product_scheduler",
  *  label = @Translation("Commerce Product Scheduler Plugin"),
- *  description = @Translation("Provides support for scheduling commerce product entities"),
+ *  description = @Translation("Provides support for scheduling Commerce Product entities"),
  *  entityType = "commerce_product",
  *  typeFieldName = "type",
  *  dependency = "commerce",
  *  schedulerEventClass = "\Drupal\scheduler\Event\SchedulerCommerceProductEvents",
- *  develGenerateForm = "devel_generate_form_commerce_product",
- *  userViewRoute = "view.scheduler_scheduled_commerce_products.user_page",
  *  publishAction = "commerce_publish_product",
  *  unpublishAction = "commerce_unpublish_product"
  * )
