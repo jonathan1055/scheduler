@@ -112,7 +112,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $generate_settings = [
       "{$entityTypeId}_types[$bundle]" => TRUE,
     ];
-    $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
+    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled list for the entity type
     // being generated. Calls to these pages are for information and debug only.
     if ($entityTypeId == 'media') {
@@ -139,7 +140,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 100,
       'scheduler_unpublishing' => 0,
     ];
-    $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
+    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled content list.
     foreach ($admin_content_urls as $url) {
       $this->drupalGet($url);
@@ -160,7 +162,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 0,
       'scheduler_unpublishing' => 100,
     ];
-    $this->drupalPostForm("admin/config/development/generate/$url_part", $generate_settings, 'Generate');
+    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled content list.
     foreach ($admin_content_urls as $url) {
       $this->drupalGet($url);

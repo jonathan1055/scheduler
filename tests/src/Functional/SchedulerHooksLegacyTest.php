@@ -183,7 +183,8 @@ class SchedulerHooksLegacyTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalPostForm('node/add/' . $this->customName, $edit, 'Save');
+    $this->drupalGet("node/add/{$this->customName}");
+    $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextMatches('/is scheduled for publishing.* but will not be published until approved/');
 
     // Create a node that is scheduled but not approved for publication. Then
@@ -220,7 +221,8 @@ class SchedulerHooksLegacyTest extends SchedulerBrowserTestBase {
 
     // Check that a node can be approved and published via edit form.
     $node = $this->createUnapprovedNode('publish_on');
-    $this->drupalPostForm('node/' . $node->id() . '/edit', ['field_approved_publishing[value]' => '1'], 'Save');
+    $this->drupalGet("node/{$node->id()}/edit");
+    $this->submitForm(['field_approved_publishing[value]' => '1'], 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     $this->assertTrue($node->isPublished(), "Approved '{$node->label()}' with a date in the past should be published immediately after saving via edit form.");
@@ -251,7 +253,8 @@ class SchedulerHooksLegacyTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => date('Y-m-d', time() + 3),
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
     ];
-    $this->drupalPostForm('node/add/' . $this->customName, $edit, 'Save');
+    $this->drupalGet("node/add/{$this->customName}");
+    $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextMatches('/is scheduled for unpublishing.* but will not be unpublished until approved/');
 
     // Create a node that is scheduled but not approved for unpublication. Then
