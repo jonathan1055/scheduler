@@ -245,11 +245,15 @@ class SchedulerManager {
           ->exists('publish_on')
           ->condition('publish_on', $this->time->getRequestTime(), '<=')
           ->condition($plugin->typeFieldName(), $scheduler_enabled_types, 'IN')
-          ->latestRevision()
           ->sort('publish_on');
         // Disable access checks for this query.
         // @see https://www.drupal.org/node/2700209
         $query->accessCheck(FALSE);
+        // If the entity type is revisionable then make sure we look for the
+        // latest revision. This is important for moderated entities.
+        if ($this->entityTypeManager->getDefinition($entityTypeId)->isRevisionable()) {
+          $query->latestRevision();
+        }
         $ids = $query->execute();
       }
 
@@ -435,11 +439,15 @@ class SchedulerManager {
           ->exists('unpublish_on')
           ->condition('unpublish_on', $this->time->getRequestTime(), '<=')
           ->condition($plugin->typeFieldName(), $scheduler_enabled_types, 'IN')
-          ->latestRevision()
           ->sort('unpublish_on');
         // Disable access checks for this query.
         // @see https://www.drupal.org/node/2700209
         $query->accessCheck(FALSE);
+        // If the entity type is revisionable then make sure we look for the
+        // latest revision. This is important for moderated entities.
+        if ($this->entityTypeManager->getDefinition($entityTypeId)->isRevisionable()) {
+          $query->latestRevision();
+        }
         $ids = $query->execute();
       }
 
