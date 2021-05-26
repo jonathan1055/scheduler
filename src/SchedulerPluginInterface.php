@@ -66,8 +66,8 @@ interface SchedulerPluginInterface {
   /**
    * Get the scheduler event class.
    *
-   * Optional. If no class is defined, will default to the standard
-   * scheduler class '\Drupal\scheduler\Event\Scheduler{Type}Events'
+   * Optional. Defaults to '\Drupal\scheduler\Event\Scheduler{Type}Events' the
+   * event class within the Scheduler module namespace.
    *
    * @return string
    *   The event class.

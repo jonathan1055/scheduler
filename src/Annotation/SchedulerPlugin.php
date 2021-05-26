@@ -74,7 +74,10 @@ class SchedulerPlugin extends Plugin {
   public $userViewRoute;
 
   /**
-   * The event class for Scheduler events (optional).
+   * The event class for Scheduler events relating to activity on the entity.
+   *
+   * If not specified, it is assumed that the plugin is part of the Scheduler
+   * module and the event class will default to Scheduler's namespace.
    *
    * @var string
    */
