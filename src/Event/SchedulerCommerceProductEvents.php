@@ -3,9 +3,9 @@
 namespace Drupal\scheduler\Event;
 
 /**
- * Lists the six events dispatched by Scheduler relating to commerce_product entities.
+ * Lists the six events dispatched by Scheduler for commerce_product entities.
  */
-final class SchedulerCommerce_productEvents {
+final class SchedulerCommerceProductEvents {
 
   /**
    * The event triggered after a commerce_product item is published immediately.
@@ -37,7 +37,7 @@ final class SchedulerCommerce_productEvents {
   const PUBLISH = 'scheduler.commerce_product_publish';
 
   /**
-   * The event triggered before a commerce_product item is published immediately.
+   * The event triggered before a commerce_product is published immediately.
    *
    * This event allows modules to react before an entity is published
    * immediately when being saved after editing. The event listener method

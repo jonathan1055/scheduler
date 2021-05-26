@@ -97,4 +97,5 @@ class SchedulerPlugin extends Plugin {
    * @var string
    */
   public $unpublishAction;
+
 }

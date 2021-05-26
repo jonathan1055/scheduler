@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  entityType = "commerce_product",
  *  typeFieldName = "type",
  *  dependency = "commerce",
+ *  schedulerEventClass = "\Drupal\scheduler\Event\SchedulerCommerceProductEvents",
  *  develGenerateForm = "devel_generate_form_commerce_product",
  *  userViewRoute = "view.scheduler_scheduled_commerce_products.user_page",
  *  publishAction = "commerce_publish_product",
@@ -45,8 +46,8 @@ class CommerceProductScheduler extends SchedulerPluginBase implements ContainerF
    * settings invalidate the saved values during phpunit testing.
    *
    * @return array
-   *   The commerce product bundle objects, keyed by bundle name, or an empty array if
-   *   Commerce is not enabled.
+   *   The commerce product bundle objects, keyed by bundle name, or an empty
+   *   array if Commerce is not enabled.
    */
   public function getTypes() {
     if (!\Drupal::moduleHandler()->moduleExists('commerce')) {
