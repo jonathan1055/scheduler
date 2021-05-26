@@ -87,6 +87,14 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $publishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'publish_enable', $config->get('default_publish_enable'));
   $unpublishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'unpublish_enable', $config->get('default_unpublish_enable'));
 
+  // If neither publishing nor unpublishing are enabled then there is nothing to
+  // do so remove the fields from the form and exit early.
+  if (!$publishing_enabled && !$unpublishing_enabled) {
+    unset($form['publish_on']);
+    unset($form['unpublish_on']);
+    return;
+  }
+
   // Determine if the scheduler fields have been set to hidden (disabled).
   $publishing_displayed = !empty($display->getComponent('publish_on'));
   $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
@@ -278,6 +286,12 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
 
   /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
+  $params = [
+    '@type' => $type->label(),
+    '%type' => strtolower($type->label()),
+    '@singular' => \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf())->getSingularLabel(),
+    '@plural' => \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf())->getPluralLabel(),
+  ];
 
   $form['#attached']['library'][] = 'scheduler/admin';
   $form['#attached']['library'][] = 'scheduler/vertical-tabs';
@@ -299,12 +313,12 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
   $form['scheduler']['publish']['scheduler_publish_enable'] = [
     '#type' => 'checkbox',
-    '#title' => t('Enable scheduled publishing for this content type'),
+    '#title' => t('Enable scheduled publishing for %type @plural', $params),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_enable', $config->get('default_publish_enable')),
   ];
   $form['scheduler']['publish']['scheduler_publish_touch'] = [
     '#type' => 'checkbox',
-    '#title' => t('Change content creation time to match the scheduled publish time'),
+    '#title' => t('Change %type creation time to match the scheduled publish time', $params),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_touch', $config->get('default_publish_touch')),
     '#states' => [
       'visible' => [
@@ -348,14 +362,14 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
     '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date', $config->get('default_publish_past_date')),
     '#options' => [
       'error' => t('Display an error message - do not allow dates in the past'),
-      'publish' => t('Publish the content immediately after saving'),
-      'schedule' => t('Schedule the content for publication on the next cron run'),
+      'publish' => t('Publish the %type @singular immediately after saving', $params),
+      'schedule' => t('Schedule the %type @singular for publication on the next cron run', $params),
     ],
   ];
   $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created'] = [
     '#type' => 'checkbox',
-    '#title' => t("Change content creation time to match the published time for dates before the content was created"),
-    '#description' => t("The created time will only be altered when the scheduled publishing time is earlier than the existing content creation time"),
+    '#title' => t('Change %type creation time to match the published time, for dates before the %type was created', $params),
+    '#description' => t("The created time will only be altered when the scheduled publishing time is earlier than the existing creation time"),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_past_date_created', $config->get('default_publish_past_date_created')),
     // This option is not relevant if the full 'change creation time' option is
     // selected, or when past dates are not allowed. Hence only show it when
@@ -378,7 +392,7 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
   $form['scheduler']['unpublish']['scheduler_unpublish_enable'] = [
     '#type' => 'checkbox',
-    '#title' => t('Enable scheduled unpublishing for this content type'),
+    '#title' => t('Enable scheduled unpublishing for %type @plural', $params),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable')),
   ];
   $form['scheduler']['unpublish']['scheduler_unpublish_required'] = [
@@ -406,7 +420,7 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   // entity edit pages.
   $form['scheduler']['entity_edit_layout'] = [
     '#type' => 'details',
-    '#title' => t('Entity edit page'),
+    '#title' => t('@type edit page', $params),
     '#weight' => 3,
     '#group' => 'scheduler',
     // The #states processing only caters for AND and does not do OR. So to set
@@ -421,13 +435,13 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
   $form['scheduler']['entity_edit_layout']['scheduler_fields_display_mode'] = [
     '#type' => 'radios',
-    '#title' => t('Display scheduling options as'),
+    '#title' => t('Display scheduling date input fields in'),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'fields_display_mode', $config->get('default_fields_display_mode')),
     '#options' => [
       'vertical_tab' => t('Vertical tab'),
       'fieldset' => t('Separate fieldset'),
     ],
-    '#description' => t('Use this option to specify how the scheduling options will be displayed when editing a node.'),
+    '#description' => t('Use this option to specify how the scheduler fields are displayed when editing %type @plural', $params),
   ];
   $form['scheduler']['entity_edit_layout']['scheduler_expand_fieldset'] = [
     '#type' => 'radios',
@@ -441,7 +455,7 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   $form['scheduler']['entity_edit_layout']['scheduler_show_message_after_update'] = [
     '#type' => 'checkbox',
     '#prefix' => '<strong>' . t('Show message') . '</strong>',
-    '#title' => t('Show a confirmation message when scheduled content is saved'),
+    '#title' => t('Show a confirmation message when a scheduled %type @singular is saved', $params),
     '#default_value' => $type->getThirdPartySetting('scheduler', 'show_message_after_update', $config->get('default_show_message_after_update')),
   ];
 
