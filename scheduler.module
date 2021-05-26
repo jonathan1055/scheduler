@@ -891,7 +891,11 @@ function scheduler_preprocess(&$variables, $hook) {
   if (empty($plugins)) {
     $plugins = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
   }
-  if (in_array($hook, $plugins)) {
+  // For $hook = 'node' and 'media' the entity is stored in $variables[$hook].
+  // This is not guaranteed, for example in commerce_product the entity is in
+  // $variables['product_entity']. This could be extracted if there is a need,
+  // but for now just skip if the entity is not immediately available.
+  if (in_array($hook, $plugins) && isset($variables[$hook])) {
     $date_formatter = \Drupal::service('date.formatter');
     $entity = $variables[$hook];
     if (!empty($entity->publish_on->value) && $entity->publish_on->value && is_numeric($entity->publish_on->value)) {
