@@ -70,8 +70,14 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
  * Form alter handling for entity forms - add and edit.
  */
 function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  $config = \Drupal::config('scheduler.settings');
+  // Get the form display object. If this does not exist because the form is
+  // prevented from displaying, such as in Commerce Add Product before any store
+  // has been created, we can not (and do not need) to do anything, so exit.
+  if (!$display = $form_state->getFormObject()->getFormDisplay($form_state)) {
+    return;
+  }
 
+  $config = \Drupal::config('scheduler.settings');
   $scheduler_manager = \Drupal::service('scheduler.manager');
 
   /** @var \Drupal\Core\Entity\EntityInterface $entity */
@@ -82,7 +88,6 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $unpublishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'unpublish_enable', $config->get('default_unpublish_enable'));
 
   // Determine if the scheduler fields have been set to hidden (disabled).
-  $display = $form_state->getFormObject()->getFormDisplay($form_state);
   $publishing_displayed = !empty($display->getComponent('publish_on'));
   $unpublishing_displayed = !empty($display->getComponent('unpublish_on'));
 
