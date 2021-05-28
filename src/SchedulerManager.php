@@ -860,12 +860,16 @@ class SchedulerManager {
   /**
    * Gets instances of applicable Scheduler plugins for the enabled modules.
    *
+   * @param string $provider
+   *   Optional. Filter the plugins to return only those that are provided by
+   *   the named $provider module.
+   *
    * @return array
    *   Array of plugin objects, keyed by the entity type the plugin supports.
    */
-  public function getPlugins() {
+  public function getPlugins(string $provider = NULL) {
     $cache = \Drupal::cache()->get('scheduler.plugins');
-    if (!empty($cache) && !empty($cache->data)) {
+    if (!empty($cache) && !empty($cache->data) && empty($provider)) {
       return $cache->data;
     }
 
@@ -874,13 +878,21 @@ class SchedulerManager {
     foreach ($definitions as $definition) {
       $plugin = $this->pluginManager->createInstance($definition['id']);
       $dependency = $plugin->dependency();
+      // Ignore plugins if there is a dependency module and it is not enabled.
       if ($dependency && !\Drupal::moduleHandler()->moduleExists($dependency)) {
+        continue;
+      }
+      // Ignore plugins that do not match the specified provider module name.
+      if ($provider && $definition['provider'] != $provider) {
         continue;
       }
       $plugins[$plugin->entityType()] = $plugin;
     }
 
-    \Drupal::cache()->set('scheduler.plugins', $plugins);
+    // Save to the cache only when not filtered for a particular a provider.
+    if (empty($provider)) {
+      \Drupal::cache()->set('scheduler.plugins', $plugins);
+    }
     return $plugins;
   }
 
@@ -892,13 +904,17 @@ class SchedulerManager {
   }
 
   /**
-   * Gets the supported entity types applicable to the enabled modules.
+   * Get the supported entity types applicable to the currently enabled modules.
+   *
+   * @param string $provider
+   *   Optional. Filter the returned entity types for only those from the
+   *   plugins that are provided by the named $provider module.
    *
    * @return array
    *   A list of the entity type ids.
    */
-  public function getPluginEntityTypes() {
-    return array_keys($this->getPlugins());
+  public function getPluginEntityTypes(string $provider = NULL) {
+    return array_keys($this->getPlugins($provider));
   }
 
   /**
@@ -1053,7 +1069,7 @@ class SchedulerManager {
         foreach ($fields as $field_name => $field_definition) {
           $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id, $field_definition);
         }
-        $this->logger->notice('Publish-on and unpublish-on fields added for %entity.', [
+        $this->logger->notice('%entity updated with Scheduler publish_on and unpublish_on fields.', [
           '%entity' => $entity_type->getLabel(),
         ]);
         $updated[] = (string) $entity_type->getLabel();
@@ -1082,10 +1098,9 @@ class SchedulerManager {
     $updated = [];
     $definition = $this->entityTypeManager->getDefinition('view');
     $view_storage = $this->entityTypeManager->getStorage('view');
-
-    // Get the supported entity type ids for the modules enabled on the site,
-    // and limit to specific types if required.
-    $entity_types = $this->getPluginEntityTypes();
+    // Get the supported entity type ids for enabled modules where the provider
+    // is Scheduler. Third-party plugins do not need to be processed here.
+    $entity_types = $this->getPluginEntityTypes('scheduler');
     if ($only_these_types) {
       $entity_types = array_intersect($entity_types, $only_these_types);
     }
@@ -1101,10 +1116,10 @@ class SchedulerManager {
       if (!$source = $source_storage->read($full_name)) {
         $install_folder = drupal_get_path('module', 'scheduler') . '/config/install';
         $source_storage = new FileStorage($install_folder);
+        if (!$source = $source_storage->read($full_name)) {
+          throw new \Exception(sprintf('Failed to read source file for %s from either %s or %s folders', $full_name, $install_folder, $optional_folder));
+        }
       }
-      if (!$source = $source_storage->read($full_name)) {
-        throw new \Exception(sprintf('Failed to read source file for %s from either %s or %s folders', $full_name, $install_folder, $optional_folder));
-      };
 
       // Try to read the view definition from active config storage.
       /** @var \Drupal\Core\Config\StorageInterface $config_storage */
