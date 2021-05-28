@@ -1004,13 +1004,28 @@ function scheduler_modules_installed($modules) {
   /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->invalidatePluginCache();
-  $plugins = $scheduler_manager->getPluginEntityTypes();
+
   // If there is a Scheduler plugin for a newly installed module then update
-  // the base fields to add publish_on and unpublish_on for that entity type.
-  // Also load the view for each of the new modules.
-  $matches = array_intersect($modules, $plugins);
+  // the base tables by adding publish_on and unpublish_on for that entity type,
+  // and load/refresh the scheduled view. Third-party modules can provide
+  // Scheduler plugins for entity types that are not defined by that module, or
+  // that do not have the same id as the module name. Similarly, core modules
+  // define entity types for which Scheduler provides the plugin. Hence we need
+  // to check both the plugin entity type and the provider and if either of
+  // these match a module that is being installed we run the update functions.
+  $matches = [];
+  $plugin_definitions = $scheduler_manager->getPluginDefinitions();
+  foreach ($plugin_definitions as $definition) {
+    // If the plugin entity type or the plugin provider match any of the modules
+    // being installed then add the entity type to the list to be updated.
+    if (array_intersect([$definition['entityType'], $definition['provider']], $modules)) {
+      $matches[] = $definition['entityType'];
+    }
+  }
   if (!empty($matches)) {
+    // Add the database fields.
     $scheduler_manager->entityUpdate();
+    // Load/refresh the scheduler view.
     $scheduler_manager->viewsUpdate($matches);
   }
 }
