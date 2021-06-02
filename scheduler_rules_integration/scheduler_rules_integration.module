@@ -13,6 +13,43 @@
 use Drupal\Core\Entity\EntityInterface;
 
 /**
+ * Dispatch a Rules Integration event for an entity.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity object being processed.
+ * @param string $event_id
+ *   The internal event id, for example NEW_FOR_PUBLISHING or CRON_PUBLISHED.
+ */
+function _scheduler_rules_integration_event(EntityInterface $entity, $event_id) {
+  // Derive the fully namespaced event class for the given type of entity. The
+  // entity type id may contain underscores and these need to be converted to
+  // camelCase to match the event class. For example the class for 'node' is
+  // simply RulesNodeEvent, but the class for commerce_product is
+  // RulesCommerceProductEvent.
+  $camelCaseEntityType = str_replace(' ', '', ucwords(str_replace('_', ' ', $entity->getEntityTypeId())));
+  $event_class = "\Drupal\scheduler_rules_integration\Event\Rules{$camelCaseEntityType}Event";
+  $event = new $event_class($entity);
+  $event_name = constant(get_class($event) . "::$event_id");
+  \Drupal::service('scheduler.manager')->dispatch($event, $event_name);
+}
+
+/**
+ * Trigger Rules events during cron.
+ *
+ * This function is called from the main Scheduler module publish() and
+ * unpublish() functions in the SchedulerManager class.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity object being processed.
+ * @param string $action
+ *   The action being performed - 'publish' or 'unpublish'.
+ */
+function _scheduler_rules_integration_dispatch_cron_event(EntityInterface $entity, $action) {
+  $event_id = strtoupper("CRON_{$action}ED");
+  _scheduler_rules_integration_event($entity, $event_id);
+}
+
+/**
  * Implements hook_entity_insert().
  */
 function scheduler_rules_integration_entity_insert(EntityInterface $entity) {
@@ -22,25 +59,11 @@ function scheduler_rules_integration_entity_insert(EntityInterface $entity) {
   if (!$scheduler_manager->getPlugin($entity->getEntityTypeId())) {
     return;
   }
-  // @todo The below blocks could be moved into a function in the plugin, or in
-  // Scheduler manager, instead of here. They will be needed many times.
   if (!empty($entity->publish_on->value)) {
-    $event_id = 'NEW_FOR_PUBLISHING';
-    // Generate fully namespaced class name for RulesNodeEvent, RulesMediaEvent.
-    $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
-      . ucfirst($entity->getEntityTypeId()) . 'Event';
-    $event = new $event_class($entity);
-    $event_name = constant(get_class($event) . "::$event_id");
-    $scheduler_manager->dispatch($event, $event_name);
+    _scheduler_rules_integration_event($entity, 'NEW_FOR_PUBLISHING');
   }
   if (!empty($entity->unpublish_on->value)) {
-    $event_id = 'NEW_FOR_UNPUBLISHING';
-    // Generate fully namespaced class name for RulesNodeEvent, RulesMediaEvent.
-    $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
-      . ucfirst($entity->getEntityTypeId()) . 'Event';
-    $event = new $event_class($entity);
-    $event_name = constant(get_class($event) . "::$event_id");
-    $scheduler_manager->dispatch($event, $event_name);
+    _scheduler_rules_integration_event($entity, 'NEW_FOR_UNPUBLISHING');
   }
 }
 
@@ -56,39 +79,10 @@ function scheduler_rules_integration_entity_update(EntityInterface $entity) {
 
   // Invoke Rules events to indicate that an existing entity has been scheduled.
   if (!empty($entity->publish_on->value)) {
-    $event_id = 'EXISTING_FOR_PUBLISHING';
-    // Generate the fully namespaced class name for the required event, for
-    // example RulesNodeEvent or RulesMediaEvent.
-    $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
-      . ucfirst($entity->getEntityTypeId()) . 'Event';
-    $event = new $event_class($entity);
-    $event_name = constant(get_class($event) . "::$event_id");
-    $scheduler_manager->dispatch($event, $event_name);
+    _scheduler_rules_integration_event($entity, 'EXISTING_FOR_PUBLISHING');
   }
 
   if (!empty($entity->unpublish_on->value)) {
-    $event_id = 'EXISTING_FOR_UNPUBLISHING';
-    $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
-      . ucfirst($entity->getEntityTypeId()) . 'Event';
-    $event = new $event_class($entity);
-    $event_name = constant(get_class($event) . "::$event_id");
-    $scheduler_manager->dispatch($event, $event_name);
+    _scheduler_rules_integration_event($entity, 'EXISTING_FOR_UNPUBLISHING');
   }
-}
-
-/**
- * Trigger Rules events during cron.
- *
- * This function is called from the main Scheduler module publish() and
- * unpublish() functions in the SchedulerManager class.
- */
-function _scheduler_rules_integration_dispatch_cron_event(EntityInterface $entity, $event_type) {
-  $scheduler_manager = \Drupal::service('scheduler.manager');
-
-  $event_id = strtoupper("CRON_{$event_type}ED");
-  $event_class = '\Drupal\scheduler_rules_integration\Event\Rules'
-    . ucfirst($entity->getEntityTypeId()) . 'Event';
-  $event = new $event_class($entity);
-  $event_name = constant(get_class($event) . "::$event_id");
-  $scheduler_manager->dispatch($event, $event_name);
 }
