@@ -112,6 +112,11 @@ node.type.*.third_party.scheduler: &third_party_settings_alias
       type: boolean
       label: 'Create a new revision on unpublishing'
 
-# Use saved alias to repeat the same settings for media.type
+# Use the saved alias to repeat the same schema for media.type and
+# commerce_product.commerce_product_type. Adding a separate comment betweeen the
+# two definitions below causes a "cannot parse" error.
 media.type.*.third_party.scheduler:
+  *third_party_settings_alias
+
+commerce_product.commerce_product_type.*.third_party.scheduler:
   *third_party_settings_alias
