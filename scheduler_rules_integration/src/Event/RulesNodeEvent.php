@@ -3,12 +3,11 @@
 namespace Drupal\scheduler_rules_integration\Event;
 
 use Drupal\node\NodeInterface;
-use Drupal\scheduler\Event\SchedulerEvent;
 
 /**
  * Class for all Rules node events.
  */
-class RulesNodeEvent extends SchedulerEvent {
+class RulesNodeEvent extends EventBase {
 
   /**
    * Define constants to convert the event identifier into the full event name.
@@ -41,6 +40,17 @@ class RulesNodeEvent extends SchedulerEvent {
    */
   public function __construct(NodeInterface $node) {
     $this->node = $node;
+  }
+
+  /**
+   * Returns the entity which is being processed.
+   */
+  public function getEntity() {
+    // The Rules module requires the entity to be stored in a specifically named
+    // property which will obviously vary according to the entity type being
+    // processed. This generic getEntity() method is not strictly required by
+    // Rules but is added for convenience when manipulating the event entity.
+    return $this->node;
   }
 
 }
