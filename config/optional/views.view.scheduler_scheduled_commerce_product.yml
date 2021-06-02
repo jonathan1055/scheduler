@@ -3,19 +3,21 @@ status: true
 dependencies:
   config:
     - system.menu.admin
-  module:
-    - media
-    - user
   enforced:
     module:
       - scheduler
-id: scheduler_scheduled_media
-label: 'Scheduled media'
+  module:
+    - commerce
+    - commerce_product
+    - commerce_store
+    - user
+id: scheduler_scheduled_commerce_product
+label: 'Scheduled Commerce Products'
 module: views
-description: 'Find and manage scheduled media.'
+description: 'Find and manage scheduled commerce products.'
 tag: ''
-base_table: media_field_revision
-base_field: vid
+base_table: commerce_product_field_data
+base_field: product_id
 display:
 # ------------------------------------------------------------------------------
 # Default display
@@ -29,7 +31,7 @@ display:
       access:
         type: perm
         options:
-          perm: 'view scheduled media'
+          perm: 'view scheduled commerce_product'
       cache:
         type: tag
         options: {  }
@@ -37,7 +39,7 @@ display:
         type: views_query
         options:
           disable_sql_rewrite: false
-          distinct: false
+          distinct: true
           replica: false
           query_comment: ''
           query_tags: {  }
@@ -74,7 +76,11 @@ display:
       style:
         type: table
         options:
-          grouping: {  }
+          grouping:
+            -
+              field: stores_target_id
+              rendered: true
+              rendered_strip: false
           row_class: ''
           default_row_class: true
           override: true
@@ -83,35 +89,28 @@ display:
           summary: ''
           description: ''
           columns:
-            media_bulk_form: media_bulk_form
-            name: name
-            bundle: bundle
-            uid: uid
+            commerce_product_bulk_form: commerce_product_bulk_form
+            title: title
+            type: type
             status: status
             publish_on: publish_on
             unpublish_on: unpublish_on
             operations: operations
+            stores_target_id: stores_target_id
           info:
-            media_bulk_form:
+            commerce_product_bulk_form:
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            name:
+            title:
               sortable: true
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            bundle:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            uid:
+            type:
               sortable: true
               default_sort_order: asc
               align: ''
@@ -144,15 +143,20 @@ display:
               separator: ''
               empty_column: false
               responsive: ''
+            stores_target_id:
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
           default: publish_on
           empty_table: true
       row:
         type: fields
       fields:
-        media_bulk_form:
-          id: media_bulk_form
-          table: media
-          field: media_bulk_form
+        commerce_product_bulk_form:
+          id: commerce_product_bulk_form
+          table: commerce_product
+          field: commerce_product_bulk_form
           relationship: none
           group_type: group
           admin_label: ''
@@ -200,16 +204,16 @@ display:
           action_title: Action
           include_exclude: exclude
           selected_actions: {  }
-          entity_type: media
+          entity_type: commerce_product
           plugin_id: bulk_form
-        name:
-          id: name
-          table: media_field_revision
-          field: name
+        title:
+          id: title
+          table: commerce_product_field_data
+          field: title
           relationship: none
           group_type: group
           admin_label: ''
-          label: 'Media Name'
+          label: 'Product name'
           exclude: false
           alter:
             alter_text: false
@@ -264,82 +268,17 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-          entity_type: media
-          entity_field: name
+          entity_type: commerce_product
+          entity_field: title
           plugin_id: field
-        bundle:
-          id: bundle
-          table: media_field_data
-          field: bundle
-          relationship: mid
-          group_type: group
-          admin_label: ''
-          label: 'Media type'
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: true
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: ''
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-          click_sort_column: target_id
-          type: entity_reference_label
-          settings:
-            link: true
-          group_column: target_id
-          group_columns: {  }
-          group_rows: true
-          delta_limit: 0
-          delta_offset: 0
-          delta_reversed: false
-          delta_first_last: false
-          multi_type: separator
-          separator: ', '
-          field_api_classes: false
-          entity_type: media
-          entity_field: bundle
-          plugin_id: field
-        uid:
-          id: uid
-          table: media_field_revision
-          field: uid
+        type:
+          id: type
+          table: commerce_product_field_data
+          field: type
           relationship: none
           group_type: group
           admin_label: ''
-          label: Author
+          label: Type
           exclude: false
           alter:
             alter_text: false
@@ -394,12 +333,13 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-          entity_type: media
-          entity_field: uid
-          plugin_id: field
+          hide_single_bundle: true
+          entity_type: commerce_product
+          entity_field: type
+          plugin_id: commerce_entity_bundle
         status:
           id: status
-          table: media_field_revision
+          table: commerce_product_field_data
           field: status
           relationship: none
           group_type: group
@@ -461,12 +401,12 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-          entity_type: media
+          entity_type: commerce_product
           entity_field: status
           plugin_id: field
         publish_on:
           id: publish_on
-          table: media_field_revision
+          table: commerce_product_field_data
           field: publish_on
           relationship: none
           group_type: group
@@ -528,12 +468,12 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-          entity_type: media
+          entity_type: commerce_product
           entity_field: publish_on
           plugin_id: field
         unpublish_on:
           id: unpublish_on
-          table: media_field_revision
+          table: commerce_product_field_data
           field: unpublish_on
           relationship: none
           group_type: group
@@ -595,12 +535,12 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
-          entity_type: media
+          entity_type: commerce_product
           entity_field: unpublish_on
           plugin_id: field
         operations:
           id: operations
-          table: media_revision
+          table: commerce_product
           field: operations
           relationship: none
           group_type: group
@@ -647,34 +587,103 @@ display:
           empty_zero: false
           hide_alter_empty: true
           destination: false
-          entity_type: media
+          entity_type: commerce_product
           plugin_id: entity_operations
-      filters:
-        latest_revision:
-          id: latest_revision
-          table: media_revision
-          field: latest_revision
+        stores_target_id:
+          id: stores_target_id
+          table: commerce_product__stores
+          field: stores_target_id
           relationship: none
           group_type: group
           admin_label: ''
-          operator: '='
-          value: ''
+          label: Stores
+          exclude: true
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+          click_sort_column: target_id
+          type: entity_reference_label
+          settings:
+            link: true
+          group_column: target_id
+          group_columns: {  }
+          group_rows: true
+          delta_limit: 0
+          delta_offset: 0
+          delta_reversed: false
+          delta_first_last: false
+          multi_type: separator
+          separator: ', '
+          field_api_classes: false
+          entity_type: commerce_product
+          entity_field: stores
+          plugin_id: field
+      filters:
+        type:
+          id: type
+          table: commerce_product_field_data
+          field: type
+          relationship: none
+          group_type: group
+          admin_label: ''
+          operator: in
+          value: {  }
           group: 1
-          exposed: false
+          exposed: true
           expose:
-            operator_id: ''
-            label: ''
+            operator_id: type_op
+            label: 'Product type'
             description: ''
             use_operator: false
-            operator: ''
+            operator: type_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: ''
+            identifier: type
             required: false
             remember: false
             multiple: false
             remember_roles:
               authenticated: authenticated
+              anonymous: '0'
+              administrator: '0'
+            reduce: false
+            hide_single_bundle: true
           is_grouped: false
           group_info:
             label: ''
@@ -687,12 +696,13 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          entity_type: media
-          plugin_id: latest_revision
-        name:
-          id: name
-          table: media_field_revision
-          field: name
+          entity_type: commerce_product
+          entity_field: type
+          plugin_id: commerce_entity_bundle
+        title:
+          id: title
+          table: commerce_product_field_data
+          field: title
           relationship: none
           group_type: group
           admin_label: ''
@@ -701,14 +711,14 @@ display:
           group: 1
           exposed: true
           expose:
-            operator_id: name_op
-            label: 'Media name'
+            operator_id: title_op
+            label: 'Product name'
             description: ''
             use_operator: false
-            operator: name_op
+            operator: title_op
             operator_limit_selection: false
             operator_list: {  }
-            identifier: name
+            identifier: title
             required: false
             remember: false
             multiple: false
@@ -729,61 +739,18 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          entity_type: media
-          entity_field: name
+          entity_type: commerce_product
+          entity_field: title
           plugin_id: string
-        bundle:
-          id: bundle
-          table: media_field_data
-          field: bundle
-          relationship: mid
-          group_type: group
-          admin_label: ''
-          operator: in
-          value: {  }
-          group: 1
-          exposed: true
-          expose:
-            operator_id: bundle_op
-            label: Type
-            description: ''
-            use_operator: false
-            operator: bundle_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: bundle
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              administrator: '0'
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          entity_type: media
-          entity_field: bundle
-          plugin_id: bundle
         status:
           id: status
-          table: media_field_revision
+          table: commerce_product_field_data
           field: status
           relationship: none
           group_type: group
           admin_label: ''
           operator: '='
-          value: ''
+          value: '0'
           group: 1
           exposed: true
           expose:
@@ -822,55 +789,12 @@ display:
                 title: Unpublished
                 operator: '='
                 value: '0'
-          entity_type: media
+          entity_type: commerce_product
           entity_field: status
           plugin_id: boolean
-        langcode:
-          id: langcode
-          table: media_field_revision
-          field: langcode
-          relationship: none
-          group_type: group
-          admin_label: ''
-          operator: in
-          value: {  }
-          group: 1
-          exposed: true
-          expose:
-            operator_id: langcode_op
-            label: Language
-            description: ''
-            use_operator: false
-            operator: langcode_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: langcode
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              administrator: '0'
-            reduce: false
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          entity_type: media
-          entity_field: langcode
-          plugin_id: language
         publish_on:
           id: publish_on
-          table: media_field_revision
+          table: commerce_product_field_data
           field: publish_on
           relationship: none
           group_type: group
@@ -912,12 +836,12 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          entity_type: media
+          entity_type: commerce_product
           entity_field: publish_on
           plugin_id: date
         unpublish_on:
           id: unpublish_on
-          table: media_field_revision
+          table: commerce_product_field_data
           field: unpublish_on
           relationship: none
           group_type: group
@@ -959,11 +883,10 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-          entity_type: media
+          entity_type: commerce_product
           entity_field: unpublish_on
           plugin_id: date
       sorts: {  }
-      title: 'Scheduled Media'
       header: {  }
       footer: {  }
       empty:
@@ -976,27 +899,29 @@ display:
           admin_label: ''
           empty: true
           tokenize: false
-          content: 'No scheduled media.'
+          content: 'No scheduled products.'
           plugin_id: text_custom
       arguments: {  }
-      relationships:
-        mid:
-          id: mid
-          table: media_field_revision
-          field: mid
-          relationship: none
-          group_type: group
-          admin_label: 'Media Field'
-          required: false
-          entity_type: media
-          entity_field: mid
-          plugin_id: standard
       display_extenders: {  }
       filter_groups:
         operator: AND
         groups:
           1: AND
           2: OR
+      title: 'Scheduled Commerce Products'
+      relationships:
+        stores_target_id:
+          id: stores_target_id
+          table: commerce_product__stores
+          field: stores_target_id
+          relationship: none
+          group_type: group
+          admin_label: Store
+          required: false
+          entity_type: commerce_product
+          entity_field: stores
+          plugin_id: standard
+      group_by: true
     cache_metadata:
       max-age: 0
       contexts:
@@ -1012,21 +937,26 @@ display:
   overview:
     display_plugin: page
     id: overview
-    display_title: 'Media Overview'
+    display_title: 'Products Overview'
     position: 1
     display_options:
       display_extenders: {  }
-      path: admin/content/media/scheduled
-      display_description: 'Overview of all scheduled media, via main admin content page'
+      path: admin/commerce/products/scheduled
+      display_description: 'Overview of all scheduled products, via main commerce product page'
       menu:
         type: normal
-        title: 'Scheduled Media'
-        description: ''
+        title: 'Scheduled Products'
+        description: 'List of commerce products that are scheduled for publishing or unpublishing'
         expanded: false
-        parent: 'system.admin_content'
+        parent: entity.commerce_product.collection
         weight: 0
         context: '0'
         menu_name: admin
+      tab_options:
+        type: none
+        title: ''
+        description: ''
+        weight: 0
     cache_metadata:
       max-age: 0
       contexts:
@@ -1035,61 +965,4 @@ display:
         - url
         - url.query_args
         - user.permissions
-      tags: {  }
-# ------------------------------------------------------------------------------
-# User page
-# ------------------------------------------------------------------------------
-  user_page:
-    display_plugin: page
-    id: user_page
-    display_title: User
-    position: 2
-    display_options:
-      display_extenders: {  }
-      display_description: 'Scheduled media on user profile, showing just that user''s scheduled media'
-      path: user/%user/scheduled_media
-      menu:
-        type: tab
-        title: 'Scheduled Media'
-        description: 'Scheduled Media by this user'
-        expanded: false
-        parent: user.page
-        weight: -1
-        context: '0'
-        menu_name: account
-      empty:
-        area_text_custom:
-          id: area_text_custom
-          table: views
-          field: area_text_custom
-          relationship: none
-          group_type: group
-          admin_label: ''
-          empty: true
-          tokenize: true
-          content: 'No scheduled media for user {{ arguments.uid }}'
-          plugin_id: text_custom
-      defaults:
-        empty: false
-        arguments: false
-        access: false
-      arguments:
-        uid:
-          id: uid
-          table: media_field_revision
-          field: uid
-          entity_type: media
-          entity_field: uid
-          plugin_id: numeric
-      access:
-        type: none
-        options: {  }
-      display_comment: 'Access to the user view is controllled via a custom RouteSubscriber'
-    cache_metadata:
-      max-age: 0
-      contexts:
-        - 'languages:language_content'
-        - 'languages:language_interface'
-        - url
-        - url.query_args
       tags: {  }
