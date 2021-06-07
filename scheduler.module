@@ -155,23 +155,20 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   }
 
   // Define the descriptions depending on whether the time can be skipped.
-  $date_formatter = \Drupal::service('date.formatter');
   $descriptions = [];
   if ($allow_date_only) {
     $descriptions['format'] = t('Enter a date. The time part is optional.');
     // Show the default time so users know what they will get if they do not
     // enter a time.
-    $default_time = strtotime($config->get('default_time'));
-    $default_time_formatted = $date_formatter->format($default_time, 'custom', 'H:i:s');
     $descriptions['default'] = t('The default time is @default_time.', [
-      '@default_time' => $default_time_formatted,
+      '@default_time' => $config->get('default_time'),
     ]);
 
     // Use javascript to pre-fill the time parts if the dates are required.
     // See js/scheduler_default_time.js for more details.
     if ($publishing_required || $unpublishing_required) {
       $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $default_time_formatted;
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $config->get('default_time');
     }
   }
   else {
@@ -196,6 +193,22 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $form['unpublish_on']['#access'] = $unpublishing_enabled && $unpublishing_displayed;
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
+
+  // When hiding the seconds on time input, we need to remove the seconds from
+  // the form value, as some browsers HTML5 rendering still show the seconds.
+  // We can use the same jQuery drupal behaviors file as for default time.
+  if ($config->get('hide_seconds')) {
+    // If there is a publish_on time, then use jQuery to remove the seconds.
+    if (isset($node->publish_on->value)) {
+      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $node->publish_on->value);
+    }
+    // Likewise for the unpublish_on time.
+    if (isset($node->unpublish_on->value)) {
+      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $node->unpublish_on->value);
+    }
+  }
 
   if (!\Drupal::currentUser()->hasPermission('schedule publishing of nodes')) {
     // Do not show the scheduler fields for users who do not have permission.

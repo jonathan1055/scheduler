@@ -38,6 +38,20 @@ class TimestampDatetimeNoDefaultWidget extends TimestampDatetimeWidget {
     // input and add the default time if needed. It is too late to try this in
     // function massageFormValues as the validation has already been done.
     $element['value']['#value_callback'] = [$this, 'valueCallback'];
+
+    // Hide the seconds portion of the time input element if that option is set.
+    if (\Drupal::config('scheduler.settings')->get('hide_seconds')) {
+      $element['value']['#date_increment'] = 60;
+      // Some browsers HTML5 date element implementations show the seconds on
+      // pre-existing date values event though the number cannot be changed. To
+      // reduce confusion set the seconds to zero so that the browsers
+      // validation messages only have hours and minutes.
+      $current_value = $element['value']['#default_value'];
+      if (is_object($current_value)) {
+        $current_value->setTime($current_value->format('H'), $current_value->format('i'), 0);
+      }
+    }
+
     return $element;
   }
 
