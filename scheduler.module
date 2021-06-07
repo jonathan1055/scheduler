@@ -386,6 +386,19 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
+ * Implements hook_views_data_alter().
+ */
+function scheduler_views_data_alter(array &$data) {
+  // By default the 'is null' and 'is not null' operators are only added to the
+  // list of filter options if the view contains a relationship. We want them to
+  // be always available for the scheduler date fields.
+  $data['node_field_data']['publish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_data']['unpublish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_revision']['publish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_revision']['unpublish_on']['filter']['allow empty'] = TRUE;
+}
+
+/**
  * Implements hook_ENTITY_TYPE_view() for node entities.
  */
 function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
