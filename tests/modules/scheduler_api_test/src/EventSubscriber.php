@@ -35,6 +35,9 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
 
+    // Initialise the array to avoid 'variable is undefined' phpcs error.
+    $events = [];
+
     // The values in the arrays give the function names below.
     // These six events are the originals, dispatched for Nodes.
     $events[SchedulerNodeEvents::PRE_PUBLISH][] = ['apiTestNodePrePublish'];

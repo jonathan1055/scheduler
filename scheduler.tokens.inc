@@ -13,6 +13,8 @@ use Drupal\Core\Render\BubbleableMetadata;
 function scheduler_token_info() {
 
   $plugin_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
+  // Initialise the array to avoid 'variable is undefined' phpcs error.
+  $info = [];
   foreach ($plugin_types as $type) {
     $info['tokens'][$type]['scheduler-publish'] = [
       'name' => t('Publish on date'),

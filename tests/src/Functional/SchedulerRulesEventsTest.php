@@ -59,9 +59,11 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     // @see https://www.drupal.org/project/coder/issues/2876245
     // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
     foreach ($rule_data as $i => list($event_name, $description)) {
+      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
       $rule[$i] = $this->expressionManager->createRule();
       // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
       $this->message[$i] = 'RULES message ' . $i . '. ' . $description;
+      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
       $rule[$i]->addAction('rules_system_message', ContextConfig::create()
         ->setValue('message', $this->message[$i])
         ->setValue('type', 'status')
@@ -70,6 +72,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
         'id' => 'rule' . $i,
         // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
         'events' => [['event_name' => $event_name]],
+        // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
         'expression' => $rule[$i]->getConfiguration(),
       ]);
       $config_entity->save();
