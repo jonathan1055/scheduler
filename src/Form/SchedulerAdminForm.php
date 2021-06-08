@@ -5,6 +5,7 @@ namespace Drupal\scheduler\Form;
 use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -20,11 +21,27 @@ class SchedulerAdminForm extends ConfigFormBase {
   protected $dateFormatter;
 
   /**
+   * The scheduler manager service.
+   *
+   * @var \Drupal\scheduler\SchedulerManager
+   */
+  protected $schedulerManager;
+
+  /**
+   * Entity Type Manager service object.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
     $instance = parent::create($container);
     $instance->setDateFormatter($container->get('date.formatter'));
+    $instance->schedulerManager = $container->get('scheduler.manager');
+    $instance->entityTypeManager = $container->get('entity_type.manager');
     return $instance;
   }
 
@@ -56,6 +73,53 @@ class SchedulerAdminForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $form['description'] = [
+      '#markup' => '<p>' . $this->t('Most of the Scheduler options are set independently for each entity type and bundle. These can be accessed from the <a href="@link">admin structure</a> page or directly by using the drop-button', ['@link' => Url::fromRoute('system.admin_structure')->toString()]) . '</p>',
+    ];
+
+    // Build a drop-button with links to configure all supported entity types.
+    $plugins = $this->schedulerManager->getPlugins();
+    $links = [];
+    $links[] = [
+      'title' => $this->t('Entity Types'),
+      'url' => Url::fromRoute('system.admin_structure'),
+    ];
+    foreach ($plugins as $entityTypeId => $plugin) {
+      $publishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'publish');
+      $unpublishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'unpublish');
+      // It should not be necessary to check that $plugin->getTypes() returns a
+      // non-empty array of values because the plugin will only be returned by
+      // schedulerManager->getPlugins() if the required module is enabled.
+      // However, when enabling a module via drush, the full cache is not
+      // automatically rebuilt and moduleHandler()->moduleExists('media') can
+      // return false. So give a useful exception message when that happens.
+      if (!$types = $plugin->getTypes()) {
+        throw new \Exception(sprintf('No entity types returned for %s (%s). Do a full cache clear via admin/config/development/performance or drush cr.', $plugin->label(), $plugin->getPluginId()));
+      }
+      $bundle_id = reset($types)->bundle();
+      $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection')->__toString();
+      $links[] = ['title' => "-- $collection_label --"];
+      foreach ($types as $id => $type) {
+        $text = [];
+        in_array($id, $publishing_enabled_types) ? $text[] = $this->t('publishing') : NULL;
+        in_array($id, $unpublishing_enabled_types) ? $text[] = $this->t('unpublishing') : NULL;
+        $links[] = [
+          'title' => $type->label() . (!empty($text) ? ' (' . implode(', ', $text) . ')' : ''),
+          // Example: the route 'entity.media_type.edit_form' with parameter
+          // media_type={typeid} has url /admin/structure/media/manage/{typeid}.
+          'url' => Url::fromRoute("entity.$bundle_id.edit_form", [$bundle_id => $type->id()]),
+        ];
+      }
+    }
+    $form['entity_type_links'] = [
+      '#type' => 'dropbutton',
+      '#links' => $links,
+    ];
+
+    $form['description2'] = [
+      '#markup' => '<p>' . $this->t('The settings below are common to all entity types.') . '</p>',
+    ];
+
     // Options for setting date-only with default time.
     $form['date_only_fieldset'] = [
       '#type' => 'fieldset',
@@ -94,6 +158,9 @@ class SchedulerAdminForm extends ConfigFormBase {
       '#default_value' => $this->setting('hide_seconds'),
       '#description' => $this->t('When entering a time, only show hours and minutes in the input field.'),
     ];
+
+    // Attach library for admin css file.
+    $form['#attached']['library'][] = 'scheduler/admin';
 
     return parent::buildForm($form, $form_state);
   }

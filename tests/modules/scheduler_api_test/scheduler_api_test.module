@@ -3,74 +3,202 @@
 /**
  * @file
  * Hook implementations of the Scheduler API Test module.
+ *
+ * Scheduler provides eight hook functions. Each has a non-specific version with
+ * no _{type}_ in the name, which is invoked for all entity types, and a version
+ * with _{type}_ in the name, which is invoked only when that entity types is
+ * being processed. Hence for complete test coverage this module has eight plain
+ * implementations, eight implementations for Nodes and eight for Media.
  */
 
 use Drupal\node\Entity\Node;
+use Drupal\media\Entity\Media;
 use Drupal\node\NodeInterface;
+use Drupal\media\MediaInterface;
 
 /**
- * Implements hook_scheduler_nid_list().
+ * Helper function to return all entities of a given type.
  */
-function scheduler_api_test_scheduler_nid_list($action) {
-  $nids = [];
-
-  // Check to see what test nodes exist.
-  $query = \Drupal::entityQuery('node');
-  $nodes = Node::loadMultiple($query->execute());
-  $request_time = \Drupal::time()->getRequestTime();
-  foreach ($nodes as $nid => $node) {
-    // If publishing and this is the publish test node, set a date and add
-    // the node id to the list.
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list publish me') {
-      $node->set('publish_on', $request_time)->save();
-      $nids[] = $nid;
-    }
-    // If unpublishing and this is the unpublish test node, set a date and add
-    // the node id to the list.
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list unpublish me') {
-      $node->set('unpublish_on', $request_time)->save();
-      $nids[] = $nid;
-    }
+function _scheduler_api_test_get_entities($entityTypeId) {
+  if ($entityTypeId == 'media') {
+    $results = Media::loadMultiple(\Drupal::entityQuery('media')->accessCheck(FALSE)->execute());
   }
-  return $nids;
+  else {
+    $results = Node::loadMultiple(\Drupal::entityQuery('node')->accessCheck(FALSE)->execute());
+  }
+  return $results;
 }
 
 /**
- * Implements hook_scheduler_nid_list_alter().
+ * Implements hook_scheduler_list().
  */
-function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
-  $query = \Drupal::entityQuery('node');
-  $nodes = Node::loadMultiple($query->execute());
+function scheduler_api_test_scheduler_list($process, $entityTypeId) {
+  $ids = [];
   $request_time = \Drupal::time()->getRequestTime();
-  foreach ($nodes as $nid => $node) {
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter do not publish me') {
-      // Remove the node id.
-      $nids = array_diff($nids, [$nid]);
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($process == 'publish' && !$entity->isPublished() && $entity->label() == "Pink $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
     }
-    if ($action == 'publish' && $node->title->value == 'API TEST nid_list_alter publish me') {
-      // Set a publish_on date and add the node id.
-      $node->set('publish_on', $request_time)->save();
-      $nids[] = $nid;
-    }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter do not unpublish me') {
-      // Remove the node id.
-      $nids = array_diff($nids, [$nid]);
-    }
-    if ($action == 'unpublish' && $node->title->value == 'API TEST nid_list_alter unpublish me') {
-      // Set an unpublish_on date and add the node id.
-      $node->set('unpublish_on', $request_time)->save();
-      $nids[] = $nid;
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($process == 'unpublish' && $entity->isPublished() && $entity->label() == "Pink $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
     }
   }
-  return $nids;
+  return $ids;
 }
 
 /**
- * Implements hook_scheduler_allow_publishing().
+ * Implements hook_scheduler_node_list().
  */
-function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
-  // If there is no 'Approved for Publishing' field then allow publishing.
-  if (!isset($node->field_approved_publishing)) {
+function scheduler_api_test_scheduler_node_list($process, $entityTypeId) {
+  $ids = [];
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($process == 'publish' && !$entity->isPublished() && $entity->label() == "Purple $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($process == 'unpublish' && $entity->isPublished() && $entity->label() == "Purple $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+  return $ids;
+}
+
+/**
+ * Implements hook_scheduler_media_list().
+ */
+function scheduler_api_test_scheduler_media_list($process, $entityTypeId) {
+  $ids = [];
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    // If publishing and this is the 'publish me' test entity, set the date and
+    // add the id to the list.
+    if ($process == 'publish' && !$entity->isPublished() && $entity->label() == "Purple $entityTypeId list publish me") {
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    // If unpublishing and this is the 'unpublish me' test entity, set the date
+    // and add the id to the list.
+    if ($process == 'unpublish' && $entity->isPublished() && $entity->label() == "Purple $entityTypeId list unpublish me") {
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+  return $ids;
+}
+
+/**
+ * Implements hook_scheduler_list_alter().
+ */
+function scheduler_api_test_scheduler_list_alter(&$ids, $process, $entityTypeId) {
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    if ($process == 'publish' && $entity->label() == "Pink $entityTypeId list_alter do not publish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'publish' && $entity->label() == "Pink $entityTypeId list_alter publish me") {
+      // Set a publish_on date and add the id.
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    if ($process == 'unpublish' && $entity->label() == "Pink $entityTypeId list_alter do not unpublish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'unpublish' && $entity->label() == "Pink $entityTypeId list_alter unpublish me") {
+      // Set an unpublish_on date and add the id.
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+}
+
+/**
+ * Implements hook_scheduler_node_list_alter().
+ */
+function scheduler_api_test_scheduler_node_list_alter(&$ids, $process, $entityTypeId) {
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter publish me") {
+      // Set a publish_on date and add the id.
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    if ($process == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter do not unpublish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter unpublish me") {
+      // Set an unpublish_on date and add the id.
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+}
+
+/**
+ * Implements hook_scheduler_media_list_alter().
+ */
+function scheduler_api_test_scheduler_media_list_alter(&$ids, $process, $entityTypeId) {
+  $request_time = \Drupal::time()->getRequestTime();
+  $results = _scheduler_api_test_get_entities($entityTypeId);
+  foreach ($results as $id => $entity) {
+    if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter do not publish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'publish' && $entity->label() == "Purple $entityTypeId list_alter publish me") {
+      // Set a publish_on date and add the id.
+      $entity->set('publish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+    if ($process == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter do not unpublish me") {
+      // Remove the id.
+      $ids = array_diff($ids, [$id]);
+    }
+    if ($process == 'unpublish' && $entity->label() == "Purple $entityTypeId list_alter unpublish me") {
+      // Set an unpublish_on date and add the id.
+      $entity->set('unpublish_on', $request_time)->save();
+      $ids[] = $id;
+    }
+  }
+}
+
+/**
+ * Implements hook_scheduler_publishing_allowed().
+ */
+function scheduler_api_test_scheduler_publishing_allowed($entity) {
+  // @todo Fill in this function and add test coverage.
+}
+
+/**
+ * Implements hook_scheduler_node_publishing_allowed().
+ */
+function scheduler_api_test_scheduler_node_publishing_allowed(NodeInterface $node) {
+  // If there is no 'Approved for Publishing' field or we are not dealing with
+  // an entity designed for this test then allow publishing.
+  if (!isset($node->field_approved_publishing) || !stristr($node->label(), 'blue node')) {
     $allowed = TRUE;
   }
   else {
@@ -94,11 +222,52 @@ function scheduler_api_test_scheduler_allow_publishing(NodeInterface $node) {
 }
 
 /**
- * Implements hook_scheduler_allow_unpublishing().
+ * Implements hook_scheduler_media_publishing_allowed().
  */
-function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
-  // If there is no 'Approved for Unpublishing' field then allow unpublishing.
-  if (!isset($node->field_approved_unpublishing)) {
+function scheduler_api_test_scheduler_media_publishing_allowed(MediaInterface $media) {
+  // If there is no 'Approved for Publishing' field or we are not dealing with
+  // an entity designed for this test then allow publishing.
+  if (!isset($media->field_approved_publishing) || !stristr($media->label(), 'blue media')) {
+    $allowed = TRUE;
+  }
+  else {
+    // Only publish entities that have 'Approved for Publishing' set.
+    $allowed = $media->field_approved_publishing->value;
+    // If publishing is denied then inform the user why.
+    if (!$allowed) {
+      // Show a message when the entity is saved.
+      \Drupal::messenger()->addMessage(t('%title is scheduled for publishing @publish_time, but will not be published until approved.', [
+        '%title' => $media->label(),
+        '@publish_time' => \Drupal::service('date.formatter')->format($media->publish_on->value, 'long'),
+      ]), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this. Give a link to view the entity but
+      // cater for no id as the entity may be new and not yet saved.
+      if ($media->publish_on->value <= \Drupal::time()->getRequestTime()) {
+        \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
+          '%title' => $media->label(),
+          'link' => !empty($media->id()) ? $media->toLink(t('View media'))->toString() : '',
+        ]);
+      }
+    }
+  }
+  return $allowed;
+}
+
+/**
+ * Implements hook_scheduler_unpublishing_allowed().
+ */
+function scheduler_api_test_scheduler_unpublishing_allowed($entity) {
+  // @todo Fill in this function and add test coverage.
+}
+
+/**
+ * Implements hook_scheduler_node_unpublishing_allowed().
+ */
+function scheduler_api_test_scheduler_node_unpublishing_allowed(NodeInterface $node) {
+  // If there is no 'Approved for Unpublishing' field or we are not dealing with
+  // an entity designed for this test then allow unpublishing.
+  if (!isset($node->field_approved_unpublishing) || !stristr($node->label(), 'red node')) {
     $allowed = TRUE;
   }
   else {
@@ -122,12 +291,45 @@ function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
 }
 
 /**
- * Implements hook_scheduler_hide_publish_on_field().
+ * Implements hook_scheduler_media_unpublishing_allowed().
  */
-function scheduler_api_test_scheduler_hide_publish_on_field($form, $form_state, $node) {
-  // Hide the publish_on field if the node title contains orange or green.
-  if (stristr($node->title->value, 'orange') || stristr($node->title->value, 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange or green node titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_media_unpublishing_allowed(MediaInterface $media) {
+  // If there is no 'Approved for Unpublishing' field or we are not dealing with
+  // an entity designed for this test then allow unpublishing.
+  if (!isset($media->field_approved_unpublishing) || !stristr($media->label(), 'red media')) {
+    $allowed = TRUE;
+  }
+  else {
+    // Only unpublish entities that have 'Approved for Unpublishing' set.
+    $allowed = $media->field_approved_unpublishing->value;
+    // If unpublishing is denied then inform the user why.
+    if (!$allowed) {
+      // Show a message when the entity is saved.
+      \Drupal::messenger()->addMessage(t('%title is scheduled for unpublishing @unpublish_time, but will not be unpublished until approved.', [
+        '%title' => $media->label(),
+        '@unpublish_time' => \Drupal::service('date.formatter')->format($media->unpublish_on->value, 'long'),
+      ]), 'status', FALSE);
+      // If the time is in the past it means that the action has been prevented.
+      // Write a dblog message to show this. Give a link to view the entity but
+      // cater for no id as the entity may be new and not yet saved.
+      if ($media->unpublish_on->value <= \Drupal::time()->getRequestTime()) {
+        \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
+          '%title' => $media->label(),
+          'link' => !empty($media->id()) ? $media->toLink(t('View media'))->toString() : '',
+        ]);
+      }
+    }
+  }
+  return $allowed;
+}
+
+/**
+ * Implements hook_scheduler_hide_publish_date().
+ */
+function scheduler_api_test_scheduler_hide_publish_date($form, $form_state, $entity) {
+  // Hide the publish_on field if the title contains orange.
+  if (stristr($entity->label(), "orange {$entity->getEntityTypeId()}")) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange titles of any entity type.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -136,12 +338,12 @@ function scheduler_api_test_scheduler_hide_publish_on_field($form, $form_state, 
 }
 
 /**
- * Implements hook_scheduler_hide_unpublish_on_field().
+ * Implements hook_scheduler_node_hide_publish_date().
  */
-function scheduler_api_test_scheduler_hide_unpublish_on_field($form, $form_state, $node) {
-  // Hide the publish_on field if the node title contains yellow or green.
-  if (stristr($node->title->value, 'yellow') || stristr($node->title->value, 'green')) {
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow or green node titles.'), 'status', FALSE);
+function scheduler_api_test_scheduler_node_hide_publish_date($form, $form_state, $node) {
+  // Hide the publish_on field if the title contains green node.
+  if (stristr($node->title->value, 'green node')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for green node titles.'), 'status', FALSE);
     return TRUE;
   }
   else {
@@ -150,17 +352,81 @@ function scheduler_api_test_scheduler_hide_unpublish_on_field($form, $form_state
 }
 
 /**
- * Implements hook_scheduler_publish_action().
+ * Implements hook_scheduler_media_hide_publish_date().
  */
-function scheduler_api_test_scheduler_publish_action($node) {
-  if (stristr($node->title->value, 'red')) {
-    // Nodes with red in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $node->set('title', $node->title->value . ' - publishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red nodes should cause Scheduler to abandon publishing.'), 'status', FALSE);
+function scheduler_api_test_scheduler_media_hide_publish_date($form, $form_state, $entity) {
+  // Hide the publish_on field if the title contains green media.
+  if (stristr($entity->label(), 'green media')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for green media titles.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_hide_unpublish_date().
+ */
+function scheduler_api_test_scheduler_hide_unpublish_date($form, $form_state, $entity) {
+  // Hide the unpublish_on field if the title contains yellow.
+  if (stristr($entity->label(), "yellow {$entity->getEntityTypeId()}")) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow titles of any entity type.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_node_hide_unpublish_date().
+ */
+function scheduler_api_test_scheduler_node_hide_unpublish_date($form, $form_state, $node) {
+  // Hide the unpublish_on field if the title contains green node.
+  if (stristr($node->title->value, 'green node')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for green node titles.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_media_hide_unpublish_date().
+ */
+function scheduler_api_test_scheduler_media_hide_unpublish_date($form, $form_state, $entity) {
+  // Hide the unpublish_on field if the title contains green media.
+  if (stristr($entity->label(), 'green media')) {
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for green media titles.'), 'status', FALSE);
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Implements hook_scheduler_publish_process().
+ */
+function scheduler_api_test_scheduler_publish_process($entity) {
+  if (stristr($entity->label(), "red {$entity->getEntityTypeId()}")) {
+    // Any entity with red in the title is simulated to cause a failure and
+    // should then be skipped by Scheduler.
+    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $entity->set($label_field, $entity->label() . ' - publishing failed in API test module');
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red entities should cause Scheduler to abandon publishing.'), 'status', FALSE);
     return -1;
   }
-  elseif (stristr($node->title->value, 'yellow')) {
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_node_publish_process().
+ */
+function scheduler_api_test_scheduler_node_publish_process(NodeInterface $node) {
+  if (stristr($node->title->value, 'yellow node')) {
     // Nodes with yellow in the title are simulated to be processed by this
     // hook, and will not be published by Scheduler.
     $node->set('title', $node->title->value . ' - publishing processed by API test module');
@@ -172,22 +438,60 @@ function scheduler_api_test_scheduler_publish_action($node) {
 }
 
 /**
- * Implements hook_scheduler_unpublish_action().
+ * Implements hook_scheduler_media_publish_process().
  */
-function scheduler_api_test_scheduler_unpublish_action($node) {
-  if (stristr($node->title->value, 'blue')) {
-    // Nodes with blue in the title are simulated to cause a failure and should
-    // then be skipped by Scheduler.
-    $node->set('title', $node->title->value . ' - unpublishing failed in API test module');
-    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue nodes should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
+function scheduler_api_test_scheduler_media_publish_process(MediaInterface $media) {
+  if (stristr($media->label(), 'yellow media')) {
+    // Media with yellow in the title are simulated to be processed by this
+    // hook, and will not be published by Scheduler.
+    $media->set('name', $media->label() . ' - publishing processed by API test module');
+    $media->setPublished();
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Yellow media should not have publishing processed by Scheduler.'), 'status', FALSE);
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_unpublish_process().
+ */
+function scheduler_api_test_scheduler_unpublish_process($entity) {
+  if (stristr($entity->label(), "blue {$entity->getEntityTypeId()}")) {
+    // Any entity with blue in the title is simulated to cause a failure and
+    // should then be skipped by Scheduler.
+    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $entity->set($label_field, $entity->label() . ' - unpublishing failed in API test module');
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue entities should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
     return -1;
   }
-  if (stristr($node->title->value, 'orange')) {
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_node_unpublish_process().
+ */
+function scheduler_api_test_scheduler_node_unpublish_process(NodeInterface $node) {
+  if (stristr($node->title->value, 'orange node')) {
     // Nodes with orange in the title are simulated to be processed by this
-    // hook, and will not be published by Scheduler.
+    // hook, and will not be unpublished by Scheduler.
     $node->set('title', $node->title->value . ' - unpublishing processed by API test module');
     $node->setUnpublished();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange nodes should not have unpublishing processed by Scheduler.'), 'status', FALSE);
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * Implements hook_scheduler_media_unpublish_process().
+ */
+function scheduler_api_test_scheduler_media_unpublish_process(MediaInterface $media) {
+  if (stristr($media->label(), 'orange media')) {
+    // Media with orange in the title are simulated to be processed by this
+    // hook, and will not be unpublished by Scheduler.
+    $media->set('name', $media->label() . ' - unpublishing processed by API test module');
+    $media->setUnpublished();
+    \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange media should not have unpublishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }
   return 0;

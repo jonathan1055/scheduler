@@ -13,19 +13,21 @@ third_party_settings:
       - main
     parent: 'main:'
   scheduler:
-    expand_fieldset: when_required
+    expand_fieldset: always
     fields_display_mode: fieldset
     publish_enable: true
     publish_past_date: schedule
+    publish_past_date_created: false
     publish_required: false
     publish_revision: false
     publish_touch: false
+    show_message_after_update: true
     unpublish_enable: true
     unpublish_required: false
     unpublish_revision: false
-name: 'Scheduler API test type'
+name: 'Scheduler API Test Content'
 type: scheduler_api_test
-description: 'Used for Scheduler API testing'
+description: 'Node content type used in Scheduler API testing'
 help: ''
 new_revision: false
 preview_mode: 1

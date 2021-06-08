@@ -36,14 +36,14 @@ trait SchedulerSetupTrait {
    *
    * @var string
    */
-  protected $type;
+  protected $type = 'testpage';
 
   /**
    * The readable name of the standard content type created for testing.
    *
    * @var string
    */
-  protected $typeName;
+  protected $typeName = 'Test Page';
 
   /**
    * The node type object.
@@ -53,11 +53,25 @@ trait SchedulerSetupTrait {
   protected $nodetype;
 
   /**
+   * The machine name of the content type which is not enabled for scheduling.
+   *
+   * @var string
+   */
+  protected $nonSchedulerType = 'not_for_scheduler';
+
+  /**
+   * The readable name of content type which is not enabled for scheduling.
+   *
+   * @var string
+   */
+  protected $nonSchedulerTypeName = 'Not For Scheduler';
+
+  /**
    * The node type object which is not enabled for scheduling.
    *
    * @var \Drupal\node\Entity\NodeType
    */
-  protected $nonSchedulerNodetype;
+  protected $nonSchedulerNodeType;
 
   /**
    * The node storage object.
@@ -92,12 +106,10 @@ trait SchedulerSetupTrait {
    */
   public function schedulerSetUp() {
 
-    // Create a test content type with id 'testpage' and name 'Test Page'.
-    // The tests should use $this->type and $this->typeName and not use
+    // Create a test content type using the type and name constants defined
+    // above. The tests should use $this->type and $this->typeName and not use
     // $this->nodetype->get('type') or $this->nodetype->get('name'), nor have
     // the hard-coded strings 'testpage' or 'Test Page'.
-    $this->type = 'testpage';
-    $this->typeName = 'Test Page';
     /** @var NodeTypeInterface $nodetype */
     $this->nodetype = $this->drupalCreateContentType([
       'type' => $this->type,
@@ -112,8 +124,8 @@ trait SchedulerSetupTrait {
     // The majority of tests use the standard Scheduler-enabled content type but
     // we also need a content type which is not enabled for Scheduler.
     $this->nonSchedulerNodeType = $this->drupalCreateContentType([
-      'type' => 'not-for-scheduler',
-      'name' => 'Not For Scheduler',
+      'type' => $this->nonSchedulerType,
+      'name' => $this->nonSchedulerTypeName,
     ]);
 
     // Define nodeStorage for use in many tests.
@@ -124,23 +136,26 @@ trait SchedulerSetupTrait {
     // rights on the test content type and all of the Scheduler permissions.
     // 'access site reports' is required for admin/reports/dblog.
     // 'administer site configuration' is required for admin/reports/status.
+    // 'administer content types' is required for admin/structure/types/manage.
     $this->adminUser = $this->drupalCreateUser([
       'access content',
       'access content overview',
       'access site reports',
       'administer nodes',
+      'administer content types',
       'administer site configuration',
       'create ' . $this->type . ' content',
       'edit any ' . $this->type . ' content',
       'delete any ' . $this->type . ' content',
-      'create ' . $this->nonSchedulerNodeType->id() . ' content',
-      'edit any ' . $this->nonSchedulerNodeType->id() . ' content',
-      'delete any ' . $this->nonSchedulerNodeType->id() . ' content',
+      'create ' . $this->nonSchedulerType . ' content',
+      'edit any ' . $this->nonSchedulerType . ' content',
+      'delete any ' . $this->nonSchedulerType . ' content',
       'view own unpublished content',
       'administer scheduler',
       'schedule publishing of nodes',
       'view scheduled content',
     ]);
+    $this->adminUser->set('name', 'Admolly the Admin user')->save();
 
     // Create an ordinary Scheduler user, with permission to create and schedule
     // content but not with administrator permissions.
@@ -150,8 +165,8 @@ trait SchedulerSetupTrait {
       'delete own ' . $this->type . ' content',
       'view own unpublished content',
       'schedule publishing of nodes',
-      'view scheduled content',
     ]);
+    $this->schedulerUser->set('name', 'Shelly the Scheduler user')->save();
 
     // Store the database connection for re-use in the actual tests.
     $this->database = $this->container->get('database');
