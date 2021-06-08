@@ -212,13 +212,16 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
    * Test the option to hide the seconds on the time input fields.
+   *
+   * @dataProvider dataStandardEntityTypes()
    */
-  public function testHideSeconds() {
+  public function testHideSeconds($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
     $config = $this->config('scheduler.settings');
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
 
     // Check that the default is to show the seconds on the input fields.
-    $this->drupalGet('node/add/' . $this->type);
+    $this->drupalGet("$entityTypeId/add/$bundle");
     $publish_time_field = $this->xpath('//input[@id="edit-publish-on-0-value-time"]');
     $unpublish_time_field = $this->xpath('//input[@id="edit-unpublish-on-0-value-time"]');
     $this->assertEquals(1, $publish_time_field[0]->getAttribute('step'), 'The input time step for publish-on is 1, so the seconds will be visible and usable.');
@@ -229,7 +232,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $config->set('hide_seconds', TRUE)->save();
 
     // Get the node-add page and check the input fields.
-    $this->drupalGet('node/add/' . $this->type);
+    $this->drupalGet("$entityTypeId/add/$bundle");
     $publish_time_field = $this->xpath('//input[@id="edit-publish-on-0-value-time"]');
     $unpublish_time_field = $this->xpath('//input[@id="edit-unpublish-on-0-value-time"]');
     $this->assertEquals(60, $publish_time_field[0]->getAttribute('step'), 'The input time step for publish-on is 60, so the seconds will be hidden and not usable.');
@@ -238,18 +241,17 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
     // Save with both dates entered, including seconds in the times.
     $edit = [
-      'title[0][value]' => 'Hide the seconds',
-      'body[0][value]' => $this->randomString(30),
+      "{$titleField}[0][value]" => 'Hide the seconds',
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', $this->requestTime)),
       'publish_on[0][value][time]' => '01:02:03',
       'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', $this->requestTime)),
       'unpublish_on[0][value][time]' => '04:05:06',
     ];
     $this->submitForm($edit, 'Save');
-    $node = $this->drupalGetNodeByTitle('Hide the seconds');
+    $entity = $this->getEntityByTitle($entityTypeId, 'Hide the seconds');
 
     // Edit and check that the seconds have been set to zero.
-    $this->drupalGet("node/{$node->id()}/edit");
+    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
     $this->assertSession()->FieldValueEquals('publish_on[0][value][time]', '01:02:00');
     $this->assertSession()->FieldValueEquals('unpublish_on[0][value][time]', '04:05:00');
 
