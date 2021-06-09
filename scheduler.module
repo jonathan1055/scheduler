@@ -636,12 +636,16 @@ function scheduler_views_data_alter(array &$data) {
   // be always available for the scheduler date fields.
   $entity_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
   foreach ($entity_types as $entityTypeId) {
-    // Not every entity that has a plugin will have a 'field_revision' table,
-    // but it does not matter that redundant rows are added to $data.
-    $data["{$entityTypeId}_field_data"]['publish_on']['filter']['allow empty'] = TRUE;
-    $data["{$entityTypeId}_field_data"]['unpublish_on']['filter']['allow empty'] = TRUE;
-    $data["{$entityTypeId}_field_revision"]['publish_on']['filter']['allow empty'] = TRUE;
-    $data["{$entityTypeId}_field_revision"]['unpublish_on']['filter']['allow empty'] = TRUE;
+    // Not every entity that has a plugin will have these tables, so only set
+    // the allow_empty filter if the top-level key exists.
+    if (isset($data["{$entityTypeId}_field_data"])) {
+      $data["{$entityTypeId}_field_data"]['publish_on']['filter']['allow empty'] = TRUE;
+      $data["{$entityTypeId}_field_data"]['unpublish_on']['filter']['allow empty'] = TRUE;
+    }
+    if (isset($data["{$entityTypeId}_field_revision"])) {
+      $data["{$entityTypeId}_field_revision"]['publish_on']['filter']['allow empty'] = TRUE;
+      $data["{$entityTypeId}_field_revision"]['unpublish_on']['filter']['allow empty'] = TRUE;
+    }
   }
 
   // Add a relationship from Media Field Revision back to Media Field Data.
