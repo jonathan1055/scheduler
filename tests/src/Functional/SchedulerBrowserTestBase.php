@@ -3,8 +3,9 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 
 /**
  * Base class to provide common browser test setup.
@@ -13,6 +14,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
 
   use SchedulerSetupTrait;
   use SchedulerMediaSetupTrait;
+  use SchedulerCommerceProductSetupTrait;
 
   /**
    * The standard modules to load for all browser tests.
@@ -21,7 +23,12 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['scheduler', 'media', 'dblog'];
+  protected static $modules = [
+    'scheduler',
+    'dblog',
+    'media',
+    'commerce_product',
+  ];
 
   /**
    * The profile to install as a basis for testing.
@@ -43,6 +50,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     // Call the common set-up functions defined in the traits.
     $this->schedulerSetUp();
     $this->schedulerMediaSetUp();
+    $this->SchedulerCommerceProductSetUp();
   }
 
 }

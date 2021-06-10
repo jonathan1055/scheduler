@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\Traits;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
 use Drupal\Tests\Traits\Core\CronRunTrait;
 
@@ -222,23 +223,23 @@ trait SchedulerSetupTrait {
   /**
    * Creates a test entity.
    *
-   * This is called to generate a node or a media entity, for tests that process
-   * both types of entities, either in loops or via a data provider.
+   * This is called to generate a node, media or product entity, for tests that
+   * process all types of entities, either in loops or via a data provider.
    *
-   * @param string $entityType
-   *   The name of the entity type, for example 'node' or 'media'.
+   * @param string $entityTypeId
+   *   The name of the entity type - 'node', 'media' or 'commerce_product'.
    * @param string $bundle
    *   The name of the bundle. Optional, will default to $this->type for nodes
-   *   or $this->mediaTypeName for media.
+   *   $this->mediaTypeName for media, or $this->productTypeName for products.
    * @param array $values
    *   Values for the new entity.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   The created entity object.
    */
-  public function createEntity(string $entityType, string $bundle = NULL, array $values = []) {
+  public function createEntity(string $entityTypeId, string $bundle = NULL, array $values = []) {
 
-    switch ($entityType) {
+    switch ($entityTypeId) {
       case 'media':
         $values += ['bundle' => $bundle ?? $this->mediaTypeName];
         // For Media, the title is stored in the 'name' field, so get the title
@@ -249,6 +250,11 @@ trait SchedulerSetupTrait {
           unset($values['title']);
         }
         $entity = $this->createMediaItem($values);
+        break;
+
+      case 'commerce_product':
+        $values += ['type' => $bundle ?? $this->productTypeName];
+        $entity = $this->createProduct($values);
         break;
 
       case 'node':
@@ -264,15 +270,15 @@ trait SchedulerSetupTrait {
   /**
    * Gets an entity by title, a direct replacement of drupalGetNodeByTitle().
    *
-   * This allows the same test code to be run for Nodes and Media types.
+   * This allows the same test code to be run for Nodes, Media and Products.
    *
    * @param string $entityTypeId
-   *   The machine id of the entity type, for example 'node' or 'media'.
+   *   The machine id of the entity type - 'node', 'media', 'commerce_product'.
    * @param string $title
    *   The title to match with.
    *
    * @return mixed
-   *   Either a node object or a media object.
+   *   Either a node object, media object, commerce_product object, or none.
    */
   public function getEntityByTitle(string $entityTypeId, string $title) {
     switch ($entityTypeId) {
@@ -281,6 +287,9 @@ trait SchedulerSetupTrait {
 
       case 'media':
         return $this->getMediaItem($title);
+
+      case 'commerce_product':
+        return $this->getProduct($title);
 
       default:
         // Incorrect parameter value.
@@ -293,10 +302,10 @@ trait SchedulerSetupTrait {
    *
    * This allows previous usages of $this->nodetype to be replaced by
    * entityTypeObject($entityTypeId) or entityTypeObject($entityTypeId, $bundle)
-   * when expanding tests to cover Media entities.
+   * when expanding tests to cover Media and Product entities.
    *
    * @param string $entityTypeId
-   *   The machine name of the entity type, for example 'node' or 'media'.
+   *   The machine id of the entity type - 'node', 'media', 'commerce_product'.
    * @param string $bundle
    *   The machine name of the bundle, for example 'testpage', 'test_video',
    *   'not_for_scheduler', etc. Optional. Defaults to the enabled bundle. Also
@@ -320,6 +329,12 @@ trait SchedulerSetupTrait {
       case ($entityTypeId == 'media' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerMediaTypeName)):
         return $this->nonSchedulerMediaType;
 
+      case ($entityTypeId == 'commerce_product' && (empty($bundle) || $bundle == $this->productTypeName)):
+        return $this->productType;
+
+      case ($entityTypeId == 'commerce_product' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerProductTypeName)):
+        return $this->nonSchedulerProductType;
+
       default:
         // Incorrect parameter values.
         throw new \Exception(sprintf('Unrecognised entityTypeId and bundle combination "%s" and "%s" passed to entityTypeObject()', $entityTypeId, $bundle));
@@ -327,11 +342,54 @@ trait SchedulerSetupTrait {
   }
 
   /**
+   * Returns the url for adding an entity, for use in drupalGet().
+   *
+   * @param string $entityTypeId
+   *   The machine id of the entity type - 'node', 'media', 'commerce_product'.
+   * @param string $bundle
+   *   The machine name of the bundle, for example 'testpage', 'test_video',
+   *   'not_for_scheduler', etc. Optional. Defaults to the enabled bundle. Also
+   *   accepts the fixed string 'non-enabled' to indicate the non-enabled bundle
+   *   for the entity type.
+   *
+   * @return \Drupal\Core\Url
+   *   The url object for adding the required entity.
+   */
+  public function entityAddUrl(string $entityTypeId, string $bundle = NULL) {
+    switch ($entityTypeId) {
+      case 'node':
+        $bundle = ($bundle == 'non-enabled') ? $this->nonSchedulerType : ($bundle ?? $this->type);
+        $route = 'node.add';
+        $type_parameter = 'node_type';
+        break;
+
+      case 'media':
+        $bundle = ($bundle == 'non-enabled') ? $this->nonSchedulerMediaTypeName : ($bundle ?? $this->mediaTypeName);
+        $route = 'entity.media.add_form';
+        $type_parameter = 'media_type';
+        break;
+
+      case 'commerce_product':
+        $bundle = ($bundle == 'non-enabled') ? $this->nonSchedulerProductTypeName : ($bundle ?? $this->productTypeName);
+        $route = 'entity.commerce_product.add_form';
+        $type_parameter = 'commerce_product_type';
+        break;
+
+      default:
+    }
+    if (!$url = Url::fromRoute($route, [$type_parameter => $bundle])) {
+      // Incorrect parameter values.
+      throw new \Exception(sprintf('Invalid entityTypeId "%s" or bundle "%s" passed to entityAddUrl()', $entityTypeId, $bundle));
+    }
+    return $url;
+  }
+
+  /**
    * Returns the storage object of the entity type passed by string.
    *
    * This allows previous usage of the hard-coded $this->nodeStorage to be
-   * replaced with $this->entityStorageObject($entityType) when expanding the
-   * tests to cover media entity types.
+   * replaced with $this->entityStorageObject($entityTypeId) when expanding the
+   * tests to cover media and product entity types.
    *
    * @param string $entityTypeId
    *   The machine id of the entity type.
@@ -340,21 +398,23 @@ trait SchedulerSetupTrait {
    *   The entity storage object.
    */
   public function entityStorageObject(string $entityTypeId) {
-    return ($entityTypeId == 'media') ? $this->mediaStorage : $this->nodeStorage;
+    return $this->container->get('entity_type.manager')->getStorage($entityTypeId);
   }
 
   /**
    * Provides test data containing the standard entity types.
    *
    * @return array
-   *   Each array item has the values: [entity type id, bundle id].
+   *   Each array item has the values: [entity type id, bundle id]. The array
+   *   key is #entity_type_id, to allow easy removal of unwanted rows later.
    */
   public function dataStandardEntityTypes() {
     // The data provider has access to $this where the values are set in the
     // property definition.
     $data = [
-      0 => ['node', $this->type],
-      1 => ['media', $this->mediaTypeName],
+      '#node' => ['node', $this->type],
+      '#media' => ['media', $this->mediaTypeName],
+      '#commerce_product' => ['commerce_product', $this->productTypeName],
     ];
     return $data;
   }
