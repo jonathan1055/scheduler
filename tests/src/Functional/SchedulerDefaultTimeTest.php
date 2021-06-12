@@ -88,7 +88,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => $this->unpublishTime->format('Y-m-d'),
     ];
     // Create an entity and check that the expected error messages are shown.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
     // By default it is required to enter a time when scheduling content for
     // publishing and for unpublishing.
@@ -100,7 +101,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     $config->set('allow_date_only', TRUE)->save();
 
     // Create an entity and check that the validation messages are not shown.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextNotContains($publish_validation_message);
     $this->assertSession()->pageTextNotContains($unpublish_validation_message);
@@ -120,7 +121,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
       $this->assertEquals($this->unpublishTime->getTimestamp(), (int) $entity->unpublish_on->value, 'The unpublish_on value is stored correctly.');
 
       // Check that the default time has been added to the form on edit.
-      $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+      $this->drupalGet($entity->toUrl('edit-form'));
       $this->assertSession()->FieldValueEquals('publish_on[0][value][time]', $this->defaultTime);
       $this->assertSession()->FieldValueEquals('unpublish_on[0][value][time]', $this->defaultTime);
     }
@@ -154,7 +155,9 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     ];
 
     // Create an entity and check that the time fields are hidden.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
+    $this->assertSession()->FieldExists('publish_on[0][value][date]');
+    $this->assertSession()->FieldExists('unpublish_on[0][value][date]');
     $this->assertSession()->FieldNotExists('publish_on[0][value][time]');
     $this->assertSession()->FieldNotExists('unpublish_on[0][value][time]');
     $this->submitForm($edit, 'Save');

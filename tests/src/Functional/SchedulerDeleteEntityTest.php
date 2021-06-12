@@ -43,7 +43,7 @@ class SchedulerDeleteEntityTest extends SchedulerBrowserTestBase {
     $entity_type_label = $published_entity->getEntityType()->getSingularLabel();
 
     // Check that deleting the entity does not throw form validation errors.
-    $this->drupalGet("$entityTypeId/{$published_entity->id()}/edit");
+    $this->drupalGet($published_entity->toUrl('edit-form'));
     $this->clickLink('Delete');
     // The text 'error message' is used in a header h2 html tag which is
     // normally made hidden from browsers but will be in the page source.
@@ -53,7 +53,7 @@ class SchedulerDeleteEntityTest extends SchedulerBrowserTestBase {
     $this->assertSession()->pageTextContains("Are you sure you want to delete the $entity_type_label {$published_entity->label()}");
 
     // Do the same test for the unpublished entity.
-    $this->drupalGet("$entityTypeId/{$unpublished_entity->id()}/edit");
+    $this->drupalGet($unpublished_entity->toUrl('edit-form'));
     $this->clickLink('Delete');
     $this->assertSession()->pageTextNotContains('Error message');
     $this->assertSession()->pageTextContains("Are you sure you want to delete the $entity_type_label {$unpublished_entity->label()}");
@@ -85,13 +85,13 @@ class SchedulerDeleteEntityTest extends SchedulerBrowserTestBase {
     $entity_type_label = $published_entity->getEntityType()->getSingularLabel();
 
     // Attempt to delete the published entity and check for no validation error.
-    $this->drupalGet("$entityTypeId/{$published_entity->id()}/edit");
+    $this->drupalGet($published_entity->toUrl('edit-form'));
     $this->clickLink('Delete');
     $this->assertSession()->pageTextNotContains('Error message');
     $this->assertSession()->pageTextContains("Are you sure you want to delete the $entity_type_label {$published_entity->label()}");
 
     // Attempt to delete the unpublished entity and check no validation error.
-    $this->drupalGet("$entityTypeId/{$unpublished_entity->id()}/edit");
+    $this->drupalGet($unpublished_entity->toUrl('edit-form'));
     $this->clickLink('Delete');
     $this->assertSession()->pageTextNotContains('Error message');
     $this->assertSession()->pageTextContains("Are you sure you want to delete the $entity_type_label {$unpublished_entity->label()}");
