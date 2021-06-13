@@ -36,25 +36,25 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
 
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains("The 'publish on' date must be in the future");
 
     // Test the 'error' behavior explicitly.
     $entityType->setThirdPartySetting('scheduler', 'publish_past_date', 'error')->save();
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains("The 'publish on' date must be in the future");
 
     // Test the 'publish' behavior: the entity should be published immediately.
     $entityType->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
 
     // Check that no error message is shown when the publication date is in the
     // past and the "publish" behavior is chosen.
     $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
-    $this->assertSession()->pageTextContains(sprintf('%s %s has been updated.', $entityType->get('name'), $title));
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
 
     // Reload the entity.
     $storage->resetCache([$entity->id()]);
@@ -74,11 +74,11 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
 
     // Edit, save and check that no error is shown when the publish_on date is
     // in the past.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published', $title));
-    $this->assertSession()->pageTextContains(sprintf('%s %s has been updated.', $entityType->get('name'), $title));
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
 
     // Reload the entity.
     $storage->resetCache([$entity->id()]);
@@ -108,7 +108,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
 
       // Create a new unpublished entity, edit and save.
       $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
-      $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+      $this->drupalGet($entity->toUrl('edit-form'));
       $this->submitForm($edit, 'Save');
 
       if ($option == 'schedule') {
@@ -130,7 +130,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => $this->dateFormatter->format($this->requestTime - 3600, 'custom', 'Y-m-d'),
       'unpublish_on[0][value][time]' => $this->dateFormatter->format($this->requestTime - 3600, 'custom', 'H:i:s'),
     ];
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextContains("The 'unpublish on' date must be in the future");
   }

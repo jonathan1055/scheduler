@@ -27,7 +27,7 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
 
     // Since we did not set an unpublish date, there should be no X-Robots-Tag
     // header on the response.
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     $this->assertNull($this->getSession()->getResponseHeader('X-Robots-Tag'), 'X-Robots-Tag should not be present when no unpublish date is set.');
     // Also check that there is no meta tag.
     $this->assertSession()->responseNotContains('unavailable_after:');
@@ -38,7 +38,7 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
 
     // The entity full page view should now have an X-Robots-Tag header with an
     // unavailable_after-directive and RFC850 date- and time-value.
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     $this->assertSession()->responseHeaderEquals('X-Robots-Tag', 'unavailable_after: ' . date(DATE_RFC850, $unpublish_date));
 
     // Check that the required meta tag is added to the html head section.

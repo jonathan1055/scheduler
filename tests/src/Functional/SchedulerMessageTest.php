@@ -34,7 +34,8 @@ class SchedulerMessageTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', $publish_on),
       'publish_on[0][value][time]' => date('H:i:s', $publish_on),
     ];
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
     $entity1 = $this->getEntityByTitle($entityTypeId, $title1);
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s', $title1, $publish_on_formatted));
@@ -45,7 +46,7 @@ class SchedulerMessageTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => date('Y-m-d', $unpublish_on),
       'unpublish_on[0][value][time]' => date('H:i:s', $unpublish_on),
     ];
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
     $entity2 = $this->getEntityByTitle($entityTypeId, $title2);
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be unpublished %s', $title2, $unpublish_on_formatted));
@@ -58,32 +59,32 @@ class SchedulerMessageTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => date('Y-m-d', $unpublish_on),
       'unpublish_on[0][value][time]' => date('H:i:s', $unpublish_on),
     ];
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
     $entity3 = $this->getEntityByTitle($entityTypeId, $title3);
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s and unpublished %s', $title3, $publish_on_formatted, $unpublish_on_formatted));
 
     // Change the option to not display the messages.
     $this->entityTypeObject($entityTypeId, $bundle)->setThirdPartySetting('scheduler', 'show_message_after_update', FALSE)->save();
-    $this->drupalGet("$entityTypeId/{$entity1->id()}/edit");
+    $this->drupalGet($entity1->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextNotContains('is scheduled to be published');
-    $this->drupalGet("$entityTypeId/{$entity2->id()}/edit");
+    $this->drupalGet($entity2->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextNotContains('is scheduled to be unpublished');
-    $this->drupalGet("$entityTypeId/{$entity3->id()}/edit");
+    $this->drupalGet($entity3->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextNotContains('is scheduled to be published');
 
     // Set back to display the messages, and check after edit.
     $this->entityTypeObject($entityTypeId, $bundle)->setThirdPartySetting('scheduler', 'show_message_after_update', TRUE)->save();
-    $this->drupalGet("$entityTypeId/{$entity1->id()}/edit");
+    $this->drupalGet($entity1->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s', $title1, $publish_on_formatted));
-    $this->drupalGet("$entityTypeId/{$entity2->id()}/edit");
+    $this->drupalGet($entity2->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be unpublished %s', $title2, $unpublish_on_formatted));
-    $this->drupalGet("$entityTypeId/{$entity3->id()}/edit");
+    $this->drupalGet($entity3->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s and unpublished %s', $title3, $publish_on_formatted, $unpublish_on_formatted));
   }
