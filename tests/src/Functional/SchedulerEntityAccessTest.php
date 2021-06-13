@@ -46,7 +46,7 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
     // the node access table is not rebuilt. Hence do that explicitly here.
     node_access_rebuild();
 
-    // Login as a user who would be able to view the published entities.
+    // Login as a user who is only able to view the published entities.
     $this->drupalLogin($this->drupalCreateUser());
 
     // Create an entity with the necessary scheduler date.
@@ -57,8 +57,9 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
       $field => $this->requestTime + 1,
     ];
     $entity = $this->createEntity($entityTypeId, $bundle, $settings);
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
-    // Before running cron, viewing the entity should give "403 Not Authorized".
+    $this->drupalGet($entity->toUrl());
+    // Before running cron, viewing the entity should give "403 Not Authorized"
+    // regardless of whether it is published or unpublished.
     $this->assertSession()->statusCodeEquals(403);
 
     // Delay so that the date entered is now in the past, then run cron.
@@ -71,7 +72,7 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
     // Check that the entity has been published or unpublished as required.
     $this->assertTrue($entity->isPublished() === !$status, "Scheduled $process of $entityTypeId via cron.");
     // Check that the entity is still not viewable.
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     // After cron, viewing the entity should still give "403 Not Authorized".
     $this->assertSession()->statusCodeEquals(403);
 
@@ -85,22 +86,23 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
    * Provides data for testEntityAccess.
    *
    * The data in dataStandardEntityTypes() is expanded to test each entity type
-   * with a user who does have scheduler permission and a user who does not.
+   * for both publishing and unpublishing.
    *
    * @return array
-   *   Each array item has the values: [entity type id, bundle id, user name].
+   *   Each row has values: [entity type id, bundle id, field name, status].
    */
   public function dataEntityAccess() {
     $data = [];
-    foreach ($this->dataStandardEntityTypes() as $values) {
-      // At the time of adding Media support, the media entity type does not
-      // have a hook access and grant system like Nodes. Therefore remove these
-      // until scheduler_access_test can be expanded to cover Media entities.
-      if ($values[0] == 'media') {
+    foreach ($this->dataStandardEntityTypes() as $key => $values) {
+      // Media and Commerce Products do not have a hook access and grant system
+      // like Nodes so the test would fail for non-node entities.
+      // @todo Investigate how scheduler_access_test module can be expanded to
+      // deny access to Media and Products using another method.
+      if ($values[0] == 'media' || $values[0] == 'commerce_product') {
         continue;
       }
-      $data[] = array_merge($values, ['publish_on', FALSE]);
-      $data[] = array_merge($values, ['unpublish_on', TRUE]);
+      $data["$key-1"] = array_merge($values, ['publish_on', FALSE]);
+      $data["$key-1"] = array_merge($values, ['unpublish_on', TRUE]);
     }
     return $data;
   }
