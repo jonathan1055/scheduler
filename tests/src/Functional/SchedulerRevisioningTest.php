@@ -42,20 +42,24 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
    *   The expected number of revisions.
    * @param string $message
    *   The message to display along with the assertion.
-   *
-   * @return bool
-   *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   protected function assertRevisionCount(EntityInterface $entity, int $expected, string $message = '') {
+    if (!$entity->getEntityType()->isRevisionable()) {
+      return;
+    }
     // Because we are not deleting any revisions we can take a short cut and use
     // getLatestRevisionId() which will effectively be the number of revisions.
     $storage = $this->entityStorageObject($entity->getEntityTypeId());
     $count = $storage->getLatestRevisionId($entity->id());
-    return $this->assertEquals($expected, (int) $count, $message);
+    $this->assertEquals($expected, (int) $count, $message);
   }
 
   /**
    * Tests the creation of new revisions on scheduling.
+   *
+   * This test is still useful for Commerce Products which are not revisionable
+   * because it shows that this entity type can be processed correctly even if
+   * the scheduler revision option is incorrectly set on.
    *
    * @dataProvider dataStandardEntityTypes()
    */
@@ -64,17 +68,18 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
 
     // Create a scheduled entity that is not automatically revisioned.
     $entity = $this->createEntity($entityTypeId, $bundle, ['revision' => 0]);
+    $this->assertRevisionCount($entity, 1, 'The initial revision count is 1 when the entity is created.');
 
     // Ensure entities with past dates are scheduled not published immediately.
     $entityType->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
 
     // First test scheduled publication with revisioning disabled by default.
     $entity = $this->scheduleAndRunCron($entity, 'publish');
-    $this->assertRevisionCount($entity, 1, 'No new revision is created by default when entity is published.');
+    $this->assertRevisionCount($entity, 1, 'No new revision is created by default when entity is published. Revision count remains at 1.');
 
     // Test scheduled unpublication.
     $entity = $this->scheduleAndRunCron($entity, 'unpublish');
-    $this->assertRevisionCount($entity, 1, 'No new revision is created by default when entity is unpublished.');
+    $this->assertRevisionCount($entity, 1, 'No new revision is created by default when entity is unpublished. Revision count remains at 1.');
 
     // Enable revisioning.
     $entityType->setThirdPartySetting('scheduler', 'publish_revision', TRUE)
@@ -83,17 +88,25 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
 
     // Test scheduled publication with revisioning enabled.
     $entity = $this->scheduleAndRunCron($entity, 'publish');
-    $this->assertRevisionCount($entity, 2, 'A new revision was created when the entity was published with revisioning enabled.');
-    $expected_message = sprintf('Published by Scheduler. The scheduled publishing date was %s.',
-      $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
-    $this->assertEquals($entity->getRevisionLogMessage(), $expected_message, 'The correct message was found in the entity revision log after scheduled publishing.');
+    $this->assertTrue($entity->isPublished(), 'Entity is published after cron.');
+
+    if ($entity->getEntityType()->isRevisionable()) {
+      $this->assertRevisionCount($entity, 2, 'A new revision was created when the entity was published with revisioning enabled.');
+      $expected_message = sprintf('Published by Scheduler. The scheduled publishing date was %s.',
+        $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
+      $this->assertEquals($entity->getRevisionLogMessage(), $expected_message, 'The correct message was found in the entity revision log after scheduled publishing.');
+    }
 
     // Test scheduled unpublication with revisioning enabled.
     $entity = $this->scheduleAndRunCron($entity, 'unpublish');
-    $this->assertRevisionCount($entity, 3, 'A new revision was created when the entity was unpublished with revisioning enabled.');
-    $expected_message = sprintf('Unpublished by Scheduler. The scheduled unpublishing date was %s.',
-      $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
-    $this->assertEquals($entity->getRevisionLogMessage(), $expected_message, 'The correct message was found in the entity revision log after scheduled unpublishing.');
+    $this->assertFalse($entity->isPublished(), 'Entity is unpublished after cron.');
+
+    if ($entity->getEntityType()->isRevisionable()) {
+      $this->assertRevisionCount($entity, 3, 'A new revision was created when the entity was unpublished with revisioning enabled.');
+      $expected_message = sprintf('Unpublished by Scheduler. The scheduled unpublishing date was %s.',
+        $this->dateFormatter->format(strtotime('-5 hour', $this->requestTime), 'short'));
+      $this->assertEquals($entity->getRevisionLogMessage(), $expected_message, 'The correct message was found in the entity revision log after scheduled unpublishing.');
+    }
   }
 
   /**

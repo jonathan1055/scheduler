@@ -325,7 +325,7 @@ class SchedulerManager {
           }
 
           $create_publishing_revision = $this->getThirdPartySetting($entity, 'publish_revision', $this->setting('default_publish_revision'));
-          if ($create_publishing_revision) {
+          if ($create_publishing_revision && $entity->getEntityType()->isRevisionable()) {
             $entity->setNewRevision();
             // Use a core date format to guarantee a time is included.
             $revision_log_message = rtrim($this->t('Published by Scheduler. The scheduled publishing date was @publish_on.', [
@@ -509,7 +509,7 @@ class SchedulerManager {
           $entity->setChangedTime($unpublish_on);
 
           $create_unpublishing_revision = $this->getThirdPartySetting($entity, 'unpublish_revision', $this->setting('default_unpublish_revision'));
-          if ($create_unpublishing_revision) {
+          if ($create_unpublishing_revision && $entity->getEntityType()->isRevisionable()) {
             $entity->setNewRevision();
             // Use a core date format to guarantee a time is included.
             $revision_log_message = $this->t('Unpublished by Scheduler. The scheduled unpublishing date was @unpublish_on.', [

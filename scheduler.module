@@ -286,11 +286,15 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
 
   /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
+
+  /** @var Drupal\Core\Entity\ContentEntityTypeInterface $ContentEntityType */
+  $contentEntityType = \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf());
+
   $params = [
     '@type' => $type->label(),
     '%type' => strtolower($type->label()),
-    '@singular' => \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf())->getSingularLabel(),
-    '@plural' => \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf())->getPluralLabel(),
+    '@singular' => $contentEntityType->getSingularLabel(),
+    '@plural' => $contentEntityType->getPluralLabel(),
   ];
 
   $form['#attached']['library'][] = 'scheduler/admin';
@@ -336,16 +340,18 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
       ],
     ],
   ];
-  $form['scheduler']['publish']['scheduler_publish_revision'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Create a new revision on publishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', $config->get('default_publish_revision')),
-    '#states' => [
-      'visible' => [
-        ':input[name="scheduler_publish_enable"]' => ['checked' => TRUE],
+  if ($contentEntityType->isRevisionable()) {
+    $form['scheduler']['publish']['scheduler_publish_revision'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create a new revision on publishing'),
+      '#default_value' => $type->getThirdPartySetting('scheduler', 'publish_revision', $config->get('default_publish_revision')),
+      '#states' => [
+        'visible' => [
+          ':input[name="scheduler_publish_enable"]' => ['checked' => TRUE],
+        ],
       ],
-    ],
-  ];
+    ];
+  }
   $form['scheduler']['publish']['advanced'] = [
     '#type' => 'details',
     '#title' => t('Advanced options'),
@@ -405,16 +411,18 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
       ],
     ],
   ];
-  $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Create a new revision on unpublishing'),
-    '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', $config->get('default_unpublish_revision')),
-    '#states' => [
-      'visible' => [
-        ':input[name="scheduler_unpublish_enable"]' => ['checked' => TRUE],
+  if ($contentEntityType->isRevisionable()) {
+    $form['scheduler']['unpublish']['scheduler_unpublish_revision'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create a new revision on unpublishing'),
+      '#default_value' => $type->getThirdPartySetting('scheduler', 'unpublish_revision', $config->get('default_unpublish_revision')),
+      '#states' => [
+        'visible' => [
+          ':input[name="scheduler_unpublish_enable"]' => ['checked' => TRUE],
+        ],
       ],
-    ],
-  ];
+    ];
+  }
 
   // The 'entity_edit_layout' fieldset contains options to alter the layout of
   // entity edit pages.
