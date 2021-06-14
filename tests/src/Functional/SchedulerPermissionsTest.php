@@ -19,32 +19,40 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create a user who can add and edit the standard scheduler-enabled node
-    // and media entity types, but only schedule nodes not media. The permission
-    // 'administer nodes' is needed when setting the node status field on edit.
-    $this->nodeUser = $this->drupalCreateUser([
-      'administer nodes',
+    // Define a set of permissions which all users get. Then in addition, each
+    // user gets the specific permission to schedule their own entity type.
+    // The permission 'administer nodes' is needed when setting the node status
+    // field on edit. There is no corresponding separate permission for media or
+    // product entity types.
+    $permissions = [
       'create ' . $this->type . ' content',
       'edit own ' . $this->type . ' content',
+      'administer nodes',
       'create ' . $this->mediaTypeName . ' media',
       'edit own ' . $this->mediaTypeName . ' media',
-      'schedule publishing of nodes',
-    ]);
+      'view own unpublished media',
+      'create ' . $this->productTypeName . ' commerce_product',
+      'update own ' . $this->productTypeName . ' commerce_product',
+      'view own unpublished commerce_product',
+      // 'administer commerce_store' is needed to see and use any store, i.e
+      // cannot add a product without this. Is it a bug?
+      'administer commerce_store',
+    ];
+
+    // Create a user who can add and edit the standard scheduler-enabled node,
+    // media and product entity types, but only schedule nodes.
+    $this->nodeUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of nodes']));
     $this->nodeUser->set('name', 'Noddy the Node Editor')->save();
 
-    // Create a user who can add and edit the standard scheduler-enabled node
-    // and media entity types, but only schedule media not nodes. The permission
-    // 'administer nodes' is needed when setting the node status field on edit.
-    // There is no corresponding separate permission for media entity edit.
-    $this->mediaUser = $this->drupalCreateUser([
-      'administer nodes',
-      'create ' . $this->type . ' content',
-      'edit own ' . $this->type . ' content',
-      'create ' . $this->mediaTypeName . ' media',
-      'edit own ' . $this->mediaTypeName . ' media',
-      'schedule publishing of media',
-    ]);
+    // Create a user who can add and edit the standard scheduler-enabled node,
+    // media and product entity types, but only schedule media.
+    $this->mediaUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of media']));
     $this->mediaUser->set('name', 'Medina the Media Editor')->save();
+
+    // Create a user who can add and edit the standard scheduler-enabled node,
+    // media and product entity types, but only schedule products.
+    $this->commerce_productUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of commerce_product']));
+    $this->commerce_productUser->set('name', 'Proctor the Product Editor')->save();
   }
 
   /**
@@ -67,7 +75,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     // If the user variable matches the entity type id then that user has
     // scheduling permission on this type, so the fields should be shown.
     // Otherwise the fields should not be shown.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
     if (strpos($user, $entityTypeId) !== FALSE) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
       $this->assertSession()->fieldExists('unpublish_on[0][value][date]');
@@ -78,19 +87,19 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     }
 
     // Check that the new entity can be saved and published.
-    $title = $this->randomString(15);
+    $title = 'Published - ' . $this->randomString(15);
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => TRUE];
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->entityTypeObject($entityTypeId)->label(), $title));
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));
     $this->assertTrue($entity->isPublished(), 'The new entity is published');
 
     // Check that a new entity can be saved as unpublished.
-    $title = $this->randomString(15);
+    $title = 'Unpublished - ' . $this->randomString(15);
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => FALSE];
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextContains(sprintf('%s %s has been created.', $this->entityTypeObject($entityTypeId)->label(), $title));
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));
     $this->assertFalse($entity->isPublished(), 'The new entity is unpublished');
 
@@ -128,7 +137,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
     // Edit the unpublished entity and check that the fields are displayed as
     // expected, depending on the user.
-    $this->drupalGet("{$entityTypeId}/{$unpublished_entity->id()}/edit");
+    $this->drupalGet($unpublished_entity->toUrl('edit-form'));
     if (strpos($user, $entityTypeId) !== FALSE) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
       $this->assertSession()->fieldExists('unpublish_on[0][value][date]');
@@ -158,7 +167,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
     // Edit the published entity and save.
     $title = 'For Unpublishing ' . $this->randomString(10);
-    $this->drupalGet("{$entityTypeId}/{$published_entity->id()}/edit");
+    $this->drupalGet($published_entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
 
     // Check the updated title, to verify that edit and save was sucessful.
@@ -173,16 +182,18 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
    * Provides data for testUserPermissionsAdd() and testUserPermissionsEdit()
    *
    * The data in dataStandardEntityTypes() is expanded to test each entity type
-   * with a user who does have scheduler permission and a user who does not.
+   * with users who only have scheduler permission on one entity type and no
+   * permission for the other entity types.
    *
    * @return array
    *   Each array item has the values: [entity type id, bundle id, user name].
    */
   public function dataPermissionsTest() {
     $data = [];
-    foreach ($this->dataStandardEntityTypes() as $values) {
-      $data[] = array_merge($values, ['nodeUser']);
-      $data[] = array_merge($values, ['mediaUser']);
+    foreach ($this->dataStandardEntityTypes() as $key => $values) {
+      $data["$key-1"] = array_merge($values, ['nodeUser']);
+      $data["$key-2"] = array_merge($values, ['mediaUser']);
+      $data["$key-3"] = array_merge($values, ['commerce_productUser']);
     }
     return $data;
   }

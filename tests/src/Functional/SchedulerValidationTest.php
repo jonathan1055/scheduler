@@ -35,24 +35,24 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', $this->requestTime)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', $this->requestTime)),
     ];
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     // Check that validation prevents entering a publish-on date with no
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("If you set a 'publish on' date then you must also set an 'unpublish on' date.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
+    $this->assertSession()->pageTextNotMatches('/has been (updated|successfully saved)/');
 
     // Create an unpublished entity.
     $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
 
     // Edit the unpublished entity and try to change the status to 'published'.
     $edit = ['status[value]' => TRUE];
-    $this->drupalGet("{$entityTypeId}/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     // Check that validation prevents publishing the entity directly without an
     // unpublish-on date if unpublishing is required.
     $this->assertSession()->pageTextContains("Either you must set an 'unpublish on' date or save this node as unpublished.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
+    $this->assertSession()->pageTextNotMatches('/has been (updated|successfully saved)/');
 
     // Create an unpublished entity, and try to edit and save with a publish-on
     // date later than the unpublish-on date.
@@ -63,12 +63,12 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => $this->dateFormatter->format($this->requestTime + 1800, 'custom', 'Y-m-d'),
       'unpublish_on[0][value][time]' => $this->dateFormatter->format($this->requestTime + 1800, 'custom', 'H:i:s'),
     ];
-    $this->drupalGet("{$entityTypeId}/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     // Check that validation prevents entering an unpublish-on date which is
     // earlier than the publish-on date.
     $this->assertSession()->pageTextContains("The 'unpublish on' date must be later than the 'publish on' date.");
-    $this->assertSession()->pageTextNotContains(sprintf('%s has been updated.', $entity->label()));
+    $this->assertSession()->pageTextNotMatches('/has been (updated|successfully saved)/');
   }
 
 }
