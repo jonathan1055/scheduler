@@ -36,12 +36,13 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    *
    * @return array
    *   Each array item has the values:
-   *   [entity type id, bundle field, enabled bundle id, non-enabled bundle id].
+   *   [entity type id, enabled bundle id, non-enabled bundle id].
    */
   public function dataRulesActions() {
     $data = [
-      0 => ['node', 'title', $this->type, $this->nonSchedulerType],
-      1 => ['media', 'name', $this->mediaTypeName, $this->nonSchedulerMediaTypeName],
+      '#node' => ['node', $this->type, $this->nonSchedulerType],
+      '#media' => ['media', $this->mediaTypeName, $this->nonSchedulerMediaTypeName],
+      '#commerce_product' => ['commerce_product', $this->productTypeName, $this->nonSchedulerProductTypeName],
     ];
     return $data;
   }
@@ -51,7 +52,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataRulesActions()
    */
-  public function testPublishOnActions($entityTypeId, $titleField, $enabled, $nonEnabled) {
+  public function testPublishOnActions($entityTypeId, $enabled, $nonEnabled) {
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $publish_on = $this->requestTime + 1800;
     $publish_on_formatted = $this->dateFormatter->format($publish_on, 'long');
 
@@ -126,7 +128,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     // First, create a new scheduler-enabled entity, triggering rule 1.
     $title = "First - new enabled $enabled - Trigger Rule 1";
-    $this->drupalGet("$entityTypeId/add/$enabled");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $enabled));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s', $title, $publish_on_formatted));
@@ -144,7 +146,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $entity = $this->createEntity($entityTypeId, $enabled, [
       "$titleField" => "Second - existing enabled $enabled",
     ]);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - but no rules will be triggered"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -157,7 +159,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertTrue($entity->isPublished(), 'Entity should remain published');
 
     // Edit the entity, triggering rule 1.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - Trigger Rule 1"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -170,7 +172,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertFalse($entity->isPublished(), 'Entity should be unpublished');
 
     // Edit the entity, triggering rule 2.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - Trigger Rule 2"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -184,7 +186,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     // Third, create a new entity which is not scheduler-enabled.
     $title = "Third - new non-enabled $nonEnabled - Trigger Rule 1";
-    $this->drupalGet("$entityTypeId/add/$nonEnabled");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $nonEnabled));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
     // Check that rule 1 issued a warning message.
@@ -206,7 +208,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $entity = $this->createEntity($entityTypeId, $nonEnabled, [
       "$titleField" => "Fourth - existing non-enabled $nonEnabled",
     ]);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit non-enabled $nonEnabled - Trigger Rule 1"], 'Save');
     // Check that rule 1 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -223,7 +225,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the entity again, triggering rule 2.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit non-enabled $nonEnabled - Trigger Rule 2"], 'Save');
     // Check that rule 2 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -244,7 +246,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataRulesActions()
    */
-  public function testUnpublishOnActions($entityTypeId, $titleField, $enabled, $nonEnabled) {
+  public function testUnpublishOnActions($entityTypeId, $enabled, $nonEnabled) {
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
     $unpublish_on = $this->requestTime + 2400;
     $unpublish_on_formatted = $this->dateFormatter->format($unpublish_on, 'long');
 
@@ -319,7 +322,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     // First, create a new scheduler-enabled entity, triggering rule 3.
     $title = "First - new enabled $enabled - Trigger Rule 3";
-    $this->drupalGet("$entityTypeId/add/$enabled");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $enabled));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be unpublished %s', $title, $unpublish_on_formatted));
@@ -337,7 +340,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $entity = $this->createEntity($entityTypeId, $enabled, [
       "$titleField" => "Second - existing enabled $enabled",
     ]);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - but no rules will be triggered"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -350,7 +353,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertTrue($entity->isPublished(), 'Entity should remain published');
 
     // Edit the entity, triggering rule 3.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - Trigger Rule 3"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -363,7 +366,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertTrue($entity->isPublished(), 'Entity is still published');
 
     // Edit the entity, triggering rule 4.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit enabled $enabled - Trigger Rule 4"], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -377,7 +380,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     // Third, create a new entity which is not scheduler-enabled.
     $title = "Third - new non-enabled $nonEnabled - Trigger Rule 3";
-    $this->drupalGet("$entityTypeId/add/$nonEnabled");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $nonEnabled));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
     $entity = $this->getEntityByTitle($entityTypeId, $title);
     // Check that rule 3 issued a warning message.
@@ -398,9 +401,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     // triggering rule 3.
     $entity = $this->createEntity($entityTypeId, $nonEnabled, [
       "$titleField" => "Fourth - existing non-enabled $nonEnabled",
-      // 'status' => TRUE,
     ]);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit non-enabled $nonEnabled - Trigger Rule 3"], 'Save');
     // Check that rule 3 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -417,7 +419,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the entity again, triggering rule 4.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(["{$titleField}[0][value]" => "Edit non-enabled $nonEnabled - Trigger Rule 4"], 'Save');
     // Check that rule 4 issued a warning message.
     $assert->pageTextContains('warning message');
