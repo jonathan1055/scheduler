@@ -75,7 +75,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   /**
    * Tests the scheduled content tab on the user page.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataViewScheduledContentUser()
    */
   public function testViewScheduledContentUser($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);
@@ -139,13 +139,33 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Provides test data for user view test.
+   *
+   * There is no user view for scheduled Commerce Products so this entity type
+   * is removed.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataViewScheduledContentUser() {
+    $data = $this->dataStandardEntityTypes();
+    unset($data['#commerce_product']);
+    return $data;
+  }
+
+  /**
    * Tests the scheduled content overview.
    *
    * @dataProvider dataStandardEntityTypes()
    */
   public function testViewScheduledContentOverview($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);
-    $scheduled_url = ($entityTypeId == 'node') ? 'admin/content/scheduled' : "admin/content/$entityTypeId/scheduled";
+    $scheduled_urls = [
+      'node' => 'admin/content/scheduled',
+      'media' => 'admin/content/media/scheduled',
+      'commerce_product' => 'admin/commerce/products/scheduled',
+    ];
+    $scheduled_url = $scheduled_urls[$entityTypeId];
     $assert = $this->assertSession();
 
     // Try to access the scheduled content overview as an anonymous visitor.
@@ -166,11 +186,13 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
 
     // Access the scheduled content overview as a user who only has
     // 'view scheduled {type}' permission. This is allowed and they should see
-    // the scheduled published and unpublished content by all users.
+    // the scheduled published content by all users and their own unpublished
+    // content. Unpublished node and media items by other users are also listed
+    // but products are not. Therefore do not check for the unpublished item
+    // by Scheduler Editor.
     $this->drupalLogin($this->schedulerViewer);
     $this->drupalGet($scheduled_url);
     $assert->statusCodeEquals(200);
-    $assert->pageTextContains("$entityTypeId created by Scheduler Editor for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
