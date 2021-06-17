@@ -127,7 +127,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
     // View the entity and check the default position - that the entity type is
     // enabled for both publishing and unpublishing.
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     $assert->pageTextContains($message1);
     $assert->pageTextContains($message2);
     $assert->pageTextNotContains($message3);
@@ -136,7 +136,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // Turn off scheduled publishing for the entity type and check the rules.
     $entityType->setThirdPartySetting('scheduler', 'publish_enable', FALSE)->save();
     drupal_flush_all_caches();
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     $assert->pageTextNotContains($message1);
     $assert->pageTextContains($message2);
     $assert->pageTextContains($message3);
@@ -145,7 +145,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // Turn off scheduled unpublishing for the entity type and the check again.
     $entityType->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
     drupal_flush_all_caches();
-    $this->drupalGet("$entityTypeId/{$entity->id()}");
+    $this->drupalGet($entity->toUrl());
     $assert->pageTextNotContains($message1);
     $assert->pageTextNotContains($message2);
     $assert->pageTextContains($message3);
@@ -253,7 +253,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 
     // Edit the entity but do not enter any scheduling dates, and check that
     // only messages 5 and 6 are shown.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
     $assert->pageTextContains($message5);
     $assert->pageTextContains($message6);
@@ -266,7 +266,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('+1 day', $this->requestTime)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('+1 day', $this->requestTime)),
     ];
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     $assert->pageTextNotContains($message5);
     $assert->pageTextContains($message6);
@@ -279,7 +279,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][date]' => date('Y-m-d', strtotime('+2 day', $this->requestTime)),
       'unpublish_on[0][value][time]' => date('H:i:s', strtotime('+2 day', $this->requestTime)),
     ];
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     $assert->pageTextNotContains($message5);
     $assert->pageTextNotContains($message6);
