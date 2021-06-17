@@ -10,7 +10,7 @@ dependencies:
     module:
       - scheduler
 id: scheduler_scheduled_media
-label: 'Scheduled media'
+label: 'Scheduled Media'
 module: views
 description: 'Find and manage scheduled media.'
 tag: ''

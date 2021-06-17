@@ -77,16 +77,16 @@ node.type.*.third_party.scheduler: &third_party_settings_alias
   mapping:
     expand_fieldset:
       type: string
-      label: 'Conditions under which to expand the date input fieldset or vertical tab'
+      label: 'Conditions under which to expand the date input fieldset or vertical tab ("when_required" or "always")'
     fields_display_mode:
       type: string
-      label: 'The way the scheduling fields are displayed in the edit form'
+      label: 'The way the scheduling fields are displayed in the edit form ("vertical_tab" or "fieldset")'
     publish_enable:
       type: boolean
       label: 'Enable scheduled publishing'
     publish_past_date:
       type: string
-      label: 'Action to be taken for publication dates in the past'
+      label: 'Action to be taken for publication dates in the past ("error", "publish" or "schedule")'
     publish_past_date_created:
       type: boolean
       label: 'Change entity creation date for past dates to avoid "changed" being earlier than "created"'

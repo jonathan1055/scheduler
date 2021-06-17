@@ -10,7 +10,7 @@ dependencies:
     module:
       - scheduler
 id: scheduler_scheduled_content
-label: 'Scheduled content'
+label: 'Scheduled Content'
 module: views
 description: 'Find and manage scheduled content.'
 tag: ''
