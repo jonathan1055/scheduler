@@ -3,6 +3,7 @@
 namespace Drupal\Tests\scheduler\FunctionalJavascript;
 
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
+use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 
@@ -15,6 +16,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
 
   use SchedulerSetupTrait;
   use SchedulerMediaSetupTrait;
+  use SchedulerCommerceProductSetupTrait;
 
   /**
    * The standard modules to load for all javascript tests.
@@ -23,7 +25,11 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
    *
    * @var array
    */
-  protected static $modules = ['scheduler', 'media'];
+  protected static $modules = [
+    'scheduler',
+    'media',
+    'commerce_product',
+  ];
 
   /**
    * The profile to install as a basis for testing.
@@ -45,6 +51,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
     // Call the common set-up functions defined in the traits.
     $this->schedulerSetUp();
     $this->schedulerMediaSetUp();
+    $this->SchedulerCommerceProductSetUp();
   }
 
   /**

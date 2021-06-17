@@ -30,7 +30,7 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
     $this->drupalLogin($this->schedulerUser);
     $this->drupalGet('node/add/' . $this->type);
     $page = $this->getSession()->getPage();
-    $title = 'Date format test ' . $this->randomString(12);
+    $title = 'Determine the date-picker format';
     $page->fillField('edit-title-0-value', $title);
     $page->clickLink('Scheduling options');
     // Set the date using a day and month which could be correctly interpreted
@@ -52,6 +52,8 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
    */
   public function testTimeWhenSchedulingIsRequired($entityTypeId, $bundle, $field) {
     $config = $this->config('scheduler.settings');
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $entityType = $this->entityTypeObject($entityTypeId);
 
     // This test is only relevant when the configuration allows a date only with
     // a default time specified. Testing with 'allow_date_only' = false is
@@ -67,18 +69,21 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
     $scheduling_time = new \DateTime();
     $scheduling_time->add(new \DateInterval('P1D'))->setTime(19, 30, 20);
 
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    // Node and Media entities are revisionable and the 'Revision Information'
+    // tab is the default active one, so needs a click on 'Scheduling Options'.
+    // Products do not have this link, so the click would fail. A simple way to
+    // resolve this is display the scheduler options as a separate fieldset.
+    $entityType->setThirdPartySetting('scheduler', 'fields_display_mode', 'fieldset')->save();
 
     foreach ([TRUE, FALSE] as $required) {
       // Set the publish_on/unpublish_on required setting.
-      $this->entityTypeObject($entityTypeId)->setThirdPartySetting('scheduler', $field . '_required', $required)->save();
+      $entityType->setThirdPartySetting('scheduler', $field . '_required', $required)->save();
 
       // Create an entity.
-      $this->drupalGet("$entityTypeId/add/$bundle");
+      $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
       $page = $this->getSession()->getPage();
       $title = ucfirst($field) . ($required ? ' required' : ' not required') . ', datepickerFormat = ' . $this->datepickerFormat;
       $page->fillField("edit-$titleField-0-value", $title);
-      $page->clickLink('Scheduling options');
       if ($required) {
         // Fill in the date value but do nothing with the time field.
         $page->fillField('edit-' . $field . '-on-0-value-date', $scheduling_time->format($this->datepickerFormat));
@@ -86,10 +91,10 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
       $page->pressButton('Save');
 
       // Test that the content has saved properly.
-      $this->assertSession()->pageTextContains(sprintf('%s has been created', $title));
+      $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
 
       $entity = $this->getEntityByTitle($entityTypeId, $title);
-      $this->assertNotEmpty($entity, 'The entity object should be found');
+      $this->assertNotEmpty($entity, 'The entity object can be found by title');
       if ($required) {
         // Check that the scheduled date and time are correct.
         $this->assertEquals($scheduling_time->getTimestamp(), (int) $entity->{$field . '_on'}->value);
@@ -112,9 +117,9 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
    */
   public function dataTimeWhenSchedulingIsRequired() {
     $data = [];
-    foreach ($this->dataStandardEntityTypes() as $values) {
-      $data[] = array_merge($values, ['publish']);
-      $data[] = array_merge($values, ['unpublish']);
+    foreach ($this->dataStandardEntityTypes() as $key => $values) {
+      $data["$key-1"] = array_merge($values, ['publish']);
+      $data["$key-2"] = array_merge($values, ['unpublish']);
     }
     return $data;
   }
