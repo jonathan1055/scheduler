@@ -17,10 +17,9 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
   public function testNonEnabledType($id, $entityTypeId, $description, $publishing_enabled, $unpublishing_enabled) {
     $this->drupalLogin($this->adminUser);
     $entityType = $this->entityTypeObject($entityTypeId, 'non-enabled');
-    $type = $entityType->getEntityType()->getBundleOf();
     $bundle = $entityType->id();
-    $storage = $this->entityStorageObject($type);
-    $titleField = ($type == 'media') ? 'name' : 'title';
+    $storage = $this->entityStorageObject($entityTypeId);
+    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
 
     // The 'default' case specifically checks the behavior of the unchanged
     // settings, so only change these when not running the default test.
@@ -41,7 +40,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
     // Create a new entity via the add/bundle url, and check that the correct
     // fields are displayed on the form depending on the enabled settings.
-    $this->drupalGet("$type/add/$bundle");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
     if ($publishing_enabled) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
     }
@@ -59,8 +58,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     // Fill in the title field and check that the entity can be saved OK.
     $title = $id . 'a - ' . $description;
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
-    $string = sprintf('%s %s has been created.', $entityType->get('name'), $title);
-    $this->assertSession()->pageTextContains($string);
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
 
     // Create an unpublished entity with a publishing date, which mimics what
     // could be done by a third-party module, or a by-product of the entity type
@@ -71,13 +69,12 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'status' => FALSE,
       'publish_on' => $this->requestTime - 120,
     ];
-    $entity = $this->createEntity($type, $bundle, $values);
+    $entity = $this->createEntity($entityTypeId, $bundle, $values);
 
     // Check that the entity can be edited and saved OK.
-    $this->drupalGet("$type/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
-    $string = sprintf('%s %s has been updated.', $entityType->get('name'), $title);
-    $this->assertSession()->pageTextContains($string);
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
 
     // Run cron and display the dblog.
     $this->cronRun();
@@ -102,13 +99,12 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'status' => TRUE,
       'unpublish_on' => $this->requestTime + 180,
     ];
-    $entity = $this->createEntity($type, $bundle, $values);
+    $entity = $this->createEntity($entityTypeId, $bundle, $values);
 
     // Check that the entity can be edited and saved.
-    $this->drupalGet("$type/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
-    $string = sprintf('%s %s has been updated.', $entityType->get('name'), $title);
-    $this->assertSession()->pageTextContains($string);
+    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
 
     // Create a published entity with a date in the past, then run cron.
     $title = $id . 'd - ' . $description;
@@ -117,7 +113,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       'status' => TRUE,
       'unpublish_on' => $this->requestTime - 120,
     ];
-    $entity = $this->createEntity($type, $bundle, $values);
+    $entity = $this->createEntity($entityTypeId, $bundle, $values);
     $this->cronRun();
     $this->drupalGet('admin/reports/dblog');
 
@@ -134,7 +130,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
     // Display the full content list and the scheduled list. Calls to these
     // pages are for information and debug only.
-    switch ($type) {
+    switch ($entityTypeId) {
       case 'node':
         $this->drupalGet('admin/content');
         $this->drupalGet('admin/content/scheduled');
@@ -143,6 +139,11 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
       case 'media':
         $this->drupalGet('admin/content/media');
         $this->drupalGet('admin/content/media/scheduled');
+        break;
+
+      case 'commerce_product':
+        $this->drupalGet('admin/commerce/products');
+        $this->drupalGet('admin/commerce/products/scheduled');
         break;
     }
   }
@@ -153,41 +154,31 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
    * @return array
    *   Each item in the test data array has the follow elements:
    *     id                     - (int) a sequential id for use in titles
-   *     entityTypeId           - (string) The type to test - 'node' or 'media'
+   *     entityTypeId           - (string) 'node', 'media' or 'commerce_product'
    *     description            - (string) describing the scenario being checked
    *     publishing_enabled     - (bool) whether publishing is enabled
    *     unpublishing_enabled   - (bool) whether unpublishing is enabled
    */
   public function dataNonEnabledType() {
-    $data = [
+    $data = [];
+    foreach ($this->dataStandardEntityTypes() as $key => $values) {
+      $entityTypeId = $values[0];
       // By default check that the scheduler date fields are not displayed.
-      0 => [0, 'node', 'Default', FALSE, FALSE],
+      $data["$key-1"] = [1, $entityTypeId, 'Default', FALSE, FALSE];
 
       // Explicitly disable this content type for both settings.
-      1 => [1, 'node', 'Disabling both settings', FALSE, FALSE],
+      $data["$key-2"] = [2, $entityTypeId, 'Disabling both settings', FALSE, FALSE];
 
       // Turn on scheduled publishing only.
-      2 => [2, 'node', 'Enabling publishing only', TRUE, FALSE],
+      $data["$key-3"] = [3, $entityTypeId, 'Enabling publishing only', TRUE, FALSE];
 
       // Turn on scheduled unpublishing only.
-      3 => [3, 'node', 'Enabling unpublishing only', FALSE, TRUE],
+      $data["$key-4"] = [4, $entityTypeId, 'Enabling unpublishing only', FALSE, TRUE];
 
       // For completeness turn on both scheduled publishing and unpublishing.
-      4 => [4, 'node', 'Enabling both publishing and unpublishing', TRUE, TRUE],
-
-      // Repeat the above cases for media audio.
-      5 => [5, 'media', 'Default', FALSE, FALSE],
-      6 => [6, 'media', 'Disabling both settings', FALSE, FALSE],
-      7 => [7, 'media', 'Enabling publishing only', TRUE, FALSE],
-      8 => [8, 'media', 'Enabling unpublishing only', FALSE, TRUE],
-      9 => [9, 'media', 'Enabling both publishing and unpublishing', TRUE, TRUE],
-    ];
-
-    // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the default
-    // return $data to test everything.
+      $data["$key-5"] = [5, $entityTypeId, 'Enabling both publishing and unpublishing', TRUE, TRUE];
+    }
     return $data;
-
   }
 
 }
