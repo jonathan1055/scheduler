@@ -29,6 +29,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->addPermissionsToUser($this->adminUser, [
       'administer node form display',
       'administer media form display',
+      'administer commerce_product form display',
     ]);
   }
 
@@ -46,34 +47,50 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     /** @var \Drupal\Tests\WebAssert $assert */
     $assert = $this->assertSession();
 
+    // For rendering of vertical tabs, node and media entity forms have a div
+    // with class 'js-form-type-vertical-tabs'. However, the Commerce Product
+    // module does things differently and does not have this class, but instead
+    // has a class 'layout-region-product-secondary' (for vertical tabs) and
+    // 'layout-region-product-main' if in the main form not in vertical tabs. So
+    // to cover all entity types we can check for either of these classes as an
+    // ancestor of the 'edit-scheduler-settings' section.
+    $vertical_tab_xpath = '//div[contains(@class, "form-type-vertical-tabs") or contains(@class, "-secondary")]//details[@id = "edit-scheduler-settings"]';
+
+    // The 'open' and 'closed' xpath searches do apply to vertical tabs, even if
+    // the theme does not actually make use of it (such as in Bartik and Stark).
+    $details_open_xpath = '//details[@id = "edit-scheduler-settings" and @open = "open"]';
+    $details_closed_xpath = '//details[@id = "edit-scheduler-settings" and not(@open = "open")]';
+
     // Check that the dates are shown in a vertical tab by default.
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', $vertical_tab_xpath);
+    $assert->elementExists('xpath', $details_closed_xpath);
 
     // Check that the dates are shown as a fieldset when configured to do so,
     // and that fieldset is collapsed by default.
     $entityType->setThirdPartySetting('scheduler', 'fields_display_mode', 'fieldset')->save();
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementNotExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and not(@open = "open")]');
+    $this->drupalGet($add_url);
+    $assert->elementNotExists('xpath', $vertical_tab_xpath);
+    $assert->elementExists('xpath', $details_closed_xpath);
 
     // Check that the fieldset is expanded if either of the scheduling dates
     // are required.
     $entityType->setThirdPartySetting('scheduler', 'publish_required', TRUE)->save();
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', $details_open_xpath);
 
     $entityType->setThirdPartySetting('scheduler', 'publish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_required', TRUE)->save();
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Check that the fieldset is expanded if the 'always' option is set.
     $entityType->setThirdPartySetting('scheduler', 'publish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'unpublish_required', FALSE)
       ->setThirdPartySetting('scheduler', 'expand_fieldset', 'always')->save();
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Check that the fieldset is expanded if the entity already has a
     // publish-on date. This requires editing an existing scheduled entity.
@@ -83,8 +100,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'publish_on' => strtotime('+1 day'),
     ];
     $entity = $this->createEntity($entityTypeId, $bundle, $options);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($entity->toUrl('edit-form'));
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Repeat the check with a timestamp value of zero. This is a valid date
     // so the fieldset should be opened. It will not be used much on real sites
@@ -95,8 +112,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'publish_on' => 0,
     ];
     $entity = $this->createEntity($entityTypeId, $bundle, $options);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($entity->toUrl('edit-form'));
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Check that the fieldset is expanded if there is an unpublish-on date.
     $options = [
@@ -104,8 +121,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'unpublish_on' => strtotime('+1 day'),
     ];
     $entity = $this->createEntity($entityTypeId, $bundle, $options);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($entity->toUrl('edit-form'));
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Repeat with a timestamp value of zero.
     $options = [
@@ -113,14 +130,15 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'unpublish_on' => 0,
     ];
     $entity = $this->createEntity($entityTypeId, $bundle, $options);
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
-    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings" and @open = "open"]');
+    $this->drupalGet($entity->toUrl('edit-form'));
+    $assert->elementExists('xpath', $details_open_xpath);
 
     // Check that the display reverts to a vertical tab again when specifically
     // configured to do so.
     $entityType->setThirdPartySetting('scheduler', 'fields_display_mode', 'vertical_tab')->save();
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
+    $this->drupalGet($entity->toUrl('edit-form'));
+    $assert->elementExists('xpath', $vertical_tab_xpath);
+    $assert->elementExists('xpath', $details_open_xpath);
   }
 
   /**
@@ -172,10 +190,11 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet($form_display_url);
     $this->submitForm($edit, 'Save');
 
-    // Check that a scheduler vertical tab is displayed.
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
-    // Check the publish_on field is not shown, but the unpublish_on field is.
+    // Check that the scheduler details element is shown and that the
+    // unpublish_on field is shown, but the publish_on field is not shown.
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]');
     $this->assertSession()->FieldNotExists('publish_on[0][value][date]');
     $this->assertSession()->FieldExists('unpublish_on[0][value][date]');
 
@@ -187,10 +206,10 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet($form_display_url);
     $this->submitForm($edit, 'Save');
 
-    // Check that a scheduler vertical tab is displayed.
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
-    // Check the publish_on field is not shown, but the unpublish_on field is.
+    // Check that the scheduler details element is shown and that the
+    // publish_on field is shown, but the unpublish_on field is not shown.
+    $this->drupalGet($add_url);
+    $assert->elementExists('xpath', '//details[@id = "edit-scheduler-settings"]');
     $this->assertSession()->FieldExists('publish_on[0][value][date]');
     $this->assertSession()->FieldNotExists('unpublish_on[0][value][date]');
 
@@ -202,10 +221,10 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->drupalGet($form_display_url);
     $this->submitForm($edit, 'Save');
 
-    // Check that no vertical tab is displayed.
-    $this->drupalGet("$entityTypeId/add/$bundle");
-    $assert->elementNotExists('xpath', '//div[contains(@class, "form-type-vertical-tabs")]//details[@id = "edit-scheduler-settings"]');
-    // Check the neither field is displayed.
+    // Check that the scheduler details element is not shown when both of the
+    // date fields are set to be hidden.
+    $this->drupalGet($add_url);
+    $assert->elementNotExists('xpath', '//details[@id = "edit-scheduler-settings"]');
     $this->assertSession()->FieldNotExists('publish_on[0][value][date]');
     $this->assertSession()->FieldNotExists('unpublish_on[0][value][date]');
   }
@@ -221,7 +240,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
 
     // Check that the default is to show the seconds on the input fields.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $add_url = $this->entityAddUrl($entityTypeId, $bundle);
+    $this->drupalGet($add_url);
     $publish_time_field = $this->xpath('//input[@id="edit-publish-on-0-value-time"]');
     $unpublish_time_field = $this->xpath('//input[@id="edit-unpublish-on-0-value-time"]');
     $this->assertEquals(1, $publish_time_field[0]->getAttribute('step'), 'The input time step for publish-on is 1, so the seconds will be visible and usable.');
@@ -232,7 +252,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $config->set('hide_seconds', TRUE)->save();
 
     // Get the node-add page and check the input fields.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($add_url);
     $publish_time_field = $this->xpath('//input[@id="edit-publish-on-0-value-time"]');
     $unpublish_time_field = $this->xpath('//input[@id="edit-unpublish-on-0-value-time"]');
     $this->assertEquals(60, $publish_time_field[0]->getAttribute('step'), 'The input time step for publish-on is 60, so the seconds will be hidden and not usable.');
@@ -251,7 +271,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $entity = $this->getEntityByTitle($entityTypeId, 'Hide the seconds');
 
     // Edit and check that the seconds have been set to zero.
-    $this->drupalGet("$entityTypeId/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->assertSession()->FieldValueEquals('publish_on[0][value][time]', '01:02:00');
     $this->assertSession()->FieldValueEquals('unpublish_on[0][value][time]', '04:05:00');
 
