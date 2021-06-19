@@ -185,15 +185,12 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    */
   public function dataDevelGenerate() {
     $data = [
-      0 => ['node', 'content', TRUE],
-      1 => ['node', 'content', FALSE],
-      2 => ['media', 'media', TRUE],
-      3 => ['media', 'media', FALSE],
+      '#node-1' => ['node', 'content', TRUE],
+      '#node-2' => ['node', 'content', FALSE],
+      '#media-1' => ['media', 'media', TRUE],
+      '#media-2' => ['media', 'media', FALSE],
     ];
 
-    // Use unset($data[n]) to remove a temporarily unwanted item, use
-    // return [$data[n]] to selectively test just one item, or have the default
-    // return $data to test everything.
     return $data;
   }
 
