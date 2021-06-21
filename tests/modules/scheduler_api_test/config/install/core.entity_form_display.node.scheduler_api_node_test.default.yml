@@ -2,15 +2,15 @@ langcode: en
 status: true
 dependencies:
   config:
-    - field.field.node.scheduler_api_test.field_approved_publishing
-    - field.field.node.scheduler_api_test.field_approved_unpublishing
-    - node.type.scheduler_api_test
+    - field.field.node.scheduler_api_node_test.field_approved_publishing
+    - field.field.node.scheduler_api_node_test.field_approved_unpublishing
+    - node.type.scheduler_api_node_test
   module:
     - path
     - scheduler
-id: node.scheduler_api_test.default
+id: node.scheduler_api_node_test.default
 targetEntityType: node
-bundle: scheduler_api_test
+bundle: scheduler_api_node_test
 mode: default
 content:
   created:

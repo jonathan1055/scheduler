@@ -3,14 +3,14 @@ status: true
 dependencies:
   config:
     - field.storage.node.field_approved_publishing
-    - node.type.scheduler_api_test
+    - node.type.scheduler_api_node_test
   enforced:
     module:
       - scheduler_api_test
-id: node.scheduler_api_test.field_approved_publishing
+id: node.scheduler_api_node_test.field_approved_publishing
 field_name: field_approved_publishing
 entity_type: node
-bundle: scheduler_api_test
+bundle: scheduler_api_node_test
 label: 'Approved for Publishing'
 description: ''
 required: false

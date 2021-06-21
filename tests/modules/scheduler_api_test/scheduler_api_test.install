@@ -22,7 +22,7 @@ function scheduler_api_test_uninstall() {
   // Delete any node content of the custom node type.
   $ids_query = \Drupal::database()->select('node', 'n')
     ->fields('n', ['nid'])
-    ->condition('n.type', ['scheduler_api_test'], 'IN')
+    ->condition('n.type', ['scheduler_api_node_test'], 'IN')
     ->execute();
   if ($ids = $ids_query->fetchCol()) {
     $storage = \Drupal::entityTypeManager()->getStorage('node');

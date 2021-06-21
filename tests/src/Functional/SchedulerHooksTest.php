@@ -34,7 +34,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Load the custom node type. It will be enabled for Scheduler automatically
     // as that is pre-configured in node.type.scheduler_api_test.yml.
-    $this->customName = 'scheduler_api_test';
+    $this->customName = 'scheduler_api_node_test';
     $this->customNodetype = NodeType::load($this->customName);
 
     // Check that the custom node type has loaded OK.
@@ -68,8 +68,8 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   public function dataCustomEntityTypes() {
     $data = [
-      0 => ['node', 'scheduler_api_test'],
-      1 => ['media', 'scheduler_api_media_test'],
+      '#node' => ['node', 'scheduler_api_node_test'],
+      '#media' => ['media', 'scheduler_api_media_test'],
     ];
     return $data;
   }

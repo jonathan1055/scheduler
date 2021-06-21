@@ -21,7 +21,7 @@ third_party_settings:
     unpublish_required: false
     unpublish_revision: false
 id: scheduler_api_media_test
-label: 'Scheduler API Test Media'
+label: 'Scheduler API Media Test'
 description: 'Image media type used in Scheduler API testing'
 source: image
 queue_thumbnail_downloads: false
