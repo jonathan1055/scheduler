@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\scheduler\Functional;
 
+use Drupal\commerce_product\Entity\ProductType;
 use Drupal\node\Entity\NodeType;
 use Drupal\media\Entity\MediaType;
 
@@ -32,30 +33,43 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Load the custom node type. It will be enabled for Scheduler automatically
-    // as that is pre-configured in node.type.scheduler_api_test.yml.
-    $this->customName = 'scheduler_api_node_test';
-    $this->customNodetype = NodeType::load($this->customName);
+    // Load the custom node type. These entity types are enabled for Scheduler
+    // automatically as that is pre-configured in the {type}.yml files.
+    $customNodeName = 'scheduler_api_node_test';
+    $customNodetype = NodeType::load($customNodeName);
 
     // Check that the custom node type has loaded OK.
-    $this->assertNotNull($this->customNodetype, "Custom node type $this->customName failed to load during setUp");
+    $this->assertNotNull($customNodetype, "Custom node type $customNodeName failed to load during setUp");
 
     // Load the custom media type.
-    $this->customMediaName = 'scheduler_api_media_test';
-    $this->customMediatype = MediaType::load($this->customMediaName);
+    $customMediaName = 'scheduler_api_media_test';
+    $customMediatype = MediaType::load($customMediaName);
 
     // Check that the custom media type has loaded OK.
-    $this->assertNotNull($this->customMediatype, "Custom media type $this->customMediaName failed to load during setUp");
+    $this->assertNotNull($customMediatype, "Custom media type $customMediaName failed to load during setUp");
+
+    // Load the custom product type.
+    $customProductName = 'scheduler_api_product_test';
+    $customProductType = ProductType::load($customProductName);
+
+    // Check that the custom product type has loaded OK.
+    $this->assertNotNull($customProductType, "Custom product type $customProductName failed to load during setUp");
 
     // Create a web user that has permission to create and edit and schedule
     // the custom entity types.
     $this->webUser = $this->drupalCreateUser([
-      'create ' . $this->customName . ' content',
-      'edit any ' . $this->customName . ' content',
-      "create $this->customMediaName media",
-      "edit any $this->customMediaName media",
+      "create $customNodeName content",
+      "edit any $customNodeName content",
       'schedule publishing of nodes',
+      "create $customMediaName media",
+      "edit any $customMediaName media",
       'schedule publishing of media',
+      "create $customProductName commerce_product",
+      "update any $customProductName commerce_product",
+      'schedule publishing of commerce_product',
+      // 'administer commerce_store' is needed to see and use any store, i.e
+      // cannot add a product without this. Is it a bug?
+      'administer commerce_store',
     ]);
     $this->webUser->set('name', 'Wenlock the Web user')->save();
   }
@@ -70,6 +84,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $data = [
       '#node' => ['node', 'scheduler_api_node_test'],
       '#media' => ['media', 'scheduler_api_media_test'],
+      '#commerce_product' => ['commerce_product', 'scheduler_api_product_test'],
     ];
     return $data;
   }
@@ -247,7 +262,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->webUser);
 
     // Check the 'approved for publishing' field is shown on the entity form.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
     $this->assertSession()->fieldExists('edit-field-approved-publishing-value');
 
     // Check that the message is shown when scheduling an entity for publishing
@@ -295,7 +310,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
     // Check that an entity can be approved and published via edit form.
     $entity = $this->createUnapprovedEntity($entityTypeId, $bundle, 'publish_on');
-    $this->drupalGet("{$entityTypeId}/{$entity->id()}/edit");
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm(['field_approved_publishing[value]' => '1'], 'Save');
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
@@ -317,7 +332,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->webUser);
 
     // Check the 'approved for unpublishing' field is shown on the entity form.
-    $this->drupalGet("$entityTypeId/add/$bundle");
+    $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
     $this->assertSession()->fieldExists('edit-field-approved-unpublishing-value');
 
     // Check that the message is shown when scheduling an entity for
@@ -432,22 +447,22 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $assert = $this->assertSession();
 
     // Entity 1 'Red' should have both fields displayed.
-    $this->drupalGet("{$entityTypeId}/{$entity1->id()}/edit");
+    $this->drupalGet($entity1->toUrl('edit-form'));
     $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Entity 2 'Orange' should have only the publish-on field hidden.
-    $this->drupalGet("{$entityTypeId}/{$entity2->id()}/edit");
+    $this->drupalGet($entity2->toUrl('edit-form'));
     $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Entity 3 'Yellow' should have only the unpublish-on field hidden.
-    $this->drupalGet("{$entityTypeId}/{$entity3->id()}/edit");
+    $this->drupalGet($entity3->toUrl('edit-form'));
     $assert->ElementExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
 
     // Entity 4 'Green' should have both publish-on and unpublish-on hidden.
-    $this->drupalGet("{$entityTypeId}/{$entity4->id()}/edit");
+    $this->drupalGet($entity4->toUrl('edit-form'));
     $assert->ElementNotExists('xpath', '//input[@id = "edit-publish-on-0-value-date"]');
     $assert->ElementNotExists('xpath', '//input[@id = "edit-unpublish-on-0-value-date"]');
   }
@@ -464,7 +479,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    * @dataProvider dataStandardEntityTypes()
    */
   public function testPublishUnpublishProcess($entityTypeId, $bundle) {
-    $this->drupalLogin($this->schedulerUser);
+    // $this->drupalLogin($this->schedulerUser);
     $storage = $this->entityStorageObject($entityTypeId);
 
     // Create test entities.
@@ -498,20 +513,20 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
     $storage->resetCache([$entity1->id()]);
     $entity1 = $storage->load($entity1->id());
     $this->assertFalse($entity1->isPublished(), 'Red should remain unpublished.');
-    $this->assertNotEmpty($entity1->publish_on->value, 'Red should still has a publish-on date.');
+    $this->assertNotEmpty($entity1->publish_on->value, 'Red should still have a publish-on date.');
 
     // Check orange.
     $storage->resetCache([$entity2->id()]);
     $entity2 = $storage->load($entity2->id());
     $this->assertFalse($entity2->isPublished(), 'Orange should be unpublished.');
-    $this->assertNotEmpty(stristr($entity2->label(), 'unpublishing processed by API test module'), 'Orange was processed by the API test module.');
+    $this->assertStringContainsString('unpublishing processed by API test module', $entity2->label(), 'Orange should be processed by the API test module.');
     $this->assertEmpty($entity2->unpublish_on->value, 'Orange should not have an unpublish-on date.');
 
     // Check yellow.
     $storage->resetCache([$entity3->id()]);
     $entity3 = $storage->load($entity3->id());
     $this->assertTrue($entity3->isPublished(), 'Yellow should be published.');
-    $this->assertNotEmpty(stristr($entity3->label(), 'publishing processed by API test module'), 'Yellow was processed by the API test module.');
+    $this->assertStringContainsString('publishing processed by API test module', $entity3->label(), 'Yellow should be processed by the API test module.');
     $this->assertEmpty($entity3->publish_on->value, 'Yellow should not have a publish-on date.');
 
     // Check blue.
