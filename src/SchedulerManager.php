@@ -334,8 +334,8 @@ class SchedulerManager {
             $entity->setRevisionLogMessage($revision_log_message)
               ->setRevisionCreationTime($this->time->getRequestTime());
           }
-          // Unset publish_on so the entity will not get rescheduled by
-          // subsequent calls to $entity->save().
+          // Unset publish_on so the entity will not get rescheduled by any
+          // interim calls to $entity->save().
           $entity->publish_on->value = NULL;
 
           // Invoke all implementations of hook_scheduler_publish_process() and
@@ -369,6 +369,9 @@ class SchedulerManager {
             // At least one hook function returned a failure or exception, so
             // stop processing this entity and move on to the next one.
             $this->logger->warning('Publishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+            // Restore the publish_on date to allow another attempt next time.
+            $entity->publish_on->value = $publish_on;
+            $entity->save();
             continue;
           }
           elseif ($processed) {
@@ -519,8 +522,8 @@ class SchedulerManager {
             $entity->setRevisionLogMessage($revision_log_message)
               ->setRevisionCreationTime($this->time->getRequestTime());
           }
-          // Unset unpublish_on so the entity will not get rescheduled by
-          // subsequent calls to $entity->save().
+          // Unset publish_on so the entity will not get rescheduled by any
+          // interim calls to $entity->save().
           $entity->unpublish_on->value = NULL;
 
           // Invoke all implementations of hook_scheduler_unpublish_process()
@@ -554,6 +557,9 @@ class SchedulerManager {
             // At least one hook function returned a failure or exception, so
             // stop processing this entity and move on to the next one.
             $this->logger->warning('Unpublishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+            // Restore the unpublish_on date to allow another attempt next time.
+            $entity->unpublish_on->value = $unpublish_on;
+            $entity->save();
             continue;
           }
           elseif ($processed) {
