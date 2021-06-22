@@ -17,8 +17,6 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.1
-      env: DRUPAL_CORE=8.8.x
     - php: 7.2
       env: DRUPAL_CORE=8.9.x
     - php: 7.3
@@ -26,7 +24,7 @@ jobs:
         - DRUPAL_CORE=9.0.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=0
+        - DEPRECATIONS=6000
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
@@ -34,21 +32,21 @@ jobs:
         # 368 EventDispatcher (in Rules module)
         #  54 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=422
+        - DEPRECATIONS=6000
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=0
+        - DEPRECATIONS=6000
         - RULES=NO
     - php: 7.4
       env:
         - DRUPAL_CORE=9.2.x
         # --- Remaining self deprecation notices (0)
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=0
+        - DEPRECATIONS=6000
         - RULES=NO
 
 # Be sure to cache composer downloads.
@@ -107,6 +105,9 @@ before_script:
   # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
   # problem when running at core 8.8.
   - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drush/drush:"^9.0 || ^10.0"
+
+  # Install Commerce.
+  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drupal/commerce
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards.
