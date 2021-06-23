@@ -18,7 +18,8 @@ jobs:
   fast_finish: true
   include:
     - php: 7.2
-      env: DRUPAL_CORE=8.9.x
+      env:
+        - DRUPAL_CORE=8.9.x
         # --- Remaining self deprecation notices (15)
         #  15 The $published parameter is deprecated since 8.3.x (Commerce)
         # --- Remaining direct deprecation notices (0)
