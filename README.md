@@ -9,8 +9,8 @@ Scheduler provides hooks and events for third-party modules to interact with the
 process during content editing and during cron publishing and unpublishing.
 
 A plugin system allows support for any Drupal entity type that has the concept
-of a 'published' status. As at version 8.x-1.4 Node content and Media entities
-are supported.
+of a 'published' status. As at version 8.x-1.4 Node content, Media entities and
+Commerce Products are supported.
 
 ## Requirements
 
@@ -35,6 +35,12 @@ are supported.
  * [Scheduler Content Moderation Integration](https://www.drupal.org/project/scheduler_content_moderation_integration)
      If you use core Content Moderation then you should also install this
      sub-module, contributed by the folks at [Thunder](https://www.drupal.org/thunder)
+
+ * [Media](https://www.drupal.org/docs/8/core/modules/media):
+     Core Media items can be scheduled for publishing and unpublishing.
+
+ * [Commerce](https://www.drupal.org/project/commerce):
+     Commerce products can be scheduled for publishing and unpublishing.
 
 ## Installation
 
@@ -79,6 +85,7 @@ are supported.
  * Configure the Scheduler settings per entity type:
    - Administration » Structure » Content Types » Edit
    - Administration » Structure » Media Types » Edit
+   - Administration » Commerce » Configuration » Product Types » Edit
 
  * The system status report at /admin/reports/status has a Scheduler Timecheck
    section, giving details of the server time, default site time and current
