@@ -17,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *  description = @Translation("Provides support for scheduling Commerce Product entities"),
  *  entityType = "commerce_product",
  *  typeFieldName = "type",
- *  dependency = "commerce",
+ *  dependency = "commerce_product",
  *  schedulerEventClass = "\Drupal\scheduler\Event\SchedulerCommerceProductEvents",
  *  publishAction = "commerce_publish_product",
  *  unpublishAction = "commerce_unpublish_product"
