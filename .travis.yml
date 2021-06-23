@@ -135,10 +135,18 @@ before_script:
 script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
-  - if [ "$RULES" == "NO" ]; then
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i';
+  - |
+    if [ "$DRUPAL_CORE" == "8.9.x" ]; then
+      # 8.9 is slow, 50 mins is the Travis limit, so skip media and product
+      echo "Running tests excluding Media and Product ..."
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(media|product)).)*$/i'
+    elif [ "$RULES" == "NO" ]; then
+      # Skip all rules tests if requested via global parameter.
+      echo "Running tests excluding Rules ..."
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i'
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/;
+      echo "Running all tests ..."
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/
     fi
 
   # Check for coding standards. First show the versions.
