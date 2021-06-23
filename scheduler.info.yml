@@ -13,6 +13,8 @@ dependencies:
 test_dependencies:
   - rules:rules
   - devel:devel_generate
+  - drupal:media
+  - commerce:commerce
 libraries:
   - scheduler/admin
   - vertical-tabs

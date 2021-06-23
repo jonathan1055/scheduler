@@ -5,7 +5,7 @@ namespace Drupal\Tests\scheduler\Functional;
 /**
  * Tests the modules primary functions with a Commerce Product entity type.
  *
- * @group legacy
+ * @group scheduler
  */
 class SchedulerBasicProductTest extends SchedulerBrowserTestBase {
 
