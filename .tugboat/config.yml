@@ -23,6 +23,7 @@ services:
         # above that uses the $TUGBOAT_REPO_ID environment variable.
         composer require drupal/scheduler:dev-$TUGBOAT_REPO_ID
         composer require drupal/devel_generate
+        composer require drupal/commerce
         # Install Drupal on the site.
         vendor/bin/drush \
           --yes \
@@ -39,6 +40,7 @@ services:
         # Enable modules.
         vendor/bin/drush --yes pm:enable media
         vendor/bin/drush --yes pm:enable scheduler devel devel_generate
+        vendor/bin/drush --yes pm:enable commerce_product
         composer show drupal/scheduler | egrep 'name |vers'
         vendor/bin/drush pml | grep scheduler
         composer show drupal/devel | egrep 'name |vers'
@@ -65,6 +67,14 @@ services:
         vendor/bin/drush -y config-set media.type.image third_party_settings.scheduler.publish_past_date 'schedule'
         vendor/bin/drush config-get media.type.image third_party_settings
  
+        # Scheduler commerce product settings.
+        vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.publish_enable 1
+        vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.unpublish_enable 1
+        vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.publish_past_date 'schedule'
+        vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.expand_fieldset 'always'
+        vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.fields_display_mode 'fieldset'
+        vendor/bin/drush config-get commerce_product.commerce_product_type.default third_party_settings
+
         # Media settings.
         vendor/bin/drush -y config-set media.settings standalone_url 1
         vendor/bin/drush config-get media.settings
@@ -80,10 +90,15 @@ services:
         vendor/bin/drush role-add-perm 'media_editor' 'schedule publishing of media'
         vendor/bin/drush role-create 'media_viewer' 'Media Viewer'
         vendor/bin/drush role-add-perm 'media_viewer' 'view scheduled media'
+        vendor/bin/drush role-create 'product_editor' 'Product Editor'
+        vendor/bin/drush role-add-perm 'product_editor' 'schedule publishing of commerce_product'
+        vendor/bin/drush role-create 'product_viewer' 'Product Viewer'
+        vendor/bin/drush role-add-perm 'product_viewer' 'view scheduled commerce_product'
 
         # Add some permissions for all authenticated users.
         vendor/bin/drush role-add-perm 'authenticated' "create article content, edit any article content, delete any article content, access content overview, view own unpublished content, switch users"
         vendor/bin/drush role-add-perm 'authenticated' "create media, update any media, delete any media, access media overview, view own unpublished media"
+        vendor/bin/drush role-add-perm 'authenticated' "create default commerce_product, update any default commerce_product, delete any default commerce_product, access commerce_product overview, view own unpublished commerce_product, administer commerce_store"
 
         # Create users.
         vendor/bin/drush user-create 'Eddy the content editor'
@@ -94,6 +109,10 @@ services:
         vendor/bin/drush user-add-role 'media_editor' 'Madeline the media editor'
         vendor/bin/drush user-create 'Marvin the media viewer'
         vendor/bin/drush user-add-role 'media_viewer' 'Marvin the media viewer'
+        vendor/bin/drush user-create 'Prodie the product editor'
+        vendor/bin/drush user-add-role 'product_editor' 'Madeline the media editor'
+        vendor/bin/drush user-create 'Proctor the product viewer'
+        vendor/bin/drush user-add-role 'product_viewer' 'Proctor the product viewer'
 
         # Generate content.
         vendor/bin/drush devel-generate-content 4 --bundles=article --authors=1,2 --verbose
