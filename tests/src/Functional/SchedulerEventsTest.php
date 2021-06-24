@@ -88,41 +88,48 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Covers six events for media entities.
+   * Tests six scheduler events for entity types other than node.
+   *
+   * Currently this covers Media and Commerce Products.
+   *
+   * @dataProvider dataSchedulerEvents()
    */
-  public function testMediaEvents() {
+  public function testSchedulerEvents($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
+    $storage = $this->entityStorageObject($entityTypeId);
+    $title_prefix = strtoupper("API TEST $entityTypeId");
 
-    // Create a media item.
-    $media = $this->createMediaItem([
-      'name' => 'API TEST MEDIA',
+    // Create an entity of the required type, scheduled for publishing.
+    $entity = $this->createEntity($entityTypeId, $bundle, [
+      'title' => $title_prefix,
       'publish_on' => strtotime('-1 day'),
     ]);
     // Run cron and check that the events have been dispatched correctly. The
     // name is first changed by a PRE_PUBLISH event subscriber, then a second
     // time by a PUBLISH event watcher. Checking the final value tests both.
     scheduler_cron();
-    $this->mediaStorage->resetCache([$media->id()]);
-    $media = $this->mediaStorage->load($media->id());
-    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "PUBLISH" event');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "PUBLISH" event');
 
-    // Create a media item with an unpublish-on date.
-    $media = $this->createMediaItem([
-      'name' => 'API TEST MEDIA',
+    // Create an entity of the required type, scheduled for unpublishing.
+    $entity = $this->createEntity($entityTypeId, $bundle, [
+      'title' => $title_prefix,
       'unpublish_on' => strtotime('-1 day'),
     ]);
     // Run cron and check that the events have been dispatched correctly.
     scheduler_cron();
-    $this->mediaStorage->resetCache([$media->id()]);
-    $media = $this->mediaStorage->load($media->id());
-    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "UNPUBLISH" event');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "UNPUBLISH" event');
 
     // Turn on immediate publishing when a publish date is in the past.
-    $this->mediaType->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
+    $this->entityTypeObject($entityTypeId, $bundle)
+      ->setThirdPartySetting('scheduler', 'publish_past_date', 'publish')->save();
 
-    // Create an unpublished media item.
-    $media = $this->createMediaItem([
-      'name' => 'API TEST MEDIA',
+    // Create an unpublished and unscheduled entity.
+    $entity = $this->createEntity($entityTypeId, $bundle, [
+      'title' => $title_prefix,
       'status' => FALSE,
     ]);
     // Edit the media item, setting a publish-on date in the past.
@@ -130,12 +137,27 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][date]' => date('Y-m-d', strtotime('-2 day', $this->requestTime)),
       'publish_on[0][value][time]' => date('H:i:s', strtotime('-2 day', $this->requestTime)),
     ];
-    $this->drupalGet('media/' . $media->id() . '/edit');
+    $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm($edit, 'Save');
     // Verify that the values have been altered as expected, without cron.
-    $this->mediaStorage->resetCache([$media->id()]);
-    $media = $this->mediaStorage->load($media->id());
-    $this->assertEquals($media->label(), 'API TEST MEDIA - altered a second time by "PUBLISH_IMMEDIATELY" event');
+    $storage->resetCache([$entity->id()]);
+    $entity = $storage->load($entity->id());
+    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "PUBLISH_IMMEDIATELY" event');
+  }
+
+  /**
+   * Provides test data for scheduler events test.
+   *
+   * The original node events test is different (and no benefit in re-writing)
+   * so this test excludes the node entity type.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataSchedulerEvents() {
+    $data = $this->dataStandardEntityTypes();
+    unset($data['#node']);
+    return $data;
   }
 
 }
