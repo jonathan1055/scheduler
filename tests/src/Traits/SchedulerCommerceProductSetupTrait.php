@@ -89,10 +89,13 @@ trait SchedulerCommerceProductSetupTrait {
       'variationType' => 'default',
     ]);
 
-    // Add scheduler functionality to the product type.
+    // Add scheduler functionality to the product type, then save.
     $this->productType->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
+
+    // Add the body field using the existing commerce_product function.
+    commerce_product_add_body_field($this->productType);
 
     // Create a test product type which is not enabled for scheduling.
     /** @var Drupal\commerce_product\Entity\ProductType $nonSchedulerProductType */
