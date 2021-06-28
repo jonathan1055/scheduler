@@ -946,7 +946,7 @@ display:
       menu:
         type: normal
         title: 'Scheduled Products'
-        description: 'List of commerce products that are scheduled for publishing or unpublishing'
+        description: 'Commerce products that are scheduled for publishing or unpublishing'
         expanded: false
         parent: entity.commerce_product.collection
         weight: 0

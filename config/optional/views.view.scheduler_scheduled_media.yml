@@ -1021,7 +1021,7 @@ display:
       menu:
         type: normal
         title: 'Scheduled Media'
-        description: ''
+        description: 'Media items that are scheduled for publishing or unpublishing'
         expanded: false
         parent: 'system.admin_content'
         weight: 0
