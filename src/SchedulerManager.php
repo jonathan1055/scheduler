@@ -807,7 +807,20 @@ class SchedulerManager {
    */
   public function getThirdPartySetting(EntityInterface $entity, $setting, $default) {
     $typeFieldName = $this->getPlugin($entity->getEntityTypeId())->typeFieldName();
-    return $entity->$typeFieldName->entity->getThirdPartySetting('scheduler', $setting, $default);
+    if (empty($entity->$typeFieldName)) {
+      // Avoid exception and give details if the typeFieldName does not exist.
+      $params = [
+        '%field' => $typeFieldName,
+        '%id' => $this->getPlugin($entity->getEntityTypeId())->getPluginId(),
+        '%entity' => $entity->getEntityTypeId(),
+      ];
+      \Drupal::messenger()->addError($this->t("Field '%field' specified by typeFieldName in the Scheduler plugin %id is not found in entity type %entity", $params));
+      $this->logger->error("Field '%field' specified by typeFieldName in the Scheduler plugin %id is not found in entity type %entity", $params);
+      return $default;
+    }
+    else {
+      return $entity->$typeFieldName->entity->getThirdPartySetting('scheduler', $setting, $default);
+    }
   }
 
   /**
