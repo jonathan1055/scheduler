@@ -4,7 +4,6 @@ namespace Drupal\scheduler\Plugin\Scheduler;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\scheduler\SchedulerPluginBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin for Node entity type.
@@ -23,18 +22,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 class NodeScheduler extends SchedulerPluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Create method.
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('string_translation')
-    );
-  }
 
   /**
    * Get the available types/bundles for the entity type.

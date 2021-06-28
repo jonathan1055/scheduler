@@ -3,11 +3,24 @@
 namespace Drupal\scheduler;
 
 use Drupal\Core\Plugin\PluginBase;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Base class for scheduler plugins.
  */
 abstract class SchedulerPluginBase extends PluginBase implements SchedulerPluginInterface {
+
+  /**
+   * Create method.
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('string_translation')
+    );
+  }
 
   /**
    * Get plugin label.
