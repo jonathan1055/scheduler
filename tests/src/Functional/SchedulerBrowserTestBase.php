@@ -49,8 +49,17 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     parent::setUp();
     // Call the common set-up functions defined in the traits.
     $this->schedulerSetUp();
-    $this->schedulerMediaSetUp();
-    $this->SchedulerCommerceProductSetUp();
+    // $this->getName() includes the test class and the dataProvider key. We can
+    // use this to save time and resources by avoiding calls to the media and
+    // product setup functions when they are not needed. The exception is the
+    // permissions tests, which use all entities for all tests.
+    $testName = $this->getName();
+    if (stristr($testName, 'media') || stristr($testName, 'permission')) {
+      $this->schedulerMediaSetUp();
+    }
+    if (stristr($this->getName(), 'product') || stristr($testName, 'permission')) {
+      $this->SchedulerCommerceProductSetUp();
+    }
   }
 
 }

@@ -19,6 +19,14 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
   public function testAdminSettings() {
     $this->drupalLogin($this->adminUser);
 
+    // Check that we get the warning when no media types exist.
+    $this->drupalGet('admin/config/content/scheduler');
+    $this->assertSession()->pageTextContains('No entity types returned for Media Scheduler Plugin (media_scheduler)');
+
+    // Call the setUp functions for all entity types.
+    $this->schedulerMediaSetUp();
+    $this->SchedulerCommerceProductSetUp();
+
     // Verify that the default values are as expected.
     $this->assertFalse($this->config('scheduler.settings')->get('allow_date_only'), 'The default setting for allow_date_only is False.');
     $this->assertEquals($this->config('scheduler.settings')->get('default_time'), '00:00:00', 'The default config setting for default_time is 00:00:00');
