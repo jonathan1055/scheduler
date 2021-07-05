@@ -24,6 +24,13 @@
     <exclude name="Drupal.Commenting.InlineComment.SpacingAfter"/>
   </rule>
 
+  <!-- This rule is disabled in Coder 8.3.10, but undefined variables will -->
+  <!-- be reported when using earlier versions. Hence re-enable the rule so -->
+  <!-- we do not get surprises when testing with other versions. -->
+  <rule ref="DrupalPractice.CodeAnalysis.VariableAnalysis.UndefinedVariable">
+    <severity>5</severity>
+  </rule>
+
   <!-- Ignore all files that match these patterns. By default the full file -->
   <!-- path is checked, unless type=relative is used. There is an implied * -->
   <!-- wildcard at each end and periods and slashes must be escaped using \ -->

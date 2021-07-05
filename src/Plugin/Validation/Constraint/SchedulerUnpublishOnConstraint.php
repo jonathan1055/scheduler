@@ -10,7 +10,7 @@ use Drupal\Core\Entity\Plugin\Validation\Constraint\CompositeConstraintBase;
  * @Constraint(
  *   id = "SchedulerUnpublishOn",
  *   label = @Translation("Scheduler unpublish on", context = "Validation"),
- *   type = "entity:node"
+ *   type = "entity"
  * )
  */
 class SchedulerUnpublishOnConstraint extends CompositeConstraintBase {
