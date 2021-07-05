@@ -17,13 +17,6 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.2
-      env:
-        - DRUPAL_CORE=8.9.x
-        # --- Remaining self deprecation notices (15)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
     - php: 7.3
       env:
         - DRUPAL_CORE=9.0.x
@@ -31,32 +24,6 @@ jobs:
         #  15 The $published parameter is deprecated since 8.3.x (Commerce)
         # --- Remaining direct deprecation notices (0)
         - DEPRECATIONS=6000
-    - php: 7.4
-      env:
-        - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (?)
-        # 368 EventDispatcher (in Rules module)
-        #  54 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
-    - php: 7.4
-      env:
-        # Have a second 9.1 run which excludes the Rules tests.
-        - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (?)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
-        - RULES=NO
-    - php: 7.4
-      env:
-        - DRUPAL_CORE=9.2.x
-        # --- Remaining self deprecation notices (?)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
-        - RULES=NO
 
 # Be sure to cache composer downloads.
 cache:
