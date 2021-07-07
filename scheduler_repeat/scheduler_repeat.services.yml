@@ -1,0 +1,9 @@
+services:
+  plugin.manager.scheduler_repeat.repeater:
+    class: Drupal\scheduler_repeat\SchedulerRepeaterManager
+    parent: default_plugin_manager
+    arguments: ['@entity_type.manager', '@config.factory']
+  scheduler_repeat.event_subscriber:
+    class: Drupal\scheduler_repeat\EventSubscriber
+    tags:
+      - { name: event_subscriber }

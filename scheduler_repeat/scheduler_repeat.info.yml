@@ -1,0 +1,8 @@
+name: Scheduler Repeat
+type: module
+description: 'Allows content editors specifying repeating schedule for publishing and unpublishing.'
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:node
+  - scheduler:scheduler
