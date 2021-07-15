@@ -21,7 +21,7 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
 
     // Check that we get the warning when no media types exist.
     $this->drupalGet('admin/config/content/scheduler');
-    $this->assertSession()->pageTextContains('No entity types returned for Media Scheduler Plugin (media_scheduler)');
+    $this->assertSession()->pageTextContains('No entity types returned by media module for use in Media Scheduler Plugin');
 
     // Call the setUp functions for all entity types.
     $this->schedulerMediaSetUp();

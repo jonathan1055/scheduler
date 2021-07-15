@@ -87,17 +87,34 @@ class SchedulerAdminForm extends ConfigFormBase {
     foreach ($plugins as $entityTypeId => $plugin) {
       $publishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'publish');
       $unpublishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'unpublish');
-      // It should not be necessary to check that $plugin->getTypes() returns a
-      // non-empty array of values because the plugin will only be returned by
-      // schedulerManager->getPlugins() if the required module is enabled.
-      // However, when enabling a module via drush, the full cache is not
-      // automatically rebuilt and moduleHandler()->moduleExists('media') can
-      // return false. So give a useful exception message when that happens.
+
+      // When all is running normally, $plugin->getTypes() will give a non-empty
+      // array of values, but we need to protect against this being empty.
       if (!$types = $plugin->getTypes()) {
-        throw new \Exception(sprintf('No entity types returned for %s (%s). Do a full cache clear via admin/config/development/performance or drush cr.', $plugin->label(), $plugin->getPluginId()));
+        // When a module is enabled via drush there is no automatic clear cache.
+        // Thus moduleHandler()->moduleExists({module}) can return false when
+        // the module is actually enabled. This means we get nothing for
+        // plugin->getTypes() and processing should stop with a useful exception
+        // message, instead of letting Core give a confusing exception.
+        $type_definition = $this->entityTypeManager->getDefinition($entityTypeId . '_type', FALSE);
+        if (!$type_definition) {
+          throw new \Exception(sprintf('Invalid or empty entity type definition for %s module. Do a full cache clear via admin/config/development/performance or drush cr.', $plugin->dependency()));
+        }
+        // Some modules may not create a default entity type during installation
+        // or the entity type definitions may have been deleted. This is not an
+        // exception, but will cause an error if we do not stop this loop.
+        $message_parms = [
+          '%module' => $plugin->dependency(),
+          '%plugin_label' => $plugin->label(),
+        ];
+        $this->logger('scheduler')->warning('No entity types returned by %module module for use in %plugin_label', $message_parms);
+        $this->messenger()->addWarning($this->t('No entity types returned by %module module for use in %plugin_label', $message_parms));
+        continue;
       }
       $bundle_id = reset($types)->bundle();
-      $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection')->__toString();
+      $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection');
+      // Cater for incomplete config entity with no collection label.
+      $collection_label = is_object($collection_label) ? $collection_label->__toString() : $collection_label;
       $links[] = ['title' => "-- $collection_label --"];
       foreach ($types as $id => $type) {
         $text = [];
