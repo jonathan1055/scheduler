@@ -12,7 +12,7 @@ dependencies:
     - commerce_store
     - user
 id: scheduler_scheduled_commerce_product
-label: 'Scheduled Commerce Products'
+label: 'Scheduled Products'
 module: views
 description: 'Find and manage scheduled commerce products.'
 tag: ''
@@ -213,7 +213,7 @@ display:
           relationship: none
           group_type: group
           admin_label: ''
-          label: 'Product name'
+          label: 'Title'
           exclude: false
           alter:
             alter_text: false
@@ -668,7 +668,7 @@ display:
           exposed: true
           expose:
             operator_id: type_op
-            label: 'Product type'
+            label: 'Type'
             description: ''
             use_operator: false
             operator: type_op
@@ -712,7 +712,7 @@ display:
           exposed: true
           expose:
             operator_id: title_op
-            label: 'Product name'
+            label: 'Title'
             description: ''
             use_operator: false
             operator: title_op
@@ -908,7 +908,7 @@ display:
         groups:
           1: AND
           2: OR
-      title: 'Scheduled Commerce Products'
+      title: 'Scheduled Products'
       relationships:
         stores_target_id:
           id: stores_target_id
