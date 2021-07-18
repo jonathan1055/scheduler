@@ -17,22 +17,6 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.2
-      env: DRUPAL_CORE=8.9.x
-    - php: 7.3
-      env:
-        - DRUPAL_CORE=9.0.x
-        # --- Remaining self deprecation notices (0)
-        # --- Remaining direct deprecation notices (0)
-    - php: 7.4
-      env:
-        - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (180)
-        # 141 EventDispatcher (in Rules module)
-        #  27 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
-        #  12 StatementWrapper::fetchColumn
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=180
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
