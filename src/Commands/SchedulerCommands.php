@@ -61,4 +61,18 @@ class SchedulerCommands extends DrushCommands {
     $options['nomsg'] ? NULL : $this->messenger->addMessage(dt('Scheduler lightweight cron completed.'));
   }
 
+  /**
+   * Entity Update - add Scheduler fields for entities covered by plugins.
+   *
+   * Use the standard drush parameter -q for quiet mode (no terminal output).
+   *
+   * @command scheduler:entity-update
+   * @aliases sch-ent-upd, scheduler-entity-update
+   */
+  public function entityUpdate() {
+    $result = $this->schedulerManager->entityUpdate();
+    $updated = $result ? implode(', ', $result) : dt('nothing to update');
+    $this->messenger->addMessage(dt('Scheduler entity update - @updated', ['@updated' => $updated]));
+  }
+
 }

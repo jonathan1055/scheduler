@@ -25,3 +25,35 @@ scheduler.scheduled_content:
   parent_id: system.admin_content
   # Overview seems to have weight 0 and moderated content is weight 1.
   weight: 5
+
+scheduler.media_overview:
+  # This is added so that we get an 'overview' sub-task link alongside the
+  # 'scheduled media' sub-task link.
+  title: 'Overview'
+  route_name: entity.media.collection
+  parent_id: entity.media.collection
+
+scheduler.scheduled_media:
+  title: 'Scheduled media'
+  route_name: view.scheduler_scheduled_media.overview
+  parent_id: entity.media.collection
+  weight: 5
+
+scheduler.commerce_products:
+  # This separate route for the parent_id is needed, because using
+  # entity.commerce_product.collection does not render the local task links.
+  route_name: scheduler.commerce_products
+  base_route: scheduler.commerce_products
+
+scheduler.commerce_product.collection:
+  # This is added so that we get an 'overview' sub-task link alongside the
+  # 'scheduled products' sub-task link.
+  title: 'Overview'
+  route_name: entity.commerce_product.collection
+  parent_id: scheduler.commerce_products
+
+scheduler.scheduled_products:
+  title: 'Scheduled Products'
+  route_name: view.scheduler_scheduled_commerce_product.overview
+  parent_id: scheduler.commerce_products
+  weight: 5

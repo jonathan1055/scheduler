@@ -79,14 +79,6 @@ function scheduler_install() {
 }
 
 /**
- * Implements hook_uninstall().
- */
-function scheduler_uninstall() {
-  // Delete the scheduled content view.
-  \Drupal::configFactory()->getEditable('views.view.scheduler_scheduled_content')->delete();
-}
-
-/**
  * Reset date and time formats to default.
  */
 function scheduler_update_8001() {
@@ -125,5 +117,39 @@ function scheduler_update_8102() {
     $display['display_options']['menu']['type'] = 'normal';
     $view->save();
     return t('The "Scheduled" tab is now a "Scheduled content" sub-task under the "Content" tab');
+  }
+}
+
+/**
+ * Add date fields to any newly supported entity types.
+ */
+function scheduler_update_8103() {
+  // When the media module is already installed and Scheduler is then upgraded
+  // to a version which includes the entity plugins, this update function will
+  // add the missing db fields.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  if ($result = $scheduler_manager->entityUpdate()) {
+    return t('Added Scheduler date fields to the following entity types: %updated.', [
+      '%updated' => implode(', ', $result),
+    ]);
+  }
+  else {
+    return t('No database fields had to be added.');
+  }
+}
+
+/**
+ * Refresh views for supported entity types.
+ */
+function scheduler_update_8104() {
+  // The scheduled content view needs to be refreshed from source when upgrading
+  // to the entity plugin version of Scheduler. If the media or commerce modules
+  // are already enabled this will also load those new views from source.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  if ($result = $scheduler_manager->viewsUpdate()) {
+    return t('Updated views: %updated.', ['%updated' => implode(', ', $result)]);
+  }
+  else {
+    return t('No views require updating.');
   }
 }
