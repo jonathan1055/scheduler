@@ -123,10 +123,10 @@ function scheduler_update_8102() {
 /**
  * Add date fields to any newly supported entity types.
  */
-function scheduler_update_8103() {
-  // When the media module is already installed and Scheduler is then upgraded
-  // to a version which includes the entity plugins, this update function will
-  // add the missing db fields.
+function scheduler_update_8201() {
+  // If modules that have scheduler plugin support are already installed when
+  // Scheduler is then upgraded to a version which includes the entity plugins,
+  // this update function will add the missing db fields.
   $scheduler_manager = \Drupal::service('scheduler.manager');
   if ($result = $scheduler_manager->entityUpdate()) {
     return t('Added Scheduler date fields to the following entity types: %updated.', [
@@ -141,7 +141,7 @@ function scheduler_update_8103() {
 /**
  * Refresh views for supported entity types.
  */
-function scheduler_update_8104() {
+function scheduler_update_8202() {
   // The scheduled content view needs to be refreshed from source when upgrading
   // to the entity plugin version of Scheduler. If the media or commerce modules
   // are already enabled this will also load those new views from source.
