@@ -20,43 +20,46 @@ jobs:
     - php: 7.2
       env:
         - DRUPAL_CORE=8.9.x
-        # --- Remaining self deprecation notices (15)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
+        # ---- Remaining self deprecation notices (0)
+        # ---- Remaining direct deprecation notices (0)
+        - MEDIA=NO
+        - PRODUCTS=NO
     - php: 7.3
       env:
         - DRUPAL_CORE=9.0.x
-        # --- Remaining self deprecation notices (?)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
+        # ---- Remaining self deprecation notices (0)
+        # ---- Remaining direct deprecation notices (0)
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (?)
-        # 368 EventDispatcher (in Rules module)
-        #  54 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
+        # ---- Remaining self deprecation notices (3175)
+        # 3083 EventDispatcher (in Rules and Commerce Product module)
+        #   81 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
+        #   11 Creating an instance of class ... getConnection()->condition()
+        # ---- Remaining direct deprecation notices (0)
+        - DEPRECATIONS=3175
     - php: 7.4
       env:
-        # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (?)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
+        # Have a second 9.1 run which excludes the Rules and Products tests.
         - RULES=NO
+        - PRODUCTS=NO
+        # ---- Remaining self deprecation notices (975)
+        #  975 EventDispatcherInterface::dispatch()
+        # ---- Remaining direct deprecation notices (0)
+        - DEPRECATIONS=975
     - php: 7.4
       env:
         - DRUPAL_CORE=9.2.x
-        # --- Remaining self deprecation notices (?)
-        #  15 The $published parameter is deprecated since 8.3.x (Commerce)
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=6000
+        # Exclude Rules and Products tests.
         - RULES=NO
+        - PRODUCTS=NO
+        # ---- Remaining self deprecation notices (2296)
+        # 1104 Symfony isMasterRequest() is deprecated, use isMainRequest()
+        #  860 EventDispatcherInterface::dispatch()
+        #  332 hook_field_widget_form_alter() in Commerce_product setup.
+        # ---- Remaining direct deprecation notices (0)
+        - DEPRECATIONS=2296
 
 # Be sure to cache composer downloads.
 cache:
@@ -136,12 +139,16 @@ script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
   - |
-    if [ "$DRUPAL_CORE" == "8.9.x" ]; then
+    if [[ "$MEDIA" == "NO" && "$PRODUCTS" == "NO" ]]; then
       # 8.9 is slow, 50 mins is the Travis limit, so skip media and product
-      echo "Running tests excluding Media and Product ..."
+      echo "Running tests excluding Media and Products ..."
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(media|product)).)*$/i'
+    elif [[ "$RULES" == "NO" && "$PRODUCTS" == "NO" ]]; then
+      # Skip all Rules tests and Commerce Product tests.
+      echo "Running tests excluding Rules and Products ..."
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(rules|product)).)*$/i'
     elif [ "$RULES" == "NO" ]; then
-      # Skip all rules tests if requested via global parameter.
+      # Skip all Rules tests.
       echo "Running tests excluding Rules ..."
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i'
     else
