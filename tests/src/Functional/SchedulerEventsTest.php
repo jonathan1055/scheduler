@@ -110,7 +110,7 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "PUBLISH" event');
+    $this->assertEquals($title_prefix . ' - altered a second time by "PUBLISH" event', $entity->label());
 
     // Create an entity of the required type, scheduled for unpublishing.
     $entity = $this->createEntity($entityTypeId, $bundle, [
@@ -121,7 +121,7 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
     scheduler_cron();
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "UNPUBLISH" event');
+    $this->assertEquals($title_prefix . ' - altered a second time by "UNPUBLISH" event', $entity->label());
 
     // Turn on immediate publishing when a publish date is in the past.
     $this->entityTypeObject($entityTypeId, $bundle)
@@ -142,7 +142,7 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
     // Verify that the values have been altered as expected, without cron.
     $storage->resetCache([$entity->id()]);
     $entity = $storage->load($entity->id());
-    $this->assertEquals($entity->label(), $title_prefix . ' - altered a second time by "PUBLISH_IMMEDIATELY" event');
+    $this->assertEquals($title_prefix . ' - altered a second time by "PUBLISH_IMMEDIATELY" event', $entity->label());
   }
 
   /**
