@@ -169,7 +169,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     ];
     $this->submitForm($edit, 'Save');
 
-    // Create second translation, for publishing and unpublising in the future.
+    // Create second translation, for publishing and unpublishing in the future.
     $this->drupalGet('node/' . $nid . '/translations/add/' . $this->languages[0]['code'] . '/' . $this->languages[2]['code']);
     $edit = [
       'title[0][value]' => $this->languages[2]['name'] . '(2) - Publish in the future',
@@ -180,21 +180,25 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     ];
     $this->submitForm($edit, 'Save');
 
-    // Reset the cache, reload the node, and check if the dates of translation
-    // 3 have been synchronized to the other translations, or not, as required.
+    // Reset the cache, reload the node, and check if the dates of translation 2
+    // have been synchronized onto the other translations, or not, as required.
     $this->nodeStorage->resetCache([$nid]);
     $node = $this->nodeStorage->load($nid);
     $translation1 = $node->getTranslation($this->languages[1]['code']);
     $translation2 = $node->getTranslation($this->languages[2]['code']);
     if ($publish_on_translatable) {
-      $this->assertNotEquals($translation2->publish_on->value, $node->publish_on->value, 'Node publish_on');
-      $this->assertNotEquals($translation2->unpublish_on->value, $node->unpublish_on->value, 'Node unpublish_on');
+      $this->assertNotEquals($translation2->publish_on->value, $node->publish_on->value, 'The original translation publish_on should not be synchronized');
+      $this->assertNotEquals($translation2->unpublish_on->value, $node->unpublish_on->value, 'The original translation unpublish_on should not be synchronized');
+      $this->assertNotEquals($translation2->publish_on->value, $translation1->publish_on->value, 'Translation1 publish_on should not be synchronized');
+      $this->assertNotEquals($translation2->unpublish_on->value, $translation1->unpublish_on->value, 'Translation1 unpublish_on should not be synchronized');
     }
     else {
-      $this->assertEquals($translation2->publish_on->value, $node->publish_on->value, 'Node publish_on');
-      $this->assertEquals($translation2->unpublish_on->value, $node->unpublish_on->value, 'Node unpublish_on');
-      $this->assertEquals($translation2->publish_on->value, $translation1->publish_on->value, 'Translation 1 publish_on');
-      $this->assertEquals($translation2->unpublish_on->value, $translation1->unpublish_on->value, 'Translation 1 unpublish_on');
+      $this->assertEquals($translation2->publish_on->value, $node->publish_on->value, 'The original translation publish_on should be synchronized');
+      $this->assertEquals($translation2->unpublish_on->value, $node->unpublish_on->value, 'The original translation unpublish_on should be synchronized');
+      $this->assertEquals($translation2->isPublished(), $node->isPublished(), 'The original translation status should be synchronized');
+      $this->assertEquals($translation2->publish_on->value, $translation1->publish_on->value, 'Translation1 publish_on should be synchronized');
+      $this->assertEquals($translation2->unpublish_on->value, $translation1->unpublish_on->value, 'Translation1 unpublish_on should be synchronized');
+      $this->assertEquals($translation2->isPublished(), $translation1->isPublished(), 'Translation1 status should be synchronized');
     }
 
     // Create the third translation, to be published in the past.
@@ -206,25 +210,28 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     ];
     $this->submitForm($edit, 'Save');
 
-    // Reset the cache, reload the node, and check if the dates of translation
-    // 3 have been synchronized to the other translations, or not, as required.
+    // Reset the cache, reload the node, and check if the dates of translation 3
+    // have been synchronized onto the other translations, or not, as required.
     $this->nodeStorage->resetCache([$nid]);
     $node = $this->nodeStorage->load($nid);
     $translation1 = $node->getTranslation($this->languages[1]['code']);
     $translation2 = $node->getTranslation($this->languages[2]['code']);
     $translation3 = $node->getTranslation($this->languages[3]['code']);
     if ($publish_on_translatable) {
-      $this->assertNotEquals($translation3->publish_on->value, $translation2->publish_on->value, 'Node publish_on');
-      $this->assertNotEquals($translation3->unpublish_on->value, $translation2->unpublish_on->value, 'Node unpublish_on');
+      $this->assertNotEquals($translation3->publish_on->value, $translation2->publish_on->value, 'The original translation publish_on should not be synchronized');
+      $this->assertNotEquals($translation3->unpublish_on->value, $translation2->unpublish_on->value, 'The original translation unpublish_on should not be synchronized');
     }
     else {
       // The scheduer dates should be synchronized across all translations.
-      $this->assertEquals($translation3->publish_on->value, $node->publish_on->value, 'Node publish_on');
-      $this->assertEquals($translation3->unpublish_on->value, $node->unpublish_on->value, 'Node unpublish_on');
-      $this->assertEquals($translation3->publish_on->value, $translation1->publish_on->value, 'Translation 1 publish_on');
-      $this->assertEquals($translation3->unpublish_on->value, $translation1->unpublish_on->value, 'Translation 1 unpublish_on');
-      $this->assertEquals($translation3->publish_on->value, $translation2->publish_on->value, 'Translation 2 publish_on');
-      $this->assertEquals($translation3->unpublish_on->value, $translation2->unpublish_on->value, 'Translation 2 unpublish_on');
+      $this->assertEquals($translation3->publish_on->value, $node->publish_on->value, 'The original translation publish_on should be synchronized');
+      $this->assertEquals($translation3->unpublish_on->value, $node->unpublish_on->value, 'The original translation unpublish_on should be synchronized');
+      $this->assertEquals($translation3->isPublished(), $node->isPublished(), 'The original translation status should be synchronized');
+      $this->assertEquals($translation3->publish_on->value, $translation1->publish_on->value, 'Translation1 publish_on should be synchronized');
+      $this->assertEquals($translation3->unpublish_on->value, $translation1->unpublish_on->value, 'Translation1 unpublish_on should be synchronized');
+      $this->assertEquals($translation3->isPublished(), $translation1->isPublished(), 'Translation1 status should be synchronized');
+      $this->assertEquals($translation3->publish_on->value, $translation2->publish_on->value, 'Translation2 publish_on should be synchronized');
+      $this->assertEquals($translation3->unpublish_on->value, $translation2->unpublish_on->value, 'Translation2 unpublish_on should be synchronized');
+      $this->assertEquals($translation3->isPublished(), $translation2->isPublished(), 'Translation2 status should be synchronized');
     }
 
     // For info only.
