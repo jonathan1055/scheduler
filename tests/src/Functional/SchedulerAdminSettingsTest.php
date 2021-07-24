@@ -29,7 +29,7 @@ class SchedulerAdminSettingsTest extends SchedulerBrowserTestBase {
 
     // Verify that the default values are as expected.
     $this->assertFalse($this->config('scheduler.settings')->get('allow_date_only'), 'The default setting for allow_date_only is False.');
-    $this->assertEquals($this->config('scheduler.settings')->get('default_time'), '00:00:00', 'The default config setting for default_time is 00:00:00');
+    $this->assertEquals('00:00:00', $this->config('scheduler.settings')->get('default_time'), 'The default config setting for default_time is 00:00:00');
     $this->assertFalse($this->config('scheduler.settings')->get('hide_seconds'), 'The default setting for hide_seconds is False.');
 
     // Check that a default time can be stored, and that the option is saved.
