@@ -350,7 +350,7 @@ class SchedulerManager {
             $failed = $failed || ($return === -1);
           }
 
-          // Log the fact that a scheduled publication is about to take place.
+          // Create a set of variables for use in the log message.
           $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type', [
             '@type' => strtolower($entity_type->label()),
@@ -538,7 +538,7 @@ class SchedulerManager {
             $failed = $failed || ($return === -1);
           }
 
-          // Log the fact that a scheduled unpublication is about to take place.
+          // Create a set of variables for use in the log message.
           $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type', [
             '@type' => strtolower($entity_type->label()),
@@ -1071,7 +1071,7 @@ class SchedulerManager {
   /**
    * Updates db tables for entities that should have the Scheduler fields.
    *
-   * This is called from scheduler_modules_installed and scheduler_update_8103.
+   * This is called from scheduler_modules_installed and scheduler_update_8201.
    * It can also be called manually via drush command scheduler-entity-update.
    *
    * @return array
@@ -1104,7 +1104,7 @@ class SchedulerManager {
    * source yml file. If the view is now required but does not exist in active
    * storage it will be loaded.
    *
-   * Called from scheduler_modules_installed() and scheduler_update_8104().
+   * Called from scheduler_modules_installed() and scheduler_update_8202().
    *
    * @param array $only_these_types
    *   List of entity types to restrict the update of views to these types only.
