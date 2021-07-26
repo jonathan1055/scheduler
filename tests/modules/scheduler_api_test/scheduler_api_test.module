@@ -489,7 +489,7 @@ function _api_unpublish_process(EntityInterface $entity) {
   if (stristr($entity->label(), "orange {$entity->getEntityTypeId()}")) {
     $label_field = $entity->getEntityType()->get('entity_keys')['label'];
     $entity->set($label_field, $entity->label() . ' - unpublishing processed by API test module')->save();
-    $entity->setUnpublished();
+    $entity->setUnpublished()->save();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange should not have unpublishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }
