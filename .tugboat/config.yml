@@ -5,6 +5,9 @@ services:
     http: false
     depends: mysql
     commands:
+      init: |
+        # Install the bcmath extension, required for commerce_product
+        docker-php-ext-install bcmath
       update: |
         set -eux
         # Check out a branch using the unique Tugboat ID for this repository, to
