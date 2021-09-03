@@ -32,12 +32,12 @@ jobs:
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # ---- Remaining self deprecation notices (3175)
-        # 3083 EventDispatcher (in Rules and Commerce Product module)
+        # ---- Remaining self deprecation notices (3178)
+        # 3086 EventDispatcher (in Rules and Commerce Product module)
         #   81 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
         #   11 Creating an instance of class ... getConnection()->condition()
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=3175
+        - DEPRECATIONS=3178
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
