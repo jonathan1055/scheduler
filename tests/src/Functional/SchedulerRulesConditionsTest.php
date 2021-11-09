@@ -7,7 +7,7 @@ use Drupal\rules\Context\ContextConfig;
 /**
  * Tests the four conditions that Scheduler provides for use in Rules module.
  *
- * @group scheduler
+ * @group scheduler_rules_integration
  */
 class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
 

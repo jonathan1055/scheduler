@@ -5,7 +5,7 @@ namespace Drupal\Tests\scheduler\Functional;
 /**
  * Tests the six generic events that Scheduler dispatches.
  *
- * @group scheduler
+ * @group scheduler_api
  */
 class SchedulerEventsTest extends SchedulerBrowserTestBase {
 

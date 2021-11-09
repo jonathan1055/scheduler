@@ -10,7 +10,7 @@ use Drupal\node\Entity\NodeType;
  * This class covers the eight original hook functions for node entity types
  * only. These are maintained for backwards-compatibility.
  *
- * @group scheduler
+ * @group scheduler_api
  */
 class SchedulerHooksLegacyTest extends SchedulerBrowserTestBase {
 

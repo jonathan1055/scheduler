@@ -12,7 +12,7 @@ use Drupal\media\Entity\MediaType;
  * This class covers the eight hook functions that Scheduler provides, allowing
  * other modules to interact with editting, scheduling and processing via cron.
  *
- * @group scheduler
+ * @group scheduler_api
  */
 class SchedulerHooksTest extends SchedulerBrowserTestBase {
 
