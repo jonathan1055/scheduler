@@ -16,6 +16,6 @@ test_dependencies:
   - drupal:media
   - commerce:commerce
 libraries:
-  - scheduler/admin
+  - admin-css
   - vertical-tabs
   - default-time

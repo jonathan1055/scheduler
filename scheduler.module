@@ -297,7 +297,6 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
     '@plural' => $contentEntityType->getPluralLabel(),
   ];
 
-  $form['#attached']['library'][] = 'scheduler/admin';
   $form['#attached']['library'][] = 'scheduler/vertical-tabs';
 
   $form['scheduler'] = [

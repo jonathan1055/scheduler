@@ -177,7 +177,7 @@ class SchedulerAdminForm extends ConfigFormBase {
     ];
 
     // Attach library for admin css file.
-    $form['#attached']['library'][] = 'scheduler/admin';
+    $form['#attached']['library'][] = 'scheduler/admin-css';
 
     return parent::buildForm($form, $form_state);
   }
