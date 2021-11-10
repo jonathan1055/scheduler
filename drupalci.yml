@@ -11,8 +11,11 @@ build:
       phpstan:
         halt-on-fail: false
     testing:
-      run_tests.standard:
+      run_tests.functional:
         types: 'PHPUnit-Functional'
+        testgroups: 'scheduler,scheduler_api'
+        # Change testgroups to '--all' if Typed Data reverts to being supported
+        # at 8.x. See https://www.drupal.org/project/scheduler/issues/3248470
         suppress-deprecations: true
       run_tests.js:
         types: 'PHPUnit-FunctionalJavascript'

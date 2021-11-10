@@ -9,7 +9,7 @@ use Drupal\rules\Context\ContextConfig;
  *
  * phpcs:set Drupal.Arrays.Array lineLimit 140
  *
- * @group scheduler
+ * @group scheduler_rules_integration
  */
 class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 

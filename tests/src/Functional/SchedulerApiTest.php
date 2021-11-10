@@ -7,7 +7,7 @@ use Drupal\node\Entity\NodeType;
 /**
  * Tests the API of the Scheduler module.
  *
- * @group scheduler
+ * @group scheduler_api
  */
 class SchedulerApiTest extends SchedulerBrowserTestBase {
 
