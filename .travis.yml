@@ -18,7 +18,9 @@ jobs:
   fast_finish: true
   include:
     - php: 7.2
-      env: DRUPAL_CORE=8.9.x
+      env:
+        - DRUPAL_CORE=8.9.x
+        - RULES=NO
     - php: 7.3
       env:
         - DRUPAL_CORE=9.0.x
