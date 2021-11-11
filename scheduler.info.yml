@@ -14,6 +14,5 @@ test_dependencies:
   - rules:rules
   - devel:devel_generate
 libraries:
-  - scheduler/admin
   - vertical-tabs
   - default-time
