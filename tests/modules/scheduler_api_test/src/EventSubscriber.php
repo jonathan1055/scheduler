@@ -94,7 +94,7 @@ class EventSubscriber implements EventSubscriberInterface {
     $node = $event->getNode();
     // After publishing a node promote it to the front page.
     if ($node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
-      $node->setPromoted(TRUE);
+      $node->setPromoted(TRUE)->save();
       $event->setNode($node);
     }
   }
@@ -126,7 +126,7 @@ class EventSubscriber implements EventSubscriberInterface {
     $node = $event->getNode();
     // After unpublishing a node remove it from the front page.
     if (!$node->isPublished() && strpos($node->title->value, 'API TEST') === 0) {
-      $node->setPromoted(FALSE);
+      $node->setPromoted(FALSE)->save();
       $event->setNode($node);
     }
   }
@@ -192,7 +192,7 @@ class EventSubscriber implements EventSubscriberInterface {
     // The name will be changed here only if it has already been changed in the
     // PRE_PUBLISH event function. This will show that both events worked.
     if ($entity->isPublished() && $entity->label() == 'API TEST MEDIA - changed by "PRE_PUBLISH" event') {
-      $entity->setName('API TEST MEDIA - altered a second time by "PUBLISH" event');
+      $entity->setName('API TEST MEDIA - altered a second time by "PUBLISH" event')->save();
       $event->setEntity($entity);
     }
   }
@@ -224,7 +224,7 @@ class EventSubscriber implements EventSubscriberInterface {
     // The name will be changed here only if it has already been changed in the
     // PRE_UNPUBLISH event function. This will show that both events worked.
     if (!$entity->isPublished() && $entity->label() == 'API TEST MEDIA - changed by "PRE_UNPUBLISH" event') {
-      $entity->setName('API TEST MEDIA - altered a second time by "UNPUBLISH" event');
+      $entity->setName('API TEST MEDIA - altered a second time by "UNPUBLISH" event')->save();
       $event->setEntity($entity);
     }
   }
@@ -286,7 +286,7 @@ class EventSubscriber implements EventSubscriberInterface {
     // The name will be changed here only if it has already been changed in the
     // PRE_PUBLISH event function. This will show that both events worked.
     if ($entity->isPublished() && $entity->label() == 'API TEST COMMERCE_PRODUCT - changed by "PRE_PUBLISH" event') {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "PUBLISH" event');
+      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "PUBLISH" event')->save();
       $event->setEntity($entity);
     }
   }
@@ -316,7 +316,7 @@ class EventSubscriber implements EventSubscriberInterface {
     // The name will be changed here only if it has already been changed in the
     // PRE_UNPUBLISH event function. This will show that both events worked.
     if (!$entity->isPublished() && $entity->label() == 'API TEST COMMERCE_PRODUCT - changed by "PRE_UNPUBLISH" event') {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "UNPUBLISH" event');
+      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "UNPUBLISH" event')->save();
       $event->setEntity($entity);
     }
   }

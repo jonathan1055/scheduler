@@ -383,7 +383,19 @@ class SchedulerManager {
             // None of the above hook calls processed the entity and there were
             // no errors detected so set the entity to published.
             $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
-            $entity->setPublished();
+
+            // Use the actions system to publish and save the entity.
+            if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
+              // workbench_moderation_actions uses a custom action.
+              $action_id = 'state_change__' . $entityTypeId . '__published';
+            }
+            else {
+              $action_id = $plugin->publishAction();
+            }
+            if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+              $this->missingAction($action_id, $process);
+            }
+            $loaded_action->getPlugin()->execute($entity);
           }
 
           // Invoke event to tell Rules that Scheduler has published the entity.
@@ -394,17 +406,6 @@ class SchedulerManager {
           // Trigger the PUBLISH Scheduler event so that modules can react after
           // the entity is published.
           $this->dispatchSchedulerEvent($entity, 'PUBLISH');
-
-          // Use the standard actions system to publish and save the entity.
-          $action_id = $plugin->publishAction();
-          if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-            // workbench_moderation_actions module uses a custom action instead.
-            $action_id = 'state_change__' . $entityTypeId . '__published';
-          }
-          if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            $this->missingAction($action_id, $process);
-          }
-          $loaded_action->getPlugin()->execute($entity);
 
           $result = TRUE;
         }
@@ -571,7 +572,19 @@ class SchedulerManager {
             // None of the above hook calls processed the entity and there were
             // no errors detected so set the entity to unpublished.
             $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
-            $entity->setUnpublished();
+
+            // Use the actions system to unpublish and save the entity.
+            if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
+              // workbench_moderation_actions uses a custom action.
+              $action_id = 'state_change__' . $entityTypeId . '__archived';
+            }
+            else {
+              $action_id = $plugin->unpublishAction();
+            }
+            if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+              $this->missingAction($action_id, $process);
+            }
+            $loaded_action->getPlugin()->execute($entity);
           }
 
           // Invoke event to tell Rules that Scheduler has unpublished the
@@ -583,17 +596,6 @@ class SchedulerManager {
           // Trigger the UNPUBLISH Scheduler event so that modules can react
           // after the entity is unpublished.
           $this->dispatchSchedulerEvent($entity, 'UNPUBLISH');
-
-          // Use the standard actions system to unpublish and save the entity.
-          $action_id = $plugin->unpublishAction();
-          if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-            // workbench_moderation_actions module uses a custom action instead.
-            $action_id = 'state_change__' . $entityTypeId . '__archived';
-          }
-          if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-            $this->missingAction($action_id, $process);
-          }
-          $loaded_action->getPlugin()->execute($entity);
 
           $result = TRUE;
         }
