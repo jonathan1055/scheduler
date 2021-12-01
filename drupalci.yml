@@ -4,6 +4,9 @@ build:
     validate_codebase:
       phplint:
       container_composer:
+      host_command:
+        commands:
+          - "cd ${SOURCE_DIR} && sudo -u www-data curl https://www.drupal.org/files/issues/2021-11-30/3251817-4.run-tests-with-multiple-groups.patch | sudo -u www-data patch -p1 --verbose"
       csslint:
       eslint:
       phpcs:
@@ -19,6 +22,7 @@ build:
         suppress-deprecations: true
       run_tests.js:
         types: 'PHPUnit-FunctionalJavascript'
+        testgroups: 'scheduler_js'
         suppress-deprecations: true
         concurrency: 1
         halt-on-fail: false
