@@ -13,6 +13,9 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate\Row;
 
 /**
  * Implements hook_help().
@@ -1046,4 +1049,79 @@ function scheduler_modules_installed($modules) {
  */
 function scheduler_cache_flush() {
   \Drupal::service('scheduler.manager')->invalidatePluginCache();
+}
+
+/**
+ * Implements hook_migrate_prepare_row().
+ */
+function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  if ($migration->getBaseId() == 'd7_node_type') {
+    $scheduler_config_name = [
+      'scheduler_expand_fieldset_' . $row->getSourceProperty('type'),
+      'scheduler_publish_enable_' . $row->getSourceProperty('type'),
+      'scheduler_publish_past_date_' . $row->getSourceProperty('type'),
+      'scheduler_publish_required_' . $row->getSourceProperty('type'),
+      'scheduler_publish_revision_' . $row->getSourceProperty('type'),
+      'scheduler_publish_touch_' . $row->getSourceProperty('type'),
+      'scheduler_unpublish_enable_' . $row->getSourceProperty('type'),
+      'scheduler_unpublish_required_' . $row->getSourceProperty('type'),
+      'scheduler_unpublish_revision_' . $row->getSourceProperty('type'),
+      'scheduler_use_vertical_tabs_' . $row->getSourceProperty('type'),
+    ];
+    $query = $source->getDatabase()->select('variable', 'v');
+    $query->fields('v', ['name', 'value']);
+    $query->condition('name', $scheduler_config_name, 'IN');
+    $settings = $query->execute()->fetchAll();
+    $third_party_settings = [];
+    foreach ($settings as $setting) {
+      // Remove 'scheduler_' from the start and '_{type}' from the end to get
+      // the short config name from the full $setting->name.
+      $config_name = str_replace(
+        ['scheduler_', '_' . $row->getSourceProperty('type')],
+        ['', ''],
+        $setting->name
+      );
+      // Two third-party-settings have changed name and value, so convert these.
+      if ($config_name == 'use_vertical_tabs') {
+        if (unserialize($setting->value) == 1) {
+          $third_party_settings['fields_display_mode'] = 'vertical_tab';
+        }
+        else {
+          $third_party_settings['fields_display_mode'] = 'fieldset';
+        }
+      }
+      elseif ($config_name == 'expand_fieldset') {
+        if (unserialize($setting->value) == 1) {
+          $third_party_settings['expand_fieldset'] = 'always';
+        }
+        else {
+          $third_party_settings['expand_fieldset'] = 'when_required';
+        }
+      }
+      else {
+        // The remaining eight settings are exactly the same as in Drupal 7.
+        $third_party_settings[$config_name] = unserialize($setting->value);
+      }
+    }
+    $row->setSourceProperty('scheduler_third_party_settings', $third_party_settings);
+  }
+}
+
+/**
+ * Implements hook_migration_plugins_alter().
+ */
+function scheduler_migration_plugins_alter(array &$migrations) {
+  $node_migrations = array_filter(
+    $migrations,
+    function ($definition) {
+      return $definition['id'] === 'd7_node_type';
+    }
+  );
+
+  if (empty($node_migrations)) {
+    return;
+  }
+  foreach (array_keys($node_migrations) as $plugin_id) {
+    $migrations[$plugin_id]['process']['third_party_settings/scheduler'] = 'scheduler_third_party_settings';
+  }
 }

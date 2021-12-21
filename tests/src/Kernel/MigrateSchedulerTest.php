@@ -31,9 +31,7 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
       'fixtures',
       'drupal7.php',
     ]));
-
     $this->installConfig(['scheduler']);
-
   }
 
   /**

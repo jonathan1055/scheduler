@@ -1,5 +1,5 @@
 id: d7_scheduler_settings
-label: Scheduler global configuration
+label: Scheduler configuration
 migration_tags:
   - Drupal 7
   - Configuration
