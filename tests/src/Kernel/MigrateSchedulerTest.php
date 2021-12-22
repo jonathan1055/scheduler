@@ -41,12 +41,14 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
     $config_before = $this->config('scheduler.settings');
     $this->assertFalse($config_before->get('allow_date_only'));
     $this->assertSame('00:00:00', $config_before->get('default_time'));
+    $this->assertFalse($config_before->get('hide_seconds'));
 
     $this->executeMigration('d7_scheduler_settings');
 
     $config_after = $this->config('scheduler.settings');
     $this->assertTrue($config_after->get('allow_date_only'));
     $this->assertSame('00:00:38', $config_after->get('default_time'));
+    $this->assertTrue($config_after->get('hide_seconds'));
 
   }
 

@@ -47,4 +47,8 @@ $connection->insert('variable')
     'name' => 'scheduler_default_time',
     'value' => 's:8:"00:00:38";',
   ])
+  ->values([
+    'name' => 'scheduler_date_format',
+    'value' => 's:9:"Y-m-d H:i";',
+  ])
   ->execute();
