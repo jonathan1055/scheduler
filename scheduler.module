@@ -127,7 +127,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   // Create a 'details' field group to wrap the scheduling fields, and expand it
   // if publishing or unpublishing is required, if a date already exists or the
   // fieldset is configured to be always expanded.
-  $has_data = !empty($node->publish_on->value) || !empty($node->unpublish_on->value);
+  $has_data = isset($node->publish_on->value) || isset($node->unpublish_on->value);
   $always_expand = $type->getThirdPartySetting('scheduler', 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
   $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
@@ -155,23 +155,20 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   }
 
   // Define the descriptions depending on whether the time can be skipped.
-  $date_formatter = \Drupal::service('date.formatter');
   $descriptions = [];
   if ($allow_date_only) {
     $descriptions['format'] = t('Enter a date. The time part is optional.');
     // Show the default time so users know what they will get if they do not
     // enter a time.
-    $default_time = strtotime($config->get('default_time'));
-    $default_time_formatted = $date_formatter->format($default_time, 'custom', 'H:i:s');
     $descriptions['default'] = t('The default time is @default_time.', [
-      '@default_time' => $default_time_formatted,
+      '@default_time' => $config->get('default_time'),
     ]);
 
     // Use javascript to pre-fill the time parts if the dates are required.
     // See js/scheduler_default_time.js for more details.
     if ($publishing_required || $unpublishing_required) {
       $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $default_time_formatted;
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $config->get('default_time');
     }
   }
   else {
@@ -196,6 +193,22 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $form['unpublish_on']['#access'] = $unpublishing_enabled && $unpublishing_displayed;
   $form['unpublish_on']['widget'][0]['value']['#required'] = $unpublishing_required;
   $form['unpublish_on']['widget'][0]['value']['#description'] = Xss::filter(implode(' ', $descriptions));
+
+  // When hiding the seconds on time input, we need to remove the seconds from
+  // the form value, as some browsers HTML5 rendering still show the seconds.
+  // We can use the same jQuery drupal behaviors file as for default time.
+  if ($config->get('hide_seconds')) {
+    // If there is a publish_on time, then use jQuery to remove the seconds.
+    if (isset($node->publish_on->value)) {
+      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $node->publish_on->value);
+    }
+    // Likewise for the unpublish_on time.
+    if (isset($node->unpublish_on->value)) {
+      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
+      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $node->unpublish_on->value);
+    }
+  }
 
   if (!\Drupal::currentUser()->hasPermission('schedule publishing of nodes')) {
     // Do not show the scheduler fields for users who do not have permission.
@@ -373,6 +386,19 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
+ * Implements hook_views_data_alter().
+ */
+function scheduler_views_data_alter(array &$data) {
+  // By default the 'is null' and 'is not null' operators are only added to the
+  // list of filter options if the view contains a relationship. We want them to
+  // be always available for the scheduler date fields.
+  $data['node_field_data']['publish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_data']['unpublish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_revision']['publish_on']['filter']['allow empty'] = TRUE;
+  $data['node_field_revision']['unpublish_on']['filter']['allow empty'] = TRUE;
+}
+
+/**
  * Implements hook_ENTITY_TYPE_view() for node entities.
  */
 function scheduler_node_view(array &$build, EntityInterface $node, EntityViewDisplayInterface $display, $view_mode) {
@@ -521,7 +547,7 @@ function scheduler_node_presave(EntityInterface $node) {
  */
 function scheduler_node_insert(EntityInterface $node) {
   // Removed RULES code but keep the function. There may be code to add here.
-  // @TODO remove this comment when done. JSS Sep 2016.
+  // @todo remove this comment when done. JSS Sep 2016.
 }
 
 /**
@@ -531,7 +557,7 @@ function scheduler_node_update(EntityInterface $node) {
   // Removed RULES code but keep the function. There may be code to add here.
   // This function is currently called by actions SetPublishingDate and
   // SetUnpublishingDate.
-  // @TODO remove this comment when done. JSS Sep 2016.
+  // @todo remove this comment when done. JSS Sep 2016.
 }
 
 /**

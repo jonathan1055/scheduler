@@ -43,8 +43,8 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // For this test we use a default time of 6:30am.
-    $this->defaultTime = '06:30:00';
+    // For this test we use a default time of 6:30:15am.
+    $this->defaultTime = '06:30:15';
     $config = $this->config('scheduler.settings');
     $config->set('default_time', $this->defaultTime)->save();
 
@@ -53,10 +53,10 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
     // shifts properly.
     // @see https://www.drupal.org/project/scheduler/issues/2957490
     $this->publishTime = new \DateTime();
-    $this->publishTime->add(new \DateInterval('P1D'))->setTime(6, 30);
+    $this->publishTime->add(new \DateInterval('P1D'))->setTime(6, 30, 15);
 
     $this->unpublishTime = new \DateTime();
-    $this->unpublishTime->add(new \DateInterval('P2D'))->setTime(6, 30);
+    $this->unpublishTime->add(new \DateInterval('P2D'))->setTime(6, 30, 15);
   }
 
   /**

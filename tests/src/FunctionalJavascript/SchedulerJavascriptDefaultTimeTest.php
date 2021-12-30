@@ -48,9 +48,9 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
   /**
    * Test the default time functionality when scheduling dates are required.
    *
-   * @dataProvider dataDefaultTimeWhenSchedulingIsRequired()
+   * @dataProvider dataTimeWhenSchedulingIsRequired()
    */
-  public function testDefaultTimeWhenSchedulingIsRequired($field) {
+  public function testTimeWhenSchedulingIsRequired($field) {
     $config = $this->config('scheduler.settings');
 
     // This test is only relevant when the configuration allows a date only with
@@ -58,14 +58,14 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
     // covered in the browser test SchedulerDefaultTimeTest.
     $config->set('allow_date_only', TRUE)->save();
 
-    // Use a default time of 19:30 (7:30pm).
-    $default_time = '19:30:00';
+    // Use a default time of 19:30:20 (7:30pm and 20 seconds).
+    $default_time = '19:30:20';
     $config->set('default_time', $default_time)->save();
 
     // Create a DateTime object to hold the scheduling date. This is better than
     // using a raw unix timestamp because it caters for daylight-saving.
     $scheduling_time = new \DateTime();
-    $scheduling_time->add(new \DateInterval('P1D'))->setTime(19, 30);
+    $scheduling_time->add(new \DateInterval('P1D'))->setTime(19, 30, 20);
 
     foreach ([TRUE, FALSE] as $required) {
       // Set the publish-on/unpublish-on date to the $required setting.
@@ -102,12 +102,12 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
   }
 
   /**
-   * Provides data for testDefaultTimeWhenSchedulingIsRequired().
+   * Provides data for testTimeWhenSchedulingIsRequired().
    *
    * @return array
    *   The test data.
    */
-  public function dataDefaultTimeWhenSchedulingIsRequired() {
+  public function dataTimeWhenSchedulingIsRequired() {
     return [
       ['publish'],
       ['unpublish'],

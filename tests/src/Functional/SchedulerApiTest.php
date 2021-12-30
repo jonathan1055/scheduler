@@ -7,7 +7,7 @@ use Drupal\node\Entity\NodeType;
 /**
  * Tests the API of the Scheduler module.
  *
- * @group scheduler
+ * @group scheduler_api
  */
 class SchedulerApiTest extends SchedulerBrowserTestBase {
 
@@ -16,7 +16,7 @@ class SchedulerApiTest extends SchedulerBrowserTestBase {
    *
    * @var array
    *
-   * @TODO 'menu_ui' is in the exported node.type definition, and 'path' is in
+   * @todo 'menu_ui' is in the exported node.type definition, and 'path' is in
    * the entity_form_display. Could these be removed from the config files and
    * then not needed here?
    */

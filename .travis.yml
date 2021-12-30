@@ -17,38 +17,30 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.1
-      env: DRUPAL_CORE=8.8.x
     - php: 7.2
-      env: DRUPAL_CORE=8.9.x
+      env:
+        - DRUPAL_CORE=8.9.x
+        - RULES=NO
     - php: 7.3
       env:
         - DRUPAL_CORE=9.0.x
         # --- Remaining self deprecation notices (0)
-        # --- Remaining direct deprecation notices (4)
-        #   4 inheritEnvironmentVariables
-        - DEPRECATIONS=4
+        # --- Remaining direct deprecation notices (0)
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (139)
-        # 106 EventDispatcher (in Rules module)
-        #  23 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
-        #  10 StatementWrapper::fetchColumn
-        # --- Remaining direct deprecation notices (8)
-        #   4 inheritEnvironmentVariables
-        #   4 Passing command as string in drush
-        - DEPRECATIONS=147
+        # --- Remaining self deprecation notices (180)
+        # 141 EventDispatcher (in Rules module)
+        #  27 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
+        #  12 StatementWrapper::fetchColumn
+        # --- Remaining direct deprecation notices (0)
+        - DEPRECATIONS=180
     - php: 7.4
       env:
         # Have a second 9.1 run which excludes the Rules tests.
         - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (6)
-        #   6 StatementWrapper::fetchColumn
-        # --- Remaining direct deprecation notices (8)
-        #   4 inheritEnvironmentVariables
-        #   4 Passing command as string in drush
-        - DEPRECATIONS=14
+        # --- Remaining self deprecation notices (0)
+        # --- Remaining direct deprecation notices (0)
         - RULES=NO
 
 # Be sure to cache composer downloads.
@@ -57,6 +49,14 @@ cache:
     - $HOME/.composer
 
 before_script:
+  # At job start-up Composer is installed at 1.8.4 then self-update is run. From
+  # 24 October 2020 this bumped the version to Composer 2. Drupal Core 8.8 has
+  # plugins that only run with composer-plugin-api ^1.0 so revert to Composer 1.
+  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
+      travis_retry composer self-update --1;
+    fi
+  - composer --version
+
   - echo $MODULE
 
   # Remove Xdebug as we don't need it and it causes
@@ -93,12 +93,7 @@ before_script:
       travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
     fi
 
-  # At job start-up Composer is installed at 1.8.4 then self-update is run. From
-  # 24 October 2020 this bumped the version to Composer 2. Drupal Core 8.8 has
-  # plugins that only run with composer-plugin-api ^1.0 so revert to Composer 1.
-  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
-      travis_retry composer self-update --1;
-    fi
+  # Install the site dependencies via Composer.
   - travis_retry composer install
 
   # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
@@ -133,16 +128,12 @@ script:
   - composer show squizlabs/php_codesniffer | egrep 'name |vers'
   - $DRUPAL_ROOT/vendor/bin/phpcs --version
 
-  # Change into $MODULE directory to avoid having to add
-  # --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
+  # Change into $MODULE directory to avoid having to add --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
   - cd $DRUPAL_ROOT/modules/$MODULE
 
-  # List all the sniffs that are used.
+  # List the standards and the sniffs that are used.
   - $DRUPAL_ROOT/vendor/bin/phpcs -i
   - $DRUPAL_ROOT/vendor/bin/phpcs -e
 
-  # Show the violations in detail and do not fail for any errors or warnings.
-  - $DRUPAL_ROOT/vendor/bin/phpcs . --runtime-set ignore_warnings_on_exit 1 --runtime-set ignore_errors_on_exit 1
-
-  # Run again to give a summary and totals, and fail for errors and warnings.
-  - $DRUPAL_ROOT/vendor/bin/phpcs . --report=summary
+  # Show the violations in detail, plus summary and source report.
+  - $DRUPAL_ROOT/vendor/bin/phpcs . --report-full --report-summary --report-source -s
