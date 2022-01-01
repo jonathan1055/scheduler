@@ -27,11 +27,6 @@ jobs:
         - RULES=NO
         # ---- Remaining self deprecation notices (0)
         # ---- Remaining direct deprecation notices (0)
-    - php: 7.3
-      env:
-        - DRUPAL_CORE=9.0.x
-        # ---- Remaining self deprecation notices (0)
-        # ---- Remaining direct deprecation notices (0)
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
