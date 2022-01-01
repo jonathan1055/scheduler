@@ -118,9 +118,9 @@ script:
   # Run the PHPUnit tests.
   - cd $DRUPAL_ROOT
   - if [ "$RULES" == "NO" ]; then
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!rules).)*$/i';
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/;
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/;
     fi
 
   # Check for coding standards. First show the versions.
