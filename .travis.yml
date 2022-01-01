@@ -139,19 +139,19 @@ script:
   - |
     if [[ "$MEDIA" == "NO" && "$PRODUCTS" == "NO" && "$RULES" == "NO" ]]; then
       echo "Running tests excluding Media, Products and Rules ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(media|product|rules)).)*$/i'
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!(media|product|rules)).)*$/i'
     elif [[ "$MEDIA" == "NO" && "$PRODUCTS" == "NO" ]]; then
       echo "Running tests excluding Media and Products ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(media|product)).)*$/i'
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!(media|product)).)*$/i'
     elif [[ "$RULES" == "NO" && "$PRODUCTS" == "NO" ]]; then
       echo "Running tests excluding Rules and Products ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!(rules|product)).)*$/i'
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!(rules|product)).)*$/i'
     elif [ "$RULES" == "NO" ]; then
       echo "Running tests excluding Rules ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/ --filter '/^((?!rules).)*$/i'
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!rules).)*$/i'
     else
       echo "Running all tests ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/tests/
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/
     fi
 
   # Check for coding standards. First show the versions.
