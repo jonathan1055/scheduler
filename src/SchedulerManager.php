@@ -392,10 +392,13 @@ class SchedulerManager {
             else {
               $action_id = $plugin->publishAction();
             }
-            if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-              $this->missingAction($action_id, $process);
+            if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+              $loaded_action->getPlugin()->execute($entity);
             }
-            $loaded_action->getPlugin()->execute($entity);
+            else {
+              // Fallback to the direct method if the action does not exist.
+              $entity->setPublished()->save();
+            }
           }
 
           // Invoke event to tell Rules that Scheduler has published the entity.
@@ -581,10 +584,13 @@ class SchedulerManager {
             else {
               $action_id = $plugin->unpublishAction();
             }
-            if (!$loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
-              $this->missingAction($action_id, $process);
+            if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+              $loaded_action->getPlugin()->execute($entity);
             }
-            $loaded_action->getPlugin()->execute($entity);
+            else {
+              // Fallback to the direct method if the action does not exist.
+              $entity->setUnpublished()->save();
+            }
           }
 
           // Invoke event to tell Rules that Scheduler has unpublished the

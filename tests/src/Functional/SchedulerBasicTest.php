@@ -12,7 +12,7 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
   /**
    * Tests basic scheduling of content.
    */
-  public function testPublishingAndUnpublishing() {
+  public function testNodePublishingAndUnpublishing() {
     // Login is required here before creating the publish_on date and time
     // values so that $this->dateFormatter can utilise the current users
     // timezone. The constraints receive values which have been converted using
@@ -35,6 +35,15 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
     // Need a new title for the new node, as we identify the node by title.
     $edit['title[0][value]'] = 'Unpublish This Node';
     $this->helpTestScheduler($edit);
+  }
+
+  /**
+   * Tests scheduled publishing/unpublishing of a node when actions are missing.
+   */
+  public function testMissingActionNodePublishingAndUnpublishing() {
+    $this->deleteAction('node_scheduler', 'publish');
+    $this->deleteAction('node_scheduler', 'unpublish');
+    $this->testNodePublishingAndUnpublishing();
   }
 
   /**

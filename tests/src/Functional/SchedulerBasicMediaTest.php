@@ -43,6 +43,14 @@ class SchedulerBasicMediaTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Tests scheduled publishing of a media entity when action is missing.
+   */
+  public function testMissingActionMediaPublishing() {
+    $this->deleteAction('media_scheduler', 'publish');
+    $this->testMediaPublishing();
+  }
+
+  /**
    * Tests scheduled unpublishing of a media entity.
    *
    * Covers scheduler_entity_presave(), scheduler_cron(),
@@ -74,6 +82,14 @@ class SchedulerBasicMediaTest extends SchedulerBrowserTestBase {
     $entity = $this->mediaStorage->load($entity->id());
     $this->assertFalse($entity->isPublished(), 'The entity is unpublished after cron run');
 
+  }
+
+  /**
+   * Tests scheduled unpublishing of a media entity when action is missing.
+   */
+  public function testMissingActionMediaUnpublishing() {
+    $this->deleteAction('media_scheduler', 'unpublish');
+    $this->testMediaUnpublishing();
   }
 
 }

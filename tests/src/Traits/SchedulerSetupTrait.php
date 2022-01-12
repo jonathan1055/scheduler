@@ -402,6 +402,18 @@ trait SchedulerSetupTrait {
   }
 
   /**
+   * Deletes an action that is associated with a scheduler entity type.
+   */
+  public function deleteAction($plugin_id, $process) {
+    $plugin = $this->container->get('plugin.manager.scheduler')->createInstance($plugin_id);
+    $action_id = ($process == 'publish' ? $plugin->publishAction() : $plugin->unpublishAction());
+    if ($loaded_action = $this->container->get('entity_type.manager')->getStorage('action')->load($action_id)) {
+      // To avoid error, only call delete if the action exists and was loaded.
+      $loaded_action->delete();
+    }
+  }
+
+  /**
    * Provides test data containing the standard entity types.
    *
    * @return array

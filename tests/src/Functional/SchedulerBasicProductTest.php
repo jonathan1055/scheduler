@@ -43,6 +43,14 @@ class SchedulerBasicProductTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Tests scheduled publishing of a product when action is missing.
+   */
+  public function testMissingActionProductPublishing() {
+    $this->deleteAction('commerce_product_scheduler', 'publish');
+    $this->testProductPublishing();
+  }
+
+  /**
    * Tests scheduled unpublishing of a commerce product entity.
    *
    * Covers scheduler_entity_presave(), scheduler_cron(),
@@ -74,6 +82,14 @@ class SchedulerBasicProductTest extends SchedulerBrowserTestBase {
     $entity = $this->productStorage->load($entity->id());
     $this->assertFalse($entity->isPublished(), 'The entity is unpublished after cron run');
 
+  }
+
+  /**
+   * Tests scheduled unpublishing of a product when action is missing.
+   */
+  public function testMissingActionProductUnpublishing() {
+    $this->deleteAction('commerce_product_scheduler', 'unpublish');
+    $this->testProductUnpublishing();
   }
 
 }
