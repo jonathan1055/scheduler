@@ -292,7 +292,13 @@ class SchedulerManager {
           // workbench_moderation_actions module uses a custom action instead.
           $action_id = 'state_change__node__published';
         }
-        $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($node);
+        if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+          $loaded_action->getPlugin()->execute($node);
+        }
+        else {
+          // Just save the node, as setPublished() has already been done above.
+          $node->save();
+        }
 
         $result = TRUE;
       }
@@ -467,7 +473,13 @@ class SchedulerManager {
           // workbench_moderation_actions module uses a custom action instead.
           $action_id = 'state_change__node__archived';
         }
-        $this->entityTypeManager->getStorage('action')->load($action_id)->getPlugin()->execute($node);
+        if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
+          $loaded_action->getPlugin()->execute($node);
+        }
+        else {
+          // Just save the node, as setUnpublished() has already been done.
+          $node->save();
+        }
 
         $result = TRUE;
       }

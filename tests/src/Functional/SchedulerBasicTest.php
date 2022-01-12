@@ -38,6 +38,15 @@ class SchedulerBasicTest extends SchedulerBrowserTestBase {
   }
 
   /**
+   * Tests scheduled publishing/unpublishing of a node when actions are missing.
+   */
+  public function testMissingActionPublishingAndUnpublishing() {
+    $this->container->get('entity_type.manager')->getStorage('action')->load('node_publish_action')->delete();
+    $this->container->get('entity_type.manager')->getStorage('action')->load('node_unpublish_action')->delete();
+    $this->testPublishingAndUnpublishing();
+  }
+
+  /**
    * Helper function for testPublishingAndUnpublishing().
    *
    * Schedules content, runs cron and asserts status.
