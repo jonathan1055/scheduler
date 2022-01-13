@@ -14,7 +14,7 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = [
+  public static $modules = [
     'scheduler',
     'views',
   ];
