@@ -30,34 +30,36 @@ jobs:
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
-        # ---- Remaining self deprecation notices (3178)
-        # 3086 EventDispatcher (in Rules and Commerce Product module)
-        #   81 Drupal\Core\Plugin\ContextAwarePluginBase (in Rules module)
+        # ---- Remaining self deprecation notices (3157)
+        # 3144 EventDispatcher (in Rules and Commerce Product module)
         #   11 Creating an instance of class ... getConnection()->condition()
+        #    2 Kernel $modules property must be declared protected
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=3178
+        - DEPRECATIONS=3157
     - php: 7.4
       env:
         - DRUPAL_CORE=9.1.x
         # Have a second 9.1 run which excludes the Rules and Products tests.
         - RULES=NO
         - PRODUCTS=NO
-        # ---- Remaining self deprecation notices (975)
-        #  975 EventDispatcherInterface::dispatch()
+        # ---- Remaining self deprecation notices (997)
+        #  995 EventDispatcherInterface::dispatch()
+        #    2 Kernel $modules property must be declared protected
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=975
+        - DEPRECATIONS=997
     - php: 7.4
       env:
         - DRUPAL_CORE=9.2.x
         # Exclude Rules and Products tests.
         - RULES=NO
         - PRODUCTS=NO
-        # ---- Remaining self deprecation notices (2296)
-        # 1104 Symfony isMasterRequest() is deprecated, use isMainRequest()
-        #  860 EventDispatcherInterface::dispatch()
-        #  332 hook_field_widget_form_alter() in Commerce_product setup.
+        # ---- Remaining self deprecation notices (2335)
+        # 1120 Symfony isMasterRequest() is deprecated, use isMainRequest()
+        #  877 EventDispatcherInterface::dispatch()
+        #  336 hook_field_widget_form_alter() in Commerce_product setup.
+        #    2 Kernel $modules property must be declared protected
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=2296
+        - DEPRECATIONS=2335
 
 # Be sure to cache composer downloads.
 cache:
