@@ -290,8 +290,11 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   /** @var \Drupal\Core\Entity\EntityTypeInterface $type */
   $type = $form_state->getFormObject()->getEntity();
 
-  /** @var Drupal\Core\Entity\ContentEntityTypeInterface $ContentEntityType */
-  $contentEntityType = \Drupal::service('entity_type.manager')->getDefinition($type->getEntityType()->getBundleOf());
+  /** @var Drupal\Core\Entity\ContentEntityTypeInterface $contentEntityType */
+  $contentEntityType = \Drupal::entityTypeManager()->getDefinition($type->getEntityType()->getBundleOf());
+
+  /** @var \Drupal\Core\Entity\ContentEntityInterface $contentEntity */
+  $contentEntity = \Drupal::entityTypeManager()->getStorage($contentEntityType->id())->create([$contentEntityType->getKey('bundle') => 'scaffold']);
 
   $params = [
     '@type' => $type->label(),
@@ -332,6 +335,15 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
       ],
     ],
   ];
+
+  // Entity types that do not implement the 'getCreatedTime' method should have
+  // the option set to FALSE and the field disabled.
+  if (!method_exists($contentEntity, 'getCreatedTime')) {
+    $form['scheduler']['publish']['scheduler_publish_touch']['#disabled'] = TRUE;
+    $form['scheduler']['publish']['scheduler_publish_touch']['#description'] = t('The entity type does not support the change of creation time.');
+    $form['scheduler']['publish']['scheduler_publish_touch']['#default_value'] = FALSE;
+  }
+
   $form['scheduler']['publish']['scheduler_publish_required'] = [
     '#type' => 'checkbox',
     '#title' => t('Require scheduled publishing'),
@@ -389,6 +401,14 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
       ],
     ],
   ];
+
+  // Entity types that do not implement the 'getCreatedTime' method should have
+  // the option set to FALSE and the field disabled.
+  if (!method_exists($contentEntity, 'getCreatedTime')) {
+    $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created']['#disabled'] = TRUE;
+    $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created']['#description'] = t('The entity type does not support the change of creation time.');
+    $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created']['#default_value'] = FALSE;
+  }
 
   // Unpublishing options.
   $form['scheduler']['unpublish'] = [
@@ -494,35 +514,54 @@ function _scheduler_form_entity_type_form_builder($entity_type, $type, &$form, F
  * Form alter handling for Devel Generate forms.
  */
 function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $form_state, $form_id, $entityTypeId) {
-  // Add an extra column to the table to show which types are enabled for
-  // scheduled publishing and unpublishing.
-  $scheduler_manager = \Drupal::service('scheduler.manager');
-  $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'publish');
-  $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'unpublish');
-
+  // Show which types are enabled for scheduled publishing and unpublishing. If
+  // the form does not have a table but has a selection list instead, then
+  // nothing is added here.
   $type_table = $entityTypeId . '_types';
-  $form[$type_table]['#header']['scheduler'] = t('Scheduler settings');
+  if (isset($form[$type_table]['#header']) && isset($form[$type_table]['#options'])) {
+    // Add an extra column to the table to show which types are enabled for
+    // scheduled publishing and unpublishing.
+    $scheduler_manager = \Drupal::service('scheduler.manager');
+    $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'publish');
+    $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entityTypeId, 'unpublish');
+    $form[$type_table]['#header']['scheduler'] = t('Scheduler settings');
 
-  foreach (array_keys($form[$type_table]['#options']) as $type) {
-    $items = [];
-    if (in_array($type, $publishing_enabled_types)) {
-      $items[] = t('Enabled for publishing');
+    foreach (array_keys($form[$type_table]['#options']) as $type) {
+      $items = [];
+      if (in_array($type, $publishing_enabled_types)) {
+        $items[] = t('Enabled for publishing');
+      }
+      if (in_array($type, $unpublishing_enabled_types)) {
+        $items[] = t('Enabled for unpublishing');
+      }
+      if (empty($items)) {
+        $scheduler_settings = t('None');
+      }
+      else {
+        $scheduler_settings = [
+          'data' => [
+            '#theme' => 'item_list',
+            '#items' => $items,
+          ],
+        ];
+      }
+      $form[$type_table]['#options'][$type]['scheduler'] = $scheduler_settings;
     }
-    if (in_array($type, $unpublishing_enabled_types)) {
-      $items[] = t('Enabled for unpublishing');
+  }
+
+  if (!isset($form['time_range'])) {
+    // Add the time range field if it was not added by Devel Generate.
+    $options = [1 => t('Now')];
+    foreach ([3600, 86400, 604800, 2592000, 31536000] as $interval) {
+      $options[$interval] = \Drupal::service('date.formatter')->formatInterval($interval, 1);
     }
-    if (empty($items)) {
-      $scheduler_settings = t('None');
-    }
-    else {
-      $scheduler_settings = [
-        'data' => [
-          '#theme' => 'item_list',
-          '#items' => $items,
-        ],
-      ];
-    }
-    $form[$type_table]['#options'][$type]['scheduler'] = $scheduler_settings;
+    $form['time_range'] = [
+      '#type' => 'select',
+      '#title' => t('How far into the future should the items be scheduled?'),
+      '#description' => t('Scheduled dates will be set randomly within the selected time span.'),
+      '#options' => $options,
+      '#default_value' => 86400,
+    ];
   }
 
   // Add form items to specify what proportion of generated entities should have
@@ -531,7 +570,7 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
   $form['scheduler_publishing'] = [
     '#type' => 'number',
     '#title' => t('Publishing date for Scheduler'),
-    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at entity creation date, up to a time in the future matching the same span as selected above for creation date.'),
+    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at entity creation date, up to a time in the future matching the same span as selected above.'),
     '#default_value' => 50,
     '#required' => TRUE,
     '#min' => 0,
@@ -540,7 +579,7 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
   $form['scheduler_unpublishing'] = [
     '#type' => 'number',
     '#title' => t('Unpublishing date for Scheduler'),
-    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of entity creation date and publish-on date, up to a time in the future matching the same span as selected above for creation date.'),
+    '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of entity creation date and publish-on date, up to a time in the future matching the same span as selected above.'),
     '#default_value' => 50,
     '#required' => TRUE,
     '#min' => 0,
@@ -733,6 +772,7 @@ function scheduler_entity_presave(EntityInterface $entity) {
   if (isset($entity->devel_generate)) {
     static $publishing_percent;
     static $unpublishing_percent;
+    static $entity_created;
     static $time_range;
 
     if (!isset($publishing_percent)) {
@@ -740,20 +780,21 @@ function scheduler_entity_presave(EntityInterface $entity) {
       $publishing_percent = @$entity->devel_generate['scheduler_publishing'] ?: 0;
       $unpublishing_percent = @$entity->devel_generate['scheduler_unpublishing'] ?: 0;
       // Reuse the selected 'creation' time range for our future date span.
+      $entity_created = isset($entity->created) ? $entity->created->value : $request_time;
       $time_range = $entity->devel_generate['time_range'];
     }
     if ($publishing_percent && $publishing_enabled) {
       if (rand(1, 100) <= $publishing_percent) {
         // Randomly assign a publish_on value in the range starting with the
         // created date and up to the selected time range in the future.
-        $entity->set('publish_on', rand($entity->created->value + 1, $request_time + $time_range));
+        $entity->set('publish_on', rand($entity_created, $request_time + $time_range));
       }
     }
     if ($unpublishing_percent && $unpublishing_enabled) {
       if (rand(1, 100) <= $unpublishing_percent) {
         // Randomly assign an unpublish_on value in the range from the later of
         // created date/publish_on date up to the time range in the future.
-        $entity->set('unpublish_on', rand(max($entity->created->value, $entity->publish_on->value), $request_time + $time_range));
+        $entity->set('unpublish_on', rand(max($entity_created, $entity->publish_on->value), $request_time + $time_range));
       }
     }
   }
@@ -781,7 +822,7 @@ function scheduler_entity_presave(EntityInterface $entity) {
       $entity->setChangedTime($entity->publish_on->value);
       // If required, set the created date to match published date.
       if ($scheduler_manager->getThirdPartySetting($entity, 'publish_touch', $config->get('default_publish_touch')) ||
-        ($entity->getCreatedTime() > $entity->publish_on->value && $scheduler_manager->getThirdPartySetting($entity, 'publish_past_date_created', $config->get('default_publish_past_date_created')))) {
+        ($scheduler_manager->getThirdPartySetting($entity, 'publish_past_date_created', $config->get('default_publish_past_date_created')) && $entity->getCreatedTime() > $entity->publish_on->value)) {
         $entity->setCreatedTime($entity->publish_on->value);
       }
       $entity->publish_on->value = NULL;

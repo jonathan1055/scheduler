@@ -311,13 +311,13 @@ class SchedulerManager {
 
           // Update 'changed' timestamp.
           $entity->setChangedTime($publish_on);
-          $old_creation_date = $entity->getCreatedTime();
           $msg_extra = '';
 
           // If required, set the created date to match published date.
           if ($this->getThirdPartySetting($entity, 'publish_touch', $this->setting('default_publish_touch')) ||
-            ($entity->getCreatedTime() > $publish_on && $this->getThirdPartySetting($entity, 'publish_past_date_created', $this->setting('default_publish_past_date_created')))
+            ($this->getThirdPartySetting($entity, 'publish_past_date_created', $this->setting('default_publish_past_date_created')) && $entity->getCreatedTime() > $publish_on)
           ) {
+            $old_creation_date = $entity->getCreatedTime();
             $entity->setCreatedTime($publish_on);
             $msg_extra = $this->t('The previous creation date was @old_creation_date, now updated to match the publishing date.', [
               '@old_creation_date' => $this->dateFormatter->format($old_creation_date, 'short'),
@@ -351,7 +351,8 @@ class SchedulerManager {
           }
 
           // Create a set of variables for use in the log message.
-          $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
+          $bundle_type = $entity->getEntityType()->getBundleEntityType();
+          $entity_type = $this->entityTypeManager->getStorage($bundle_type)->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type', [
             '@type' => strtolower($entity_type->label()),
           ]));
@@ -543,7 +544,8 @@ class SchedulerManager {
           }
 
           // Create a set of variables for use in the log message.
-          $entity_type = $this->entityTypeManager->getStorage($entityTypeId . '_type')->load($entity->bundle());
+          $bundle_type = $entity->getEntityType()->getBundleEntityType();
+          $entity_type = $this->entityTypeManager->getStorage($bundle_type)->load($entity->bundle());
           $view_link = $entity->toLink($this->t('View @type', [
             '@type' => strtolower($entity_type->label()),
           ]));

@@ -88,15 +88,17 @@ class SchedulerAdminForm extends ConfigFormBase {
       $publishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'publish');
       $unpublishing_enabled_types = $this->schedulerManager->getEnabledTypes($entityTypeId, 'unpublish');
 
-      // When all is running normally, $plugin->getTypes() will give a non-empty
-      // array of values, but we need to protect against this being empty.
+      // $plugin->getTypes() will usually give a non-empty array of values, but
+      // it can be empty if no default bundle type is defined, or all types have
+      // been deleted.
       if (!$types = $plugin->getTypes()) {
         // When a module is enabled via drush there is no automatic clear cache.
         // Thus moduleHandler()->moduleExists({module}) can return false when
         // the module is actually enabled. This means we get nothing for
         // plugin->getTypes() and processing should stop with a useful exception
         // message, instead of letting Core give a confusing exception.
-        $type_definition = $this->entityTypeManager->getDefinition($entityTypeId . '_type', FALSE);
+        $bundle_type = $this->entityTypeManager->getDefinition($entityTypeId)->getBundleEntityType();
+        $type_definition = $this->entityTypeManager->getDefinition($bundle_type, FALSE);
         if (!$type_definition) {
           throw new \Exception(sprintf('Invalid or empty entity type definition for %s module. Do a full cache clear via admin/config/development/performance or drush cr.', $plugin->dependency()));
         }
