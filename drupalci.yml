@@ -6,6 +6,7 @@ build:
       container_composer:
       host_command:
         commands:
+          # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817
           - "cd ${SOURCE_DIR} && sudo -u www-data curl https://www.drupal.org/files/issues/2021-11-30/3251817-4.run-tests-with-multiple-groups.patch | sudo -u www-data patch -p1 --verbose"
       csslint:
       eslint:
@@ -16,9 +17,8 @@ build:
     testing:
       run_tests.functional:
         types: 'PHPUnit-Functional'
-        testgroups: 'scheduler,scheduler_api'
-        # Change testgroups to '--all' if Typed Data reverts to being supported
-        # at 8.x. See https://www.drupal.org/project/scheduler/issues/3248470
+        testgroups: '--all'
+        # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
         suppress-deprecations: true
       run_tests.kernel:
         types: 'PHPUnit-Kernel'
