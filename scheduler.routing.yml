@@ -25,9 +25,3 @@ scheduler.lightweight_cron:
     no_cache: TRUE
   requirements:
     _custom_access: '\Drupal\scheduler\Controller\LightweightCronController::access'
-
-# This duplicate route is required for the local tasks. See links.task.yml.
-scheduler.commerce_products:
-  path: '/admin/commerce/products'
-  requirements:
-    _permission: 'access commerce_product overview'

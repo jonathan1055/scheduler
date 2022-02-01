@@ -160,12 +160,13 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
    */
   public function testViewScheduledContentOverview($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);
-    $scheduled_urls = [
-      'node' => 'admin/content/scheduled',
-      'media' => 'admin/content/media/scheduled',
-      'commerce_product' => 'admin/commerce/products/scheduled',
+
+    $admin_urls = [
+      'node' => 'admin/content',
+      'media' => 'admin/content/media',
+      'commerce_product' => 'admin/commerce/products',
     ];
-    $scheduled_url = $scheduled_urls[$entityTypeId];
+    $scheduled_url = $admin_urls[$entityTypeId] . '/scheduled';
     $assert = $this->assertSession();
 
     // Try to access the scheduled content overview as an anonymous visitor.
@@ -196,6 +197,31 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
+
+    // Log in as admin and check that the main page is available.
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet($admin_urls[$entityTypeId]);
+    $assert->statusCodeEquals(200);
+
+    // Disable the scheduled view.
+    $view_ids = [
+      'node' => 'scheduler_scheduled_content',
+      'media' => 'scheduler_scheduled_media',
+      'commerce_product' => 'scheduler_scheduled_commerce_product',
+    ];
+    $view = $this->container->get('entity_type.manager')->getStorage('view')->load($view_ids[$entityTypeId]);
+    $view->disable()->save();
+
+    // Check access to the main content page is unaffected.
+    $this->drupalGet($admin_urls[$entityTypeId]);
+    $assert->statusCodeEquals(200);
+    $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
+
+    // Attempt to view the scheduled page. Interactively this gives a 404 'page
+    // not found' but in phpunit the page is still shown with a 200 code.
+    // However the page is empty so we can check that the content is not shown.
+    $this->drupalGet($scheduled_url);
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
   }
 
 }
