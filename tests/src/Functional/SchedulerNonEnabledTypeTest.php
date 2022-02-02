@@ -12,14 +12,13 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
   /**
    * Tests the publish_enable and unpublish_enable entity type settings.
    *
-   * @dataProvider dataNonEnabledType()
+   * @dataProvider dataNonEnabledScenarios()
    */
-  public function testNonEnabledType($id, $entityTypeId, $description, $publishing_enabled, $unpublishing_enabled) {
+  public function testNonEnabledType($id, $entityTypeId, $bundle, $description, $publishing_enabled, $unpublishing_enabled) {
     $this->drupalLogin($this->adminUser);
-    $entityType = $this->entityTypeObject($entityTypeId, 'non-enabled');
-    $bundle = $entityType->id();
+    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     // The 'default' case specifically checks the behavior of the unchanged
     // settings, so only change these when not running the default test.
@@ -130,22 +129,8 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
     // Display the full content list and the scheduled list. Calls to these
     // pages are for information and debug only.
-    switch ($entityTypeId) {
-      case 'node':
-        $this->drupalGet('admin/content');
-        $this->drupalGet('admin/content/scheduled');
-        break;
-
-      case 'media':
-        $this->drupalGet('admin/content/media');
-        $this->drupalGet('admin/content/media/scheduled');
-        break;
-
-      case 'commerce_product':
-        $this->drupalGet('admin/commerce/products');
-        $this->drupalGet('admin/commerce/products/scheduled');
-        break;
-    }
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
+    $this->drupalGet($this->adminUrl('scheduled', $entityTypeId, $bundle));
   }
 
   /**
@@ -155,28 +140,30 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
    *   Each item in the test data array has the follow elements:
    *     id                     - (int) a sequential id for use in titles
    *     entityTypeId           - (string) 'node', 'media' or 'commerce_product'
+   *     bundle                 - (string) the bundle which is not enabled
    *     description            - (string) describing the scenario being checked
    *     publishing_enabled     - (bool) whether publishing is enabled
    *     unpublishing_enabled   - (bool) whether unpublishing is enabled
    */
-  public function dataNonEnabledType() {
+  public function dataNonEnabledScenarios() {
     $data = [];
-    foreach ($this->dataStandardEntityTypes() as $key => $values) {
+    foreach ($this->dataNonEnabledTypes() as $key => $values) {
       $entityTypeId = $values[0];
+      $bundle = $values[1];
       // By default check that the scheduler date fields are not displayed.
-      $data["$key-1"] = [1, $entityTypeId, 'Default', FALSE, FALSE];
+      $data["$key-1"] = [1, $entityTypeId, $bundle, 'Default', FALSE, FALSE];
 
       // Explicitly disable this content type for both settings.
-      $data["$key-2"] = [2, $entityTypeId, 'Disabling both settings', FALSE, FALSE];
+      $data["$key-2"] = [2, $entityTypeId, $bundle, 'Disabling both settings', FALSE, FALSE];
 
       // Turn on scheduled publishing only.
-      $data["$key-3"] = [3, $entityTypeId, 'Enabling publishing only', TRUE, FALSE];
+      $data["$key-3"] = [3, $entityTypeId, $bundle, 'Enabling publishing only', TRUE, FALSE];
 
       // Turn on scheduled unpublishing only.
-      $data["$key-4"] = [4, $entityTypeId, 'Enabling unpublishing only', FALSE, TRUE];
+      $data["$key-4"] = [4, $entityTypeId, $bundle, 'Enabling unpublishing only', FALSE, TRUE];
 
       // For completeness turn on both scheduled publishing and unpublishing.
-      $data["$key-5"] = [5, $entityTypeId, 'Enabling both publishing and unpublishing', TRUE, TRUE];
+      $data["$key-5"] = [5, $entityTypeId, $bundle, 'Enabling both publishing and unpublishing', TRUE, TRUE];
     }
     return $data;
   }

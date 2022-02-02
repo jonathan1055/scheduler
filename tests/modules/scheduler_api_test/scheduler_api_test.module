@@ -37,7 +37,7 @@ function _scheduler_api_test_get_entities($entityTypeId) {
       break;
 
     default:
-      throw new \Exception("Entity type id '{$entityTypeId}' is unrecognosed in _scheduler_api_test_get_entities().");
+      throw new \Exception("Entity type id '{$entityTypeId}' is unrecognised in _scheduler_api_test_get_entities().");
   }
   return $results;
 }
@@ -417,7 +417,7 @@ function scheduler_api_test_scheduler_publish_process(EntityInterface $entity) {
   // Any entity with 'red {type}' in the title is simulated to cause a failure
   // and should then be skipped by Scheduler.
   if (stristr($entity->label(), "red {$entity->getEntityTypeId()}")) {
-    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $label_field = $entity->getEntityType()->getKey('label');
     $entity->set($label_field, $entity->label() . ' - publishing failed in API test module')->save();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Red should cause Scheduler to abandon publishing.'), 'status', FALSE);
     return -1;
@@ -432,7 +432,7 @@ function _api_publish_process(EntityInterface $entity) {
   // Entities with 'yellow {type}' in the title are simulated to be processed
   // by this hook, and will not be published by Scheduler.
   if (stristr($entity->label(), "yellow {$entity->getEntityTypeId()}")) {
-    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $label_field = $entity->getEntityType()->getKey('label');
     $entity->set($label_field, $entity->label() . ' - publishing processed by API test module');
     $entity->setPublished()->save();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Yellow should not have publishing processed by Scheduler.'), 'status', FALSE);
@@ -472,7 +472,7 @@ function scheduler_api_test_scheduler_unpublish_process(EntityInterface $entity)
   // Any entity with 'blue {type}' in the title is simulated to cause a failure
   // and should then be skipped by Scheduler.
   if (stristr($entity->label(), "blue {$entity->getEntityTypeId()}")) {
-    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $label_field = $entity->getEntityType()->getKey('label');
     $entity->set($label_field, $entity->label() . ' - unpublishing failed in API test module')->save();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Blue should cause Scheduler to abandon unpublishing.'), 'status', FALSE);
     return -1;
@@ -487,7 +487,7 @@ function _api_unpublish_process(EntityInterface $entity) {
   // Entities with 'orange {type}' in the title are simulated to be processed by
   // this hook, and will not be unpublished by Scheduler.
   if (stristr($entity->label(), "orange {$entity->getEntityTypeId()}")) {
-    $label_field = $entity->getEntityType()->get('entity_keys')['label'];
+    $label_field = $entity->getEntityType()->getKey('label');
     $entity->set($label_field, $entity->label() . ' - unpublishing processed by API test module')->save();
     $entity->setUnpublished()->save();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange should not have unpublishing processed by Scheduler.'), 'status', FALSE);

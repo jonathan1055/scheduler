@@ -39,18 +39,18 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       'administer commerce_store',
     ];
 
-    // Create a user who can add and edit the standard scheduler-enabled node,
-    // media and product entity types, but only schedule nodes.
+    // Create a user who can add and edit the standard scheduler-enabled
+    // entities, but only schedule nodes.
     $this->nodeUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of nodes']));
     $this->nodeUser->set('name', 'Noddy the Node Editor')->save();
 
-    // Create a user who can add and edit the standard scheduler-enabled node,
-    // media and product entity types, but only schedule media.
+    // Create a user who can add and edit the standard scheduler-enabled
+    // entities, but only schedule media items.
     $this->mediaUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of media']));
     $this->mediaUser->set('name', 'Medina the Media Editor')->save();
 
-    // Create a user who can add and edit the standard scheduler-enabled node,
-    // media and product entity types, but only schedule products.
+    // Create a user who can add and edit the standard scheduler-enabled
+    // entities, but only schedule products.
     $this->commerce_productUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of commerce_product']));
     $this->commerce_productUser->set('name', 'Proctor the Product Editor')->save();
   }
@@ -61,7 +61,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
    * @dataProvider dataPermissionsTest()
    */
   public function testUserPermissionsAdd($entityTypeId, $bundle, $user) {
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     // Log in with the required user, as specified by the parameter.
     $this->drupalLogin($this->$user);
@@ -118,7 +118,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
    */
   public function testUserPermissionsEdit($entityTypeId, $bundle, $user) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     // Log in with the required user, as specified by the parameter.
     $this->drupalLogin($this->$user);

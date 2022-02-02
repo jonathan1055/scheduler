@@ -33,26 +33,21 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Load the custom node type. These entity types are enabled for Scheduler
-    // automatically as that is pre-configured in the {type}.yml files.
+    // Load the custom node type and check that it loaded OK. These entity types
+    // are enabled for Scheduler automatically because that is pre-configured
+    // in the scheduler_api_test {type}.yml files.
     $customNodeName = 'scheduler_api_node_test';
     $customNodetype = NodeType::load($customNodeName);
-
-    // Check that the custom node type has loaded OK.
     $this->assertNotNull($customNodetype, "Custom node type $customNodeName failed to load during setUp");
 
-    // Load the custom media type.
+    // Load the custom media type and check that it loaded OK.
     $customMediaName = 'scheduler_api_media_test';
     $customMediatype = MediaType::load($customMediaName);
-
-    // Check that the custom media type has loaded OK.
     $this->assertNotNull($customMediatype, "Custom media type $customMediaName failed to load during setUp");
 
-    // Load the custom product type.
+    // Load the custom product type and check that it loaded OK.
     $customProductName = 'scheduler_api_product_test';
     $customProductType = ProductType::load($customProductName);
-
-    // Check that the custom product type has loaded OK.
     $this->assertNotNull($customProductType, "Custom product type $customProductName failed to load during setUp");
 
     // Create a web user that has permission to create and edit and schedule
@@ -258,7 +253,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   public function testPublishingAllowed($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $this->drupalLogin($this->webUser);
 
     // Check the 'approved for publishing' field is shown on the entity form.
@@ -328,7 +323,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
    */
   public function testUnpublishingAllowed($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $this->drupalLogin($this->webUser);
 
     // Check the 'approved for unpublishing' field is shown on the entity form.

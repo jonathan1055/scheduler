@@ -14,7 +14,7 @@ use Drupal\Core\Form\FormStateInterface;
  * Implements hook_form_alter().
  */
 function scheduler_extras_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  // Only continue if the form is form adding the standard test entity types.
+  // Only continue if the form is for adding the standard test entity types.
   if (!in_array($form_id, [
     'node_testpage_form',
     'media_test_video_add_form',

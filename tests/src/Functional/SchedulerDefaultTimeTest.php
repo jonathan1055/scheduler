@@ -68,7 +68,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
   public function testDefaultTime($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
     $config = $this->config('scheduler.settings');
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     // We cannot easily test the full validation message as they contain the
     // current time which can be one or two seconds in the past. The best we can
@@ -140,7 +140,7 @@ class SchedulerDefaultTimeTest extends SchedulerBrowserTestBase {
    */
   public function testDefaultWithHiddenTime($entityTypeId, $bundle) {
     \Drupal::service('module_installer')->install(['scheduler_extras']);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $this->drupalLogin($this->schedulerUser);
 
     // Allow the user to enter only a date with no time.

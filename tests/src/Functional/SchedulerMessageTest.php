@@ -17,7 +17,7 @@ class SchedulerMessageTest extends SchedulerBrowserTestBase {
   public function testConfirmationMessage($entityTypeId, $bundle) {
     // Log in.
     $this->drupalLogin($this->schedulerUser);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     $publish_on = strtotime('+ 1 day 5 hours');
     $unpublish_on = strtotime('+ 2 day 7 hours');

@@ -237,7 +237,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   public function testHideSeconds($entityTypeId, $bundle) {
     $this->drupalLogin($this->schedulerUser);
     $config = $this->config('scheduler.settings');
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
 
     // Check that the default is to show the seconds on the input fields.
     $add_url = $this->entityAddUrl($entityTypeId, $bundle);
@@ -251,7 +251,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     // to the granularity of one minute.
     $config->set('hide_seconds', TRUE)->save();
 
-    // Get the node-add page and check the input fields.
+    // Go to the 'add' url and check the input fields.
     $this->drupalGet($add_url);
     $publish_time_field = $this->xpath('//input[@id="edit-publish-on-0-value-time"]');
     $unpublish_time_field = $this->xpath('//input[@id="edit-unpublish-on-0-value-time"]');

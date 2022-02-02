@@ -76,8 +76,11 @@ class SchedulerPlugin extends Plugin {
   /**
    * The event class for Scheduler events relating to activity on the entity.
    *
-   * If not specified, it is assumed that the plugin is part of the Scheduler
-   * module and the event class will default to Scheduler's namespace.
+   * This is optional, and if not specified, will default to the standard class
+   *   \Drupal\scheduler\Event\Scheduler{EntityType}Events
+   * The class must be in UpperCamelCase with no underscores, so if entityType
+   * contains underscores then this property must be specified. The convention
+   * in this case is to convert each word to upper case and remove underscores.
    *
    * @var string
    */

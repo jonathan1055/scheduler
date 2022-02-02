@@ -177,7 +177,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $rule5->addCondition("{$condition_prefix}scheduled_for_publishing{$condition_suffix}",
       ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
     );
-    $message5 = 'RULES message 5. This content is not scheduled for publishing.';
+    $message5 = "RULES message 5. This $entityTypeId is not scheduled for publishing.";
     $rule5->addAction('rules_system_message', ContextConfig::create()
       ->setValue('message', $message5)
       ->setValue('type', 'status')
@@ -195,7 +195,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $rule6->addCondition("{$condition_prefix}scheduled_for_unpublishing{$condition_suffix}",
       ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
     );
-    $message6 = 'RULES message 6. This content is not scheduled for unpublishing.';
+    $message6 = "RULES message 6. This $entityTypeId is not scheduled for unpublishing.";
     $rule6->addAction('rules_system_message', ContextConfig::create()
       ->setValue('message', $message6)
       ->setValue('type', 'status')
@@ -213,7 +213,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $rule7->addCondition("{$condition_prefix}scheduled_for_publishing{$condition_suffix}",
       ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
     );
-    $message7 = 'RULES message 7. This content is scheduled for publishing.';
+    $message7 = "RULES message 7. This $entityTypeId is scheduled for publishing.";
     $rule7->addAction('rules_system_message', ContextConfig::create()
       ->setValue('message', $message7)
       ->setValue('type', 'status')
@@ -231,7 +231,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     $rule8->addCondition("{$condition_prefix}scheduled_for_unpublishing{$condition_suffix}",
       ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
     );
-    $message8 = 'RULES message 8. This content is scheduled for unpublishing.';
+    $message8 = "RULES message 8. This $entityTypeId is scheduled for unpublishing.";
     $rule8->addAction('rules_system_message', ContextConfig::create()
       ->setValue('message', $message8)
       ->setValue('type', 'status')

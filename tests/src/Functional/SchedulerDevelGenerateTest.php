@@ -100,7 +100,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @dataProvider dataDevelGenerate()
    */
-  public function testDevelGenerate($entityTypeId, $url_part, $enabled) {
+  public function testDevelGenerate($entityTypeId, $enabled) {
     $this->drupalLogin($this->adminUser);
     $entityType = $this->entityTypeObject($entityTypeId, $enabled ? NULL : 'non-enabled');
     $bundle = $entityType->id();
@@ -112,19 +112,13 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $generate_settings = [
       "{$entityTypeId}_types[$bundle]" => TRUE,
     ];
-    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->drupalGet($this->adminUrl('generate', $entityTypeId, $bundle));
     $this->submitForm($generate_settings, 'Generate');
+
     // Display the full content list and the scheduled list for the entity type
     // being generated. Calls to these pages are for information and debug only.
-    if ($entityTypeId == 'media') {
-      $admin_content_urls = ['admin/content/media', 'admin/content/media/scheduled'];
-    }
-    else {
-      $admin_content_urls = ['admin/content', 'admin/content/scheduled'];
-    }
-    foreach ($admin_content_urls as $url) {
-      $this->drupalGet($url);
-    }
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
+    $this->drupalGet($this->adminUrl('scheduled', $entityTypeId, $bundle));
 
     // Delete all content for this type and generate new content with only
     // publish-on dates. Use 100% as this is how we can count the expected
@@ -140,12 +134,11 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 100,
       'scheduler_unpublishing' => 0,
     ];
-    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->drupalGet($this->adminUrl('generate', $entityTypeId, $bundle));
     $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled content list.
-    foreach ($admin_content_urls as $url) {
-      $this->drupalGet($url);
-    }
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
+    $this->drupalGet($this->adminUrl('scheduled', $entityTypeId, $bundle));
 
     // Check we have the expected number of entities scheduled for publishing
     // only, and verify that that the dates are within the time range specified.
@@ -162,12 +155,11 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 0,
       'scheduler_unpublishing' => 100,
     ];
-    $this->drupalGet("admin/config/development/generate/{$url_part}");
+    $this->drupalGet($this->adminUrl('generate', $entityTypeId, $bundle));
     $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled content list.
-    foreach ($admin_content_urls as $url) {
-      $this->drupalGet($url);
-    }
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
+    $this->drupalGet($this->adminUrl('scheduled', $entityTypeId, $bundle));
 
     // Check we have the expected number of entities scheduled for unpublishing
     // only, and verify that that the dates are within the time range specified.
@@ -181,16 +173,18 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    *
    * @return array
    *   Each array item has the values:
-   *     [entity type id, generate url part, enabled for Scheduler].
+   *     [entity type id, enable for Scheduler TRUE/FALSE].
    */
   public function dataDevelGenerate() {
-    $data = [
-      '#node-1' => ['node', 'content', TRUE],
-      '#node-2' => ['node', 'content', FALSE],
-      '#media-1' => ['media', 'media', TRUE],
-      '#media-2' => ['media', 'media', FALSE],
-    ];
-
+    $types = $this->dataStandardEntityTypes();
+    // Remove commerce_product, becuase Devel Generate does not cover products.
+    unset($types['#commerce_product']);
+    $data = [];
+    // For each entity type, add a row for enabled TRUE and enabled FALSE.
+    foreach ($types as $key => $values) {
+      $data["$key-1"] = [$values[0], TRUE];
+      $data["$key-2"] = [$values[0], FALSE];
+    }
     return $data;
   }
 

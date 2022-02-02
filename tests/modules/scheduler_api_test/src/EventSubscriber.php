@@ -57,12 +57,12 @@ class EventSubscriber implements EventSubscriberInterface {
     $events[SchedulerMediaEvents::PUBLISH_IMMEDIATELY][] = ['apiTestMediaPublishImmediately'];
 
     // These six events are dispatched for Product entity types only.
-    $events[SchedulerCommerceproductEvents::PRE_PUBLISH][] = ['apiTestProductPrePublish'];
-    $events[SchedulerCommerceproductEvents::PUBLISH][] = ['apiTestProductPublish'];
-    $events[SchedulerCommerceproductEvents::PRE_UNPUBLISH][] = ['apiTestProductPreUnpublish'];
-    $events[SchedulerCommerceproductEvents::UNPUBLISH][] = ['apiTestProductUnpublish'];
-    $events[SchedulerCommerceproductEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestProductPrePublishImmediately'];
-    $events[SchedulerCommerceproductEvents::PUBLISH_IMMEDIATELY][] = ['apiTestProductPublishImmediately'];
+    $events[SchedulerCommerceProductEvents::PRE_PUBLISH][] = ['apiTestProductPrePublish'];
+    $events[SchedulerCommerceProductEvents::PUBLISH][] = ['apiTestProductPublish'];
+    $events[SchedulerCommerceProductEvents::PRE_UNPUBLISH][] = ['apiTestProductPreUnpublish'];
+    $events[SchedulerCommerceProductEvents::UNPUBLISH][] = ['apiTestProductUnpublish'];
+    $events[SchedulerCommerceProductEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestProductPrePublishImmediately'];
+    $events[SchedulerCommerceProductEvents::PUBLISH_IMMEDIATELY][] = ['apiTestProductPublishImmediately'];
 
     return $events;
   }
@@ -166,19 +166,109 @@ class EventSubscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Generic helper function to do the PrePublish work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  private function apiTestPrePublish(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    if (!$entity->isPublished() && strpos($entity->label(), "API TEST {$entity->getEntityTypeId()}") === 0) {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - changed by PRE_PUBLISH event");
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
+   * Generic helper function to do the Publish work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  private function apiTestPublish(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    // The label will be changed here only if it has already been changed by the
+    // PRE_PUBLISH event. This will demonstrate that both events worked.
+    if ($entity->isPublished() && $entity->label() == "API TEST {$entity->getEntityTypeId()} - changed by PRE_PUBLISH event") {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - altered a second time by PUBLISH event")->save();
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
+   * Generic helper function to do the PreUnpublish work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  private function apiTestPreUnpublish(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    if ($entity->isPublished() && strpos($entity->label(), "API TEST {$entity->getEntityTypeId()}") === 0) {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - changed by PRE_UNPUBLISH event");
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
+   * Generic helper function to do the Unpublish work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  private function apiTestUnpublish(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    // The name will be changed here only if it has already been changed by the
+    // PRE_UNPUBLISH event. This will demonstrate that both events worked.
+    if (!$entity->isPublished() && $entity->label() == "API TEST {$entity->getEntityTypeId()} - changed by PRE_UNPUBLISH event") {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - altered a second time by UNPUBLISH event")->save();
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
+   * Generic helper function to do the PrePublishImmediately work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestPrePublishImmediately(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    if (!$entity->isPublished() && strpos($entity->label(), "API TEST {$entity->getEntityTypeId()}") === 0) {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - changed by PRE_PUBLISH_IMMEDIATELY event");
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
+   * Generic helper function to do the PublishImmediately work.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestPublishImmediately(SchedulerEvent $event) {
+    $entity = $event->getEntity();
+    // The name will be changed here only if it has already been changed in the
+    // PRE_PUBLISH_IMMEDIATELY event function, to show that both events worked.
+    if ($entity->label() == "API TEST {$entity->getEntityTypeId()} - changed by PRE_PUBLISH_IMMEDIATELY event") {
+      $label_field = $entity->getEntityType()->getKey('label');
+      $entity->set($label_field, "API TEST {$entity->getEntityTypeId()} - altered a second time by PUBLISH_IMMEDIATELY event");
+      $event->setEntity($entity);
+    }
+  }
+
+  /**
    * Operations to perform before Scheduler publishes a media item.
    *
    * @param \Drupal\scheduler\Event\SchedulerEvent $event
    *   The scheduler event.
    */
   public function apiTestMediaPrePublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if (!$entity->isPublished() && strpos($entity->label(), 'API TEST MEDIA') === 0) {
-      // Media entities do not have the 'sticky' and 'promote' fields. Instead
-      // we can alter the name, for checking in the test.
-      $entity->setName('API TEST MEDIA - changed by "PRE_PUBLISH" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPrePublish($event);
   }
 
   /**
@@ -188,13 +278,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestMediaPublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_PUBLISH event function. This will show that both events worked.
-    if ($entity->isPublished() && $entity->label() == 'API TEST MEDIA - changed by "PRE_PUBLISH" event') {
-      $entity->setName('API TEST MEDIA - altered a second time by "PUBLISH" event')->save();
-      $event->setEntity($entity);
-    }
+    $this->apiTestPublish($event);
   }
 
   /**
@@ -204,13 +288,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestMediaPreUnpublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if ($entity->isPublished() && strpos($entity->label(), 'API TEST MEDIA') === 0) {
-      // Media entities do not have the 'sticky' and 'promote' fields. Instead
-      // we can alter the name, for checking in the test.
-      $entity->setName('API TEST MEDIA - changed by "PRE_UNPUBLISH" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPreUnpublish($event);
   }
 
   /**
@@ -220,13 +298,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestMediaUnpublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_UNPUBLISH event function. This will show that both events worked.
-    if (!$entity->isPublished() && $entity->label() == 'API TEST MEDIA - changed by "PRE_UNPUBLISH" event') {
-      $entity->setName('API TEST MEDIA - altered a second time by "UNPUBLISH" event')->save();
-      $event->setEntity($entity);
-    }
+    $this->apiTestUnpublish($event);
   }
 
   /**
@@ -236,11 +308,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestMediaPrePublishImmediately(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if (!$entity->isPublished() && strpos($entity->label(), 'API TEST MEDIA') === 0) {
-      $entity->setName('API TEST MEDIA - changed by "PRE_PUBLISH_IMMEDIATELY" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPrePublishImmediately($event);
   }
 
   /**
@@ -250,13 +318,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestMediaPublishImmediately(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_PUBLISH_IMMEDIATELY event function, to show that both events worked.
-    if ($entity->label() == 'API TEST MEDIA - changed by "PRE_PUBLISH_IMMEDIATELY" event') {
-      $entity->setName('API TEST MEDIA - altered a second time by "PUBLISH_IMMEDIATELY" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPublishImmediately($event);
   }
 
   /**
@@ -266,13 +328,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPrePublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if (!$entity->isPublished() && strpos($entity->label(), 'API TEST COMMERCE_PRODUCT') === 0) {
-      // Product entities do not have the 'sticky' and 'promote' fields. Instead
-      // we can alter the name, for checking in the test.
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - changed by "PRE_PUBLISH" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPrePublish($event);
   }
 
   /**
@@ -282,13 +338,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_PUBLISH event function. This will show that both events worked.
-    if ($entity->isPublished() && $entity->label() == 'API TEST COMMERCE_PRODUCT - changed by "PRE_PUBLISH" event') {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "PUBLISH" event')->save();
-      $event->setEntity($entity);
-    }
+    $this->apiTestPublish($event);
   }
 
   /**
@@ -298,11 +348,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPreUnpublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if ($entity->isPublished() && strpos($entity->label(), 'API TEST COMMERCE_PRODUCT') === 0) {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - changed by "PRE_UNPUBLISH" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPreUnpublish($event);
   }
 
   /**
@@ -312,13 +358,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductUnpublish(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_UNPUBLISH event function. This will show that both events worked.
-    if (!$entity->isPublished() && $entity->label() == 'API TEST COMMERCE_PRODUCT - changed by "PRE_UNPUBLISH" event') {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "UNPUBLISH" event')->save();
-      $event->setEntity($entity);
-    }
+    $this->apiTestUnpublish($event);
   }
 
   /**
@@ -328,11 +368,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPrePublishImmediately(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    if (!$entity->isPublished() && strpos($entity->label(), 'API TEST COMMERCE_PRODUCT') === 0) {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - changed by "PRE_PUBLISH_IMMEDIATELY" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPrePublishImmediately($event);
   }
 
   /**
@@ -342,13 +378,7 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPublishImmediately(SchedulerEvent $event) {
-    $entity = $event->getEntity();
-    // The name will be changed here only if it has already been changed in the
-    // PRE_PUBLISH_IMMEDIATELY event function, to show that both events worked.
-    if ($entity->label() == 'API TEST COMMERCE_PRODUCT - changed by "PRE_PUBLISH_IMMEDIATELY" event') {
-      $entity->setTitle('API TEST COMMERCE_PRODUCT - altered a second time by "PUBLISH_IMMEDIATELY" event');
-      $event->setEntity($entity);
-    }
+    $this->apiTestPublishImmediately($event);
   }
 
 }

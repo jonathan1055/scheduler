@@ -142,10 +142,12 @@ trait SchedulerMediaSetupTrait {
    *   The created media object.
    */
   public function createMediaItem(array $values) {
-    // Provide defaults for the critical values.
+    // Provide defaults for the critical values. The title is stored in the
+    // 'name' field, so use 'title' when the 'name' is not defined, to allow
+    // the same calling $value parameter names as for Node.
     $values += [
       'bundle' => $this->mediaTypeName,
-      'name' => $this->randomstring(12),
+      'name' => $values['title'] ?? $this->randomstring(12),
     ];
     /** @var \Drupal\media\MediaInterface $media */
     $media = $this->mediaStorage->create($values);

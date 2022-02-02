@@ -159,7 +159,6 @@ trait SchedulerSetupTrait {
       'delete any ' . $this->type . ' content',
       'create ' . $this->nonSchedulerType . ' content',
       'edit any ' . $this->nonSchedulerType . ' content',
-      'delete any ' . $this->nonSchedulerType . ' content',
       'view own unpublished content',
       'administer scheduler',
       'schedule publishing of nodes',
@@ -172,7 +171,6 @@ trait SchedulerSetupTrait {
     $this->schedulerUser = $this->drupalCreateUser([
       'create ' . $this->type . ' content',
       'edit own ' . $this->type . ' content',
-      'delete own ' . $this->type . ' content',
       'view own unpublished content',
       'schedule publishing of nodes',
     ]);
@@ -232,7 +230,9 @@ trait SchedulerSetupTrait {
    *   The name of the bundle. Optional, will default to $this->type for nodes
    *   $this->mediaTypeName for media, or $this->productTypeName for products.
    * @param array $values
-   *   Values for the new entity.
+   *   Values for the new entity, passed through to the specific create method.
+   *   'title' can be used for all entity types, and will be converted to the
+   *   necessary property name.
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   The created entity object.
@@ -240,29 +240,27 @@ trait SchedulerSetupTrait {
   public function createEntity(string $entityTypeId, string $bundle = NULL, array $values = []) {
 
     switch ($entityTypeId) {
-      case 'media':
-        $values += ['bundle' => $bundle ?? $this->mediaTypeName];
-        // For Media, the title is stored in the 'name' field, so get the title
-        // when the 'name' is not defined, to allow the same $value parameters
-        // as for Node.
-        if (isset($values['title'])) {
-          $values['name'] = $values['name'] ?? $values['title'];
-          unset($values['title']);
-        }
-        $entity = $this->createMediaItem($values);
-        break;
-
-      case 'commerce_product':
-        $values += ['type' => $bundle ?? $this->productTypeName];
-        $entity = $this->createProduct($values);
-        break;
-
       case 'node':
-      default:
         // For nodes the field for bundle is called 'type'.
         $values += ['type' => $bundle ?? $this->type];
         $entity = $this->drupalCreateNode($values);
         break;
+
+      case 'media':
+        $values += ['bundle' => $bundle ?? $this->mediaTypeName];
+        $entity = $this->createMediaItem($values);
+        break;
+
+      case 'commerce_product':
+        // For products the bundle field is 'type'.
+        $values += ['type' => $bundle ?? $this->productTypeName];
+        $entity = $this->createProduct($values);
+        break;
+
+      default:
+        // Incorrect parameter values.
+        throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to createEntity()', $entityTypeId, $bundle));
+
     }
     return $entity;
   }
@@ -316,28 +314,49 @@ trait SchedulerSetupTrait {
    *   The stored entity type object.
    */
   public function entityTypeObject(string $entityTypeId, string $bundle = NULL) {
-    switch (TRUE) {
-      case ($entityTypeId == 'node' && (empty($bundle) || $bundle == $this->type)):
-        return $this->nodetype;
+    if (empty($bundle) || $bundle == 'non-enabled') {
+      $default_types = [
+        'node' => $this->type,
+        'media' => $this->mediaTypeName,
+        'commerce_product' => $this->productTypeName,
+      ];
+      $non_enabled_types = [
+        'node' => $this->nonSchedulerType,
+        'media' => $this->nonSchedulerMediaTypeName,
+        'commerce_product' => $this->nonSchedulerProductTypeName,
+      ];
+      $bundle = (empty($bundle)) ? $default_types[$entityTypeId] : $non_enabled_types[$entityTypeId];
+    }
+    $entityTypeManager = $this->container->get('entity_type.manager');
+    $bundleEntityType = $entityTypeManager->getDefinition($entityTypeId)->getBundleEntityType();
+    if (!$entity_type = $entityTypeManager->getStorage($bundleEntityType)->load($bundle)) {
+      // Incorrect parameter values.
+      throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to entityTypeObject()', $entityTypeId, $bundle));
+    };
+    return $entity_type;
+  }
 
-      case ($entityTypeId == 'node' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerType)):
-        return $this->nonSchedulerNodeType;
+  /**
+   * Returns the field name used for the "title" of an entity.
+   *
+   * @param string $entityTypeId
+   *   For example - 'node', 'media', 'commerce_product'.
+   *
+   * @return string
+   *   The stored entity type object.
+   */
+  public function titleField(string $entityTypeId) {
+    switch ($entityTypeId) {
+      case 'node':
+      case 'commerce_product':
+        return 'title';
 
-      case ($entityTypeId == 'media' && (empty($bundle) || $bundle == $this->mediaTypeName)):
-        return $this->mediaType;
-
-      case ($entityTypeId == 'media' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerMediaTypeName)):
-        return $this->nonSchedulerMediaType;
-
-      case ($entityTypeId == 'commerce_product' && (empty($bundle) || $bundle == $this->productTypeName)):
-        return $this->productType;
-
-      case ($entityTypeId == 'commerce_product' && ($bundle == 'non-enabled' || $bundle == $this->nonSchedulerProductTypeName)):
-        return $this->nonSchedulerProductType;
+      case 'media':
+        return 'name';
 
       default:
-        // Incorrect parameter values.
-        throw new \Exception(sprintf('Unrecognised entityTypeId and bundle combination "%s" and "%s" passed to entityTypeObject()', $entityTypeId, $bundle));
+        // Incorrect parameter value.
+        throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to titleField()', $entityTypeId));
     }
   }
 
@@ -376,10 +395,51 @@ trait SchedulerSetupTrait {
         break;
 
       default:
+        // Incorrect parameter values.
+        throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to entityAddUrl()', $entityTypeId, $bundle));
     }
     if (!$url = Url::fromRoute($route, [$type_parameter => $bundle])) {
       // Incorrect parameter values.
-      throw new \Exception(sprintf('Invalid entityTypeId "%s" or bundle "%s" passed to entityAddUrl()', $entityTypeId, $bundle));
+      throw new \Exception(sprintf('No url found for entityTypeId "%s" and bundle "%s" with route "%s" in entityAddUrl()', $entityTypeId, $bundle, $route));
+    }
+    return $url;
+  }
+
+  /**
+   * Returns the url for a specified page and entity type.
+   *
+   * @param string $page
+   *   The page required - 'collection', 'scheduled' or 'generate'.
+   * @param string $entityTypeId
+   *   The machine id of the entity type - 'node', 'media', 'commerce_product'.
+   * @param string $bundle
+   *   (optional) The machine name of the bundle.
+   *
+   * @return string
+   *   The url for the required page.
+   */
+  public function adminUrl($page, $entityTypeId, $bundle = NULL) {
+    // @todo Could be changed to use a route and parameter like entityAddUrl().
+    $urls = [
+      'collection' => [
+        'node' => 'admin/content',
+        'media' => 'admin/content/media',
+        'commerce_product' => 'admin/commerce/products',
+      ],
+      'scheduled' => [
+        'node' => 'admin/content/scheduled',
+        'media' => 'admin/content/media/scheduled',
+        'commerce_product' => 'admin/commerce/products/scheduled',
+      ],
+      'generate' => [
+        'node' => 'admin/config/development/generate/content',
+        'media' => 'admin/config/development/generate/media',
+      ],
+    ];
+    $url = $urls[$page][$entityTypeId] ?? NULL;
+    if (empty($url)) {
+      // Incorrect parameter values.
+      throw new \Exception(sprintf('Unrecognised combination of page "%s", entityTypeId "%s" and bundle "%s" passed to adminUrl()', $page, $entityTypeId, $bundle));
     }
     return $url;
   }
@@ -427,6 +487,22 @@ trait SchedulerSetupTrait {
       '#node' => ['node', $this->type],
       '#media' => ['media', $this->mediaTypeName],
       '#commerce_product' => ['commerce_product', $this->productTypeName],
+    ];
+    return $data;
+  }
+
+  /**
+   * Provides test data containing the non-enabled entity types.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id]. The array
+   *   key is #entity_type_id, to allow easy removal of unwanted rows later.
+   */
+  public function dataNonEnabledTypes() {
+    $data = [
+      '#node' => ['node', $this->nonSchedulerType],
+      '#media' => ['media', $this->nonSchedulerMediaTypeName],
+      '#commerce_product' => ['commerce_product', $this->nonSchedulerProductTypeName],
     ];
     return $data;
   }

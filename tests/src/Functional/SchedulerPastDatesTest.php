@@ -16,7 +16,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
    */
   public function testSchedulerPastDates($entityTypeId, $bundle) {
     $storage = $this->entityStorageObject($entityTypeId);
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $entityType = $this->entityTypeObject($entityTypeId, $bundle);
 
     // Log in.

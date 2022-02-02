@@ -236,7 +236,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
 
     // For info only.
     $this->drupalGet($this->languages[0]['code'] . '/node/' . $nid . '/translations');
-    $this->drupalGet('admin/content/scheduled');
+    $this->drupalGet($this->adminUrl('scheduled', 'node'));
 
     // Check that the status of all four pieces of content before running cron
     // match the expected values.
@@ -247,8 +247,8 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
     $this->checkStatus($nid, 'After cron', $expected_status_values_after);
 
     // For info only.
-    $this->drupalGet('admin/content/scheduled');
-    $this->drupalGet('admin/content');
+    $this->drupalGet($this->adminUrl('scheduled', 'node'));
+    $this->drupalGet($this->adminUrl('collection', 'node'));
     $this->drupalGet('admin/reports/dblog');
     $this->drupalGet($this->languages[0]['code'] . '/node/' . $nid . '/translations');
   }

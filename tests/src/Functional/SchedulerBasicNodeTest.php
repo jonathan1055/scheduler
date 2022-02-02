@@ -7,7 +7,7 @@ namespace Drupal\Tests\scheduler\Functional;
  *
  * @group scheduler
  */
-class SchedulerBasicTest extends SchedulerBrowserTestBase {
+class SchedulerBasicNodeTest extends SchedulerBrowserTestBase {
 
   /**
    * Tests basic scheduling of content.

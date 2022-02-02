@@ -29,11 +29,11 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     else {
       $edit_key = $view_key = $entityTypeId;
     }
-    $base_permissions = [
-      "view own unpublished $view_key",
-    ];
+    // "view own unpublished $view_key" is needed for Products. It is not
+    // required for Node or Media.
+    $base_permissions = ($entityTypeId == 'commerce_product') ? ["view own unpublished $view_key"] : [];
 
-    $this->webUser = $this->drupalCreateUser(array_merge($base_permissions, ["access $view_key overview"]));
+    $this->webUser = $this->drupalCreateUser();
     $this->webUser->set('name', 'Webisa the Web User')->save();
 
     $this->schedulerEditor = $this->drupalCreateUser(array_merge($base_permissions, ["schedule publishing of $edit_key"]));
@@ -160,13 +160,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
    */
   public function testViewScheduledContentOverview($entityTypeId, $bundle) {
     $this->createScheduledItems($entityTypeId, $bundle);
-
-    $admin_urls = [
-      'node' => 'admin/content',
-      'media' => 'admin/content/media',
-      'commerce_product' => 'admin/commerce/products',
-    ];
-    $scheduled_url = $admin_urls[$entityTypeId] . '/scheduled';
+    $scheduled_url = $this->adminUrl('scheduled', $entityTypeId, $bundle);
     $assert = $this->assertSession();
 
     // Try to access the scheduled content overview as an anonymous visitor.
@@ -187,20 +181,23 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
 
     // Access the scheduled content overview as a user who only has
     // 'view scheduled {type}' permission. This is allowed and they should see
-    // the scheduled published content by all users and their own unpublished
-    // content. Unpublished node and media items by other users are also listed
-    // but products are not. Therefore do not check for the unpublished item
-    // by Scheduler Editor.
+    // the scheduled content for all users.
     $this->drupalLogin($this->schedulerViewer);
     $this->drupalGet($scheduled_url);
     $assert->statusCodeEquals(200);
+    // Unpublished nodes and media items by other users are listed but products
+    // are not. Therefore do not check for the unpublished product by Scheduler
+    // Editor here.
+    if ($entityTypeId != 'commerce_product') {
+      $assert->pageTextContains("$entityTypeId created by Scheduler Editor for publishing");
+    }
     $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
 
     // Log in as admin and check that the main page is available.
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet($admin_urls[$entityTypeId]);
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
     $assert->statusCodeEquals(200);
 
     // Disable the scheduled view.
@@ -213,7 +210,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $view->disable()->save();
 
     // Check access to the main content page is unaffected.
-    $this->drupalGet($admin_urls[$entityTypeId]);
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
     $assert->statusCodeEquals(200);
     $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
 

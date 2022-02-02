@@ -127,7 +127,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
   public function testRulesEventsNone($entityTypeId, $bundle) {
     // Add and save an entity without any scheduled dates and check that no
     // events are triggered.
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $title = 'A. Create with no dates';
     $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
@@ -152,7 +152,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 
     // Create an entity with a publish-on date, and check that only event 1 is
     // triggered.
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $title = 'C. Create with publish-on date';
     $edit = [
       "{$titleField}[0][value]" => $title,
@@ -183,7 +183,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
   public function testRulesEventsUnpublish($entityTypeId, $bundle) {
     // Create an entity with an unpublish-on date, and check that only event 4
     // is triggered.
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $title = 'E. Create with unpublish-on date';
     $edit = [
       "{$titleField}[0][value]" => $title,
@@ -220,7 +220,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
 
     // Create an entity with both publish-on and unpublish-on dates, and check
     // that both event 1 and event 4 are triggered.
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $title = 'G. Create with both dates';
     $edit = [
       "{$titleField}[0][value]" => $title,

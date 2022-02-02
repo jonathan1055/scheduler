@@ -85,25 +85,18 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
   /**
    * Provides data for testEntityAccess.
    *
-   * The data in dataStandardEntityTypes() is expanded to test each entity type
-   * for both publishing and unpublishing.
-   *
    * @return array
    *   Each row has values: [entity type id, bundle id, field name, status].
    */
   public function dataEntityAccess() {
-    $data = [];
-    foreach ($this->dataStandardEntityTypes() as $key => $values) {
-      // Media and Commerce Products do not have a hook access and grant system
-      // like Nodes so the test would fail for non-node entities.
-      // @todo Investigate how scheduler_access_test module can be expanded to
-      // deny access to Media and Products using another method.
-      if ($values[0] == 'media' || $values[0] == 'commerce_product') {
-        continue;
-      }
-      $data["$key-1"] = array_merge($values, ['publish_on', FALSE]);
-      $data["$key-1"] = array_merge($values, ['unpublish_on', TRUE]);
-    }
+    // This test is only applicable to node entity types because media and
+    // products do not have a hook access grant system.
+    // @todo Investigate how scheduler_access_test module can be expanded to
+    // deny access to other entity types using a different method.
+    $data = [
+      '#node-1' => ['node', $this->type, 'publish_on', FALSE],
+      '#node-2' => ['node', $this->type, 'unpublish_on', TRUE],
+    ];
     return $data;
   }
 

@@ -98,8 +98,10 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    *   The event class.
    */
   public function schedulerEventClass() {
-    // If no class is defined in the plugin then default to the standard
-    // scheduler class '\Drupal\scheduler\Event\Scheduler{Type}Events'.
+    // If no event class is defined in the plugin then it will default to
+    // '\Drupal\scheduler\Event\Scheduler{entityType}Events'. Specifying an
+    // event class is only required when the entityType value contains an
+    // underscore because that produces an invalid class name.
     $class = $this->pluginDefinition['schedulerEventClass'] ??
       '\Drupal\scheduler\Event\Scheduler' . ucfirst($this->entityType()) . 'Events';
     return $class;
