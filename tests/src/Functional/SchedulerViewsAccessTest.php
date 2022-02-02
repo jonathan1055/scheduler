@@ -195,11 +195,6 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
 
-    // Log in as admin and check that the main page is available.
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
-    $assert->statusCodeEquals(200);
-
     // Disable the scheduled view.
     $view_ids = [
       'node' => 'scheduler_scheduled_content',
@@ -209,16 +204,23 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $view = $this->container->get('entity_type.manager')->getStorage('view')->load($view_ids[$entityTypeId]);
     $view->disable()->save();
 
-    // Check access to the main content page is unaffected.
+    // Attempt to view the scheduled entity page. Interactively this gives a
+    // '404 page not found' error, but in phpunit it is served with a 200 code.
+    // However the page is empty so we can check that the content is not shown.
+    $this->drupalGet($scheduled_url);
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
+
+    // Log in as admin and check that access to the overview page is unaffected.
+    $this->drupalLogin($this->adminUser);
     $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
     $assert->statusCodeEquals(200);
     $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
 
-    // Attempt to view the scheduled page. Interactively this gives a 404 'page
-    // not found' but in phpunit the page is still shown with a 200 code.
-    // However the page is empty so we can check that the content is not shown.
-    $this->drupalGet($scheduled_url);
-    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
+    // Delete the view and check again that the overview remains accessible.
+    $view->delete();
+    $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
+    $assert->statusCodeEquals(200);
+    $assert->pageTextContains("$entityTypeId created by Scheduler Editor for unpublishing");
   }
 
 }
