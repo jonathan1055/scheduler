@@ -22,16 +22,15 @@ jobs:
         - DRUPAL_CORE=8.9.x
         # 8.9 is slow, 50 mins is the Travis limit, so skip all additional
         # entity types. Also skip Rules because it cannot be installed at 8.x.
-        - MEDIA=NO
-        - PRODUCTS=NO
-        - RULES=NO
+        - NODE=YES
         # ---- Remaining self deprecation notices (0)
         # ---- Remaining direct deprecation notices (0)
     - php: 7.3
       env:
-        - DRUPAL_CORE=9.1.x
-        - NODE=NO
-        - MEDIA=NO
+        # Just run Media and Rules tests.
+        - DRUPAL_CORE=9.2.x
+        - MEDIA=YES
+        - RULES=YES
         # ---- Remaining self deprecation notices (1794)
         # 1774 EventDispatcher with string event (Rules and Commerce)
         #   11 Creating an instance of class ... getConnection()->condition()
@@ -41,10 +40,10 @@ jobs:
         - DEPRECATIONS=3000
     - php: 7.4
       env:
-        - DRUPAL_CORE=9.2.x
-        # Exclude Rules, Products and Taxonomy tests. Just run Node and Media.
-        - PRODUCTS=NO
-        - RULES=NO
+        - DRUPAL_CORE=9.3.x
+        # Just run Node and Product.
+        - NODE=YES
+        - PRODUCT=YES
         # ---- Remaining self deprecation notices (2455)
         # 1174 Symfony isMasterRequest() is deprecated, use isMainRequest()
         #  927 EventDispatcher with string event (Rules and Commerce)
@@ -60,13 +59,8 @@ cache:
 
 before_script:
   # At job start-up Composer is installed at 1.8.4 then self-update is run. From
-  # 24 October 2020 this bumped the version to Composer 2. Drupal Core 8.8 has
-  # plugins that only run with composer-plugin-api ^1.0 so revert to Composer 1.
-  - if [ "$DRUPAL_CORE" == "8.8.x" ]; then
-      travis_retry composer self-update --1;
-    fi
+  # 24 October 2020 this bumped the version to Composer 2.
   - composer --version
-
   - echo $MODULE
 
   # Remove Xdebug as we don't need it and it causes
@@ -97,7 +91,7 @@ before_script:
   # Get the latest dev versions of the test dependency modules.
   - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
   - |
-    if [ "$RULES" != "NO" ]; then
+    if [ "$RULES" == "YES" ]; then
       echo "Installing Rules and Typed Data ..."
       travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
       travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
@@ -130,10 +124,10 @@ before_script:
 script:
   - echo "NODE=$NODE MEDIA=$MEDIA PRODUCTS=$PRODUCTS RULES=$RULES"
   - EXCLUDE=()
-  - if [ "$NODE" == "NO" ]; then EXCLUDE+=('#node|BasicNode'); fi
-  - if [ "$MEDIA" == "NO" ]; then EXCLUDE+=('#media|BasicMedia'); fi
-  - if [ "$PRODUCTS" == "NO" ]; then EXCLUDE+=('#commerce_product|BasicProduct'); fi
-  - if [ "$RULES" == "NO" ]; then EXCLUDE+=('rules'); fi
+  - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode'); fi
+  - if [ "$MEDIA" != "YES" ]; then EXCLUDE+=('#media|BasicMedia'); fi
+  - if [ "$PRODUCTS" != "YES" ]; then EXCLUDE+=('#commerce_product|BasicProduct'); fi
+  - if [ "$RULES" != "YES" ]; then EXCLUDE+=('rules'); fi
   - EXCLUDE=${EXCLUDE[@]}     # create a space delimited string from array
 
   # Run the PHPUnit tests.

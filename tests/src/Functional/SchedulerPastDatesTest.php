@@ -54,7 +54,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     // Check that no error message is shown when the publication date is in the
     // past and the "publish" behavior is chosen.
     $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
     // Reload the entity.
     $storage->resetCache([$entity->id()]);
@@ -78,7 +78,7 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->submitForm($edit, 'Save');
     $this->assertSession()->pageTextNotContains("The 'publish on' date must be in the future");
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published', $title));
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
     // Reload the entity.
     $storage->resetCache([$entity->id()]);
@@ -95,7 +95,6 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->assertTrue($entity->isPublished(), 'The entity with publication date in the past and the "schedule" behavior has now been published by cron.');
     $this->assertEquals($entity->getChangedTime(), strtotime('-1 day', $this->requestTime), 'The changed time of the entity has been updated to the publish_on time when published via cron.');
     $this->assertEquals($entity->getCreatedTime(), $created_time, 'The created time of the entity has not been changed when the "schedule" behavior is chosen.');
-
     // Test the option to alter the creation time if the publishing time is
     // earlier than the entity created time.
     $entityType->setThirdPartySetting('scheduler', 'publish_past_date_created', TRUE)->save();

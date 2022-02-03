@@ -90,7 +90,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     $title = 'Published - ' . $this->randomString(15);
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => TRUE];
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));
     $this->assertTrue($entity->isPublished(), 'The new entity is published');
 
@@ -99,7 +99,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     $edit = ["{$titleField}[0][value]" => $title, 'status[value]' => FALSE];
     $this->drupalGet($add_url);
     $this->submitForm($edit, 'Save');
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
     $this->assertNotEmpty($entity = $this->getEntityByTitle($entityTypeId, $title), sprintf('The new %s with title "%s" was created sucessfully.', $entityTypeId, $title));
     $this->assertFalse($entity->isPublished(), 'The new entity is unpublished');
 

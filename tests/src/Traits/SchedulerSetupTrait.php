@@ -340,10 +340,10 @@ trait SchedulerSetupTrait {
    * Returns the field name used for the "title" of an entity.
    *
    * @param string $entityTypeId
-   *   For example - 'node', 'media', 'commerce_product'.
+   *   The machine id of the entity type.
    *
    * @return string
-   *   The stored entity type object.
+   *   The name of the title field.
    */
   public function titleField(string $entityTypeId) {
     switch ($entityTypeId) {
@@ -357,6 +357,55 @@ trait SchedulerSetupTrait {
       default:
         // Incorrect parameter value.
         throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to titleField()', $entityTypeId));
+    }
+  }
+
+  /**
+   * Returns the field name used for the "body" of an entity.
+   *
+   * @param string $entityTypeId
+   *   The machine id of the entity type.
+   *
+   * @return string
+   *   The name of the body field.
+   */
+  public function bodyField(string $entityTypeId) {
+    switch ($entityTypeId) {
+      case 'node':
+      case 'commerce_product':
+        return 'body';
+
+      default:
+        // Incorrect parameter value.
+        throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to bodyField()', $entityTypeId));
+    }
+  }
+
+  /**
+   * Returns the message that is shown when an entity is saved.
+   *
+   * @param string $entityTypeId
+   *   The machine id of the entity type.
+   * @param string $title
+   *   The title of the entity being checked.
+   *
+   * @return string
+   *   The text of the message to check, used in pageTextMatches() assertions.
+   */
+  public function entitySavedMessage(string $entityTypeId, string $title) {
+    switch ($entityTypeId) {
+      case 'node':
+        return '/' . preg_quote($title, '/') . ' has been (created|updated)/';
+
+      case 'media':
+        return '/' . preg_quote($title, '/') . ' has been (created|updated)/';
+
+      case 'commerce_product':
+        return '/The product ' . preg_quote($title, '/') . ' has been successfully saved/';
+
+      default:
+        // Incorrect parameter value.
+        throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to entitySavedMessage()', $entityTypeId));
     }
   }
 
@@ -436,6 +485,7 @@ trait SchedulerSetupTrait {
         'media' => 'admin/config/development/generate/media',
       ],
     ];
+
     $url = $urls[$page][$entityTypeId] ?? NULL;
     if (empty($url)) {
       // Incorrect parameter values.

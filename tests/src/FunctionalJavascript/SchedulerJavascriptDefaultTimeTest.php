@@ -30,7 +30,7 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
     $this->drupalLogin($this->schedulerUser);
     $this->drupalGet('node/add/' . $this->type);
     $page = $this->getSession()->getPage();
-    $title = 'Determine the date-picker format';
+    $title = "Add a {$this->typeName} to determine the date-picker format";
     $page->fillField('edit-title-0-value', $title);
     $page->clickLink('Scheduling options');
     // Set the date using a day and month which could be correctly interpreted
@@ -41,6 +41,7 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
     $page->fillField('edit-publish-on-0-value-time', '06:00:00pm');
     $page->pressButton('Save');
     $node = $this->drupalGetNodeByTitle($title);
+    $this->drupalGet('node/' . $node->id());
     // If the saved month is 2 then the format is d/m/Y, otherwise it is m/d/Y.
     $this->datepickerFormat = (date('n', $node->publish_on->value) == 2 ? 'd/m/Y' : 'm/d/Y');
   }
@@ -52,7 +53,7 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
    */
   public function testTimeWhenSchedulingIsRequired($entityTypeId, $bundle, $field) {
     $config = $this->config('scheduler.settings');
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $entityType = $this->entityTypeObject($entityTypeId);
 
     // This test is only relevant when the configuration allows a date only with
@@ -83,15 +84,15 @@ class SchedulerJavascriptDefaultTimeTest extends SchedulerJavascriptTestBase {
       $this->drupalGet($this->entityAddUrl($entityTypeId, $bundle));
       $page = $this->getSession()->getPage();
       $title = ucfirst($field) . ($required ? ' required' : ' not required') . ', datepickerFormat = ' . $this->datepickerFormat;
-      $page->fillField("edit-$titleField-0-value", $title);
+      $page->fillField("edit-{$titleField}-0-value", $title);
       if ($required) {
         // Fill in the date value but do nothing with the time field.
         $page->fillField('edit-' . $field . '-on-0-value-date', $scheduling_time->format($this->datepickerFormat));
       }
       $page->pressButton('Save');
 
-      // Test that the content has saved properly.
-      $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
+      // Test that the entity has saved properly.
+      $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
       $entity = $this->getEntityByTitle($entityTypeId, $title);
       $this->assertNotEmpty($entity, 'The entity object can be found by title');

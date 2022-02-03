@@ -57,7 +57,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     // Fill in the title field and check that the entity can be saved OK.
     $title = $id . 'a - ' . $description;
     $this->submitForm(["{$titleField}[0][value]" => $title], 'Save');
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (created|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
     // Create an unpublished entity with a publishing date, which mimics what
     // could be done by a third-party module, or a by-product of the entity type
@@ -73,7 +73,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     // Check that the entity can be edited and saved OK.
     $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
     // Run cron and display the dblog.
     $this->cronRun();
@@ -103,7 +103,7 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     // Check that the entity can be edited and saved.
     $this->drupalGet($entity->toUrl('edit-form'));
     $this->submitForm([], 'Save');
-    $this->assertSession()->pageTextMatches('/' . preg_quote($title, '/') . ' has been (updated|successfully saved)/');
+    $this->assertSession()->pageTextMatches($this->entitySavedMessage($entityTypeId, $title));
 
     // Create a published entity with a date in the past, then run cron.
     $title = $id . 'd - ' . $description;

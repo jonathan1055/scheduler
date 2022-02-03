@@ -47,7 +47,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
     foreach ($test_cases as $test_data) {
       // Edit the entity and set the body tokens to use the format being tested.
       $edit = [
-        'body[0][value]' => "Publish on: [{$entityTypeId}:scheduler-publish{$test_data['token_format']}]. Unpublish on: [{$entityTypeId}:scheduler-unpublish{$test_data['token_format']}].",
+        "{$this->bodyField($entityTypeId)}[0][value]" => "Publish on: [{$entityTypeId}:scheduler-publish{$test_data['token_format']}]. Unpublish on: [{$entityTypeId}:scheduler-unpublish{$test_data['token_format']}].",
       ];
       $this->drupalGet($entity->toUrl('edit-form'));
       $this->submitForm($edit, 'Save');
@@ -57,7 +57,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
       // Refresh the entity and get the body output value using token replace.
       $storage->resetCache([$entity->id()]);
       $entity = $storage->load($entity->id());
-      $body_output = \Drupal::token()->replace($entity->body->value, ["$entityTypeId" => $entity]);
+      $body_output = \Drupal::token()->replace($entity->{$this->bodyField($entityTypeId)}->value, ["$entityTypeId" => $entity]);
 
       // Create the expected text for the body.
       $publish_on_date = $this->dateFormatter->format($publish_on_timestamp, $test_data['date_format'], $test_data['custom']);

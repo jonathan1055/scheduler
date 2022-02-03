@@ -12,9 +12,9 @@ use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
  */
 abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
 
-  use SchedulerSetupTrait;
-  use SchedulerMediaSetupTrait;
   use SchedulerCommerceProductSetupTrait;
+  use SchedulerMediaSetupTrait;
+  use SchedulerSetupTrait;
 
   /**
    * The standard modules to load for all javascript tests.
