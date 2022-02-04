@@ -31,26 +31,26 @@ jobs:
         - DRUPAL_CORE=9.2.x
         - MEDIA=YES
         - RULES=YES
-        # ---- Remaining self deprecation notices (1794)
-        # 1774 EventDispatcher with string event (Rules and Commerce)
-        #   11 Creating an instance of class ... getConnection()->condition()
-        #    7 Symfony\Component\EventDispatcher\Event is deprecated (Rules)
+        # ---- Remaining self deprecation notices (1208)
+        #  801 Symfony KernelEvent::isMasterRequest()
+        #  240 hook_field_widget_form_alter (Commerce)
+        #  165 EventDispatcher with string event (Rules and Commerce)
         #    2 Kernel $modules property must be declared protected
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=3000
+        - DEPRECATIONS=1208
     - php: 7.4
       env:
         - DRUPAL_CORE=9.3.x
-        # Just run Node and Product.
+        # Just run Node and Product tests.
         - NODE=YES
         - PRODUCT=YES
-        # ---- Remaining self deprecation notices (2455)
-        # 1174 Symfony isMasterRequest() is deprecated, use isMainRequest()
-        #  927 EventDispatcher with string event (Rules and Commerce)
-        #  352 hook_field_widget_form_alter() in Commerce_product setup.
+        # ---- Remaining self deprecation notices (1078)
+        #  746 Symfony KernelEvent::isMasterRequest()
+        #  204 hook_field_widget_form_alter (Commerce)
+        #  126 EventDispatcher with string event (Rules and Commerce)
         #    2 Kernel $modules property must be declared protected
         # ---- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=2455
+        - DEPRECATIONS=1078
 
 # Be sure to cache composer downloads.
 cache:

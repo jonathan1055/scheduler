@@ -32,7 +32,11 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
 
     // Create an unpublished entity.
     $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
-    $created_time = $entity->getCreatedTime();
+    // Some entities do not have a 'created' date and if that is the case we
+    // skip the specific parts of this test that relate to this.
+    if ($check_created_time = method_exists($entity, 'getCreatedTime')) {
+      $created_time = $entity->getCreatedTime();
+    }
 
     // Test the default behavior: an error message should be shown when the user
     // enters a publication date that is in the past.
@@ -64,13 +68,13 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $this->assertTrue($entity->isPublished(), 'The entity has been published immediately when the publication date is in the past and the "publish" behavior is chosen.');
     $this->assertNull($entity->publish_on->value, 'The entity publish_on date has been removed after publishing when the "publish" behavior is chosen.');
     $this->assertEquals($entity->getChangedTime(), strtotime('-1 day', $this->requestTime), 'The changed time of the entity has been updated to the publish_on time when published immediately.');
-    $this->assertEquals($entity->getCreatedTime(), $created_time, 'The created time of the entity has not been changed when the "publish" behavior is chosen.');
+    $check_created_time ? $this->assertEquals($entity->getCreatedTime(), $created_time, 'The created time of the entity has not been changed when the "publish" behavior is chosen.') : NULL;
 
     // Test the 'schedule' behavior: the entity should be unpublished and become
     // published on the next cron run. Use a new unpublished entity.
     $entityType->setThirdPartySetting('scheduler', 'publish_past_date', 'schedule')->save();
     $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
-    $created_time = $entity->getCreatedTime();
+    $check_created_time ? $created_time = $entity->getCreatedTime() : NULL;
 
     // Edit, save and check that no error is shown when the publish_on date is
     // in the past.
@@ -94,33 +98,35 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $entity = $storage->load($entity->id());
     $this->assertTrue($entity->isPublished(), 'The entity with publication date in the past and the "schedule" behavior has now been published by cron.');
     $this->assertEquals($entity->getChangedTime(), strtotime('-1 day', $this->requestTime), 'The changed time of the entity has been updated to the publish_on time when published via cron.');
-    $this->assertEquals($entity->getCreatedTime(), $created_time, 'The created time of the entity has not been changed when the "schedule" behavior is chosen.');
+    $check_created_time ? $this->assertEquals($entity->getCreatedTime(), $created_time, 'The created time of the entity has not been changed when the "schedule" behavior is chosen.') : NULL;
+
     // Test the option to alter the creation time if the publishing time is
     // earlier than the entity created time.
-    $entityType->setThirdPartySetting('scheduler', 'publish_past_date_created', TRUE)->save();
-    $past_date_options = [
-      'publish' => 'publish',
-      'schedule' => 'schedule',
-    ];
-    foreach ($past_date_options as $key => $option) {
-      $entityType->setThirdPartySetting('scheduler', 'publish_past_date', $key)->save();
+    if ($check_created_time) {
+      $entityType->setThirdPartySetting('scheduler', 'publish_past_date_created', TRUE)->save();
+      $past_date_options = [
+        'publish' => 'publish',
+        'schedule' => 'schedule',
+      ];
+      foreach ($past_date_options as $key => $option) {
+        $entityType->setThirdPartySetting('scheduler', 'publish_past_date', $key)->save();
 
-      // Create a new unpublished entity, edit and save.
-      $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
-      $this->drupalGet($entity->toUrl('edit-form'));
-      $this->submitForm($edit, 'Save');
+        // Create a new unpublished entity, edit and save.
+        $entity = $this->createEntity($entityTypeId, $bundle, ['status' => FALSE]);
+        $this->drupalGet($entity->toUrl('edit-form'));
+        $this->submitForm($edit, 'Save');
 
-      if ($option == 'schedule') {
-        scheduler_cron();
+        if ($option == 'schedule') {
+          scheduler_cron();
+        }
+
+        // Reload the entity.
+        $storage->resetCache([$entity->id()]);
+        $entity = $storage->load($entity->id());
+
+        // Check that the created time is altered to match publishing time.
+        $this->assertEquals($entity->getCreatedTime(), strtotime('-1 day', $this->requestTime), sprintf('The created time of the entity has not been changed when the %s option is chosen.', $option));
       }
-
-      // Reload the entity.
-      $storage->resetCache([$entity->id()]);
-      $entity = $storage->load($entity->id());
-
-      // Check that the created time has been altered to match publishing time.
-      $this->assertEquals($entity->getCreatedTime(), strtotime('-1 day', $this->requestTime), sprintf('The created time of the entity has not been changed when the %s option is chosen.', $option));
-
     }
 
     // Check that an Unpublish date in the past fails validation.

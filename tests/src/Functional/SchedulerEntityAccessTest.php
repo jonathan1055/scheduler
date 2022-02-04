@@ -89,8 +89,8 @@ class SchedulerEntityAccessTest extends SchedulerBrowserTestBase {
    *   Each row has values: [entity type id, bundle id, field name, status].
    */
   public function dataEntityAccess() {
-    // This test is only applicable to node entity types because media and
-    // products do not have a hook access grant system.
+    // This test is only applicable to node entity types because the other
+    // entity types do not have a hook access grant system.
     // @todo Investigate how scheduler_access_test module can be expanded to
     // deny access to other entity types using a different method.
     $data = [
