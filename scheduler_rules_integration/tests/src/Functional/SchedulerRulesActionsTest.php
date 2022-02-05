@@ -39,7 +39,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    */
   public function testPublishOnActions($entityTypeId, $enabledBundle) {
     $nonEnabledBundle = $this->entityTypeObject($entityTypeId, 'non-enabled')->id();
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $publish_on = $this->requestTime + 1800;
     $publish_on_formatted = $this->dateFormatter->format($publish_on, 'long');
 
@@ -234,7 +234,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
    */
   public function testUnpublishOnActions($entityTypeId, $enabledBundle) {
     $nonEnabledBundle = $this->entityTypeObject($entityTypeId, 'non-enabled')->id();
-    $titleField = ($entityTypeId == 'media') ? 'name' : 'title';
+    $titleField = $this->titleField($entityTypeId);
     $unpublish_on = $this->requestTime + 2400;
     $unpublish_on_formatted = $this->dateFormatter->format($unpublish_on, 'long');
 
