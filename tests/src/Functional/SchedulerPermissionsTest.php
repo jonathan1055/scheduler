@@ -37,6 +37,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       // 'administer commerce_store' is needed to see and use any store, i.e
       // cannot add a product without this. Is it a bug?
       'administer commerce_store',
+      'create terms in ' . $this->vocabularyId,
+      'edit terms in ' . $this->vocabularyId,
     ];
 
     // Create a user who can add and edit the standard scheduler-enabled
@@ -53,6 +55,11 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     // entities, but only schedule products.
     $this->commerce_productUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of commerce_product']));
     $this->commerce_productUser->set('name', 'Proctor the Product Editor')->save();
+
+    // Create a user who can add and edit the standard scheduler-enabled
+    // entities, but only schedule taxonomy terms.
+    $this->taxonomy_termUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of taxonomy_term']));
+    $this->taxonomy_termUser->set('name', 'Taximayne the Taxonomy Editor')->save();
   }
 
   /**
@@ -194,6 +201,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       $data["$key-1"] = array_merge($values, ['nodeUser']);
       $data["$key-2"] = array_merge($values, ['mediaUser']);
       $data["$key-3"] = array_merge($values, ['commerce_productUser']);
+      $data["$key-4"] = array_merge($values, ['taxonomy_termUser']);
     }
     return $data;
   }

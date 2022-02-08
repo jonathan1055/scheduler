@@ -9,13 +9,13 @@ Scheduler provides hooks and events for third-party modules to interact with the
 process during content editing and during cron publishing and unpublishing.
 
 A plugin system allows support for any Drupal entity type that has the concept
-of a 'published' status. As at version 8.x-1.4 Node content, Media entities and
-Commerce Products are supported.
+of a 'published' status. As at Scheduler version 2.0 Node content, Media
+entities, Commerce Products and Taxonomy Terms are supported.
 
 ## Requirements
 
  * Scheduler uses the following Drupal 8 Core components: Actions, Datetime,
-   Field, Node, Media (optional), Text, Filter, User, System, Views.
+   Field, Node, Text, Filter, User, System, Views.
 
  * There are no special requirements outside core.
 
@@ -37,10 +37,13 @@ Commerce Products are supported.
      sub-module, contributed by the folks at [Thunder](https://www.drupal.org/thunder)
 
  * [Media](https://www.drupal.org/docs/8/core/modules/media):
-     Core Media items can be scheduled for publishing and unpublishing.
+     Core media items can be scheduled for publishing and unpublishing.
 
  * [Commerce](https://www.drupal.org/project/commerce):
      Commerce products can be scheduled for publishing and unpublishing.
+
+ * [Taxonomy](https://www.drupal.org/docs/8/core/modules/taxonomy):
+     Core taxonomy terms can be scheduled for publishing and unpublishing.
 
 ## Installation
 
@@ -66,7 +69,8 @@ Commerce Products are supported.
      Users can always see their own scheduled content, via a tab on their user
      page. This permissions grants additional authority to see the full list of
      scheduled content by any author, providing the user also has the core
-     permission 'access content overview' and/or 'access media overview'.
+     permission 'access content overview' or the equivalent for other entity
+     types.
 
    - "Administer scheduler"
 
@@ -86,6 +90,7 @@ Commerce Products are supported.
    - Administration » Structure » Content Types » Edit
    - Administration » Structure » Media Types » Edit
    - Administration » Commerce » Configuration » Product Types » Edit
+   - Administration » Structure » Taxonomy » Vocabulary » Edit
 
  * The system status report at /admin/reports/status has a Scheduler Timecheck
    section, giving details of the server time, default site time and current

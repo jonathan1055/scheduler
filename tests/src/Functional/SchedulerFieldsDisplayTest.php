@@ -30,6 +30,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       'administer node form display',
       'administer media form display',
       'administer commerce_product form display',
+      'administer taxonomy_term form display',
     ]);
   }
 
@@ -61,10 +62,13 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $details_open_xpath = '//details[@id = "edit-scheduler-settings" and @open = "open"]';
     $details_closed_xpath = '//details[@id = "edit-scheduler-settings" and not(@open = "open")]';
 
-    // Check that the dates are shown in a vertical tab by default.
+    // Check that the dates are shown in a vertical tab by default. The taxonomy
+    // term form does not have a vertical tab section, so cannot check for this.
     $add_url = $this->entityAddUrl($entityTypeId, $bundle);
     $this->drupalGet($add_url);
-    $assert->elementExists('xpath', $vertical_tab_xpath);
+    if ($check_vertical_tab = ($entityTypeId != 'taxonomy_term')) {
+      $assert->elementExists('xpath', $vertical_tab_xpath);
+    }
     $assert->elementExists('xpath', $details_closed_xpath);
 
     // Check that the dates are shown as a fieldset when configured to do so,
@@ -137,7 +141,9 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     // configured to do so.
     $entityType->setThirdPartySetting('scheduler', 'fields_display_mode', 'vertical_tab')->save();
     $this->drupalGet($entity->toUrl('edit-form'));
-    $assert->elementExists('xpath', $vertical_tab_xpath);
+    if ($check_vertical_tab) {
+      $assert->elementExists('xpath', $vertical_tab_xpath);
+    }
     $assert->elementExists('xpath', $details_open_xpath);
   }
 

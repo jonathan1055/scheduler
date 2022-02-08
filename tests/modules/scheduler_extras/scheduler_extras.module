@@ -19,6 +19,7 @@ function scheduler_extras_form_alter(&$form, FormStateInterface $form_state, $fo
     'node_testpage_form',
     'media_test_video_add_form',
     'commerce_product_test_product_add_form',
+    'taxonomy_term_test_vocab_form',
   ])) {
     return;
   }

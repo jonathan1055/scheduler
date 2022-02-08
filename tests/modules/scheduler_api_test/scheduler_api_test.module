@@ -8,7 +8,8 @@
  * no _{type}_ in the name, which is invoked for all entity types, and a version
  * with _{type}_ in the name, which is invoked only when that entity types is
  * being processed. Hence for complete test coverage this module has eight plain
- * implementations, eight implementations for Nodes and eight for Media.
+ * implementations, and eight implementations for Nodes, Media, Products and
+ * Taxonomy Terms.
  */
 
 use Drupal\commerce_product\Entity\Product;
@@ -18,6 +19,8 @@ use Drupal\media\Entity\Media;
 use Drupal\media\MediaInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
+use Drupal\taxonomy\Entity\Term;
+use Drupal\taxonomy\TermInterface;
 
 /**
  * Helper function to return all entities of a given type.
@@ -34,6 +37,10 @@ function _scheduler_api_test_get_entities($entityTypeId) {
 
     case 'commerce_product':
       $results = Product::loadMultiple(\Drupal::entityQuery('commerce_product')->accessCheck(FALSE)->execute());
+      break;
+
+    case 'taxonomy_term':
+      $results = Term::loadMultiple(\Drupal::entityQuery('taxonomy_term')->accessCheck(FALSE)->execute());
       break;
 
     default:
@@ -107,6 +114,14 @@ function scheduler_api_test_scheduler_commerce_product_list($process, $entityTyp
 }
 
 /**
+ * Implements hook_scheduler_taxonomy_term_list().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_list($process, $entityTypeId) {
+  // This hook does exactly the same as the node version, so re-use that.
+  return scheduler_api_test_scheduler_node_list($process, $entityTypeId);
+}
+
+/**
  * Implements hook_scheduler_list_alter().
  */
 function scheduler_api_test_scheduler_list_alter(&$ids, $process, $entityTypeId) {
@@ -174,6 +189,14 @@ function scheduler_api_test_scheduler_media_list_alter(&$ids, $process, $entityT
  * Implements hook_scheduler_commerce_product_list_alter().
  */
 function scheduler_api_test_scheduler_commerce_product_list_alter(&$ids, $process, $entityTypeId) {
+  // This hook does exactly the same as the node version, so re-use that.
+  scheduler_api_test_scheduler_node_list_alter($ids, $process, $entityTypeId);
+}
+
+/**
+ * Implements hook_scheduler_taxonomy_term_list_alter().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_list_alter(&$ids, $process, $entityTypeId) {
   // This hook does exactly the same as the node version, so re-use that.
   scheduler_api_test_scheduler_node_list_alter($ids, $process, $entityTypeId);
 }
@@ -359,6 +382,14 @@ function scheduler_api_test_scheduler_commerce_product_hide_publish_date($form, 
 }
 
 /**
+ * Implements hook_scheduler_taxonomy_term_hide_publish_date().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_hide_publish_date($form, $form_state, $entity) {
+  // Use the generic hide_publish_date helper function.
+  return _api_hide_publish_date($form, $form_state, $entity);
+}
+
+/**
  * Implements hook_scheduler_hide_unpublish_date().
  */
 function scheduler_api_test_scheduler_hide_unpublish_date($form, $form_state, $entity) {
@@ -406,6 +437,14 @@ function scheduler_api_test_scheduler_media_hide_unpublish_date($form, $form_sta
  * Implements hook_scheduler_commerce_product_hide_unpublish_date().
  */
 function scheduler_api_test_scheduler_commerce_product_hide_unpublish_date($form, $form_state, $entity) {
+  // Use the generic hide_unpublish_date helper function.
+  return _api_hide_unpublish_date($form, $form_state, $entity);
+}
+
+/**
+ * Implements hook_scheduler_taxonomy_term_hide_unpublish_date().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_hide_unpublish_date($form, $form_state, $entity) {
   // Use the generic hide_unpublish_date helper function.
   return _api_hide_unpublish_date($form, $form_state, $entity);
 }
@@ -466,6 +505,14 @@ function scheduler_api_test_scheduler_commerce_product_publish_process(ProductIn
 }
 
 /**
+ * Implements hook_scheduler_taxonomy_term_publish_process().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_publish_process(TermInterface $term) {
+  // Use the generic publish_process helper function.
+  return _api_publish_process($term);
+}
+
+/**
  * Implements hook_scheduler_unpublish_process().
  */
 function scheduler_api_test_scheduler_unpublish_process(EntityInterface $entity) {
@@ -518,4 +565,12 @@ function scheduler_api_test_scheduler_media_unpublish_process(MediaInterface $me
 function scheduler_api_test_scheduler_commerce_product_unpublish_process(ProductInterface $product) {
   // Use the generic unpublish_process helper function.
   return _api_unpublish_process($product);
+}
+
+/**
+ * Implements hook_scheduler_taxonomy_term_unpublish_process().
+ */
+function scheduler_api_test_scheduler_taxonomy_term_unpublish_process(TermInterface $term) {
+  // Use the generic unpublish_process helper function.
+  return _api_unpublish_process($term);
 }

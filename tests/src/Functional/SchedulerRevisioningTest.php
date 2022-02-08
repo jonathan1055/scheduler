@@ -112,7 +112,7 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
   /**
    * Tests the 'touch' option to alter the created date during publishing.
    *
-   * @dataProvider dataStandardEntityTypes()
+   * @dataProvider dataAlterCreationDate()
    */
   public function testAlterCreationDate($entityTypeId, $bundle) {
     // Ensure entities with past dates are scheduled not published immediately.
@@ -146,6 +146,21 @@ class SchedulerRevisioningTest extends SchedulerBrowserTestBase {
     $created_after_cron = $entity->created->value;
     $this->assertEquals(strtotime('-5 hour', $this->requestTime), $created_after_cron, "With 'touch' option set, the entity creation date is changed to match the publishing date.");
 
+  }
+
+  /**
+   * Provides test data for testAlterCreationDate.
+   *
+   * Taxonomy terms do not have a 'created' date and the therefore the 'touch'
+   * option is not available, and the test should be skipped.
+   *
+   * @return array
+   *   Each array item has the values: [entity type id, bundle id].
+   */
+  public function dataAlterCreationDate() {
+    $data = $this->dataStandardEntityTypes();
+    unset($data['#taxonomy_term']);
+    return $data;
   }
 
 }

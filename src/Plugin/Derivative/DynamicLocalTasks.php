@@ -67,7 +67,6 @@ class DynamicLocalTasks extends DeriverBase {
 
     $view = View::load('scheduler_scheduled_commerce_product');
     if ($view && $view->status() && $view->getDisplay('overview')) {
-
       // The page created by route entity.commerce_product.collection does not
       // have any tabs or sub-links, because the Commerce Product module does
       // not specify any local tasks for this route. Therefore we need a
@@ -92,6 +91,34 @@ class DynamicLocalTasks extends DeriverBase {
         'title' => 'Overview',
         'route_name' => 'entity.commerce_product.collection',
         'parent_id' => 'scheduler.local_tasks:scheduler.commerce_products',
+      ] + $base_plugin_definition;
+    }
+
+    $view = View::load('scheduler_scheduled_taxonomy_term');
+    if ($view && $view->status() && $view->getDisplay('overview')) {
+      // In the same manner as for Commerce Products the page created by route
+      // entity.taxonomy_vocabulary.collection does not have tabs or sub-links,
+      // so we need to definine one with a route name and base route here, to be
+      // used as the parent for the two tabs defined below.
+      $this->derivatives['scheduler.taxonomy_collection'] = [
+        'route_name' => 'entity.taxonomy_vocabulary.collection',
+        'base_route' => 'entity.taxonomy_vocabulary.collection',
+      ] + $base_plugin_definition;
+
+      // Define local task for the scheduled taxonomy terms view.
+      $this->derivatives['scheduler.scheduled_taxonomy_terms'] = [
+        'title' => 'Scheduled terms',
+        'route_name' => 'view.scheduler_scheduled_taxonomy_term.overview',
+        'parent_id' => 'scheduler.local_tasks:scheduler.taxonomy_collection',
+        'weight' => 5,
+      ] + $base_plugin_definition;
+
+      // This task is added so that we get an 'overview' sub-task link alongside
+      // the 'scheduled taxonomy terms' sub-task link.
+      $this->derivatives['scheduler.taxonomy_vocabulary.collection'] = [
+        'title' => 'Overview',
+        'route_name' => 'entity.taxonomy_vocabulary.collection',
+        'parent_id' => 'scheduler.local_tasks:scheduler.taxonomy_collection',
       ] + $base_plugin_definition;
     }
 

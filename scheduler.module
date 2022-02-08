@@ -337,11 +337,12 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
 
   // Entity types that do not implement the 'getCreatedTime' method should have
-  // the option set to FALSE and the field disabled.
+  // the option set to FALSE and the field disabled and hidden.
   if (!method_exists($contentEntity, 'getCreatedTime')) {
     $form['scheduler']['publish']['scheduler_publish_touch']['#disabled'] = TRUE;
     $form['scheduler']['publish']['scheduler_publish_touch']['#description'] = t('The entity type does not support the change of creation time.');
     $form['scheduler']['publish']['scheduler_publish_touch']['#default_value'] = FALSE;
+    $form['scheduler']['publish']['scheduler_publish_touch']['#access'] = FALSE;
   }
 
   $form['scheduler']['publish']['scheduler_publish_required'] = [
@@ -403,7 +404,8 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
 
   // Entity types that do not implement the 'getCreatedTime' method should have
-  // the option set to FALSE and the field disabled.
+  // the option set to FALSE and the field disabled. It will be hidden due to
+  // the #states setting above, as scheduler_publish_touch has #access = FALSE.
   if (!method_exists($contentEntity, 'getCreatedTime')) {
     $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created']['#disabled'] = TRUE;
     $form['scheduler']['publish']['advanced']['scheduler_publish_past_date_created']['#description'] = t('The entity type does not support the change of creation time.');
@@ -779,8 +781,8 @@ function scheduler_entity_presave(EntityInterface $entity) {
       // The values may not be set if calling via drush, so default to zero.
       $publishing_percent = @$entity->devel_generate['scheduler_publishing'] ?: 0;
       $unpublishing_percent = @$entity->devel_generate['scheduler_unpublishing'] ?: 0;
-      // Reuse the selected 'creation' time range for our future date span.
       $entity_created = isset($entity->created) ? $entity->created->value : $request_time;
+      // Reuse the selected 'creation' time range for our future date span.
       $time_range = $entity->devel_generate['time_range'];
     }
     if ($publishing_percent && $publishing_enabled) {

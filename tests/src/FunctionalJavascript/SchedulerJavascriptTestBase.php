@@ -6,6 +6,7 @@ use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerTaxonomyTermSetupTrait;
 
 /**
  * Base class for Scheduler javascript tests.
@@ -15,6 +16,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
   use SchedulerCommerceProductSetupTrait;
   use SchedulerMediaSetupTrait;
   use SchedulerSetupTrait;
+  use SchedulerTaxonomyTermSetupTrait;
 
   /**
    * The standard modules to load for all javascript tests.
@@ -27,6 +29,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
     'scheduler',
     'media',
     'commerce_product',
+    'taxonomy',
   ];
 
   /**
@@ -56,6 +59,9 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
     }
     if (stristr($this->getName(), 'product')) {
       $this->SchedulerCommerceProductSetUp();
+    }
+    if (stristr($this->getName(), 'taxonomy')) {
+      $this->SchedulerTaxonomyTermSetup();
     }
   }
 

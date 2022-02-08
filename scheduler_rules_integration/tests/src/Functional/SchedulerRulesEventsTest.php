@@ -59,6 +59,13 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       16 => ['scheduler:new_commerce_product_is_scheduled_for_unpublishing', 'A new product is created and scheduled for unpublishing.'],
       17 => ['scheduler:existing_commerce_product_is_scheduled_for_unpublishing', 'An existing product is scheduled for unpublishing.'],
       18 => ['scheduler:commerce_product_has_been_unpublished_via_cron', 'Scheduler has unpublished this product during cron.'],
+      // These six events are dispatched only for Taxonomy Term entities.
+      19 => ['scheduler:new_taxonomy_term_is_scheduled_for_publishing', 'A new taxonomy term is created and scheduled for publishing.'],
+      20 => ['scheduler:existing_taxonomy_term_is_scheduled_for_publishing', 'An existing taxonomy term is scheduled for publishing.'],
+      21 => ['scheduler:taxonomy_term_has_been_published_via_cron', 'Scheduler has published this taxonomy term during cron.'],
+      22 => ['scheduler:new_taxonomy_term_is_scheduled_for_unpublishing', 'A new taxonomy term is created and scheduled for unpublishing.'],
+      23 => ['scheduler:existing_taxonomy_term_is_scheduled_for_unpublishing', 'An existing taxonomy term is scheduled for unpublishing.'],
+      24 => ['scheduler:taxonomy_term_has_been_unpublished_via_cron', 'Scheduler has unpublished this taxonomy term during cron.'],
     ];
 
     // PHPCS throws a false-positive 'variable $var is undefined' message when
@@ -102,7 +109,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
    */
   public function checkMessages(string $entityTypeId = NULL, array $expectedMessages = []) {
     // Add the required entity offset to each message id in the expected array.
-    $offset = ['node' => 0, 'media' => 6, 'commerce_product' => 12];
+    $offset = ['node' => 0, 'media' => 6, 'commerce_product' => 12, 'taxonomy_term' => 18];
     array_walk($expectedMessages, function (&$item) use ($offset, $entityTypeId) {
       $item = $item + $offset[$entityTypeId];
     });

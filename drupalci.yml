@@ -4,6 +4,9 @@ build:
     validate_codebase:
       phplint:
       container_composer:
+      container_command:
+        commands:
+          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/devel:4.x-dev"
       host_command:
         commands:
           # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817

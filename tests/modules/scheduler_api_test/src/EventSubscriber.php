@@ -5,6 +5,7 @@ namespace Drupal\scheduler_api_test;
 use Drupal\scheduler\Event\SchedulerCommerceProductEvents;
 use Drupal\scheduler\Event\SchedulerMediaEvents;
 use Drupal\scheduler\Event\SchedulerNodeEvents;
+use Drupal\scheduler\Event\SchedulerTaxonomyTermEvents;
 use Drupal\scheduler\SchedulerEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -21,7 +22,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * make the tests stronger so they fail if the calls are in the wrong place.
  *
  * The media tests cannot use 'sticky' and 'promote' as these fields do not
- * exist, so the media name is altered instead.
+ * exist, so the media name is altered instead. This is also the case with
+ * products and taxonomy terms.
  *
  * To allow this API test module to be enabled interactively (for development
  * and testing) we must avoid unwanted side-effects on other non-test nodes.
@@ -63,6 +65,14 @@ class EventSubscriber implements EventSubscriberInterface {
     $events[SchedulerCommerceProductEvents::UNPUBLISH][] = ['apiTestProductUnpublish'];
     $events[SchedulerCommerceProductEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestProductPrePublishImmediately'];
     $events[SchedulerCommerceProductEvents::PUBLISH_IMMEDIATELY][] = ['apiTestProductPublishImmediately'];
+
+    // These six events are dispatched for Taxomony Term entity types only.
+    $events[SchedulerTaxonomyTermEvents::PRE_PUBLISH][] = ['apiTestTaxonomyTermPrePublish'];
+    $events[SchedulerTaxonomyTermEvents::PUBLISH][] = ['apiTestTaxonomyTermPublish'];
+    $events[SchedulerTaxonomyTermEvents::PRE_UNPUBLISH][] = ['apiTestTaxonomyTermPreUnpublish'];
+    $events[SchedulerTaxonomyTermEvents::UNPUBLISH][] = ['apiTestTaxonomyTermUnpublish'];
+    $events[SchedulerTaxonomyTermEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestTaxonomyTermPrePublishImmediately'];
+    $events[SchedulerTaxonomyTermEvents::PUBLISH_IMMEDIATELY][] = ['apiTestTaxonomyTermPublishImmediately'];
 
     return $events;
   }
@@ -378,6 +388,66 @@ class EventSubscriber implements EventSubscriberInterface {
    *   The scheduler event.
    */
   public function apiTestProductPublishImmediately(SchedulerEvent $event) {
+    $this->apiTestPublishImmediately($event);
+  }
+
+  /**
+   * Operations to perform before Scheduler publishes a taxonomy term.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermPrePublish(SchedulerEvent $event) {
+    $this->apiTestPrePublish($event);
+  }
+
+  /**
+   * Operations to perform after Scheduler publishes a taxonomy term.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermPublish(SchedulerEvent $event) {
+    $this->apiTestPublish($event);
+  }
+
+  /**
+   * Operations to perform before Scheduler unpublishes a taxonomy term.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermPreUnpublish(SchedulerEvent $event) {
+    $this->apiTestPreUnpublish($event);
+  }
+
+  /**
+   * Operations to perform after Scheduler unpublishes a taxonomy term.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermUnpublish(SchedulerEvent $event) {
+    $this->apiTestUnpublish($event);
+  }
+
+  /**
+   * Operations before Scheduler publishes a term immediately not via cron.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermPrePublishImmediately(SchedulerEvent $event) {
+    $this->apiTestPrePublishImmediately($event);
+  }
+
+  /**
+   * Operations after Scheduler publishes a term immediately not via cron.
+   *
+   * @param \Drupal\scheduler\Event\SchedulerEvent $event
+   *   The scheduler event.
+   */
+  public function apiTestTaxonomyTermPublishImmediately(SchedulerEvent $event) {
     $this->apiTestPublishImmediately($event);
   }
 

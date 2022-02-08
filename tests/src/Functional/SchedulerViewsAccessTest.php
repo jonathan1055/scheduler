@@ -30,7 +30,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
       $edit_key = $view_key = $entityTypeId;
     }
     // "view own unpublished $view_key" is needed for Products. It is not
-    // required for Node or Media.
+    // required for Node or Media, and does not exist for Taxonomy terms.
     $base_permissions = ($entityTypeId == 'commerce_product') ? ["view own unpublished $view_key"] : [];
 
     $this->webUser = $this->drupalCreateUser();
@@ -141,8 +141,8 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   /**
    * Provides test data for user view test.
    *
-   * There is no user view for scheduled Commerce Products so this entity type
-   * is removed.
+   * There is no user view for scheduled Commerce Products or Taxonomy Terms so
+   * these entity types are removed from the user view test.
    *
    * @return array
    *   Each array item has the values: [entity type id, bundle id].
@@ -150,6 +150,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   public function dataViewScheduledContentUser() {
     $data = $this->dataStandardEntityTypes();
     unset($data['#commerce_product']);
+    unset($data['#taxonomy_term']);
     return $data;
   }
 
@@ -185,9 +186,9 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $this->drupalLogin($this->schedulerViewer);
     $this->drupalGet($scheduled_url);
     $assert->statusCodeEquals(200);
-    // Unpublished nodes and media items by other users are listed but products
-    // are not. Therefore do not check for the unpublished product by Scheduler
-    // Editor here.
+    // Unpublished nodes, media items and taxonomy terms by other users are
+    // listed but products are not. Therefore do not check for the unpublished
+    // product by Scheduler Editor here.
     if ($entityTypeId != 'commerce_product') {
       $assert->pageTextContains("$entityTypeId created by Scheduler Editor for publishing");
     }
@@ -200,6 +201,7 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
       'node' => 'scheduler_scheduled_content',
       'media' => 'scheduler_scheduled_media',
       'commerce_product' => 'scheduler_scheduled_commerce_product',
+      'taxonomy_term' => 'scheduler_scheduled_taxonomy_term',
     ];
     $view = $this->container->get('entity_type.manager')->getStorage('view')->load($view_ids[$entityTypeId]);
     $view->disable()->save();

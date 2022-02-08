@@ -225,7 +225,7 @@ trait SchedulerSetupTrait {
    * process all types of entities, either in loops or via a data provider.
    *
    * @param string $entityTypeId
-   *   The name of the entity type - 'node', 'media' or 'commerce_product'.
+   *   The entity type - 'node', 'media', 'commerce_product' or 'taxonomy_term'.
    * @param string $bundle
    *   The name of the bundle. Optional, will default to $this->type for nodes
    *   $this->mediaTypeName for media, or $this->productTypeName for products.
@@ -255,6 +255,12 @@ trait SchedulerSetupTrait {
         // For products the bundle field is 'type'.
         $values += ['type' => $bundle ?? $this->productTypeName];
         $entity = $this->createProduct($values);
+        break;
+
+      case 'taxonomy_term':
+        // For taxonomy terms, the bundle field is 'vid'.
+        $values += ['vid' => $bundle ?? $this->vocabularyId];
+        $entity = $this->createTaxonomyTerm($values);
         break;
 
       default:
@@ -289,6 +295,9 @@ trait SchedulerSetupTrait {
       case 'commerce_product':
         return $this->getProduct($title);
 
+      case 'taxonomy_term':
+        return $this->getTaxonomyTerm($title);
+
       default:
         // Incorrect parameter value.
         throw new \Exception(sprintf('Unrecognised entityTypeId value "%s" passed to getEntityByTitle()', $entityTypeId));
@@ -319,11 +328,13 @@ trait SchedulerSetupTrait {
         'node' => $this->type,
         'media' => $this->mediaTypeName,
         'commerce_product' => $this->productTypeName,
+        'taxonomy_term' => $this->vocabularyId,
       ];
       $non_enabled_types = [
         'node' => $this->nonSchedulerType,
         'media' => $this->nonSchedulerMediaTypeName,
         'commerce_product' => $this->nonSchedulerProductTypeName,
+        'taxonomy_term' => $this->nonSchedulerVocabularyId,
       ];
       $bundle = (empty($bundle)) ? $default_types[$entityTypeId] : $non_enabled_types[$entityTypeId];
     }
@@ -352,6 +363,7 @@ trait SchedulerSetupTrait {
         return 'title';
 
       case 'media':
+      case 'taxonomy_term':
         return 'name';
 
       default:
@@ -374,6 +386,9 @@ trait SchedulerSetupTrait {
       case 'node':
       case 'commerce_product':
         return 'body';
+
+      case 'taxonomy_term':
+        return 'description';
 
       default:
         // Incorrect parameter value.
@@ -402,6 +417,9 @@ trait SchedulerSetupTrait {
 
       case 'commerce_product':
         return '/The product ' . preg_quote($title, '/') . ' has been successfully saved/';
+
+      case 'taxonomy_term':
+        return '/(Created new|Updated) term ' . preg_quote($title, '/') . '/';
 
       default:
         // Incorrect parameter value.
@@ -443,6 +461,12 @@ trait SchedulerSetupTrait {
         $type_parameter = 'commerce_product_type';
         break;
 
+      case 'taxonomy_term':
+        $bundle = ($bundle == 'non-enabled') ? $this->nonSchedulerVocabularyId : ($bundle ?? $this->vocabularyId);
+        $route = 'entity.taxonomy_term.add_form';
+        $type_parameter = 'taxonomy_vocabulary';
+        break;
+
       default:
         // Incorrect parameter values.
         throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to entityAddUrl()', $entityTypeId, $bundle));
@@ -474,15 +498,18 @@ trait SchedulerSetupTrait {
         'node' => 'admin/content',
         'media' => 'admin/content/media',
         'commerce_product' => 'admin/commerce/products',
+        'taxonomy_term' => "admin/structure/taxonomy/manage/$bundle/overview",
       ],
       'scheduled' => [
         'node' => 'admin/content/scheduled',
         'media' => 'admin/content/media/scheduled',
         'commerce_product' => 'admin/commerce/products/scheduled',
+        'taxonomy_term' => 'admin/structure/taxonomy/scheduled',
       ],
       'generate' => [
         'node' => 'admin/config/development/generate/content',
         'media' => 'admin/config/development/generate/media',
+        'taxonomy_term' => 'admin/config/development/generate/term',
       ],
     ];
 
@@ -537,6 +564,7 @@ trait SchedulerSetupTrait {
       '#node' => ['node', $this->type],
       '#media' => ['media', $this->mediaTypeName],
       '#commerce_product' => ['commerce_product', $this->productTypeName],
+      '#taxonomy_term' => ['taxonomy_term', $this->vocabularyId],
     ];
     return $data;
   }
@@ -553,6 +581,7 @@ trait SchedulerSetupTrait {
       '#node' => ['node', $this->nonSchedulerType],
       '#media' => ['media', $this->nonSchedulerMediaTypeName],
       '#commerce_product' => ['commerce_product', $this->nonSchedulerProductTypeName],
+      '#taxonomy_term' => ['taxonomy_term', $this->nonSchedulerVocabularyId],
     ];
     return $data;
   }

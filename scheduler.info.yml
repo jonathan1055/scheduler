@@ -15,6 +15,7 @@ test_dependencies:
   - devel:devel_generate
   - drupal:media
   - commerce:commerce
+  - drupal:taxonomy
 libraries:
   - admin-css
   - vertical-tabs

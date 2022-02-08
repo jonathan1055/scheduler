@@ -107,16 +107,23 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $bundle_field = $this->container->get('entity_type.manager')
       ->getDefinition($entityTypeId)->get('entity_keys')['bundle'];
 
-    // Use the minimum required settings to see what happens when everything
-    // else is left as default.
-    $generate_settings = [
-      "{$entityTypeId}_types[$bundle]" => TRUE,
-    ];
+    // Use just the minimum settings that are required, to see what happens when
+    // everything else is left as default. The devel_generate form has a
+    // selection list of vocabularies when generating terms but has a table of
+    // checkboxes to chose which node and media types to generate.
+    if ($entityTypeId == 'taxonomy_term') {
+      $entity_selection = ['vids[]' => ["$bundle" => "$bundle"]];
+    }
+    else {
+      $entity_selection = ["{$entityTypeId}_types[$bundle]" => TRUE];
+    }
     $this->drupalGet($this->adminUrl('generate', $entityTypeId, $bundle));
-    $this->submitForm($generate_settings, 'Generate');
+    $this->submitForm($entity_selection, 'Generate');
 
     // Display the full content list and the scheduled list for the entity type
     // being generated. Calls to these pages are for information and debug only.
+    // The default number of entities to create varies across the different
+    // devel_generate plugins, therefore we do not count any on this first run.
     $this->drupalGet($this->adminUrl('collection', $entityTypeId, $bundle));
     $this->drupalGet($this->adminUrl('scheduled', $entityTypeId, $bundle));
 
@@ -126,8 +133,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     // The number of entities has to be lower than 50 until the Devel issue with
     // undefined index 'users' is available and we switch to using 8.x-3.0
     // See https://www.drupal.org/project/devel/issues/3076613
-    $generate_settings = [
-      "{$entityTypeId}_types[$bundle]" => TRUE,
+    $generate_settings = $entity_selection + [
       'num' => 40,
       'kill' => TRUE,
       'time_range' => 3600,
@@ -147,8 +153,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Do similar for unpublish_on date. Delete all then generate new content
     // with only unpublish-on dates. Time range 86400 is one day.
-    $generate_settings = [
-      "{$entityTypeId}_types[$bundle]" => TRUE,
+    $generate_settings = $entity_selection + [
       'num' => 30,
       'kill' => TRUE,
       'time_range' => 86400,

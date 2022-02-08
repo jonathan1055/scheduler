@@ -120,3 +120,6 @@ media.type.*.third_party.scheduler:
 
 commerce_product.commerce_product_type.*.third_party.scheduler:
   *third_party_settings_alias
+
+taxonomy.vocabulary.*.third_party.scheduler:
+  *third_party_settings_alias

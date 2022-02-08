@@ -6,6 +6,7 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerTaxonomyTermSetupTrait;
 
 /**
  * Base class to provide common browser test setup.
@@ -15,6 +16,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
   use SchedulerCommerceProductSetupTrait;
   use SchedulerMediaSetupTrait;
   use SchedulerSetupTrait;
+  use SchedulerTaxonomyTermSetupTrait;
 
   /**
    * The standard modules to load for all browser tests.
@@ -28,6 +30,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     'dblog',
     'media',
     'commerce_product',
+    'taxonomy',
   ];
 
   /**
@@ -59,6 +62,9 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     }
     if (stristr($this->getName(), 'product') || stristr($testName, 'permission')) {
       $this->SchedulerCommerceProductSetUp();
+    }
+    if (stristr($this->getName(), 'taxonomy') || stristr($testName, 'permission')) {
+      $this->SchedulerTaxonomyTermSetup();
     }
   }
 
