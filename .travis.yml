@@ -128,7 +128,7 @@ script:
   # By default the specific entity type tests will be excluded unless explicitly
   # included via a YES variable value.
   - EXCLUDE=()
-  - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode'); fi
+  - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode|HooksLegacy|Multilingual'); fi
   - if [ "$MEDIA" != "YES" ]; then EXCLUDE+=('#media|BasicMedia'); fi
   - if [ "$PRODUCT" != "YES" ]; then EXCLUDE+=('#commerce_product|BasicProduct'); fi
   - if [ "$TERM" != "YES" ]; then EXCLUDE+=('#taxonomy_term|BasicTaxonomy'); fi
