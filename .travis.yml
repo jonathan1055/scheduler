@@ -31,12 +31,12 @@ jobs:
         - MEDIA=YES
         - TERM=YES
         - RULES=YES
-        # ---- Remaining self deprecation notices (2022)
-        # 1328 Symfony KernelEvent::isMasterRequest()
-        #  511 hook_field_widget_form_alter (Commerce)
-        #  181 EventDispatcher with string event (Rules and Commerce)
+        # ---- Remaining self deprecation notices (1685)
+        # 1087 Symfony KernelEvent::isMasterRequest()
+        #  455 hook_field_widget_form_alter (Commerce)
+        #  141 EventDispatcher with string event (Rules and Commerce)
         #    2 Kernel $modules property must be declared protected
-        - DEPRECATIONS=2022
+        - DEPRECATIONS=1685
     - php: 7.4
       env:
         - DRUPAL_CORE=9.3.x
@@ -49,10 +49,10 @@ jobs:
         #  291 EventDispatcher with string event (Rules and Commerce)
         #   13 Creating an instance of this class is deprecated in drupal:9.1.0
         #    2 Kernel $modules property must be declared protected
-        - DEPRECATIONS=1112
         # ---- Other deprecation notices (1234)
         #  617 drupal_get_path() is deprecated in drupal:9.3.0
         #  617 drupal_get_filename() is deprecated in drupal:9.3.0
+        - DEPRECATIONS=3084
 
 # Be sure to cache composer downloads.
 cache:
