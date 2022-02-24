@@ -146,10 +146,27 @@ function scheduler_update_8202() {
   // to the entity plugin version of Scheduler. If the media or commerce modules
   // are already enabled this will also load those new views from source.
   $scheduler_manager = \Drupal::service('scheduler.manager');
-  if ($result = $scheduler_manager->viewsUpdate()) {
+  if ($result = $scheduler_manager->viewsUpdate(['node', 'media', 'commerce_product'])) {
     return t('Updated views: %updated.', ['%updated' => implode(', ', $result)]);
   }
   else {
     return t('No views require updating.');
   }
+}
+
+/**
+ * Update entity fields and scheduled view for Taxonomy Terms.
+ */
+function scheduler_update_8203() {
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $output = [];
+  if ($result = $scheduler_manager->entityUpdate()) {
+    $output[] = t('Added Scheduler date fields to the following entity types: %updated.', [
+      '%updated' => implode(', ', $result),
+    ]);
+  }
+  if ($result = $scheduler_manager->viewsUpdate(['taxonomy_term'])) {
+    $output[] = t('Updated views: %updated.', ['%updated' => implode(', ', $result)]);
+  }
+  return $output ? implode('<br>', $output) : t('Nothing requires updating for Taxonomy Terms.');
 }

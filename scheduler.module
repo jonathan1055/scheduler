@@ -1073,9 +1073,9 @@ function scheduler_modules_installed($modules) {
   $matches = [];
   $plugin_definitions = $scheduler_manager->getPluginDefinitions();
   foreach ($plugin_definitions as $definition) {
-    // If the plugin entity type or the plugin provider match any of the modules
-    // being installed then add the entity type to the list to be updated.
-    if (array_intersect([$definition['entityType'], $definition['provider']], $modules)) {
+    // If the plugin entity type, provider or dependency match any of the
+    // modules being installed then add the entity type to the $matches list.
+    if (array_intersect([$definition['entityType'], $definition['provider'], $definition['dependency']], $modules)) {
       $matches[] = $definition['entityType'];
     }
   }
