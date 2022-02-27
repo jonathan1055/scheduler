@@ -568,12 +568,13 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
 
   // Add form items to specify what proportion of generated entities should have
   // a publish-on and/or unpublish-on date assigned. See hook_entity_presave()
-  // for the code that sets these values in the generated entity.
+  // for the code that sets these values in the generated entity. Allow for any
+  // previously-executed form_alter to have already set the percentages.
   $form['scheduler_publishing'] = [
     '#type' => 'number',
     '#title' => t('Publishing date for Scheduler'),
     '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given a publish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at entity creation date, up to a time in the future matching the same span as selected above.'),
-    '#default_value' => 50,
+    '#default_value' => $form['scheduler_publishing']['#default_value'] ?? 50,
     '#required' => TRUE,
     '#min' => 0,
     '#max' => 100,
@@ -582,7 +583,7 @@ function _scheduler_devel_generate_form_alter(array &$form, FormStateInterface $
     '#type' => 'number',
     '#title' => t('Unpublishing date for Scheduler'),
     '#description' => t('Enter a percentage for randomly selecting Scheduler-enabled entities to be given an unpublish-on date. Enter 0 for none, 100 for all. The date and time will be random within the range starting at the later of entity creation date and publish-on date, up to a time in the future matching the same span as selected above.'),
-    '#default_value' => 50,
+    '#default_value' => $form['scheduler_unpublishing']['#default_value'] ?? 50,
     '#required' => TRUE,
     '#min' => 0,
     '#max' => 100,
