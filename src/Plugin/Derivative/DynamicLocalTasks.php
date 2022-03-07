@@ -3,8 +3,10 @@
 namespace Drupal\scheduler\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\views\Entity\View;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Defines dynamic local tasks.
@@ -14,18 +16,47 @@ use Drupal\views\Entity\View;
  * will not exist and this produces an exception "Route X does not exist." The
  * routes are defined here instead to enable checking that the views are loaded.
  */
-class DynamicLocalTasks extends DeriverBase {
+class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface {
 
   use StringTranslationTrait;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Creates a DynamicLocalTasks object.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, $base_plugin_id) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
 
+    $view_storage = $this->entityTypeManager->getStorage('view');
+
     // Define a local task for scheduled content (nodes) view, only when the
     // view can be loaded, is enabled and that the overview display exists.
-    $view = View::load('scheduler_scheduled_content');
+    /** @var \Drupal\views\ViewEntityInterface $view */
+    $view = $view_storage->load('scheduler_scheduled_content');
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // The content overview has weight 0 and moderated content has weight 1
       // so use weight 5 for the scheduled content tab.
@@ -48,7 +79,7 @@ class DynamicLocalTasks extends DeriverBase {
       ] + $base_plugin_definition;
     }
 
-    $view = View::load('scheduler_scheduled_media');
+    $view = $view_storage->load('scheduler_scheduled_media');
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // Define local task for scheduled media view.
       $this->derivatives['scheduler.scheduled_media'] = [
@@ -67,7 +98,7 @@ class DynamicLocalTasks extends DeriverBase {
       ] + $base_plugin_definition;
     }
 
-    $view = View::load('scheduler_scheduled_commerce_product');
+    $view = $view_storage->load('scheduler_scheduled_commerce_product');
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // The page created by route entity.commerce_product.collection does not
       // have any tabs or sub-links, because the Commerce Product module does
@@ -96,7 +127,7 @@ class DynamicLocalTasks extends DeriverBase {
       ] + $base_plugin_definition;
     }
 
-    $view = View::load('scheduler_scheduled_taxonomy_term');
+    $view = $view_storage->load('scheduler_scheduled_taxonomy_term');
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // In the same manner as for Commerce Products the page created by route
       // entity.taxonomy_vocabulary.collection does not have tabs or sub-links,
