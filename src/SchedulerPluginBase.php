@@ -82,10 +82,20 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the route of the entity collection page.
+   *
+   * @return string
+   *   The route. Defaults to entity.{entityType}.collection.
+   */
+  public function collectionRoute() {
+    return $this->pluginDefinition['collectionRoute'] ?? "entity.{$this->entityType()}.collection";
+  }
+
+  /**
    * Get the route of the scheduled view on the user profile page.
    *
    * @return string
-   *   The form id, or an empty string if none.
+   *   The route, or blank if none.
    */
   public function userViewRoute() {
     return $this->pluginDefinition['userViewRoute'];

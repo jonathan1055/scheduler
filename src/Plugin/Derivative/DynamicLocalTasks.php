@@ -40,13 +40,12 @@ class DynamicLocalTasks extends DeriverBase {
       // is required when adding additional local tasks. If that module is not
       // installed then define the tab here. This can be removed if
       // https://www.drupal.org/project/drupal/issues/3199682 gets committed.
-      if (!\Drupal::moduleHandler()->moduleExists('content_moderation')) {
-        $this->derivatives['scheduler.content_overview'] = [
-          'title' => $this->t('Overview'),
-          'route_name' => 'system.admin_content',
-          'parent_id' => 'system.admin_content',
-        ] + $base_plugin_definition;
-      }
+      // See also scheduler_local_tasks_alter().
+      $this->derivatives['scheduler.content_overview'] = [
+        'title' => $this->t('Overview'),
+        'route_name' => 'system.admin_content',
+        'parent_id' => 'system.admin_content',
+      ] + $base_plugin_definition;
     }
 
     $view = View::load('scheduler_scheduled_media');

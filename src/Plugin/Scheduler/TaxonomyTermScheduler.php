@@ -18,6 +18,7 @@ use Drupal\scheduler\SchedulerPluginBase;
  *  typeFieldName = "vid",
  *  dependency = "taxonomy",
  *  develGenerateForm = "devel_generate_form_term",
+ *  collectionRoute = "entity.taxonomy_vocabulary.collection",
  *  schedulerEventClass = "\Drupal\scheduler\Event\SchedulerTaxonomyTermEvents",
  * )
  */

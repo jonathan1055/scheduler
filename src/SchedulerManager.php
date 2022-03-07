@@ -1036,6 +1036,21 @@ class SchedulerManager {
   }
 
   /**
+   * Gets the routes for the entity collection pages.
+   *
+   * @return array
+   *   List of routes for collection pages, keyed by entity type.
+   */
+  public function getCollectionRoutes() {
+    $plugins = $this->getPlugins();
+    $routes = [];
+    foreach ($plugins as $entityTypeId => $plugin) {
+      $routes[$entityTypeId] = $plugin->collectionRoute();
+    }
+    return $routes;
+  }
+
+  /**
    * Gets the routes for user profile page scheduled views.
    *
    * @return array

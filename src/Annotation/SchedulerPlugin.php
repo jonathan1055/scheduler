@@ -67,6 +67,16 @@ class SchedulerPlugin extends Plugin {
   public $develGenerateForm = '';
 
   /**
+   * The route of the collection overview page.
+   *
+   * The default is entity.{$entityType}.collection so this property only needs
+   * to be specified if that route is not the correct one.
+   *
+   * @var string
+   */
+  public $collectionRoute;
+
+  /**
    * The route of the scheduled view on the user profile page (optional).
    *
    * @var string

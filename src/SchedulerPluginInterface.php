@@ -56,6 +56,16 @@ interface SchedulerPluginInterface {
   public function develGenerateForm();
 
   /**
+   * Get the route of the entity collection page.
+   *
+   * Optional. Defaults to entity.{entity type id}.collection.
+   *
+   * @return string
+   *   The route id.
+   */
+  public function collectionRoute();
+
+  /**
    * Get the route of the user page scheduled view. Optional.
    *
    * @return string

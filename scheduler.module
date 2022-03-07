@@ -1169,3 +1169,47 @@ function scheduler_migration_plugins_alter(array &$migrations) {
     $migrations[$plugin_id]['process']['third_party_settings/scheduler'] = 'scheduler_third_party_settings';
   }
 }
+
+/**
+ * Implements hook_local_tasks_alter().
+ */
+function scheduler_local_tasks_alter(&$local_tasks) {
+  // If the default local tasks for the overviews are also provided by another
+  // module or by Core, then remove the ones added by Scheduler in
+  // src/Plugin/Derivative/DynamicLocalTasks. This is to avoid duplicate links
+  // if this core issue gets committed at some time.
+  // @see https://www.drupal.org/project/drupal/issues/3199682
+
+  // Get the list of routes to check.
+  $routes_to_check = \Drupal::service('scheduler.manager')->getCollectionRoutes();
+
+  // Find all the local tasks with the routes we are searching for and that have
+  // a parent_id. These will be the links that are potential duplicates.
+  $found = [];
+  foreach ($local_tasks as $key => $value) {
+    foreach ($routes_to_check as $route) {
+      if ($value['route_name'] == $route && !empty($value['parent_id'])) {
+        // Save the key of the $local_tasks array in a two level array, keyed on
+        // the route and the module that provided it.
+        $found[$route][$value['provider']] = $key;
+      }
+    }
+  }
+
+  // If there is more than one for any of the routes being checked then remove
+  // the route added by Scheduler.
+  foreach ($found as $route => $data) {
+    if (count($data) > 1) {
+      unset($local_tasks[$data['scheduler']]);
+      unset($data['scheduler']);
+    }
+    // We assume that the duplicates are only caused by Scheduler. Other modules
+    // could be causing more so log this and solve it later if it ever happens.
+    if (count($data) > 1) {
+      \Drupal::logger('scheduler')->warning('Local task route %route contains duplicates in addition to Scheduler. %data', [
+        '%route' => $route,
+        '%data' => print_r($data, TRUE),
+      ]);
+    }
+  }
+}

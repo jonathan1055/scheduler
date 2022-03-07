@@ -18,6 +18,7 @@ use Drupal\scheduler\SchedulerPluginBase;
  *  typeFieldName = "type",
  *  dependency = "node",
  *  develGenerateForm = "devel_generate_form_content",
+ *  collectionRoute = "system.admin_content",
  *  userViewRoute = "view.scheduler_scheduled_content.user_page",
  * )
  */
