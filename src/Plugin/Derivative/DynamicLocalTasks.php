@@ -3,6 +3,7 @@
 namespace Drupal\scheduler\Plugin\Derivative;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\views\Entity\View;
 
 /**
@@ -14,6 +15,8 @@ use Drupal\views\Entity\View;
  * routes are defined here instead to enable checking that the views are loaded.
  */
 class DynamicLocalTasks extends DeriverBase {
+
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -27,7 +30,7 @@ class DynamicLocalTasks extends DeriverBase {
       // The content overview has weight 0 and moderated content has weight 1
       // so use weight 5 for the scheduled content tab.
       $this->derivatives['scheduler.scheduled_content'] = [
-        'title' => 'Scheduled content',
+        'title' => $this->t('Scheduled content'),
         'route_name' => 'view.scheduler_scheduled_content.overview',
         'parent_id' => 'system.admin_content',
         'weight' => 5,
@@ -39,7 +42,7 @@ class DynamicLocalTasks extends DeriverBase {
       // https://www.drupal.org/project/drupal/issues/3199682 gets committed.
       if (!\Drupal::moduleHandler()->moduleExists('content_moderation')) {
         $this->derivatives['scheduler.content_overview'] = [
-          'title' => 'Overview',
+          'title' => $this->t('Overview'),
           'route_name' => 'system.admin_content',
           'parent_id' => 'system.admin_content',
         ] + $base_plugin_definition;
@@ -50,7 +53,7 @@ class DynamicLocalTasks extends DeriverBase {
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // Define local task for scheduled media view.
       $this->derivatives['scheduler.scheduled_media'] = [
-        'title' => 'Scheduled media',
+        'title' => $this->t('Scheduled media'),
         'route_name' => 'view.scheduler_scheduled_media.overview',
         'parent_id' => 'entity.media.collection',
         'weight' => 5,
@@ -59,7 +62,7 @@ class DynamicLocalTasks extends DeriverBase {
       // This task is added so that we get an 'overview' sub-task link alongside
       // the 'scheduled media' sub-task link.
       $this->derivatives['scheduler.media_overview'] = [
-        'title' => 'Overview',
+        'title' => $this->t('Overview'),
         'route_name' => 'entity.media.collection',
         'parent_id' => 'entity.media.collection',
       ] + $base_plugin_definition;
@@ -79,7 +82,7 @@ class DynamicLocalTasks extends DeriverBase {
 
       // Define local task for the scheduled products view.
       $this->derivatives['scheduler.scheduled_products'] = [
-        'title' => 'Scheduled products',
+        'title' => $this->t('Scheduled products'),
         'route_name' => 'view.scheduler_scheduled_commerce_product.overview',
         'parent_id' => 'scheduler.local_tasks:scheduler.commerce_products',
         'weight' => 5,
@@ -88,7 +91,7 @@ class DynamicLocalTasks extends DeriverBase {
       // This task is added so that we get an 'overview' sub-task link alongside
       // the 'scheduled products' sub-task link.
       $this->derivatives['scheduler.commerce_product.collection'] = [
-        'title' => 'Overview',
+        'title' => $this->t('Overview'),
         'route_name' => 'entity.commerce_product.collection',
         'parent_id' => 'scheduler.local_tasks:scheduler.commerce_products',
       ] + $base_plugin_definition;
@@ -107,7 +110,7 @@ class DynamicLocalTasks extends DeriverBase {
 
       // Define local task for the scheduled taxonomy terms view.
       $this->derivatives['scheduler.scheduled_taxonomy_terms'] = [
-        'title' => 'Scheduled terms',
+        'title' => $this->t('Scheduled terms'),
         'route_name' => 'view.scheduler_scheduled_taxonomy_term.overview',
         'parent_id' => 'scheduler.local_tasks:scheduler.taxonomy_collection',
         'weight' => 5,
@@ -116,7 +119,7 @@ class DynamicLocalTasks extends DeriverBase {
       // This task is added so that we get an 'overview' sub-task link alongside
       // the 'scheduled taxonomy terms' sub-task link.
       $this->derivatives['scheduler.taxonomy_vocabulary.collection'] = [
-        'title' => 'Overview',
+        'title' => $this->t('Overview'),
         'route_name' => 'entity.taxonomy_vocabulary.collection',
         'parent_id' => 'scheduler.local_tasks:scheduler.taxonomy_collection',
       ] + $base_plugin_definition;
