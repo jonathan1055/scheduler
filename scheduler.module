@@ -229,8 +229,10 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
     $form['unpublish_on']['widget'][0]['value']['#required'] = FALSE;
   }
 
-  // Check which widget type is set for the scheduler fields, and give a warning
-  // if the wrong one has been set and provide a hint and link to fix it.
+  // Check which widget is set for the scheduler fields, and give a warning and
+  // provide a hint and link for how to fix it. Allow third-party modules to
+  // provide their own custom widget, we are only interested in checking that it
+  // has not reverted back to the core 'datetime_timestamp' widget.
   $pluginDefinitions = $display->get('pluginManager')->getDefinitions();
   $fields_to_check = [];
   if ($publishing_enabled && $publishing_displayed) {
@@ -242,7 +244,7 @@ function scheduler_form_node_form_alter(&$form, FormStateInterface $form_state) 
   $correct_widget_id = 'datetime_timestamp_no_default';
   foreach ($fields_to_check as $field) {
     $actual_widget_id = $display->getComponent($field)['type'];
-    if ($actual_widget_id != $correct_widget_id) {
+    if ($actual_widget_id == 'datetime_timestamp') {
       \Drupal::messenger()->addMessage(t('The widget for field %field is incorrectly set to %wrong. This should be changed to %correct by an admin user via Field UI <a href="@link">content type form display</a> :not_available', [
         '%field' => (string) $form[$field]['widget']['#title'],
         '%correct' => (string) $pluginDefinitions[$correct_widget_id]['label'],
