@@ -1120,9 +1120,10 @@ display:
           content: 'No scheduled content for user {{ arguments.uid }}'
           plugin_id: text_custom
       access:
-        type: none
-        options: {  }
-      display_comment: 'Access to the user view is controllled via a custom RouteSubscriber'
+        type: perm
+        options:
+          perm: 'access content'
+      display_comment: 'Access to the user view is controlled via a custom RouteSubscriber. The high-level "view published content" permission is added to satisfy the security_review module'
     display_plugin: page
     display_title: User
     id: user_page
@@ -1134,5 +1135,6 @@ display:
         - url
         - url.query_args
         - 'user.node_grants:view'
+        - user.permissions
       max-age: 0
       tags: {  }
