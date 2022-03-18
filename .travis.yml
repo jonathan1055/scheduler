@@ -37,7 +37,7 @@ jobs:
         #  141 EventDispatcher with string event (Rules and Commerce)
         #    2 Kernel $modules property must be declared protected
         - DEPRECATIONS=1685
-    - php: 7.4
+    - php: 7.4.22
       env:
         - DRUPAL_CORE=9.3.x
         # Just run Node and Product tests.
