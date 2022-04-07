@@ -12,27 +12,11 @@ use Drupal\Core\Url;
 class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
 
   /**
-   * Additional module field_ui is required for the 'manage form display' test.
+   * Additional core module field_ui is required for testManageFormDisplay.
    *
    * @var array
    */
   protected static $modules = ['field_ui'];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Give adminUser the permissions to use the field_ui 'manage form display'
-    // tab for each entity type being tested.
-    $this->addPermissionsToUser($this->adminUser, [
-      'administer node form display',
-      'administer media form display',
-      'administer commerce_product form display',
-      'administer taxonomy_term form display',
-    ]);
-  }
 
   /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
@@ -155,6 +139,9 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * @dataProvider dataStandardEntityTypes()
    */
   public function testManageFormDisplay($entityTypeId, $bundle) {
+    // Give adminUser the permissions to use the field_ui 'manage form display'
+    // tab for the entity type being tested.
+    $this->addPermissionsToUser($this->adminUser, ["administer {$entityTypeId} form display"]);
     $this->drupalLogin($this->adminUser);
     $entityType = $this->entityTypeObject($entityTypeId, $bundle);
 
@@ -182,19 +169,15 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    * @dataProvider dataStandardEntityTypes()
    */
   public function testDisabledFields($entityTypeId, $bundle) {
-    $this->drupalLogin($this->adminUser);
-    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
+    $this->drupalLogin($this->schedulerUser);
 
     /** @var \Drupal\Tests\WebAssert $assert */
     $assert = $this->assertSession();
 
     // 1. Set the publish_on field to 'hidden' in the entity edit form.
-    $edit = [
-      'fields[publish_on][region]' => 'hidden',
-    ];
-    $form_display_url = Url::fromRoute("entity.entity_form_display.{$entityTypeId}.default", [$entityType->getEntityTypeId() => $bundle]);
-    $this->drupalGet($form_display_url);
-    $this->submitForm($edit, 'Save');
+    $formDisplay = $this->container->get('entity_display.repository')->getFormDisplay($entityTypeId, $bundle);
+    $publish_on_component = $formDisplay->getComponent('publish_on');
+    $formDisplay->removeComponent('publish_on')->save();
 
     // Check that the scheduler details element is shown and that the
     // unpublish_on field is shown, but the publish_on field is not shown.
@@ -205,12 +188,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->assertSession()->FieldExists('unpublish_on[0][value][date]');
 
     // 2. Set publish_on to be displayed but hide the unpublish_on field.
-    $edit = [
-      'fields[publish_on][region]' => 'content',
-      'fields[unpublish_on][region]' => 'hidden',
-    ];
-    $this->drupalGet($form_display_url);
-    $this->submitForm($edit, 'Save');
+    $formDisplay->setComponent('publish_on', $publish_on_component)
+      ->removeComponent('unpublish_on')->save();
 
     // Check that the scheduler details element is shown and that the
     // publish_on field is shown, but the unpublish_on field is not shown.
@@ -220,12 +199,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $this->assertSession()->FieldNotExists('unpublish_on[0][value][date]');
 
     // 3. Set both fields to be hidden.
-    $edit = [
-      'fields[publish_on][region]' => 'hidden',
-      'fields[unpublish_on][region]' => 'hidden',
-    ];
-    $this->drupalGet($form_display_url);
-    $this->submitForm($edit, 'Save');
+    $formDisplay->removeComponent('publish_on')->save();
 
     // Check that the scheduler details element is not shown when both of the
     // date fields are set to be hidden.
