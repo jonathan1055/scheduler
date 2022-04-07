@@ -165,7 +165,7 @@ function scheduler_api_legacy_test_scheduler_publish_action($node) {
     // Nodes with yellow in the title are simulated to be processed by this
     // hook, and will not be published by Scheduler.
     $node->set('title', $node->title->value . ' - publishing processed by API test module');
-    $node->setPublished()->save();
+    $node->setPublished();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Yellow nodes should not have publishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }
@@ -187,7 +187,7 @@ function scheduler_api_legacy_test_scheduler_unpublish_action($node) {
     // Nodes with orange in the title are simulated to be processed by this
     // hook, and will not be published by Scheduler.
     $node->set('title', $node->title->value . ' - unpublishing processed by API test module');
-    $node->setUnpublished()->save();
+    $node->setUnpublished();
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: Orange nodes should not have unpublishing processed by Scheduler.'), 'status', FALSE);
     return 1;
   }

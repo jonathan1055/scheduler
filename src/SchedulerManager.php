@@ -342,13 +342,22 @@ class SchedulerManager {
           // hook_scheduler_{type}_publish_process() to allow other modules to
           // do the "publishing" process instead of Scheduler.
           $hook_implementations = $this->getHookImplementations('publish_process', $entity);
-          $processed = FALSE;
-          $failed = FALSE;
+          $sucessful_hooks = [];
+          $failed_hooks = [];
           foreach ($hook_implementations as $function) {
             $return = $function($entity);
-            $processed = $processed || ($return === 1);
-            $failed = $failed || ($return === -1);
+            if ($return === 1) {
+              $sucessful_hooks[] = $function;
+              if (stristr($function, '_action')) {
+                // If this is a legacy action hook, for safety call ->save() as
+                // this used to be done here in Scheduler 8.x-1.x.
+                $entity->save();
+              }
+            }
+            $return === -1 ? $failed_hooks[] = $function : NULL;
           }
+          $processed = count($sucessful_hooks) > 0;
+          $failed = count($failed_hooks) > 0;
 
           // Create a set of variables for use in the log message.
           $bundle_type = $entity->getEntityType()->getBundleEntityType();
@@ -362,14 +371,15 @@ class SchedulerManager {
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
-            '@hook' => implode(', ', $hook_implementations),
+            '@sucessful_hooks' => implode(', ', $sucessful_hooks),
+            '@failed_hooks' => implode(', ', $failed_hooks),
             'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
           ];
 
           if ($failed) {
             // At least one hook function returned a failure or exception, so
             // stop processing this entity and move on to the next one.
-            $this->logger->warning('Publishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+            $this->logger->warning('Publishing failed for %title. @failed_hooks returned a failure code.', $logger_variables);
             // Restore the publish_on date to allow another attempt next time.
             $entity->publish_on->value = $publish_on;
             $entity->save();
@@ -378,7 +388,7 @@ class SchedulerManager {
           elseif ($processed) {
             // The entity was 'published' by a module implementing the hook, so
             // we only need to log this result.
-            $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
+            $this->logger->notice('@type: scheduled "publish" processing of %title completed by @sucessful_hooks.', $logger_variables);
           }
           else {
             // None of the above hook calls processed the entity and there were
@@ -535,13 +545,22 @@ class SchedulerManager {
           // and hook_scheduler_{type}_unpublish_process() to allow other
           // modules to do the "unpublishing" process instead of Scheduler.
           $hook_implementations = $this->getHookImplementations('unpublish_process', $entity);
-          $processed = FALSE;
-          $failed = FALSE;
+          $sucessful_hooks = [];
+          $failed_hooks = [];
           foreach ($hook_implementations as $function) {
             $return = $function($entity);
-            $processed = $processed || ($return === 1);
-            $failed = $failed || ($return === -1);
+            if ($return === 1) {
+              $sucessful_hooks[] = $function;
+              if (stristr($function, '_action')) {
+                // If this is a legacy action hook, for safety call ->save() as
+                // this used to be done here in Scheduler 8.x-1.x.
+                $entity->save();
+              }
+            }
+            $return === -1 ? $failed_hooks[] = $function : NULL;
           }
+          $processed = count($sucessful_hooks) > 0;
+          $failed = count($failed_hooks) > 0;
 
           // Create a set of variables for use in the log message.
           $bundle_type = $entity->getEntityType()->getBundleEntityType();
@@ -555,14 +574,15 @@ class SchedulerManager {
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
-            '@hook' => implode(', ', $hook_implementations),
+            '@sucessful_hooks' => implode(', ', $sucessful_hooks),
+            '@failed_hooks' => implode(', ', $failed_hooks),
             'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
           ];
 
           if ($failed) {
             // At least one hook function returned a failure or exception, so
             // stop processing this entity and move on to the next one.
-            $this->logger->warning('Unpublishing failed for %title. Calls to @hook returned a failure code.', $logger_variables);
+            $this->logger->warning('Unpublishing failed for %title. @failed_hooks returned a failure code.', $logger_variables);
             // Restore the unpublish_on date to allow another attempt next time.
             $entity->unpublish_on->value = $unpublish_on;
             $entity->save();
@@ -571,7 +591,7 @@ class SchedulerManager {
           elseif ($processed) {
             // The entity was 'unpublished' by a module implementing the hook,
             // so we only need to log this result.
-            $this->logger->notice('@type: scheduled processing of %title completed by calls to @hook.', $logger_variables);
+            $this->logger->notice('@type: scheduled "unpublish" processing of %title completed by @sucessful_hooks.', $logger_variables);
           }
           else {
             // None of the above hook calls processed the entity and there were
