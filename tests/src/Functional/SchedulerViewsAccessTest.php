@@ -110,11 +110,14 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
 
     // Try to access a user's own scheduled content tab when that user only has
     // 'view scheduled {type}' and not 'schedule publishing of {type}'. This is
-    // not allowed and the tab will not be availbale as that view will always be
-    // empty because the user will never have any scheduled content.
+    // allowed and should give "200 OK" and show the users scheduled items.
     $this->drupalLogin($this->schedulerViewer);
     $this->drupalGet("user/{$this->schedulerViewer->id()}/$url_end");
-    $assert->statusCodeEquals(403);
+    $assert->statusCodeEquals(200);
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for publishing");
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
+    $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
+    $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
 
     // Access another user's scheduled content tab. This should not be possible
     // and will give "403 Access Denied".
@@ -132,10 +135,15 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
     $assert->pageTextNotContains("$entityTypeId created by Scheduler Viewer for publishing");
     $assert->pageTextNotContains("$entityTypeId created by Scheduler Viewer for unpublishing");
 
-    // Try to access the scheduled tab for a user who cannot schedule content.
-    // No tab will be shown and access is denied as it will always be empty.
+    // Try to access the scheduled tab for a user who cannot schedule content
+    // themselves but can view their scheduled content if scheduled by someone
+    // else. This should give "200 OK" and the scheduled items will be shown.
     $this->drupalGet("user/{$this->schedulerViewer->id()}/$url_end");
-    $assert->statusCodeEquals(403);
+    $assert->statusCodeEquals(200);
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for publishing");
+    $assert->pageTextNotContains("$entityTypeId created by Scheduler Editor for unpublishing");
+    $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for publishing");
+    $assert->pageTextContains("$entityTypeId created by Scheduler Viewer for unpublishing");
   }
 
   /**

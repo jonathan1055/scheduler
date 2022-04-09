@@ -17,10 +17,10 @@ class SchedulerRouteAccess {
    *
    * A user is given access if either of the following conditions are met:
    * - they are viewing their own page and they have the permission to schedule
-   * content of the required type.
+   * content or view scheduled content of the required type.
    * - they are viewing another user's page and they have permission to view
    * user profiles and view scheduled content, and the user they are viewing has
-   * permission to schedule content (otherwise the list would always be empty).
+   * permission to schedule content or view scheduled content.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The currently logged in account.
@@ -38,12 +38,12 @@ class SchedulerRouteAccess {
     $viewing_permission_name = $scheduler_manager->permissionName($entityTypeId, 'view');
     $scheduling_permission_name = $scheduler_manager->permissionName($entityTypeId, 'schedule');
 
-    if ($viewing_own_page && $account->hasPermission($scheduling_permission_name)) {
+    if ($viewing_own_page && ($account->hasPermission($viewing_permission_name) || $account->hasPermission($scheduling_permission_name))) {
       return AccessResult::allowed();
     }
     if (!$viewing_own_page && $account->hasPermission($viewing_permission_name) && $account->hasPermission('access user profiles')) {
       $other_user = User::load($user_being_viewed);
-      if ($other_user && $other_user->hasPermission($scheduling_permission_name)) {
+      if ($other_user && ($other_user->hasPermission($viewing_permission_name) || $other_user->hasPermission($scheduling_permission_name))) {
         return AccessResult::allowed();
       }
     }
