@@ -10,27 +10,39 @@ services:
         docker-php-ext-install bcmath
       update: |
         set -eux
+
         # Check out a branch using the unique Tugboat ID for this repository, to
         # ensure we don't clobber an existing branch.
         git checkout -b $TUGBOAT_REPO_ID
+
         # Composer is hungry. You need a Tugboat project with a pretty sizeable
         # chunk of memory.
         export COMPOSER_MEMORY_LIMIT=-1
+
         # This is an environment variable we added in the Dockerfile that
         # provides the path to Drupal composer root (not the web root).
         cd $DRUPAL_COMPOSER_ROOT
+
         # We configure the Drupal project to use the checkout of the module as a
         # Composer package repository.
         composer config repositories.tugboat vcs $TUGBOAT_ROOT
+
         # Now we can require this module, specifing the branch name we created
         # above that uses the $TUGBOAT_REPO_ID environment variable.
         composer require drupal/scheduler:dev-$TUGBOAT_REPO_ID
-        composer require drupal/devel_generate
+
         # Commerce 2.29 needs inline_entity_form which does not have a stable
         # version as at March 2022. Therefore get that package here allowing RC
         # to avoid the "does not match your minimum-stability" problem.
         composer require drupal/inline_entity_form ^1.0@RC
         composer require drupal/commerce
+
+        # Get other useful modules.
+        composer require drupal/devel_generate
+        composer require drupal/module_filter
+        composer require drupal/workbench_moderation
+        composer require drupal/workbench_moderation_actions:dev-1.x
+
         # Install Drupal on the site.
         vendor/bin/drush \
           --yes \
@@ -38,6 +50,7 @@ services:
           --site-name="Scheduler issue ${TUGBOAT_PREVIEW_NAME}" \
           --account-pass=admin \
           site:install standard
+
         # Set up the files directory permissions.
         mkdir -p $DRUPAL_DOCROOT/sites/default/files
         chgrp -R www-data $DRUPAL_DOCROOT/sites/default/files
@@ -45,7 +58,7 @@ services:
         chmod -R g+w $DRUPAL_DOCROOT/sites/default/files
 
         # Enable modules.
-        vendor/bin/drush --yes pm:enable media
+        vendor/bin/drush --yes pm:enable media module_filter
         vendor/bin/drush --yes pm:enable scheduler devel devel_generate
         vendor/bin/drush --yes pm:enable commerce_product
         composer show drupal/scheduler | egrep 'name |vers'
@@ -103,11 +116,17 @@ services:
         vendor/bin/drush role-add-perm 'product_viewer' 'view scheduled commerce_product'
 
         # Add some permissions for all authenticated users.
-        vendor/bin/drush role-add-perm 'authenticated' "create article content, edit any article content, delete any article content, access content overview, view own unpublished content, switch users"
-        vendor/bin/drush role-add-perm 'authenticated' "create media, update any media, delete any media, access media overview, view own unpublished media"
-        vendor/bin/drush role-add-perm 'authenticated' "create default commerce_product, update any default commerce_product, delete any default commerce_product, access commerce_product overview, view own unpublished commerce_product, administer commerce_store"
+        vendor/bin/drush role-add-perm 'authenticated' \
+          "create article content, edit any article content, delete any article content, \
+           access content overview, view own unpublished content, switch users"
+        vendor/bin/drush role-add-perm 'authenticated' \
+          "create media, update any media, delete any media, access media overview, view own unpublished media"
+        vendor/bin/drush role-add-perm 'authenticated' \
+          "create default commerce_product, update any default commerce_product, \
+           delete any default commerce_product, access commerce_product overview, \
+           view own unpublished commerce_product, administer commerce_store"
 
-        # Create users.
+        # Create users and give them roles.
         vendor/bin/drush user-create 'Eddy content editor'
         vendor/bin/drush user-add-role 'my_content_editor' 'Eddy content editor'
         vendor/bin/drush user-create 'Vera content viewer'
@@ -132,11 +151,13 @@ services:
 
       build: |
         set -eux
+
         # Delete and re-check out this branch in case this is built from a Base Preview.
         git branch -D $TUGBOAT_REPO_ID && git checkout -b $TUGBOAT_REPO_ID || true
         export COMPOSER_MEMORY_LIMIT=-1
         cd $DRUPAL_COMPOSER_ROOT
         composer install --optimize-autoloader
+
         # Update this module, including all dependencies.
         composer update drupal/scheduler --with-all-dependencies
         vendor/bin/drush --yes updb
