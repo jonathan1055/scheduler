@@ -55,7 +55,9 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
   $scheduler_manager = \Drupal::service('scheduler.manager');
 
   if (in_array($form_id, $scheduler_manager->getEntityFormIds())) {
-    _scheduler_entity_form_alter($form, $form_state, $form_id);
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $form_state->getFormObject()->getEntity();
+    _scheduler_entity_form_alter($form, $form_state, $form_id, $entity);
   }
   elseif (in_array($form_id, $scheduler_manager->getEntityTypeFormIds())) {
     _scheduler_entity_type_form_alter($form, $form_state, $form_id);
@@ -70,21 +72,51 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for media_library_add_form_upload.
+ */
+function scheduler_form_media_library_add_form_upload_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if (isset($form['media'])) {
+    $media = $form_state->get('media');
+    // Call the entity form alter function for each of the new media items being
+    // uploaded.
+    foreach ($media as $key => $entity) {
+      _scheduler_entity_form_alter($form['media'][$key]['fields'], $form_state, $form_id, $entity);
+    }
+  }
+}
+
+/**
  * Form alter handling for entity forms - add and edit.
  */
-function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $form_id, $entity) {
+  // When a content type, such as a page, has an entity reference field linked
+  // to media items the Media Library module allows new media to be uploaded and
+  // inserted when adding/editing the page. The media upload form is not an
+  // 'entity' form and does not have a getFormDisplay() method. Hence we cannot
+  // properly amend the form in this scenario and the best we can do is remove
+  // the Scheduler fields for safety. The Scheduler issue discussing this is
+  // https://www.drupal.org/project/scheduler/issues/2916730
+  // Two core issues have been raised, and if/when these are committed then we
+  // can remove this conditional check and allow the function to run fully.
+  // @todo Remove this conditional check when the two issues have been resolved.
+  // @see https://www.drupal.org/project/drupal/issues/3269103
+  // @see https://www.drupal.org/project/drupal/issues/3269471
+  if ($form_id == 'media_library_add_form_upload') {
+    unset($form['publish_on']);
+    unset($form['unpublish_on']);
+    return;
+  }
+
   // Get the form display object. If this does not exist because the form is
   // prevented from displaying, such as in Commerce Add Product before any store
   // has been created, we can not (and do not need) to do anything, so exit.
-  if (!$display = $form_state->getFormObject()->getFormDisplay($form_state)) {
+  $param = ($form_id == 'media_library_add_form_upload') ? $entity : $form_state;
+  if (!$display = $form_state->getFormObject()->getFormDisplay($param)) {
     return;
   }
 
   $config = \Drupal::config('scheduler.settings');
   $scheduler_manager = \Drupal::service('scheduler.manager');
-
-  /** @var \Drupal\Core\Entity\EntityInterface $entity */
-  $entity = $form_state->getFormObject()->getEntity();
   $entityTypeId = $entity->getEntityTypeId();
 
   $publishing_enabled = $scheduler_manager->getThirdPartySetting($entity, 'publish_enable', $config->get('default_publish_enable'));
@@ -153,8 +185,14 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $always_expand = $scheduler_manager->getThirdPartySetting($entity, 'expand_fieldset', $config->get('default_expand_fieldset')) === 'always';
   $expand_details = $publishing_required || $unpublishing_required || $has_data || $always_expand;
 
-  // Create the group for the fields.
-  $form['scheduler_settings'] = [
+  // Create the group for the fields. The array key has to be distinct when more
+  // than one $entity appears in the form, for example in Media Library uploads.
+  // Keep the first key the same as before, without any suffix, as this is used
+  // in drupal.behaviors javascript and could be used by third-party modules.
+  static $group_number;
+  $group_number += 1;
+  $scheduler_field_group = ($group_number == 1) ? 'scheduler_settings' : "scheduler_settings_{$group_number}";
+  $form[$scheduler_field_group] = [
     '#type' => 'details',
     '#title' => t('Scheduling options'),
     '#open' => $expand_details,
@@ -164,16 +202,15 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   ];
 
   // Attach the fields to group.
-  $form['unpublish_on']['#group'] = 'scheduler_settings';
-  $form['publish_on']['#group'] = 'scheduler_settings';
+  $form['publish_on']['#group'] = $form['unpublish_on']['#group'] = $scheduler_field_group;
 
   // Show the field group as a vertical tab if this option is enabled.
   $use_vertical_tabs = $scheduler_manager->getThirdPartySetting($entity, 'fields_display_mode', $config->get('default_fields_display_mode')) === 'vertical_tab';
   if ($use_vertical_tabs) {
-    $form['scheduler_settings']['#group'] = 'advanced';
+    $form[$scheduler_field_group]['#group'] = 'advanced';
 
     // Attach the javascript for the vertical tabs.
-    $form['scheduler_settings']['#attached']['library'][] = 'scheduler/vertical-tabs';
+    $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/vertical-tabs';
   }
 
   // Define the descriptions depending on whether the time can be skipped.
@@ -189,8 +226,8 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     // Use javascript to pre-fill the time parts if the dates are required.
     // See js/scheduler_default_time.js for more details.
     if ($publishing_required || $unpublishing_required) {
-      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerDefaultTime'] = $config->get('default_time');
+      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerDefaultTime'] = $config->get('default_time');
     }
   }
   else {
@@ -223,13 +260,13 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   if ($config->get('hide_seconds')) {
     // If there is a publish_on time, then use jQuery to remove the seconds.
     if (isset($entity->publish_on->value)) {
-      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $entity->publish_on->value);
+      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $entity->publish_on->value);
     }
     // Likewise for the unpublish_on time.
     if (isset($entity->unpublish_on->value)) {
-      $form['scheduler_settings']['#attached']['library'][] = 'scheduler/default-time';
-      $form['scheduler_settings']['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $entity->unpublish_on->value);
+      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $entity->unpublish_on->value);
     }
   }
 
@@ -237,10 +274,10 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   $permission = $scheduler_manager->permissionName($entityTypeId, 'schedule');
   if (!\Drupal::currentUser()->hasPermission($permission)) {
     // Do not show the scheduler fields for users who do not have permission.
-    // Setting #access to FALSE for 'scheduler_settings' is enough to hide the
+    // Setting #access to FALSE for the group fieldset is enough to hide the
     // fields. Setting FALSE for the individual fields is necessary to keep any
     // existing scheduled dates preserved and remain unchanged on saving.
-    $form['scheduler_settings']['#access'] = FALSE;
+    $form[$scheduler_field_group]['#access'] = FALSE;
     $form['publish_on']['#access'] = FALSE;
     $form['unpublish_on']['#access'] = FALSE;
 
