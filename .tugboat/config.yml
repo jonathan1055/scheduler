@@ -8,6 +8,7 @@ services:
       init: |
         # Install the bcmath extension, required for commerce_product
         docker-php-ext-install bcmath
+
       update: |
         set -eux
 
@@ -58,9 +59,10 @@ services:
         chmod -R g+w $DRUPAL_DOCROOT/sites/default/files
 
         # Enable modules.
-        vendor/bin/drush --yes pm:enable media module_filter
-        vendor/bin/drush --yes pm:enable scheduler devel devel_generate
-        vendor/bin/drush --yes pm:enable commerce_product
+        vendor/bin/drush --yes pm:enable scheduler devel devel_generate \
+          module_filter media commerce_product
+
+        # Show versions.
         composer show drupal/scheduler | egrep 'name |vers'
         vendor/bin/drush pml | grep scheduler
         composer show drupal/devel | egrep 'name |vers'
@@ -86,7 +88,7 @@ services:
         vendor/bin/drush -y config-set media.type.image third_party_settings.scheduler.fields_display_mode 'fieldset'
         vendor/bin/drush -y config-set media.type.image third_party_settings.scheduler.publish_past_date 'schedule'
         vendor/bin/drush config-get media.type.image third_party_settings
- 
+
         # Scheduler commerce product settings.
         vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.publish_enable 1
         vendor/bin/drush -y config-set commerce_product.commerce_product_type.default third_party_settings.scheduler.unpublish_enable 1
@@ -141,7 +143,8 @@ services:
         vendor/bin/drush user-add-role 'product_viewer' 'Proctor product viewer'
 
         # Generate content.
-        vendor/bin/drush devel-generate-content 4 --bundles=article --authors=1,2 --verbose
+        vendor/bin/drush devel-generate-content 2 --bundles=article --authors=1,2 --verbose
+        vendor/bin/drush devel-generate-content 2 --bundles=page --authors=1,2 --verbose
         vendor/bin/drush devel-generate-media 4 --media-types=image --verbose
 
         # @todo Place the 'Switch users' block in first sidebar.
@@ -162,5 +165,6 @@ services:
         composer update drupal/scheduler --with-all-dependencies
         vendor/bin/drush --yes updb
         vendor/bin/drush cache:rebuild
+
   mysql:
     image: tugboatqa/mariadb
