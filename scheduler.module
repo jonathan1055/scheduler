@@ -6,6 +6,7 @@
  */
 
 use Drupal\Component\Utility\Xss;
+use Drupal\Core\Action\Plugin\Action\UnpublishAction;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -13,6 +14,8 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\workbench_moderation\Plugin\Action\ModerationOptOutPublishNode;
+use Drupal\workbench_moderation\Plugin\Action\ModerationOptOutUnpublishNode;
 use Drupal\node\Entity\NodeType;
 use Drupal\scheduler\SchedulerEvent;
 use Drupal\scheduler\SchedulerEvents;
@@ -385,6 +388,25 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->addConstraint('SchedulerUnpublishOn');
 
     return $fields;
+  }
+}
+
+/**
+ * Implements hook_action_info_alter().
+ */
+function scheduler_action_info_alter(&$definitions) {
+  // Workbench Moderation has a bug where the wrong actions are assigned which
+  // causes scheduled publishing of non-moderated content to fail. This fix will
+  // work regardless of the relative weights of the two modules, and will
+  // continue to work even if WBM is fixed before this code is removed.
+  // See https://www.drupal.org/project/workbench_moderation/issues/3238576
+  if (\Drupal::moduleHandler()->moduleExists('workbench_moderation')) {
+    if (isset($definitions['entity:publish_action:node']['class']) && $definitions['entity:publish_action:node']['class'] == ModerationOptOutUnpublishNode::class) {
+      $definitions['entity:publish_action:node']['class'] = ModerationOptOutPublishNode::class;
+    }
+    if (isset($definitions['entity:unpublish_action:node']['class']) && $definitions['entity:unpublish_action:node']['class'] == UnpublishAction::class) {
+      $definitions['entity:unpublish_action:node']['class'] = ModerationOptOutUnpublishNode::class;
+    }
   }
 }
 

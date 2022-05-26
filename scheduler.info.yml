@@ -13,6 +13,8 @@ dependencies:
 test_dependencies:
   - rules:rules
   - devel:devel_generate
+  - workbench_moderation:workbench_moderation
+  - workbench_moderation_actions:workbench_moderation_actions
 libraries:
   - vertical-tabs
   - default-time

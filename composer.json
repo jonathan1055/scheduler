@@ -7,7 +7,9 @@
     "require-dev": {
         "drupal/rules": "^3",
         "drush/drush": "^9.0 || ^10",
-        "drupal/devel_generate": "^2.0 || 4.x-dev"
+        "drupal/devel_generate": "^2.0 || 4.x-dev",
+        "drupal/workbench_moderation": "^1.0",
+        "drupal/workbench_moderation_actions": "^1.0"
     },
     "repositories": {
         "drupal": {

@@ -289,8 +289,14 @@ class SchedulerManager {
         $node = $event->getNode();
         $action_id = 'node_publish_action';
         if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-          // workbench_moderation_actions module uses a custom action instead.
-          $action_id = 'state_change__node__published';
+          // workbench_moderation_actions module replaces the standard action
+          // with a custom one which should be used only when the content type
+          // is part of a moderation workflow.
+          /** @var \Drupal\workbench_moderation\ModerationInformationInterface $moderation_info */
+          $moderation_info = \Drupal::service('workbench_moderation.moderation_information');
+          if ($moderation_info->isModeratableEntity($node)) {
+            $action_id = 'state_change__node__published';
+          }
         }
         if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
           $loaded_action->getPlugin()->execute($node);
@@ -470,8 +476,14 @@ class SchedulerManager {
         $node = $event->getNode();
         $action_id = 'node_unpublish_action';
         if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-          // workbench_moderation_actions module uses a custom action instead.
-          $action_id = 'state_change__node__archived';
+          // workbench_moderation_actions module replaces the standard action
+          // with a custom one which should be used only when the content type
+          // is part of a moderation workflow.
+          /** @var \Drupal\workbench_moderation\ModerationInformationInterface $moderation_info */
+          $moderation_info = \Drupal::service('workbench_moderation.moderation_information');
+          if ($moderation_info->isModeratableEntity($node)) {
+            $action_id = 'state_change__node__archived';
+          }
         }
         if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
           $loaded_action->getPlugin()->execute($node);
