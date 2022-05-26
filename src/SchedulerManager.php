@@ -396,12 +396,16 @@ class SchedulerManager {
             $this->logger->notice('@type: scheduled publishing of %title.', $logger_variables);
 
             // Use the actions system to publish and save the entity.
+            $action_id = $plugin->publishAction();
             if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-              // workbench_moderation_actions uses a custom action.
-              $action_id = 'state_change__' . $entityTypeId . '__published';
-            }
-            else {
-              $action_id = $plugin->publishAction();
+              // workbench_moderation_actions module replaces the standard
+              // action with a custom one which should be used only when the
+              // entity type is part of a moderation workflow.
+              /** @var \Drupal\workbench_moderation\ModerationInformationInterface $moderation_info */
+              $moderation_info = \Drupal::service('workbench_moderation.moderation_information');
+              if ($moderation_info->isModeratableEntity($entity)) {
+                $action_id = 'state_change__' . $entityTypeId . '__published';
+              }
             }
             if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
               $loaded_action->getPlugin()->execute($entity);
@@ -599,12 +603,16 @@ class SchedulerManager {
             $this->logger->notice('@type: scheduled unpublishing of %title.', $logger_variables);
 
             // Use the actions system to unpublish and save the entity.
+            $action_id = $plugin->unpublishAction();
             if ($this->moduleHandler->moduleExists('workbench_moderation_actions')) {
-              // workbench_moderation_actions uses a custom action.
-              $action_id = 'state_change__' . $entityTypeId . '__archived';
-            }
-            else {
-              $action_id = $plugin->unpublishAction();
+              // workbench_moderation_actions module replaces the standard
+              // action with a custom one which should be used only when the
+              // entity type is part of a moderation workflow.
+              /** @var \Drupal\workbench_moderation\ModerationInformationInterface $moderation_info */
+              $moderation_info = \Drupal::service('workbench_moderation.moderation_information');
+              if ($moderation_info->isModeratableEntity($entity)) {
+                $action_id = 'state_change__' . $entityTypeId . '__archived';
+              }
             }
             if ($loaded_action = $this->entityTypeManager->getStorage('action')->load($action_id)) {
               $loaded_action->getPlugin()->execute($entity);

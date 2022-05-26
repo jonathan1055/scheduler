@@ -16,6 +16,8 @@ test_dependencies:
   - drupal:media
   - commerce:commerce
   - drupal:taxonomy
+  - workbench_moderation:workbench_moderation
+  - workbench_moderation_actions:workbench_moderation_actions
 libraries:
   - admin-css
   - vertical-tabs
