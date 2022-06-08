@@ -8,6 +8,7 @@
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Action\Plugin\Action\UnpublishAction;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -884,7 +885,10 @@ function scheduler_entity_presave(EntityInterface $entity) {
 
       // Set the 'changed' timestamp to match what would have been done had this
       // content been published via cron.
-      $entity->setChangedTime($entity->publish_on->value);
+      if ($entity instanceof EntityChangedInterface) {
+        $entity->setChangedTime($entity->publish_on->value);
+      }
+
       // If required, set the created date to match published date.
       if ($scheduler_manager->getThirdPartySetting($entity, 'publish_touch', $config->get('default_publish_touch')) ||
         ($scheduler_manager->getThirdPartySetting($entity, 'publish_past_date_created', $config->get('default_publish_past_date_created')) && $entity->getCreatedTime() > $entity->publish_on->value)) {

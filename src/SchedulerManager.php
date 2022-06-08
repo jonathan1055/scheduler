@@ -9,6 +9,7 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -310,7 +311,10 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'PRE_PUBLISH');
 
           // Update 'changed' timestamp.
-          $entity->setChangedTime($publish_on);
+          if ($entity instanceof EntityChangedInterface) {
+            $entity->setChangedTime($publish_on);
+          }
+
           $msg_extra = '';
 
           // If required, set the created date to match published date.
@@ -528,7 +532,9 @@ class SchedulerManager {
           $this->dispatchSchedulerEvent($entity, 'PRE_UNPUBLISH');
 
           // Update 'changed' timestamp.
-          $entity->setChangedTime($unpublish_on);
+          if ($entity instanceof EntityChangedInterface) {
+            $entity->setChangedTime($unpublish_on);
+          }
 
           $create_unpublishing_revision = $this->getThirdPartySetting($entity, 'unpublish_revision', $this->setting('default_unpublish_revision'));
           if ($create_unpublishing_revision && $entity->getEntityType()->isRevisionable()) {
