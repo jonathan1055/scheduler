@@ -53,6 +53,11 @@ jobs:
         #  617 drupal_get_path() is deprecated in drupal:9.3.0
         #  617 drupal_get_filename() is deprecated in drupal:9.3.0
         - DEPRECATIONS=3084
+    - php: 7.4.22
+      env:
+        - DRUPAL_CORE=9.4.x
+        - NODE=YES
+        - DEPRECATIONS=3000
 
 # Be sure to cache composer downloads.
 cache:
@@ -92,6 +97,8 @@ before_script:
 
   # Get the latest dev versions of the test dependency modules.
   - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation.git modules/workbench_moderation
+  - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation_actions.git modules/workbench_moderation_actions
   - |
     if [ "$RULES" == "YES" ]; then
       echo "Installing Rules and Typed Data ..."
@@ -110,8 +117,12 @@ before_script:
   - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drupal/commerce
 
   # Coder is already installed as part of composer install. We just need to set
-  # the installed_paths to pick up the Drupal standards.
-  - $DRUPAL_ROOT/vendor/bin/phpcs --config-set installed_paths $DRUPAL_ROOT/vendor/drupal/coder/coder_sniffer
+  # the installed_paths to pick up the Drupal standards. This is only for Coder
+  # up to version 8.3.13. From 8.3.14 onwards this is done at install time.
+  - |
+    if [[ "$DRUPAL_CORE" == "8.9.x" || "$DRUPAL_CORE" == "9.2.x" || "$DRUPAL_CORE" == "9.3.x" ]]; then
+      $DRUPAL_ROOT/vendor/bin/phpcs --config-set installed_paths $DRUPAL_ROOT/vendor/drupal/coder/coder_sniffer
+    fi
 
   # Start a web server on port 8888, run in the background.
   - php -S localhost:8888 &
@@ -128,7 +139,7 @@ script:
   # By default the specific entity type tests will be excluded unless explicitly
   # included via a YES variable value.
   - EXCLUDE=()
-  - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode|HooksLegacy|Multilingual'); fi
+  - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode|HooksLegacy|Multilingual|WorkbenchModeration'); fi
   - if [ "$MEDIA" != "YES" ]; then EXCLUDE+=('#media|BasicMedia'); fi
   - if [ "$PRODUCT" != "YES" ]; then EXCLUDE+=('#commerce_product|BasicProduct'); fi
   - if [ "$TERM" != "YES" ]; then EXCLUDE+=('#taxonomy_term|BasicTaxonomy'); fi
@@ -143,15 +154,21 @@ script:
       export FILTER="/^((?!(${EXCLUDE// /|})).)*$/i"   # use parameter expansion to substitute spaces with |
       echo "FILTER=$FILTER"
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter "$FILTER"
+      echo "Tests were run excluding $EXCLUDE"
     else
       echo "Running all tests ..."
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/
+      echo "All tests were run, no filtering"
     fi
+  # Display the parameters again at the end of the test run.
+  - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TERM=$TERM RULES=$RULES"
 
   # Check for coding standards. First show the versions.
   - composer show drupal/coder | egrep 'name |vers'
   - composer show squizlabs/php_codesniffer | egrep 'name |vers'
   - $DRUPAL_ROOT/vendor/bin/phpcs --version
+  - $DRUPAL_ROOT/vendor/bin/phpcs --config-show installed_paths
+
 
   # Change into $MODULE directory to avoid having to add --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
   - cd $DRUPAL_ROOT/modules/$MODULE
