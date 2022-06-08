@@ -114,9 +114,8 @@ class SchedulerAdminForm extends ConfigFormBase {
         continue;
       }
       $bundle_id = reset($types)->bundle();
-      $collection_label = $this->entityTypeManager->getStorage($bundle_id)->getEntityType()->get('label_collection');
-      // Cater for incomplete config entity with no collection label.
-      $collection_label = is_object($collection_label) ? $collection_label->__toString() : $collection_label;
+      $entity_type_definition = $this->entityTypeManager->getStorage($bundle_id)->getEntityType();
+      $collection_label = (string) ($entity_type_definition->get('label_collection') ?: $entity_type_definition->get('label'));
       $links[] = ['title' => "-- $collection_label --"];
       foreach ($types as $id => $type) {
         $text = [];
