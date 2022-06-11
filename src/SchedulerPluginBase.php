@@ -168,7 +168,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    * Get all the type/bundle objects for this entity.
    *
    * @return array
-   *   The type/bundle objects.
+   *   The type/bundle objects, keyed by type/bundle name.
    */
   public function getTypes() {
     $bundleDefinition = $this->entityTypeManager
@@ -234,7 +234,11 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
     $types = array_keys($this->getTypes());
     foreach ($types as $typeId) {
       foreach ($operations as $operation) {
-        $form_id = $entityType . '_' . $typeId;
+        $form_id = $entityType;
+        // Do not add typeId for the entity type forms.
+        if ($definition->hasKey('bundle')) {
+          $form_id .= '_' . $typeId;
+        }
         if ($operation != 'default') {
           $form_id .= '_' . $operation;
         }
