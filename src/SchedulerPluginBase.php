@@ -188,7 +188,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
       return $this->entityFormIds;
     }
 
-    return $this->entityFormIds = $this->entityFormIdsByType($this->entityType());
+    return $this->entityFormIds = $this->entityFormIdsByType($this->entityType(), FALSE);
   }
 
   /**
@@ -203,7 +203,7 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
       ->getDefinition($this->entityType())
       ->getBundleEntityType();
 
-    return $this->entityTypeFormIds = $this->entityFormIdsByType($bundleEntityType);
+    return $this->entityTypeFormIds = $this->entityFormIdsByType($bundleEntityType, TRUE);
   }
 
   /**
@@ -211,9 +211,14 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    *
    * The logic for this function is based on EntityForm::getFormId.
    *
+   * @param string $entityType
+   *   The entity type for which to return the form ids.
+   * @param bool $isBundle
+   *   TRUE if this is the entity type/bundle form.
+   *
    * @see \Drupal\Core\Entity\EntityForm::getFormId()
    */
-  protected function entityFormIdsByType(string $entityType): array {
+  protected function entityFormIdsByType(string $entityType, bool $isBundle): array {
     $ids = [];
     $definition = $this->entityTypeManager->getDefinition($entityType);
     $operations = [];
@@ -231,7 +236,11 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
       $operations[] = 'edit';
     }
 
-    $types = array_keys($this->getTypes());
+    // When creating the first type/bundle there will be nothing returned for
+    // $this->getTypes(). This is only a problem when getting the 'type' forms,
+    // which do not actually need the list of types anyway. Hence for this case
+    // we need an element in $types, one is enough and it can be anything.
+    $types = $isBundle ? [''] : array_keys($this->getTypes());
     foreach ($types as $typeId) {
       foreach ($operations as $operation) {
         $form_id = $entityType;
