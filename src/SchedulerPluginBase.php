@@ -11,15 +11,34 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class SchedulerPluginBase extends PluginBase implements SchedulerPluginInterface {
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * A static cache of create/edit entity form IDs.
+   *
+   * @var string[]
+   */
+  protected $entityFormIds;
+
+  /**
+   * A static cache of create/edit entity type form IDs.
+   *
+   * @var string[]
+   */
+  protected $entityTypeFormIds;
+
+  /**
    * Create method.
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('string_translation')
-    );
+    $instance = new static($configuration, $plugin_id, $plugin_definition);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+
+    return $instance;
   }
 
   /**
@@ -49,16 +68,6 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
    */
   public function entityType() {
     return $this->pluginDefinition['entityType'];
-  }
-
-  /**
-   * Get the name of the "type" field for the entity.
-   *
-   * @return string
-   *   The name of the type/bundle field for this entity type.
-   */
-  public function typeFieldName() {
-    return $this->pluginDefinition['typeFieldName'];
   }
 
   /**
@@ -144,21 +153,96 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
   }
 
   /**
+   * Get the field name for the 'type' or 'bundle'.
+   *
+   * @return string
+   *   The name of the type/bundle field for this entity type.
+   */
+  public function typeFieldName() {
+    return $this->entityTypeManager
+      ->getDefinition($this->entityType())
+      ->getKey('bundle');
+  }
+
+  /**
    * Get all the type/bundle objects for this entity.
    *
    * @return array
    *   The type/bundle objects.
    */
-  abstract public function getTypes();
+  public function getTypes() {
+    $bundleDefinition = $this->entityTypeManager
+      ->getDefinition($this->entityType())
+      ->getBundleEntityType();
+
+    return $this->entityTypeManager
+      ->getStorage($bundleDefinition)
+      ->loadMultiple();
+  }
 
   /**
    * Get the form IDs for entity add/edit forms.
    */
-  abstract public function entityFormIds();
+  public function entityFormIds() {
+    if (isset($this->entityFormIds)) {
+      return $this->entityFormIds;
+    }
+
+    return $this->entityFormIds = $this->entityFormIdsByType($this->entityType());
+  }
 
   /**
    * Get the form IDs for entity type add/edit forms.
    */
-  abstract public function entityTypeFormIds();
+  public function entityTypeFormIds() {
+    if (isset($this->entityTypeFormIds)) {
+      return $this->entityTypeFormIds;
+    }
+
+    $bundleEntityType = $this->entityTypeManager
+      ->getDefinition($this->entityType())
+      ->getBundleEntityType();
+
+    return $this->entityTypeFormIds = $this->entityFormIdsByType($bundleEntityType);
+  }
+
+  /**
+   * Get the form IDs for the add/edit forms of a certain entity type.
+   *
+   * The logic for this function is based on EntityForm::getFormId.
+   *
+   * @see \Drupal\Core\Entity\EntityForm::getFormId()
+   */
+  protected function entityFormIdsByType(string $entityType): array {
+    $ids = [];
+    $definition = $this->entityTypeManager->getDefinition($entityType);
+    $operations = [];
+
+    // Some entity types, such as node, do not have 'add' in the add form id.
+    if ($definition->getFormClass('add')) {
+      $operations[] = 'add';
+    }
+    else {
+      $operations[] = 'default';
+    }
+    // Some entity types, for example taxonomy_vocabulary and taxonomy_term, do
+    // not have a separate edit form.
+    if ($definition->getFormClass('edit')) {
+      $operations[] = 'edit';
+    }
+
+    $types = array_keys($this->getTypes());
+    foreach ($types as $typeId) {
+      foreach ($operations as $operation) {
+        $form_id = $entityType . '_' . $typeId;
+        if ($operation != 'default') {
+          $form_id .= '_' . $operation;
+        }
+        $ids[] = $form_id . '_form';
+      }
+    }
+
+    return array_unique($ids);
+  }
 
 }

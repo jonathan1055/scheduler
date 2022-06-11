@@ -3,6 +3,7 @@
 namespace Drupal\scheduler;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\scheduler\Annotation\SchedulerPlugin;
@@ -15,10 +16,21 @@ use Drupal\scheduler\Annotation\SchedulerPlugin;
 class SchedulerPluginManager extends DefaultPluginManager {
 
   /**
-   * Constructor.
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cacheBackend, ModuleHandlerInterface $module_handler) {
+  protected $entityTypeManager;
 
+  /**
+   * Constructs a new SchedulerPluginManager object.
+   */
+  public function __construct(
+    \Traversable $namespaces,
+    CacheBackendInterface $cacheBackend,
+    ModuleHandlerInterface $module_handler,
+    EntityTypeManagerInterface $entity_type_manager
+  ) {
     $subdir = 'Plugin/Scheduler';
     $plugin_interface = SchedulerPluginInterface::class;
     $plugin_definition_annotation_name = SchedulerPlugin::class;
@@ -33,6 +45,31 @@ class SchedulerPluginManager extends DefaultPluginManager {
 
     $this->alterInfo('scheduler_info');
     $this->setCacheBackend($cacheBackend, 'scheduler_info');
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function findDefinitions() {
+    // This is an overridden method from the parent class. This version filters
+    // out plugins with missing module and entity type depencencies before they
+    // are initialized, removing the need for separate checks per plugin.
+    $definitions = parent::findDefinitions();
+
+    foreach ($definitions as $plugin_id => $plugin_definition) {
+      if (!empty($plugin_definition['dependency']) && !$this->moduleHandler->moduleExists($plugin_definition['dependency'])) {
+        unset($definitions[$plugin_id]);
+        continue;
+      }
+
+      $entityType = $this->entityTypeManager->getDefinition($plugin_definition['entityType'], FALSE);
+      if (!$entityType || !$entityType->getBundleEntityType()) {
+        unset($definitions[$plugin_id]);
+      }
+    }
+
+    return $definitions;
   }
 
 }

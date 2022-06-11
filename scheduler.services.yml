@@ -22,6 +22,8 @@ services:
   plugin.manager.scheduler:
     class: Drupal\scheduler\SchedulerPluginManager
     parent: default_plugin_manager
+    arguments:
+      - '@entity_type.manager'
   scheduler.route_subscriber:
     class: Drupal\scheduler\Routing\SchedulerRouteSubscriber
     tags:
