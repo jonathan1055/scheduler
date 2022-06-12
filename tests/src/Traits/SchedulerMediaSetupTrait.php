@@ -98,6 +98,7 @@ trait SchedulerMediaSetupTrait {
       'create ' . $this->nonSchedulerMediaTypeName . ' media',
       'edit any ' . $this->nonSchedulerMediaTypeName . ' media',
       'delete any ' . $this->nonSchedulerMediaTypeName . ' media',
+      'administer media types',
       'access media overview',
       'view own unpublished media',
       'schedule publishing of media',

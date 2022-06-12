@@ -19,9 +19,88 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   protected static $modules = ['field_ui'];
 
   /**
+   * Tests the Scheduler options display on entity type add and edit forms.
+   *
+   * This test covers hook_form_alter() and _scheduler_entity_type_form_alter().
+   *
+   * @dataProvider dataEntityTypeForm()
+   */
+  public function testEntityTypeForm($entityTypeId, $bundle, $operation) {
+    $this->drupalLogin($this->adminUser);
+    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
+    $bundle_id = $entityType->bundle();
+
+    if ($operation == 'edit') {
+      $url = Url::fromRoute("entity.{$bundle_id}.edit_form", [$bundle_id => $bundle]);
+    }
+    else {
+      // The route for adding a 'node' entity type has a different format
+      // compared to the new standard for all other entity types.
+      $url = Url::fromRoute($entityTypeId == 'node' ? 'node.type_add' : "entity.{$bundle_id}.add_form");
+    }
+    if ($operation == 'add first') {
+      // Delete all the entity types for this bundle, to check that 'add'
+      // works when it would be the first type being added.
+      $this->entityTypeObject($entityTypeId)->delete();
+      $this->entityTypeObject($entityTypeId, 'non-enabled')->delete();
+    }
+
+    $this->drupalGet($url);
+    $this->assertSession()->fieldExists('edit-scheduler-publish-enable');
+    $this->assertSession()->fieldExists('edit-scheduler-unpublish-enable');
+  }
+
+  /**
+   * Provides data for testEntityTypeForm.
+   *
+   * @return array
+   *   Each row has values: [entity type id, bundle id, operation].
+   */
+  public function dataEntityTypeForm() {
+    $types = $this->dataStandardEntityTypes();
+    $data = [];
+    foreach ($types as $key => $values) {
+      $data["$key-1"] = array_merge($values, ['add']);
+      $data["$key-2"] = array_merge($values, ['add first']);
+      $data["$key-3"] = array_merge($values, ['edit']);
+    }
+    return $data;
+  }
+
+  /**
+   * Tests the scheduler fields on the admin entity type form display tab.
+   *
+   * This test covers scheduler_entity_extra_field_info().
+   *
+   * @dataProvider dataStandardEntityTypes()
+   */
+  public function testManageFormDisplay($entityTypeId, $bundle) {
+    // Give adminUser the permissions to use the field_ui 'manage form display'
+    // tab for the entity type being tested.
+    $this->addPermissionsToUser($this->adminUser, ["administer {$entityTypeId} form display"]);
+    $this->drupalLogin($this->adminUser);
+    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
+
+    // Check that the weight input field is displayed when the entity bundle is
+    // enabled for scheduling. This field still exists even with tabledrag on.
+    $form_display_url = Url::fromRoute("entity.entity_form_display.{$entityTypeId}.default", [$entityType->getEntityTypeId() => $bundle]);
+    $this->drupalGet($form_display_url);
+    $this->assertSession()->fieldExists('edit-fields-scheduler-settings-weight');
+
+    // Check that the weight input field is not displayed when the entity bundle
+    // is not enabled for scheduling.
+    $this->entityTypeObject($entityTypeId, $bundle)
+      ->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
+      ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
+    $this->drupalGet($form_display_url);
+    $this->assertSession()->pageTextContains('Manage form display');
+    $this->assertSession()->FieldNotExists('edit-fields-scheduler-settings-weight');
+  }
+
+  /**
    * Tests date input is displayed as vertical tab or an expandable fieldset.
    *
-   * This test covers _scheduler_entity_form_alter().
+   * This test covers hook_form_alter() and _scheduler_entity_form_alter().
    *
    * @dataProvider dataStandardEntityTypes()
    */
@@ -132,39 +211,9 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
   }
 
   /**
-   * Tests the settings entry in the content type form display.
-   *
-   * This test covers scheduler_entity_extra_field_info().
-   *
-   * @dataProvider dataStandardEntityTypes()
-   */
-  public function testManageFormDisplay($entityTypeId, $bundle) {
-    // Give adminUser the permissions to use the field_ui 'manage form display'
-    // tab for the entity type being tested.
-    $this->addPermissionsToUser($this->adminUser, ["administer {$entityTypeId} form display"]);
-    $this->drupalLogin($this->adminUser);
-    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
-
-    // Check that the weight input field is displayed when the entity bundle is
-    // enabled for scheduling. This field still exists even with tabledrag on.
-    $form_display_url = Url::fromRoute("entity.entity_form_display.{$entityTypeId}.default", [$entityType->getEntityTypeId() => $bundle]);
-    $this->drupalGet($form_display_url);
-    $this->assertSession()->fieldExists('edit-fields-scheduler-settings-weight');
-
-    // Check that the weight input field is not displayed when the entity bundle
-    // is not enabled for scheduling.
-    $this->entityTypeObject($entityTypeId, $bundle)
-      ->setThirdPartySetting('scheduler', 'publish_enable', FALSE)
-      ->setThirdPartySetting('scheduler', 'unpublish_enable', FALSE)->save();
-    $this->drupalGet($form_display_url);
-    $this->assertSession()->pageTextContains('Manage form display');
-    $this->assertSession()->FieldNotExists('edit-fields-scheduler-settings-weight');
-  }
-
-  /**
    * Tests the edit form when scheduler fields have been disabled.
    *
-   * This test covers _scheduler_entity_type_form_alter().
+   * This test covers _scheduler_entity_form_alter().
    *
    * @dataProvider dataStandardEntityTypes()
    */

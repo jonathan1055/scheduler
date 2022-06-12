@@ -119,6 +119,7 @@ trait SchedulerCommerceProductSetupTrait {
       'create ' . $this->nonSchedulerProductTypeName . ' commerce_product',
       'update any ' . $this->nonSchedulerProductTypeName . ' commerce_product',
       'delete any ' . $this->nonSchedulerProductTypeName . ' commerce_product',
+      'administer commerce_product_type',
       // 'administer commerce_store' is needed to see and use any store, i.e
       // cannot add a product without this. Is it a bug?
       'administer commerce_store',

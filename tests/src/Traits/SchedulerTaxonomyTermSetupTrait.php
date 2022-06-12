@@ -97,6 +97,7 @@ trait SchedulerTaxonomyTermSetupTrait {
       'delete terms in ' . $this->vocabularyId,
       'create terms in ' . $this->nonSchedulerVocabularyId,
       'edit terms in ' . $this->nonSchedulerVocabularyId,
+      'administer taxonomy',
       'access taxonomy overview',
       'schedule publishing of taxonomy_term',
       'view scheduled taxonomy_term',
