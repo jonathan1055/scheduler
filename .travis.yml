@@ -31,12 +31,10 @@ jobs:
         - MEDIA=YES
         - TAXONOMY=YES
         - RULES=YES
-        # ---- Remaining self deprecation notices (1685)
-        # 1087 Symfony KernelEvent::isMasterRequest()
-        #  455 hook_field_widget_form_alter (Commerce)
-        #  141 EventDispatcher with string event (Rules and Commerce)
+        # ---- Remaining self deprecation notices (149)
+        #  147 EventDispatcher with string event
         #    2 Kernel $modules property must be declared protected
-        - DEPRECATIONS=1685
+        - DEPRECATIONS=149
     - php: 7.4.22
       env:
         - DRUPAL_CORE=9.3.x
@@ -46,7 +44,7 @@ jobs:
         # ---- Remaining self deprecation notices (1850)
         # 1184 Symfony KernelEvent::isMasterRequest()
         #  360 hook_field_widget_form_alter (Commerce)
-        #  291 EventDispatcher with string event (Rules and Commerce)
+        #  291 EventDispatcher with string event
         #   13 Creating an instance of this class is deprecated in drupal:9.1.0
         #    2 Kernel $modules property must be declared protected
         # ---- Other deprecation notices (1234)
