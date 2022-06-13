@@ -29,7 +29,7 @@ jobs:
         # Just run Media, Taxonomy Term and Rules tests.
         - DRUPAL_CORE=9.2.x
         - MEDIA=YES
-        - TERM=YES
+        - TAXONOMY=YES
         - RULES=YES
         # ---- Remaining self deprecation notices (1685)
         # 1087 Symfony KernelEvent::isMasterRequest()
@@ -57,7 +57,14 @@ jobs:
       env:
         - DRUPAL_CORE=9.4.x
         - NODE=YES
-        - DEPRECATIONS=3000
+        # ---- Remaining self deprecation notices (1941)
+        # 1807 ModuleHandlerInterface::getImplementations()
+        #  132 EventDispatcher with string event
+        #    2 Kernel $modules property must be declared protected
+        # ---- Other deprecation notices (854)
+        #  427 drupal_get_path() is deprecated in drupal:9.3.0
+        #  427 drupal_get_filename() is deprecated in drupal:9.3.0
+        - DEPRECATIONS=2795
 
 # Be sure to cache composer downloads.
 cache:
@@ -135,14 +142,14 @@ before_script:
   - echo $SYMFONY_DEPRECATIONS_HELPER
 
 script:
-  - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TERM=$TERM RULES=$RULES"
+  - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TAXONOMY=$TAXONOMY RULES=$RULES"
   # By default the specific entity type tests will be excluded unless explicitly
   # included via a YES variable value.
   - EXCLUDE=()
   - if [ "$NODE" != "YES" ]; then EXCLUDE+=('#node|BasicNode|HooksLegacy|Multilingual|WorkbenchModeration'); fi
   - if [ "$MEDIA" != "YES" ]; then EXCLUDE+=('#media|BasicMedia'); fi
   - if [ "$PRODUCT" != "YES" ]; then EXCLUDE+=('#commerce_product|BasicProduct'); fi
-  - if [ "$TERM" != "YES" ]; then EXCLUDE+=('#taxonomy_term|BasicTaxonomy'); fi
+  - if [ "$TAXONOMY" != "YES" ]; then EXCLUDE+=('#taxonomy_term|BasicTaxonomy'); fi
   - if [ "$RULES" != "YES" ]; then EXCLUDE+=('rules'); fi
   - EXCLUDE=${EXCLUDE[@]}     # create a space delimited string from array
 
@@ -154,14 +161,13 @@ script:
       export FILTER="/^((?!(${EXCLUDE// /|})).)*$/i"   # use parameter expansion to substitute spaces with |
       echo "FILTER=$FILTER"
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter "$FILTER"
-      echo "Tests were run excluding $EXCLUDE"
     else
       echo "Running all tests ..."
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/
-      echo "All tests were run, no filtering"
     fi
   # Display the parameters again at the end of the test run.
-  - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TERM=$TERM RULES=$RULES"
+  - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TAXONOMY=$TAXONOMY RULES=$RULES"
+  - echo "EXCLUDE=$EXCLUDE"
 
   # Check for coding standards. First show the versions.
   - composer show drupal/coder | egrep 'name |vers'
