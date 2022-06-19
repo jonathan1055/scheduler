@@ -12,7 +12,7 @@ use Drupal\scheduler_rules_integration\Plugin\Condition\ScheduledForPublishing;
  *   label = @Translation("Node is scheduled for publishing"),
  *   category = @Translation("Content (Scheduler)"),
  *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
+ *     "entity" = @ContextDefinition("entity:node",
  *       label = @Translation("Node"),
  *       description = @Translation("The node to check for having a scheduled publishing date."),
  *       assignment_restriction = "selector",

@@ -170,3 +170,50 @@ function scheduler_update_8203() {
   }
   return $output ? implode('<br>', $output) : t('Nothing requires updating for Taxonomy Terms.');
 }
+
+/**
+ * Update Rules actions and conditions to use 'entity' context.
+ */
+function scheduler_update_8204() {
+  // The entity context names need to be 'entity' for all entity types, not
+  // 'node', 'media', 'commerce_product' or 'taxonomy_term'. This is for PHP8
+  // compatibility, fixing "Unknown named parameter in call_user_func_array()"
+  // See https://www.drupal.org/project/scheduler/issues/3276637
+  $rules = \Drupal::configFactory()->listAll('rules.reaction');
+  $rules_updated = [];
+  foreach ($rules as $config_id) {
+    $rule = \Drupal::configFactory()->getEditable($config_id);
+    $changed = FALSE;
+
+    // The expression array has 'conditions' and 'actions' elements which have
+    // the same structure, so can be fixed using the same loop process.
+    $expression = $rule->get('expression');
+    foreach (['condition_id' => 'conditions', 'action_id' => 'actions'] as $idx => $group) {
+      foreach ($expression[$group][$group] as $key => $cond_act) {
+        if (substr($cond_act[$idx], 0, 10) == 'scheduler_' && !empty($cond_act['context_mapping'])) {
+          foreach ($cond_act['context_mapping'] as $name => $value) {
+            if (in_array($name, ['node', 'media', 'commerce_product', 'taxonomy_term'])) {
+              // Replace the node/media/commerce_product key with 'entity'.
+              unset($expression[$group][$group][$key]['context_mapping'][$name]);
+              $expression[$group][$group][$key]['context_mapping']['entity'] = $value;
+              // Only add the rule label once.
+              $changed ?: $rules_updated[] = $rule->get('label');
+              $changed = TRUE;
+            }
+          }
+        }
+      }
+    }
+
+    // Replace the config value with the updated expression array.
+    if ($changed) {
+      $rule->set('expression', $expression);
+      $rule->save();
+    }
+  }
+
+  $output = empty($rules_updated) ? t('No reaction rules required updating with entity context.') :
+    \Drupal::translation()->formatPlural(count($rules_updated), '1 reaction rule updated with entity context', '@count reaction rules updated with entity context')
+    . '<br>' . implode('<br>', $rules_updated);
+  return $output;
+}

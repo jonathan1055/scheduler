@@ -12,7 +12,7 @@ use Drupal\scheduler_rules_integration\Plugin\Condition\PublishingIsEnabled;
  *   label = @Translation("Node type is enabled for scheduled publishing"),
  *   category = @Translation("Content (Scheduler)"),
  *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
+ *     "entity" = @ContextDefinition("entity:node",
  *       label = @Translation("Node"),
  *       description = @Translation("The node to check for the type being enabled for scheduled publishing."),
  *       assignment_restriction = "selector",

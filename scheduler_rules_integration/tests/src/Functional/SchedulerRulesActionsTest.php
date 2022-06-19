@@ -64,7 +64,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $message1 = 'RULES message 1. Action to set Publish-on date.';
     $rule1->addAction("scheduler_set_publishing_date$action_suffix",
       ContextConfig::create()
-        ->map("$entityTypeId", "$entityTypeId")
+        ->map('entity', "$entityTypeId")
         ->setValue('date', $publish_on)
       )
       ->addAction('rules_system_message',
@@ -92,11 +92,11 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $message2 = 'RULES message 2. Action to remove Publish-on date and publish immediately.';
     $rule2->addAction("scheduler_remove_publishing_date$action_suffix",
       ContextConfig::create()
-        ->map("$entityTypeId", "$entityTypeId")
+        ->map('entity', "$entityTypeId")
       )
       ->addAction("scheduler_publish_now$action_suffix",
         ContextConfig::create()
-          ->map("$entityTypeId", "$entityTypeId")
+          ->map('entity', "$entityTypeId")
       )
       ->addAction('rules_system_message',
         ContextConfig::create()
@@ -259,7 +259,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $message3 = 'RULES message 3. Action to set Unpublish-on date.';
     $rule3->addAction("scheduler_set_unpublishing_date$action_suffix",
       ContextConfig::create()
-        ->map("$entityTypeId", "$entityTypeId")
+        ->map('entity', "$entityTypeId")
         ->setValue('date', $unpublish_on)
       )
       ->addAction('rules_system_message',
@@ -287,11 +287,11 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
     $message4 = "RULES message 4. Action to remove Unpublish-on date and unpublish the $entityTypeId immediately.";
     $rule4->addAction("scheduler_remove_unpublishing_date$action_suffix",
       ContextConfig::create()
-        ->map("$entityTypeId", "$entityTypeId")
+        ->map('entity', "$entityTypeId")
       )
       ->addAction("scheduler_unpublish_now$action_suffix",
         ContextConfig::create()
-          ->map("$entityTypeId", "$entityTypeId")
+          ->map('entity', "$entityTypeId")
       )
       ->addAction('rules_system_message',
         ContextConfig::create()

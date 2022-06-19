@@ -13,7 +13,7 @@ use Drupal\scheduler_rules_integration\Plugin\RulesAction\UnpublishNow;
  *   label = @Translation("Unpublish a content item immediately"),
  *   category = @Translation("Content (Scheduler)"),
  *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
+ *     "entity" = @ContextDefinition("entity:node",
  *       label = @Translation("Node"),
  *       description = @Translation("The node to be unpublished now"),
  *       assignment_restriction = "selector",

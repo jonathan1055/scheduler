@@ -13,7 +13,7 @@ use Drupal\scheduler_rules_integration\Plugin\RulesAction\PublishNow;
  *   label = @Translation("Publish a content item immediately"),
  *   category = @Translation("Content (Scheduler)"),
  *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node",
+ *     "entity" = @ContextDefinition("entity:node",
  *       label = @Translation("Node"),
  *       description = @Translation("The node to be published now"),
  *       assignment_restriction = "selector",

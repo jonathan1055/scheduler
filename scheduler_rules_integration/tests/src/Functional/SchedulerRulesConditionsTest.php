@@ -52,7 +52,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // "viewing content" actually means "viewing PUBLISHED content".
     $rule1 = $this->expressionManager->createRule();
     $rule1->addCondition("{$condition_prefix}publishing_is_enabled{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
+      ContextConfig::create()->map('entity', "$entityTypeId")
     );
     $message1 = 'RULES message 1. This entity type is enabled for scheduled publishing.';
     $rule1->addAction('rules_system_message', ContextConfig::create()
@@ -70,7 +70,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // type that is enabled for scheduled unpublishing.
     $rule2 = $this->expressionManager->createRule();
     $rule2->addCondition("{$condition_prefix}unpublishing_is_enabled{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
+      ContextConfig::create()->map('entity', "$entityTypeId")
     );
     $message2 = 'RULES message 2. This entity type is enabled for scheduled unpublishing.';
     $rule2->addAction('rules_system_message', ContextConfig::create()
@@ -88,7 +88,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // type that is NOT enabled for scheduled publishing.
     $rule3 = $this->expressionManager->createRule();
     $rule3->addCondition("{$condition_prefix}publishing_is_enabled{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
+      ContextConfig::create()->map('entity', "$entityTypeId")->negateResult()
     );
     $message3 = 'RULES message 3. This entity type is not enabled for scheduled publishing.';
     $rule3->addAction('rules_system_message', ContextConfig::create()
@@ -106,7 +106,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // type that is NOT enabled for scheduled unpublishing.
     $rule4 = $this->expressionManager->createRule();
     $rule4->addCondition("{$condition_prefix}unpublishing_is_enabled{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
+      ContextConfig::create()->map('entity', "$entityTypeId")->negateResult()
     );
     $message4 = 'RULES message 4. This entity type is not enabled for scheduled unpublishing.';
     $rule4->addAction('rules_system_message', ContextConfig::create()
@@ -175,7 +175,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // is not scheduled for publishing.
     $rule5 = $this->expressionManager->createRule();
     $rule5->addCondition("{$condition_prefix}scheduled_for_publishing{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
+      ContextConfig::create()->map('entity', "$entityTypeId")->negateResult()
     );
     $message5 = "RULES message 5. This $entityTypeId is not scheduled for publishing.";
     $rule5->addAction('rules_system_message', ContextConfig::create()
@@ -193,7 +193,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // is not scheduled for unpublishing.
     $rule6 = $this->expressionManager->createRule();
     $rule6->addCondition("{$condition_prefix}scheduled_for_unpublishing{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")->negateResult()
+      ContextConfig::create()->map('entity', "$entityTypeId")->negateResult()
     );
     $message6 = "RULES message 6. This $entityTypeId is not scheduled for unpublishing.";
     $rule6->addAction('rules_system_message', ContextConfig::create()
@@ -211,7 +211,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // is scheduled for publishing.
     $rule7 = $this->expressionManager->createRule();
     $rule7->addCondition("{$condition_prefix}scheduled_for_publishing{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
+      ContextConfig::create()->map('entity', "$entityTypeId")
     );
     $message7 = "RULES message 7. This $entityTypeId is scheduled for publishing.";
     $rule7->addAction('rules_system_message', ContextConfig::create()
@@ -229,7 +229,7 @@ class SchedulerRulesConditionsTest extends SchedulerBrowserTestBase {
     // is scheduled for unpublishing.
     $rule8 = $this->expressionManager->createRule();
     $rule8->addCondition("{$condition_prefix}scheduled_for_unpublishing{$condition_suffix}",
-      ContextConfig::create()->map("$entityTypeId", "$entityTypeId")
+      ContextConfig::create()->map('entity', "$entityTypeId")
     );
     $message8 = "RULES message 8. This $entityTypeId is scheduled for unpublishing.";
     $rule8->addAction('rules_system_message', ContextConfig::create()

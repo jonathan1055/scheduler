@@ -148,7 +148,11 @@ class SchedulerRulesActionDeriver extends DeriverBase implements ContainerDerive
         'label' => $action_label,
         'entity_type_id' => $entity_type_id,
         'category' => $entity_type->getLabel() . ' (' . $this->t('Scheduler') . ')',
-        'context_definitions' => [$entity_type_id => $entity_context_definition],
+        // The context parameter names have to be consistent across all entity
+        // types (we cannot use $entity_type_id). This avoids PHP8 failing with
+        // 'unknown named parameter' in call_user_func_array()
+        // @see https://www.drupal.org/project/scheduler/issues/3276637
+        'context_definitions' => ['entity' => $entity_context_definition],
       ];
 
       // For the actions that set a scheduler date add the date as a second
