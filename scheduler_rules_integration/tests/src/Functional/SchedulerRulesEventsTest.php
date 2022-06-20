@@ -68,28 +68,17 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       24 => ['scheduler:taxonomy_term_has_been_unpublished_via_cron', 'Scheduler has unpublished this taxonomy term during cron.'],
     ];
 
-    // PHPCS throws a false-positive 'variable $var is undefined' message when
-    // the variable is defined by list( ) syntax. To avoid the unwanted warnings
-    // we can put phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
-    // before each line that produces a warning of this type.
-    // This has been fixed in Coder 8.3.10 which is used in Core 9.1.
-    // @see https://www.drupal.org/project/coder/issues/2876245
-    // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
-    foreach ($rule_data as $i => list($event_name, $description)) {
-      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
+    $rule = [];
+    foreach ($rule_data as $i => [$event_name, $description]) {
       $rule[$i] = $this->expressionManager->createRule();
-      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
       $this->message[$i] = 'RULES message ' . $i . '. ' . $description;
-      // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
       $rule[$i]->addAction('rules_system_message', ContextConfig::create()
         ->setValue('message', $this->message[$i])
         ->setValue('type', 'status')
         );
       $config_entity = $this->rulesStorage->create([
         'id' => 'rule' . $i,
-        // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
         'events' => [['event_name' => $event_name]],
-        // phpcs:ignore DrupalPractice.CodeAnalysis.VariableAnalysis
         'expression' => $rule[$i]->getConfiguration(),
       ]);
       $config_entity->save();

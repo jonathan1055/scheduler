@@ -1193,7 +1193,7 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
       );
       // Two third-party-settings have changed name and value, so convert these.
       if ($config_name == 'use_vertical_tabs') {
-        if (unserialize($setting->value) == 1) {
+        if (unserialize($setting->value, ['allowed_classes' => FALSE]) == 1) {
           $third_party_settings['fields_display_mode'] = 'vertical_tab';
         }
         else {
@@ -1201,7 +1201,7 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
         }
       }
       elseif ($config_name == 'expand_fieldset') {
-        if (unserialize($setting->value) == 1) {
+        if (unserialize($setting->value, ['allowed_classes' => FALSE]) == 1) {
           $third_party_settings['expand_fieldset'] = 'always';
         }
         else {
@@ -1210,7 +1210,7 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
       }
       else {
         // The remaining eight settings are exactly the same as in Drupal 7.
-        $third_party_settings[$config_name] = unserialize($setting->value);
+        $third_party_settings[$config_name] = unserialize($setting->value, ['allowed_classes' => FALSE]);
       }
     }
     $row->setSourceProperty('scheduler_third_party_settings', $third_party_settings);
