@@ -30,6 +30,9 @@ class EventSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
+    // Initialise the array to avoid 'variable is undefined' phpcs error.
+    $events = [];
+
     // The values in the arrays give the function names below.
     $events[SchedulerEvents::PRE_PUBLISH][] = ['apiTestPrePublish'];
     $events[SchedulerEvents::PUBLISH][] = ['apiTestPublish'];
