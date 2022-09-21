@@ -18,6 +18,10 @@ build:
       phpstan:
         halt-on-fail: false
     testing:
+      container_command:
+        commands:
+          # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
+          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
       run_tests.functional:
         types: 'PHPUnit-Functional'
         testgroups: '--all'

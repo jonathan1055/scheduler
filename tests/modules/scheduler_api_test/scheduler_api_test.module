@@ -334,7 +334,7 @@ function scheduler_api_test_scheduler_commerce_product_unpublishing_allowed(Prod
  */
 function scheduler_api_test_scheduler_hide_publish_date($form, $form_state, $entity) {
   // Hide the publish_on field if the title contains 'orange {type}'.
-  if (stristr($entity->label(), "orange {$entity->getEntityTypeId()}")) {
+  if (stristr($entity->label() ?? '', "orange {$entity->getEntityTypeId()}")) {
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange.'), 'status', FALSE);
     return TRUE;
   }
@@ -348,7 +348,7 @@ function scheduler_api_test_scheduler_hide_publish_date($form, $form_state, $ent
  */
 function _scheduler_api_test_hide_publish_date($form, $form_state, $entity) {
   // Hide the publish_on field if the title contains 'green {type}'.
-  if (stristr($entity->label(), "green {$entity->getEntityTypeId()}")) {
+  if (stristr($entity->label() ?? '', "green {$entity->getEntityTypeId()}")) {
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for green.'), 'status', FALSE);
     return TRUE;
   }
@@ -394,7 +394,7 @@ function scheduler_api_test_scheduler_taxonomy_term_hide_publish_date($form, $fo
  */
 function scheduler_api_test_scheduler_hide_unpublish_date($form, $form_state, $entity) {
   // Hide the unpublish_on field if the title contains 'yellow {type}'.
-  if (stristr($entity->label(), "yellow {$entity->getEntityTypeId()}")) {
+  if (stristr($entity->label() ?? '', "yellow {$entity->getEntityTypeId()}")) {
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for yellow.'), 'status', FALSE);
     return TRUE;
   }
@@ -408,7 +408,7 @@ function scheduler_api_test_scheduler_hide_unpublish_date($form, $form_state, $e
  */
 function _scheduler_api_test_hide_unpublish_date($form, $form_state, $entity) {
   // Hide the unpublish_on field if the title contains 'green {type}'.
-  if (stristr($entity->label(), "green {$entity->getEntityTypeId()}")) {
+  if (stristr($entity->label() ?? '', "green {$entity->getEntityTypeId()}")) {
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The unpublish_on field is hidden for green.'), 'status', FALSE);
     return TRUE;
   }

@@ -340,8 +340,8 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   $contentEntity = \Drupal::entityTypeManager()->getStorage($contentEntityType->id())->create([$contentEntityType->getKey('bundle') => 'scaffold']);
 
   $params = [
-    '@type' => $type->label(),
-    '%type' => strtolower($type->label()),
+    '@type' => $type->label() ?? '',
+    '%type' => strtolower($type->label() ?? ''),
     '@singular' => $contentEntityType->getSingularLabel(),
     '@plural' => $contentEntityType->getPluralLabel(),
   ];
