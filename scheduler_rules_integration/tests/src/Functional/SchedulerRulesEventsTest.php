@@ -78,7 +78,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Test for no events',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
@@ -91,7 +92,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     $edit = [
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
     $assert->pageTextNotContains($this->message[3]);
@@ -114,7 +116,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'publish_on[0][value][time]' => date('H:i:s', time() + 3),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $assert->pageTextContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
@@ -128,7 +131,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node with publish-on date',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextContains($this->message[2]);
     $assert->pageTextNotContains($this->message[3]);
@@ -163,7 +167,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 3),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
@@ -177,7 +182,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node with unpublish-on date',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
     $assert->pageTextNotContains($this->message[3]);
@@ -214,7 +220,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'unpublish_on[0][value][time]' => date('H:i:s', time() + 4),
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $assert->pageTextContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
@@ -228,7 +235,8 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node with both dates',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextContains($this->message[2]);

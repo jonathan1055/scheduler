@@ -106,7 +106,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
     $generate_settings = [
       "edit-node-types-$this->type" => TRUE,
     ];
-    $this->drupalPostForm('admin/config/development/generate/content', $generate_settings, 'Generate');
+    $this->drupalGet('admin/config/development/generate/content');
+    $this->submitForm($generate_settings, 'Generate');
     // Display the full content list and the scheduled list. Calls to these
     // pages are for information and debug only. They could be removed.
     $this->drupalGet('admin/content');
@@ -126,7 +127,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 100,
       'scheduler_unpublishing' => 0,
     ];
-    $this->drupalPostForm('admin/config/development/generate/content', $generate_settings, 'Generate');
+    $this->drupalGet('admin/config/development/generate/content');
+    $this->submitForm($generate_settings, 'Generate');
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
 
@@ -145,7 +147,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 0,
       'scheduler_unpublishing' => 100,
     ];
-    $this->drupalPostForm('admin/config/development/generate/content', $generate_settings, 'Generate');
+    $this->drupalGet('admin/config/development/generate/content');
+    $this->submitForm($generate_settings, 'Generate');
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
 
@@ -165,7 +168,8 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
       'scheduler_publishing' => 100,
       'scheduler_unpublishing' => 100,
     ];
-    $this->drupalPostForm('admin/config/development/generate/content', $generate_settings, 'Generate');
+    $this->drupalGet('admin/config/development/generate/content');
+    $this->submitForm($generate_settings, 'Generate');
     $this->drupalGet('admin/content');
     $this->drupalGet('admin/content/scheduled');
 

@@ -118,7 +118,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New node - Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New node - Trigger Action Rule 1');
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be published %s', 'New node - Trigger Action Rule 1', $publish_on_formatted));
 
@@ -137,7 +138,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - but no rules will be triggered',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that neither of the rules are triggered, no publish and unpublish
@@ -153,7 +155,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 1 is triggered and rule 2 is not. Check that a publishing
@@ -169,7 +172,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - Trigger Action Rule 2',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 2 is triggered and rule 1 is not. Check that the
@@ -185,7 +189,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New non-enabled node - Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->nonSchedulerNodeType->id(), $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->nonSchedulerNodeType->id());
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New non-enabled node - Trigger Action Rule 1');
     // Check that rule 1 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -209,7 +214,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit non-enabled node - Trigger Action Rule 1',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     // Check that rule 1 issued a warning message.
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
@@ -229,7 +235,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit non-enabled node - Trigger Action Rule 2',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     // Check that rule 2 issued a warning message.
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
@@ -315,7 +322,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New node - Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->type, $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->type);
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New node - Trigger Action Rule 3');
     $this->assertSession()->pageTextContains(sprintf('%s is scheduled to be unpublished %s', 'New node - Trigger Action Rule 3', $unpublish_on_formatted));
 
@@ -334,7 +342,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - but no rules will be triggered',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that neither of the rules are triggered, no publish and unpublish
@@ -350,7 +359,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 3 is triggered and rule 4 is not. Check that an
@@ -366,7 +376,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit node - Trigger Action Rule 4',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     $this->nodeStorage->resetCache([$node->id()]);
     $node = $this->nodeStorage->load($node->id());
     // Check that rule 4 is triggered and rule 3 is not. Check that the
@@ -382,7 +393,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'New non-enabled node - Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/add/' . $this->nonSchedulerNodeType->id(), $edit, 'Save');
+    $this->drupalGet('node/add/' . $this->nonSchedulerNodeType->id());
+    $this->submitForm($edit, 'Save');
     $node = $this->drupalGetNodeByTitle('New non-enabled node - Trigger Action Rule 3');
     // Check that rule 3 issued a warning message.
     $assert->pageTextContains('warning message');
@@ -406,7 +418,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit non-enabled node - Trigger Action Rule 3',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     // Check that rule 3 issued a warning message.
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
@@ -426,7 +439,8 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       'title[0][value]' => 'Edit non-enabled node - Trigger Action Rule 4',
       'body[0][value]' => $this->randomString(30),
     ];
-    $this->drupalPostForm('node/' . $node->id() . '/edit', $edit, 'Save');
+    $this->drupalGet('node/' . $node->id() . '/edit');
+    $this->submitForm($edit, 'Save');
     // Check that rule 4 issued a warning message.
     $assert->pageTextContains('warning message');
     $assert->elementExists('xpath', '//div[@aria-label="Warning message" and contains(string(), "Action")]');
