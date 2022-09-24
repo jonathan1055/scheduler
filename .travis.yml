@@ -123,6 +123,9 @@ script:
     fi
 
   # Check for coding standards. First show the versions.
+  - composer config --no-plugins allow-plugins.composer/installers true
+  - composer config --no-plugins allow-plugins.drupal/core-project-message true
+  - composer config --no-plugins allow-plugins.drupal/core-vendor-hardening true
   - composer show drupal/coder | egrep 'name |vers'
   - composer show squizlabs/php_codesniffer | egrep 'name |vers'
   - $DRUPAL_ROOT/vendor/bin/phpcs --version
