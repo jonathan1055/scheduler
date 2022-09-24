@@ -30,7 +30,7 @@ class MigrateSchedulerNodeTypeConfigTest extends MigrateDrupal7TestBase {
     parent::setUp();
     $this->loadFixture(implode(DIRECTORY_SEPARATOR, [
       DRUPAL_ROOT,
-      drupal_get_path('module', 'scheduler'),
+      \Drupal::service('extension.list.module')->getPath('scheduler'),
       'tests',
       'fixtures',
       'node_type_config.php',

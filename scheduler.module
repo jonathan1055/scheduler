@@ -31,7 +31,7 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
       $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('The Scheduler module provides the functionality for automatic publishing and unpublishing of entities, such and nodes and media items, at specified future dates.') . '</p>';
       $output .= '<p>' . t('You can read more in the <a href="@readme">readme</a> file or our <a href="@project">project page on Drupal.org</a>.', [
-        '@readme' => $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'scheduler') . '/README.md',
+        '@readme' => $GLOBALS['base_url'] . '/' . \Drupal::service('extension.list.module')->getPath('scheduler') . '/README.md',
         '@project' => 'https://drupal.org/project/scheduler',
       ]) . '</p>';
       break;

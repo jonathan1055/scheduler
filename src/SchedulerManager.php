@@ -1199,10 +1199,10 @@ class SchedulerManager {
 
       // Read the view definition from the .yml file. First try the /optional
       // folder, then the main /config folder.
-      $optional_folder = drupal_get_path('module', 'scheduler') . '/config/optional';
+      $optional_folder = \Drupal::service('extension.list.module')->getPath('scheduler') . '/config/optional';
       $source_storage = new FileStorage($optional_folder);
       if (!$source = $source_storage->read($full_name)) {
-        $install_folder = drupal_get_path('module', 'scheduler') . '/config/install';
+        $install_folder = \Drupal::service('extension.list.module')->getPath('scheduler') . '/config/install';
         $source_storage = new FileStorage($install_folder);
         if (!$source = $source_storage->read($full_name)) {
           $this->logger->notice('No source file for %full_name in either %install_folder or %optional_folder folders',

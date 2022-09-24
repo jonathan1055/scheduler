@@ -26,7 +26,7 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
     parent::setUp();
     $this->loadFixture(implode(DIRECTORY_SEPARATOR, [
       DRUPAL_ROOT,
-      drupal_get_path('module', 'scheduler'),
+      \Drupal::service('extension.list.module')->getPath('scheduler'),
       'tests',
       'fixtures',
       'drupal7.php',
