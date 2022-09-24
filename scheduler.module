@@ -717,9 +717,9 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setTranslatable(TRUE)
       ->setRevisionable(TRUE)
       ->addConstraint('SchedulerUnpublishOn');
-
-    return $fields;
   }
+
+  return $fields;
 }
 
 /**

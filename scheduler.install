@@ -217,3 +217,10 @@ function scheduler_update_8204() {
     . '<br>' . implode('<br>', $rules_updated);
   return $output;
 }
+
+/**
+ * Add date fields to any newly supported entity types, specifically Paragraphs.
+ */
+function scheduler_update_8205() {
+  return scheduler_update_8201();
+}

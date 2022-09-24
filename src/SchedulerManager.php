@@ -366,18 +366,23 @@ class SchedulerManager {
           // Create a set of variables for use in the log message.
           $bundle_type = $entity->getEntityType()->getBundleEntityType();
           $entity_type = $this->entityTypeManager->getStorage($bundle_type)->load($entity->bundle());
-          $view_link = $entity->toLink($this->t('View @type', [
-            '@type' => strtolower($entity_type->label()),
-          ]));
-          $entity_type_link = $entity_type->toLink($this->t('@label settings', [
-            '@label' => $entity_type->label(),
-          ]), 'edit-form');
+          $links = [];
+          if ($entity->hasLinkTemplate('canonical')) {
+            $links[] = $entity->toLink($this->t('View @type', [
+              '@type' => strtolower($entity_type->label()),
+            ]))->toString();
+          }
+          if ($entity_type->hasLinkTemplate('edit-form')) {
+            $links[] = $entity_type->toLink($this->t('@label settings', [
+              '@label' => $entity_type->label(),
+            ]), 'edit-form')->toString();
+          }
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
             '@sucessful_hooks' => implode(', ', $sucessful_hooks),
             '@failed_hooks' => implode(', ', $failed_hooks),
-            'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
+            'link' => implode(' ', $links),
           ];
 
           if ($failed) {
@@ -575,18 +580,23 @@ class SchedulerManager {
           // Create a set of variables for use in the log message.
           $bundle_type = $entity->getEntityType()->getBundleEntityType();
           $entity_type = $this->entityTypeManager->getStorage($bundle_type)->load($entity->bundle());
-          $view_link = $entity->toLink($this->t('View @type', [
-            '@type' => strtolower($entity_type->label()),
-          ]));
-          $entity_type_link = $entity_type->toLink($this->t('@label settings', [
-            '@label' => $entity_type->label(),
-          ]), 'edit-form');
+          $links = [];
+          if ($entity->hasLinkTemplate('canonical')) {
+            $links[] = $entity->toLink($this->t('View @type', [
+              '@type' => strtolower($entity_type->label()),
+            ]))->toString();
+          }
+          if ($entity_type->hasLinkTemplate('edit-form')) {
+            $links[] = $entity_type->toLink($this->t('@label settings', [
+              '@label' => $entity_type->label(),
+            ]), 'edit-form')->toString();
+          }
           $logger_variables = [
             '@type' => $entity_type->label(),
             '%title' => $entity->label(),
             '@sucessful_hooks' => implode(', ', $sucessful_hooks),
             '@failed_hooks' => implode(', ', $failed_hooks),
-            'link' => $view_link->toString() . ' ' . $entity_type_link->toString(),
+            'link' => implode(' ', $links),
           ];
 
           if ($failed) {
@@ -1195,7 +1205,9 @@ class SchedulerManager {
         $install_folder = drupal_get_path('module', 'scheduler') . '/config/install';
         $source_storage = new FileStorage($install_folder);
         if (!$source = $source_storage->read($full_name)) {
-          throw new \Exception(sprintf('Failed to read source file for %s from either %s or %s folders', $full_name, $install_folder, $optional_folder));
+          $this->logger->notice('No source file for %full_name in either %install_folder or %optional_folder folders',
+            ['%full_name' => $full_name, '%install_folder' => $install_folder, '%optional_folder' => $optional_folder]);
+          continue;
         }
       }
 

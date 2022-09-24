@@ -231,9 +231,12 @@ function _scheduler_api_test_publishing_allowed(EntityInterface $entity) {
       // Write a dblog message to show this. Give a link to view the entity but
       // cater for no id as the entity may be new and not yet saved.
       if ($entity->publish_on->value <= \Drupal::time()->getRequestTime()) {
+        if ($entity->id() && $entity->hasLinkTemplate('canonical')) {
+          $link = $entity->toLink(t('View'))->toString();
+        }
         \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
           '%title' => $entity->label(),
-          'link' => !empty($entity->id()) ? $entity->toLink(t('View'))->toString() : '',
+          'link' => $link ?? NULL,
         ]);
       }
     }
@@ -295,9 +298,12 @@ function _scheduler_api_test_unpublishing_allowed(EntityInterface $entity) {
       // Write a dblog message to show this. Give a link to view the entity but
       // cater for no id as the entity may be new and not yet saved.
       if ($entity->unpublish_on->value <= \Drupal::time()->getRequestTime()) {
+        if ($entity->id() && $entity->hasLinkTemplate('canonical')) {
+          $link = $entity->toLink(t('View'))->toString();
+        }
         \Drupal::logger('scheduler_api_test')->warning('Unpublishing of "%title" is prevented until approved.', [
           '%title' => $entity->label(),
-          'link' => !empty($entity->id()) ? $entity->toLink(t('View'))->toString() : '',
+          'link' => $link ?? NULL,
         ]);
       }
     }

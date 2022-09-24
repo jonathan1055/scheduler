@@ -111,9 +111,12 @@ function hook_scheduler_publishing_allowed(EntityInterface $entity) {
     // If the time is in the past it means that the action has been prevented,
     // so write a dblog message to show this.
     if ($entity->publish_on->value <= \Drupal::time()->getRequestTime()) {
+      if ($entity->id() && $entity->hasLinkTemplate('canonical')) {
+        $link = $entity->toLink(t('View'))->toString();
+      }
       \Drupal::logger('scheduler_api_test')->warning('Publishing of "%title" is prevented until approved.', [
         '%title' => $entity->label(),
-        'link' => $entity->id() ? $entity->toLink(t('View'))->toString() : '',
+        'link' => $link ?? NULL,
       ]);
     }
   }
