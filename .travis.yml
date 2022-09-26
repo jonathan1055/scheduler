@@ -17,51 +17,41 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.2
-      env:
-        - DRUPAL_CORE=8.9.x
-        # 8.9 is slow, 50 mins is the Travis limit, so run just the Media tests.
-        # Also skip Rules because it cannot be installed at 8.x.
-        - MEDIA=YES
-        # ---- Remaining self deprecation notices (0)
-        # ---- Other deprecation notices (0)
-    - php: 7.3
-      env:
-        # Run the Media and Taxonomy Term tests, with Rules included.
-        - DRUPAL_CORE=9.2.x
-        - MEDIA=YES
-        - TAXONOMY=YES
-        - RULES=YES
-        # ---- Remaining self deprecation notices (145)
-        #  145 EventDispatcher with string event
-        # ---- Other deprecation notices (0)
-        - DEPRECATIONS=145
     - php: 7.4
       env:
-        - DRUPAL_CORE=9.3.x
+        - DRUPAL_CORE=9.5.x
         # Run the Node and Product tests, with Rules included.
         - NODE=YES
         - PRODUCT=YES
         - RULES=YES
-        # ---- Remaining self deprecation notices (370)
-        #  368 EventDispatcher with string event
-        #    2 Kernel $modules property must be declared protected
-        # ---- Other deprecation notices (1474)
-        #  737 drupal_get_path() is deprecated in drupal:9.3.0
-        #  737 drupal_get_filename() is deprecated in drupal:9.3.0
-        - DEPRECATIONS=1844
-    - php: 8.0
+        # ---- Remaining self deprecation notices (2911)
+        # 2911 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+        # ---- Other deprecation notices (0)
+        - DEPRECATIONS=2911
+    - php: 8.1
       env:
-        - DRUPAL_CORE=9.4.x
-        - NODE=YES
-        # ---- Remaining self deprecation notices (1941)
-        # 1807 ModuleHandlerInterface::getImplementations()
-        #  132 EventDispatcher with string event
-        #    2 Kernel $modules property must be declared protected
-        # ---- Other deprecation notices (854)
-        #  427 drupal_get_path() is deprecated in drupal:9.3.0
-        #  427 drupal_get_filename() is deprecated in drupal:9.3.0
-        - DEPRECATIONS=2795
+        - DRUPAL_CORE=9.5.x
+        - MEDIA=YES
+        - TAXONOMY=YES
+        # ---- Unsilenced deprecation notices (6)
+        #    6 strlen(): Passing null to parameter #1 ($string) is deprecated
+        # ---- Remaining self deprecation notices (1767)
+        # 1767 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+        # ---- Other deprecation notices (0)
+        - DEPRECATIONS=1773
+    # @todo Uncomment this when ModuleHandlerInterface::getImplementations() has been fixed.
+    # - php: 8.1
+    #   env:
+    #     # Run the Node tests only.
+    #     - DRUPAL_CORE=10.0.x
+    #     - NODE=YES
+    #     # ---- Remaining self deprecation notices (2)
+    #     #    2 Behat\Mink\Element\ElementInterface::getText() string
+    #     # ---- Remaining direct deprecation notices (3)
+    #     #    3 Drupal\Tests\Listeners\DrupalListener
+    #     # ---- Other deprecation notices (2)
+    #     #    2 PHPUnit\Framework\TestCase::addWarning()
+    #     - DEPRECATIONS=5000
 
 # Be sure to cache composer downloads.
 cache:
@@ -79,8 +69,8 @@ before_script:
   # We also don't care if that file exists or not on PHP 7.
   - phpenv config-rm xdebug.ini || true
 
-  # Navigate out of module directory to prevent blown stack by recursive module
-  # lookup.
+  # Navigate up out of $TRAVIS_BUILD_DIR to prevent blown stack on recursive module lookup.
+  - pwd
   - cd ..
 
   # Create database.
@@ -99,8 +89,7 @@ before_script:
   - mkdir $DRUPAL_ROOT/modules/$MODULE
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
-  # Get the latest dev versions of the test dependency modules.
-  - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  # Get the latest dev versions of some of the test dependency modules.
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation.git modules/workbench_moderation
   - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation_actions.git modules/workbench_moderation_actions
   - |
@@ -113,12 +102,10 @@ before_script:
   # Install the site dependencies via Composer.
   - travis_retry composer install
 
-  # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
-  # problem when running at core 8.8.
-  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drush/drush:"^9.0 || ^10.0"
-
-  # Install Commerce.
-  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drupal/commerce
+  # Install the other testing dependencies via Composer.
+  - travis_retry composer require drupal/devel:"^4 || ^5"
+  - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
+  - travis_retry composer require drupal/commerce
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards. This is only for Coder
@@ -148,6 +135,7 @@ script:
   - if [ "$PRODUCT" != "YES" ]; then EXCLUDE+=('product'); fi
   - if [ "$TAXONOMY" != "YES" ]; then EXCLUDE+=('taxonomy'); fi
   - if [ "$RULES" != "YES" ]; then EXCLUDE+=('rules'); fi
+  - if [ "$DRUPAL_CORE" == "10.0.x" ]; then EXCLUDE+=('HooksLegacy|WorkbenchModeration'); fi
   - EXCLUDE=${EXCLUDE[@]}     # create a space delimited string from array
 
   # Run the PHPUnit tests.
