@@ -5,6 +5,7 @@ namespace Drupal\Tests\scheduler\FunctionalJavascript;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
 use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerParagraphSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerTaxonomyTermSetupTrait;
 
@@ -15,6 +16,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
 
   use SchedulerCommerceProductSetupTrait;
   use SchedulerMediaSetupTrait;
+  use SchedulerParagraphSetupTrait;
   use SchedulerSetupTrait;
   use SchedulerTaxonomyTermSetupTrait;
 
@@ -30,6 +32,7 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
     'media',
     'commerce_product',
     'taxonomy',
+    'paragraphs',
   ];
 
   /**
@@ -62,6 +65,9 @@ abstract class SchedulerJavascriptTestBase extends WebDriverTestBase {
     }
     if (stristr($this->getName(), 'taxonomy')) {
       $this->SchedulerTaxonomyTermSetup();
+    }
+    if (stristr($this->getName(), 'paragraph')) {
+      $this->schedulerParagraphSetUp();
     }
   }
 
