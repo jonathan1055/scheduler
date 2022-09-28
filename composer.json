@@ -10,7 +10,8 @@
         "drupal/devel_generate": "^4.0",
         "drupal/commerce": "^2.0",
         "drupal/workbench_moderation": "^1.0",
-        "drupal/workbench_moderation_actions": "^1.0"
+        "drupal/workbench_moderation_actions": "^1.0",
+        "drupal/paragraphs": ">=2.0",
     },
     "repositories": {
         "drupal": {

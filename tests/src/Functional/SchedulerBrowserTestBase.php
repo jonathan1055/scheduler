@@ -31,6 +31,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     'media',
     'commerce_product',
     'taxonomy',
+    'paragraphs',
   ];
 
   /**

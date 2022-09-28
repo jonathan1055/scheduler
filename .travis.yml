@@ -33,6 +33,7 @@ jobs:
         - DRUPAL_CORE=9.5.x
         - MEDIA=YES
         - TAXONOMY=YES
+        - PARAGRAPH=YES
         # ---- Unsilenced deprecation notices (6)
         #    6 strlen(): Passing null to parameter #1 ($string) is deprecated
         # ---- Remaining self deprecation notices (1767)
@@ -106,6 +107,7 @@ before_script:
   - travis_retry composer require drupal/devel:"^4 || ^5"
   - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
   - travis_retry composer require drupal/commerce
+  - travis_retry composer require drupal/paragraphs
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards. This is only for Coder
@@ -134,6 +136,7 @@ script:
   - if [ "$MEDIA" != "YES" ]; then EXCLUDE+=('media'); fi
   - if [ "$PRODUCT" != "YES" ]; then EXCLUDE+=('product'); fi
   - if [ "$TAXONOMY" != "YES" ]; then EXCLUDE+=('taxonomy'); fi
+  - if [ "$PARAGRAPH" != "YES" ]; then EXCLUDE+=('paragraph'); fi
   - if [ "$RULES" != "YES" ]; then EXCLUDE+=('rules'); fi
   - if [ "$DRUPAL_CORE" == "10.0.x" ]; then EXCLUDE+=('HooksLegacy|WorkbenchModeration'); fi
   - EXCLUDE=${EXCLUDE[@]}     # create a space delimited string from array
