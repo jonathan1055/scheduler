@@ -17,22 +17,22 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.4
-      env:
-        - DRUPAL_CORE=9.5.x
-        # Run the Node and Product tests, with Rules included.
-        - NODE=YES
-        - PRODUCT=YES
-        - RULES=YES
-        # ---- Remaining self deprecation notices (2911)
-        # 2911 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
-        # ---- Other deprecation notices (0)
-        - DEPRECATIONS=2911
+    # - php: 7.4
+    #   env:
+    #     - DRUPAL_CORE=9.5.x
+    #     # Run the Node and Product tests, with Rules included.
+    #     - NODE=YES
+    #     - PRODUCT=YES
+    #     - RULES=YES
+    #     # ---- Remaining self deprecation notices (2911)
+    #     # 2911 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+    #     # ---- Other deprecation notices (0)
+    #     - DEPRECATIONS=2911
     - php: 8.1
       env:
         - DRUPAL_CORE=9.5.x
-        # - MEDIA=YES TEMP
-        - TAXONOMY=YES
+        # - MEDIA=YES
+        # - TAXONOMY=YES
         - PARAGRAPH=YES
         # ---- Unsilenced deprecation notices (6)
         #    6 strlen(): Passing null to parameter #1 ($string) is deprecated
