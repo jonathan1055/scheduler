@@ -565,6 +565,7 @@ trait SchedulerSetupTrait {
       '#media' => ['media', $this->mediaTypeName],
       '#commerce_product' => ['commerce_product', $this->productTypeName],
       '#taxonomy_term' => ['taxonomy_term', $this->vocabularyId],
+      '#paragraph' => ['paragraph', $this->paragraphTypeName],
     ];
     return $data;
   }
@@ -582,6 +583,7 @@ trait SchedulerSetupTrait {
       '#media' => ['media', $this->nonSchedulerMediaTypeName],
       '#commerce_product' => ['commerce_product', $this->nonSchedulerProductTypeName],
       '#taxonomy_term' => ['taxonomy_term', $this->nonSchedulerVocabularyId],
+      '#paragraph' => ['paragraph', $this->nonSchedulerParagraphTypeName],
     ];
     return $data;
   }
