@@ -2,7 +2,8 @@
 
 namespace Drupal\Tests\scheduler\Traits;
 
-use Drupal\Tests\paragraph\Traits\ParagraphTypeCreationTrait;
+use Drupal\Tests\paragraphs\FunctionalJavascript\ParagraphsTestBaseTrait;
+use Drupal\paragraphs\Entity\ParagraphsType;
 
 /**
  * Additional setup trait for Scheduler tests that use Paragraph.
@@ -11,7 +12,8 @@ use Drupal\Tests\paragraph\Traits\ParagraphTypeCreationTrait;
  */
 trait SchedulerParagraphSetupTrait {
 
-  use ParagraphTypeCreationTrait;
+  use ParagraphsTestBaseTrait;
+  // use ParagraphsType;
 
   /**
    * The internal name of the standard paragraph type created for testing.
@@ -69,10 +71,11 @@ trait SchedulerParagraphSetupTrait {
 
     // Create a test paragraph type that is enabled for scheduling.
     /** @var \Drupal\paragraph\Entity\ParagraphTypeInterface $paragraphType */
-    $this->paragraphType = $this->createParagraphType('zzz1', [
+    $this->paragraphType = ParagraphsType::create([
       'id' => $this->paragraphTypeName,
       'label' => $this->paragraphTypeLabel,
     ]);
+    $this->paragraphType->save();
 
     // Add scheduler functionality to this paragraph type.
     $this->paragraphType->setThirdPartySetting('scheduler', 'publish_enable', TRUE)
@@ -81,10 +84,11 @@ trait SchedulerParagraphSetupTrait {
 
     // Create a test paragraph type which is not enabled for scheduling.
     /** @var \Drupal\paragraph\Entity\ParagraphTypeInterface $nonSchedulerParagraphType */
-    $this->nonSchedulerParagraphType = $this->createParagraphType('zzz2', [
+    $this->nonSchedulerParagraphType = ParagraphsType::create([
       'id' => $this->nonSchedulerParagraphTypeName,
       'label' => $this->nonSchedulerParagraphTypeLabel,
     ]);
+    $this->nonSchedulerParagraphType->save();
 
     // Define paragraphStorage for use in many tests.
     /** @var ParagraphStorageInterface $paragraphStorage */
