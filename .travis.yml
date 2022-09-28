@@ -31,7 +31,7 @@ jobs:
     - php: 8.1
       env:
         - DRUPAL_CORE=9.5.x
-        - MEDIA=YES
+        # - MEDIA=YES TEMP
         - TAXONOMY=YES
         - PARAGRAPH=YES
         # ---- Unsilenced deprecation notices (6)

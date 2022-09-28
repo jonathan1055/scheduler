@@ -19,6 +19,8 @@ use Drupal\media\Entity\Media;
 use Drupal\media\MediaInterface;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
+use Drupal\paragraph\Entity\Paragraph;
+use Drupal\paragraph\ParagraphInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\taxonomy\TermInterface;
 
@@ -41,6 +43,10 @@ function _scheduler_api_test_get_entities($entityTypeId) {
 
     case 'taxonomy_term':
       $results = Term::loadMultiple(\Drupal::entityQuery('taxonomy_term')->accessCheck(FALSE)->execute());
+      break;
+
+    case 'paragraph':
+      $results = Paragraph::loadMultiple(\Drupal::entityQuery('paragraph')->accessCheck(FALSE)->execute());
       break;
 
     default:
