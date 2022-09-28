@@ -438,6 +438,10 @@ trait SchedulerSetupTrait {
       case 'taxonomy_term':
         return '/(Created new|Updated) term ' . preg_quote($title, '/') . '/';
 
+      case 'paragraph':
+        // {type} {title} has been updated.
+        return '/' . preg_quote($title, '/') . ' has been (created|updated)/';
+
       default:
         // Incorrect parameter value.
         throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to entitySavedMessage()', $entityTypeId));
@@ -484,6 +488,12 @@ trait SchedulerSetupTrait {
         $type_parameter = 'taxonomy_vocabulary';
         break;
 
+      case 'paragraph':
+        $bundle = ($bundle == 'non-enabled') ? $this->$nonSchedulerParagraphTypeName : ($bundle ?? $this->paragraphTypeName);
+        $route = 'node.add'; // there is no route. Use node?
+        $type_parameter = 'paragraphs_type';
+        break;
+
       default:
         // Incorrect parameter values.
         throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to entityAddUrl()', $entityTypeId, $bundle));
@@ -516,17 +526,20 @@ trait SchedulerSetupTrait {
         'media' => 'admin/content/media',
         'commerce_product' => 'admin/commerce/products',
         'taxonomy_term' => "admin/structure/taxonomy/manage/$bundle/overview",
+        'paragraph' => 'none',
       ],
       'scheduled' => [
         'node' => 'admin/content/scheduled',
         'media' => 'admin/content/media/scheduled',
         'commerce_product' => 'admin/commerce/products/scheduled',
         'taxonomy_term' => 'admin/structure/taxonomy/scheduled',
+        'paragraph' => 'none',
       ],
       'generate' => [
         'node' => 'admin/config/development/generate/content',
         'media' => 'admin/config/development/generate/media',
         'taxonomy_term' => 'admin/config/development/generate/term',
+        'paragraph' => 'none',
       ],
     ];
 

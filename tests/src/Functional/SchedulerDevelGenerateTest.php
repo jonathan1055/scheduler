@@ -182,8 +182,10 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
    */
   public function dataDevelGenerate() {
     $types = $this->dataStandardEntityTypes();
-    // Remove commerce_product, becuase Devel Generate does not cover products.
+    // Remove commerce_product and paragraph, becuase Devel Generate does not
+    // cover these entity types.
     unset($types['#commerce_product']);
+    unset($types['#paragraph']);
     $data = [];
     // For each entity type, add a row for enabled TRUE and enabled FALSE.
     foreach ($types as $key => $values) {
