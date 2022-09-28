@@ -5,6 +5,7 @@ namespace Drupal\Tests\scheduler\Functional;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\scheduler\Traits\SchedulerCommerceProductSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerMediaSetupTrait;
+use Drupal\Tests\scheduler\Traits\SchedulerParagraphSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerSetupTrait;
 use Drupal\Tests\scheduler\Traits\SchedulerTaxonomyTermSetupTrait;
 
@@ -15,6 +16,7 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
 
   use SchedulerCommerceProductSetupTrait;
   use SchedulerMediaSetupTrait;
+  use SchedulerParagraphSetupTrait;
   use SchedulerSetupTrait;
   use SchedulerTaxonomyTermSetupTrait;
 
@@ -66,6 +68,9 @@ abstract class SchedulerBrowserTestBase extends BrowserTestBase {
     }
     if (stristr($this->getName(), 'taxonomy') || stristr($testName, 'permission')) {
       $this->SchedulerTaxonomyTermSetup();
+    }
+    if (stristr($this->getName(), 'paragraph') || stristr($testName, 'permission')) {
+      $this->schedulerParagraphSetUp();
     }
   }
 
