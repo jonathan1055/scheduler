@@ -263,6 +263,12 @@ trait SchedulerSetupTrait {
         $entity = $this->createTaxonomyTerm($values);
         break;
 
+      case 'paragraph':
+        // For paragraphs ...
+        // $values += ['vid' => $bundle ?? $this->vocabularyId];
+        $entity = $this->createParagraph($values);
+        break;
+
       default:
         // Incorrect parameter values.
         throw new \Exception(sprintf('Unrecognised combination of entityTypeId "%s" and bundle "%s" passed to createEntity()', $entityTypeId, $bundle));
@@ -298,6 +304,9 @@ trait SchedulerSetupTrait {
       case 'taxonomy_term':
         return $this->getTaxonomyTerm($title);
 
+      case 'paragraph':
+        return $this->getParagraph($title);
+
       default:
         // Incorrect parameter value.
         throw new \Exception(sprintf('Unrecognised entityTypeId value "%s" passed to getEntityByTitle()', $entityTypeId));
@@ -329,12 +338,14 @@ trait SchedulerSetupTrait {
         'media' => $this->mediaTypeName,
         'commerce_product' => $this->productTypeName,
         'taxonomy_term' => $this->vocabularyId,
+        'paragraph' => $this->paragraphTypeName,
       ];
       $non_enabled_types = [
         'node' => $this->nonSchedulerType,
         'media' => $this->nonSchedulerMediaTypeName,
         'commerce_product' => $this->nonSchedulerProductTypeName,
         'taxonomy_term' => $this->nonSchedulerVocabularyId,
+        'paragraph' => $this->nonSchedulerParagraphTypeName,
       ];
       $bundle = (empty($bundle)) ? $default_types[$entityTypeId] : $non_enabled_types[$entityTypeId];
     }
@@ -366,6 +377,9 @@ trait SchedulerSetupTrait {
       case 'taxonomy_term':
         return 'name';
 
+      case 'paragraph':
+        return 'zzz3';
+
       default:
         // Incorrect parameter value.
         throw new \Exception(sprintf('Unrecognised entityTypeId "%s" passed to titleField()', $entityTypeId));
@@ -389,6 +403,9 @@ trait SchedulerSetupTrait {
 
       case 'taxonomy_term':
         return 'description';
+
+      // case 'paragraph':
+        // return 'zzz4';
 
       default:
         // Incorrect parameter value.

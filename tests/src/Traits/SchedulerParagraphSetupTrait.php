@@ -69,7 +69,7 @@ trait SchedulerParagraphSetupTrait {
 
     // Create a test paragraph type that is enabled for scheduling.
     /** @var \Drupal\paragraph\Entity\ParagraphTypeInterface $paragraphType */
-    $this->paragraphType = $this->createParagraphType('abc?', [
+    $this->paragraphType = $this->createParagraphType('zzz1', [
       'id' => $this->paragraphTypeName,
       'label' => $this->paragraphTypeLabel,
     ]);
@@ -81,7 +81,7 @@ trait SchedulerParagraphSetupTrait {
 
     // Create a test paragraph type which is not enabled for scheduling.
     /** @var \Drupal\paragraph\Entity\ParagraphTypeInterface $nonSchedulerParagraphType */
-    $this->nonSchedulerParagraphType = $this->createParagraphType('zzz', [
+    $this->nonSchedulerParagraphType = $this->createParagraphType('zzz2', [
       'id' => $this->nonSchedulerParagraphTypeName,
       'label' => $this->nonSchedulerParagraphTypeLabel,
     ]);
@@ -114,14 +114,6 @@ trait SchedulerParagraphSetupTrait {
       'schedule publishing of paragraph',
     ]);
 
-    // By default, paragraph items cannot be viewed directly, and the url paragraph/mid
-    // gives a 404 not found. Changing this setting makes debugging the tests
-    // easier. It is also required for the meta information test.
-    // $configFactory = $this->container->get('config.factory');
-    // $configFactory->getEditable('paragraph.settings')
-    //   ->set('standalone_url', TRUE)
-    //   ->save(TRUE);
-    // $this->container->get('router.builder')->rebuild();
 
     // Set the paragraph file attachments to be optional not required, to simplify
     // editing and saving paragraph entities.
@@ -142,7 +134,7 @@ trait SchedulerParagraphSetupTrait {
    * @return \Drupal\paragraph\ParagraphInterface
    *   The created paragraph object.
    */
-  public function createParagraphItem(array $values) {
+  public function createParagraph(array $values) {
     // Provide defaults for the critical values. The title is stored in the
     // 'name' field, so use 'title' when the 'name' is not defined, to allow
     // the same calling $value parameter names as for Node.
@@ -157,13 +149,13 @@ trait SchedulerParagraphSetupTrait {
   }
 
   /**
-   * Gets a paragraph item from storage.
+   * Gets a paragraph from storage.
    *
    * For nodes, there is drupalGetNodeByTitle() but nothing similar exists to
    * help Paragraph testing. But this function goes one better - if a name is given,
    * then a match will be attempted on the name, and fail if none found. But if
    * no name is supplied then the paragraph entity with the highest id value (the
-   * newest item created) is returned, as this is often what is required.
+   * newest paragraph created) is returned, as this is often what is required.
    *
    * @param string $name
    *   Optional name text to match on. If given and no match, returns NULL.
@@ -172,7 +164,7 @@ trait SchedulerParagraphSetupTrait {
    * @return \Drupal\paragraph\ParagraphInterface
    *   The paragraph object.
    */
-  public function getParagraphItem(string $name = NULL) {
+  public function getParagraph(string $name = NULL) {
     $query = $this->paragraphStorage->getQuery()
       ->accessCheck(FALSE)
       ->sort('mid', 'DESC');
