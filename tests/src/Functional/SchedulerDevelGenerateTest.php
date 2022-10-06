@@ -57,6 +57,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Check that the expected number of entities have been created.
     $count = $storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition($bundle_field, $bundle)
       ->count()
       ->execute();
@@ -64,6 +65,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Check that the expected number of entities have been scheduled.
     $count = $storage->getQuery()
+      ->accessCheck(FALSE)
       ->condition($bundle_field, $bundle)
       ->exists($scheduler_field)
       ->count()
@@ -82,6 +84,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
       $query = $storage->getAggregateQuery();
       $result = $query
+        ->accessCheck(FALSE)
         ->condition($bundle_field, $bundle)
         ->aggregate($scheduler_field, 'min')
         ->aggregate($scheduler_field, 'max')
