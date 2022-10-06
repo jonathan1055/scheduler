@@ -4,6 +4,10 @@ build:
     validate_codebase:
       phplint:
       container_composer:
+      host_command:
+        commands:
+          # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817
+          - "cd ${SOURCE_DIR} && sudo -u www-data curl https://www.drupal.org/files/issues/2021-11-30/3251817-4.run-tests-with-multiple-groups.patch | sudo -u www-data patch -p1 --verbose"
       csslint:
       eslint:
       phpcs:
