@@ -19,6 +19,7 @@ build:
         suppress-deprecations: true
       run_tests.js:
         types: 'PHPUnit-FunctionalJavascript'
+        testgroups: 'scheduler_js'
         suppress-deprecations: true
         concurrency: 1
         halt-on-fail: false
