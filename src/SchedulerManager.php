@@ -730,16 +730,24 @@ class SchedulerManager {
       $hooks[] = $legacy_node_hooks[$hookType];
     }
 
-    // Get all modules that implement these hooks, then use array_walk to append
-    // the $hook to the end of the module, thus giving the full function name.
+    // Find all modules that implement these hooks, then append the $hookName to
+    // the end of the module, thus giving the full function name.
     $all_hook_implementations = [];
     foreach ($hooks as $hook) {
-      $hook = "scheduler_$hook";
-      $implementations = $this->moduleHandler->getImplementations($hook);
-      array_walk($implementations, function (&$item) use ($hook) {
-        $item = $item . '_' . $hook;
-      });
-      $all_hook_implementations = array_merge($all_hook_implementations, $implementations);
+      $hookName = "scheduler_$hook";
+      if (version_compare(\Drupal::VERSION, '9.4', '>=')) {
+        // getImplementations() is deprecated in D9.4, use invokeAllWith().
+        $this->moduleHandler->invokeAllWith($hookName, function (callable $hook, string $module) use ($hookName, &$all_hook_implementations) {
+          $all_hook_implementations[] = $module . "_" . $hookName;
+        });
+      }
+      else {
+        // Use getImplementations() to maintain compatibility with Drupal 8.9.
+        $implementations = $this->moduleHandler->getImplementations($hookName);
+        array_walk($implementations, function (&$module) use ($hookName, &$all_hook_implementations) {
+          $all_hook_implementations[] = $module . "_" . $hookName;
+        });
+      }
     }
     return $all_hook_implementations;
   }
