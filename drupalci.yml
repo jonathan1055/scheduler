@@ -6,7 +6,6 @@ build:
       container_composer:
       container_command:
         commands:
-          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/devel:4.x-dev"
       host_command:
         commands:
           # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817
@@ -22,6 +21,10 @@ build:
         commands:
           # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
           - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
+          # Get workbench moderation modules when testing with Drupal 9.
+          # WBMA 1.0 cannot be installed with D9, so use * to allow the dev version.
+          - 'drush status | awk "NR==1{print \$2\$3\$4}"'
+          - 'drush status | awk "NR==1{print \$2\$3\$4}" | grep version:9 && sudo -u www-data composer require drupal/workbench_moderation:* drupal/workbench_moderation_actions:*'
       run_tests.functional:
         types: 'PHPUnit-Functional'
         testgroups: '--all'
