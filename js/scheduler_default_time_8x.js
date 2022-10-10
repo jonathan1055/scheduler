@@ -1,9 +1,11 @@
 /**
  * @file
  * JQuery to set default time for Scheduler DateTime Widget.
+ *
+ * This is a legacy version to maintain compatibility with Drupal 8.9.
  */
 
-(function ($, drupalSettings, once) {
+(function ($, drupalSettings) {
 
   'use strict';
 
@@ -22,7 +24,7 @@
       // Drupal.behaviors are called many times per page. Using .once() adds the
       // class onto the matched DOM element and uses this to prevent it running
       // on subsequent calls.
-      const $default_time = once('default-time-done', '#edit-scheduler-settings', context);
+      const $default_time = $(context).find('#edit-scheduler-settings').once('default-time-done');
 
       if ($default_time.length && typeof drupalSettings.schedulerDefaultTime !== "undefined") {
         var operations = ["publish", "unpublish"];
@@ -49,4 +51,4 @@
 
     }
   };
-})(jQuery, drupalSettings, once);
+})(jQuery, drupalSettings);

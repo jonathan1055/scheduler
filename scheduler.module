@@ -217,6 +217,11 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/vertical-tabs';
   }
 
+  // The 'once' library was moved from jQuery into core at 9.2. The original js
+  // library file is kept to maintain compatibility with Drupal 8.9.
+  // @see https://www.drupal.org/project/scheduler/issues/3314158
+  $default_time_library = version_compare(\Drupal::VERSION, '9.2', '>=') ? 'scheduler/default-time' : 'scheduler/default-time-8x';
+
   // Define the descriptions depending on whether the time can be skipped.
   $descriptions = [];
   if ($allow_date_only) {
@@ -230,7 +235,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
     // Use javascript to pre-fill the time parts if the dates are required.
     // See js/scheduler_default_time.js for more details.
     if ($publishing_required || $unpublishing_required) {
-      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['library'][] = $default_time_library;
       $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerDefaultTime'] = $config->get('default_time');
     }
   }
@@ -264,12 +269,12 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   if ($config->get('hide_seconds')) {
     // If there is a publish_on time, then use jQuery to remove the seconds.
     if (isset($entity->publish_on->value)) {
-      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['library'][] = $default_time_library;
       $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerHideSecondsPublishOn'] = date('H:i', $entity->publish_on->value);
     }
     // Likewise for the unpublish_on time.
     if (isset($entity->unpublish_on->value)) {
-      $form[$scheduler_field_group]['#attached']['library'][] = 'scheduler/default-time';
+      $form[$scheduler_field_group]['#attached']['library'][] = $default_time_library;
       $form[$scheduler_field_group]['#attached']['drupalSettings']['schedulerHideSecondsUnpublishOn'] = date('H:i', $entity->unpublish_on->value);
     }
   }
