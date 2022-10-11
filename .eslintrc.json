@@ -1,0 +1,8 @@
+// This file does not strictly need to exist in contrib, because core's eslint
+// config will be inherited from further up in the directory hierarchy. However,
+// eslint does not have a 'sniff all files' parameter, but having this file (and
+// making a temporary change to it) will cause all files to be checked.
+// See https://www.drupal.org/project/scheduler/issues/3314451
+{
+  "extends": "../../../core/.eslintrc.json"
+}
