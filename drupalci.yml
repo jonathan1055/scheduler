@@ -4,6 +4,8 @@ build:
     validate_codebase:
       phplint:
       container_composer:
+      container_command:
+        commands:
       host_command:
         commands:
           # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817
@@ -11,15 +13,20 @@ build:
       csslint:
       eslint:
       phpcs:
-      # Static analysis for uses of @deprecated code.
       phpstan:
         halt-on-fail: false
     testing:
+      container_command:
+        commands:
+          # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
+          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
+          - 'drush status | awk "NR==1{print \$2\$3\$4}"'
+          # Show the eslint version
+          - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
         types: 'PHPUnit-Functional'
-        testgroups: 'scheduler,scheduler_api'
-        # Change testgroups to '--all' if Typed Data reverts to being supported
-        # at 8.x. See https://www.drupal.org/project/scheduler/issues/3248470
+        testgroups: '--all'
+        # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
         suppress-deprecations: true
       run_tests.js:
         types: 'PHPUnit-FunctionalJavascript'
