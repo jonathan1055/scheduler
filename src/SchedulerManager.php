@@ -1248,4 +1248,92 @@ class SchedulerManager {
     return $updated;
   }
 
+  /**
+   * Reverts entity types that are no longer supported by Scheduler plugins.
+   *
+   * In normal situations this function is not required. However in the case
+   * when a plugin (either provided by Scheduler or another modules) is removed
+   * after being used, the db fields and third-party-settings remain and have to
+   * be deleted. This function was added to clean up the Paragraphs entity type
+   * but has been made generic for future use. It is called from a hook_update()
+   * and can also be run via drush command scheduler:entity-revert.
+   * See https://www.drupal.org/project/scheduler/issues/3259200
+   *
+   * @param array $only_these_types
+   *   Optional list of entity type ids to restrict the updates. If none given
+   *   then reverts all applicable entity types that have schema changes showing
+   *   that the db fields need to be removed.
+   *
+   * @return array
+   *   Messages about the entity types reverted.
+   */
+  public function entityRevert(array $only_these_types = []) {
+    // Find all changed entity definitions.
+    $entityUpdateManager = \Drupal::entityDefinitionUpdateManager();
+    $changeList = $entityUpdateManager->getChangeList();
+
+    $output = [];
+    if ($only_these_types) {
+      // First remove any non-existent entity types requested.
+      $all_entity_types = array_keys($this->entityTypeManager->getDefinitions());
+      if ($unknown = array_diff($only_these_types, $all_entity_types)) {
+        $output['unknown'] = $this->t('Unknown entity types (@unknown)', ['@unknown' => implode(' ', $unknown)]);
+      }
+      $entity_type_ids = array_intersect($only_these_types, $all_entity_types);
+    }
+    else {
+      // Nothing given. Get the list of changed entity types.
+      $entity_type_ids = array_keys($changeList);
+    }
+    // Remove any requested entity types that do have enabled plugins, as these
+    // must not be reverted.
+    $supported_types = $this->getPluginEntityTypes();
+    $entity_type_ids = array_diff($entity_type_ids, $supported_types);
+
+    foreach ($entity_type_ids as $entity_type_id) {
+      $entityType = $this->entityTypeManager->getDefinition($entity_type_id);
+      $bundleType = $entityType->getBundleEntityType();
+
+      // Remove the Scheduler fields from the entity type if they are shown in
+      // the changeList as 'deleted'.
+      if (isset($changeList[$entity_type_id]['field_storage_definitions'])) {
+        foreach (['publish_on', 'unpublish_on'] as $field_name) {
+          $change = ($changeList[$entity_type_id]['field_storage_definitions'][$field_name] ?? NULL);
+          // If the field is marked as deleted then remove it.
+          if ($change == $entityUpdateManager::DEFINITION_DELETED && $field = $entityUpdateManager->getFieldStorageDefinition($field_name, $entity_type_id)) {
+            $entityUpdateManager->uninstallFieldStorageDefinition($field);
+            $output["$entity_type_id fields"] = $this->t('Scheduler fields removed from @entityType', [
+              '@entityType' => $entityType->getLabel(),
+            ]);
+            $this->logger->notice('%field field removed from %entityType entity type', [
+              '%field' => $field->getLabel(),
+              '%entityType' => $entityType->getLabel(),
+            ]);
+          }
+        }
+      }
+
+      // Remove Scheduler third-party-settings from each bundle.
+      foreach ($this->entityTypeManager->getStorage($bundleType)->loadMultiple() as $bundle) {
+        // Remove each third_party_setting. The last one to be removed will also
+        // cause the 'scheduler' top-level array to be deleted.
+        $third_party_settings = $bundle->getThirdPartySettings('scheduler');
+        if ($third_party_settings) {
+          foreach (array_keys($third_party_settings) as $setting) {
+            $bundle->unsetThirdPartySetting('scheduler', $setting)->save();
+          }
+          $this->logger->notice('Scheduler settings removed from %entity %bundle', [
+            '%entity' => $bundle->getEntityType()->getLabel(),
+            '%bundle' => $bundle->label(),
+          ]);
+          $output["{$bundle->id()} settings"] = $this->t('@bundle settings removed', [
+            '@bundle' => $bundle->label(),
+          ]);
+        }
+      }
+    }
+
+    return $output;
+  }
+
 }

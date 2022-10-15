@@ -224,3 +224,17 @@ function scheduler_update_8204() {
 function scheduler_update_8205() {
   return scheduler_update_8201();
 }
+
+/**
+ * Remove Scheduler fields and third_party_settings for Paragraph entity types.
+ */
+function scheduler_update_8206() {
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  // Check the module is enabled, to avoid 'Unknown entity type' message.
+  if (\Drupal::moduleHandler()->moduleExists('paragraph') && ($result = $scheduler_manager->entityRevert(['paragraph']))) {
+    return t('%updated.', ['%updated' => implode(', ', $result)]);
+  }
+  else {
+    return t('No Paragraph entity types require reverting.');
+  }
+}
