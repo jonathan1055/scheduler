@@ -30,14 +30,14 @@ build:
         types: 'PHPUnit-Functional'
         testgroups: '--all'
         # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
-        suppress-deprecations: true
+        suppress-deprecations: false
       run_tests.kernel:
         types: 'PHPUnit-Kernel'
         testgroups: 'scheduler_kernel'
-        suppress-deprecations: true
+        suppress-deprecations: false
       run_tests.js:
         types: 'PHPUnit-FunctionalJavascript'
         testgroups: 'scheduler_js'
-        suppress-deprecations: true
+        suppress-deprecations: false
         concurrency: 1
         halt-on-fail: false

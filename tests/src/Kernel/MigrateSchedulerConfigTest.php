@@ -2,22 +2,12 @@
 
 namespace Drupal\Tests\scheduler\Kernel;
 
-use Drupal\Tests\migrate_drupal\Kernel\d7\MigrateDrupal7TestBase;
-
 /**
  * Tests the migration of Drupal 7 scheduler configuration.
  *
  * @group scheduler_kernel
  */
-class MigrateSchedulerTest extends MigrateDrupal7TestBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = [
-    'scheduler',
-    'views',
-  ];
+class MigrateSchedulerConfigTest extends MigrateSchedulerTestBase {
 
   /**
    * {@inheritdoc}
@@ -29,7 +19,7 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
       \Drupal::service('extension.list.module')->getPath('scheduler'),
       'tests',
       'fixtures',
-      'drupal7.php',
+      'scheduler_config.php',
     ]));
     $this->installConfig(['scheduler']);
   }
@@ -43,6 +33,7 @@ class MigrateSchedulerTest extends MigrateDrupal7TestBase {
     $this->assertSame('00:00:00', $config_before->get('default_time'));
     $this->assertFalse($config_before->get('hide_seconds'));
 
+    // See /migrations/d7_scheduler_settings.yml.
     $this->executeMigration('d7_scheduler_settings');
 
     $config_after = $this->config('scheduler.settings');

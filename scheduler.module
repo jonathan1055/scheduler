@@ -5,6 +5,7 @@
  * Scheduler publishes and unpublishes entities on dates specified by the user.
  */
 
+use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Action\Plugin\Action\UnpublishAction;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
@@ -15,6 +16,8 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
+use Drupal\migrate\Exception\RequirementsException;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
@@ -1181,7 +1184,8 @@ function scheduler_cache_flush() {
  * Implements hook_migrate_prepare_row().
  */
 function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
-  if ($migration->getBaseId() == 'd7_node_type') {
+  // Process node type third-party-settings.
+  if (in_array('Scheduler Settings', $migration->getMigrationTags())) {
     $scheduler_config_name = [
       'scheduler_expand_fieldset_' . $row->getSourceProperty('type'),
       'scheduler_publish_enable_' . $row->getSourceProperty('type'),
@@ -1194,9 +1198,9 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
       'scheduler_unpublish_revision_' . $row->getSourceProperty('type'),
       'scheduler_use_vertical_tabs_' . $row->getSourceProperty('type'),
     ];
-    $query = $source->getDatabase()->select('variable', 'v');
-    $query->fields('v', ['name', 'value']);
-    $query->condition('name', $scheduler_config_name, 'IN');
+    $query = $source->getDatabase()->select('variable', 'v')
+      ->fields('v', ['name', 'value'])
+      ->condition('name', $scheduler_config_name, 'IN');
     $settings = $query->execute()->fetchAll();
     $third_party_settings = [];
     foreach ($settings as $setting) {
@@ -1207,7 +1211,7 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
         ['', ''],
         $setting->name
       );
-      // Two third-party-settings have changed name and value, so convert these.
+      // Two third-party-settings have changed name or values, so convert these.
       if ($config_name == 'use_vertical_tabs') {
         if (unserialize($setting->value, ['allowed_classes' => FALSE]) == 1) {
           $third_party_settings['fields_display_mode'] = 'vertical_tab';
@@ -1231,25 +1235,89 @@ function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source,
     }
     $row->setSourceProperty('scheduler_third_party_settings', $third_party_settings);
   }
+
+  // Process publish_on and unpublish_on dates.
+  if (in_array('Scheduler Data', $migration->getMigrationTags())) {
+    $database_connection = $source->getDatabase();
+    $result = $database_connection->select('scheduler', 's')
+      ->fields('s', ['publish_on', 'unpublish_on'])
+      ->condition('nid', $row->getSourceProperty('nid'))
+      ->execute()
+      ->fetch();
+    if ($result && $result->publish_on) {
+      $row->setSourceProperty('scheduler_publish_on', $result->publish_on);
+    }
+    if ($result && $result->unpublish_on) {
+      $row->setSourceProperty('scheduler_unpublish_on', $result->unpublish_on);
+    }
+  }
 }
 
 /**
  * Implements hook_migration_plugins_alter().
  */
 function scheduler_migration_plugins_alter(array &$migrations) {
-  $node_migrations = array_filter(
+  $migration_plugin_manager = \Drupal::service('plugin.manager.migration');
+  // Create a stub migration with the variable source plugin.
+  // We cannot use MigrationDeriverTrait::getSourcePlugin() directly, because
+  // in PHP 8.1+ calling trait methods is deprecated.
+  // See \Drupal\migrate\Plugin\MigrationDeriverTrait::getSourcePlugin().
+  try {
+    $stub_migration = $migration_plugin_manager->createStubMigration([
+      'source' => [
+        'ignore_map' => TRUE,
+        'plugin' => 'variable',
+        'variables' => [],
+      ],
+      'idMap' => ['plugin' => 'null'],
+      'destination' => ['plugin' => 'null'],
+    ]);
+    // The 'variables' key in source is required (but can be empty) to avoid the
+    // following getSourcePlugin() failing with unknown index 'variables'.
+    $variable_source = $stub_migration->getSourcePlugin();
+    $variable_source->checkRequirements();
+  }
+  catch (RequirementsException $e) {
+    // The source database is not a Drupal 7 database.
+    return;
+  }
+  catch (PluginException $e) {
+    // The 'variable' source plugin isn't available because Migrate Drupal
+    // isn't enabled. There is nothing we can do.
+    return;
+  }
+  // Before migrating Scheduler, check if the module is enabled.
+  assert($variable_source instanceof DrupalSqlBase);
+  $scheduler_enabled = !empty($variable_source->getSystemData()['module']['scheduler']['status']);
+  if (!$scheduler_enabled) {
+    return;
+  }
+
+  $node_type_migrations = array_filter(
     $migrations,
     function ($definition) {
       return $definition['id'] === 'd7_node_type';
     }
   );
 
-  if (empty($node_migrations)) {
-    return;
-  }
-  foreach (array_keys($node_migrations) as $plugin_id) {
+  foreach (array_keys($node_type_migrations) as $plugin_id) {
     $migrations[$plugin_id]['process']['third_party_settings/scheduler'] = 'scheduler_third_party_settings';
+    $migrations[$plugin_id]['migration_tags'][] = 'Scheduler Settings';
   }
+
+  $node_migrations = array_filter(
+    $migrations,
+    function ($definition) {
+      return $definition['id'] === 'd7_node_complete' || $definition['id'] === 'd7_node';
+    }
+  );
+
+  foreach (array_keys($node_migrations) as $plugin_id) {
+    $migrations[$plugin_id]['process']['publish_on'] = 'scheduler_publish_on';
+    $migrations[$plugin_id]['process']['unpublish_on'] = 'scheduler_unpublish_on';
+    $migrations[$plugin_id]['migration_tags'][] = 'Scheduler Data';
+  }
+
 }
 
 /**

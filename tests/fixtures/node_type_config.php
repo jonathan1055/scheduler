@@ -93,7 +93,7 @@ $connection->insert('variable')
   ])
   ->values([
     'name' => 'scheduler_unpublish_enable_page',
-    'value' => 'i:1;',
+    'value' => 'i:0;',
   ])
   ->values([
     'name' => 'scheduler_unpublish_required_article',
@@ -105,11 +105,11 @@ $connection->insert('variable')
   ])
   ->values([
     'name' => 'scheduler_unpublish_revision_article',
-    'value' => 'i:0;',
+    'value' => 'i:1;',
   ])
   ->values([
     'name' => 'scheduler_unpublish_revision_page',
-    'value' => 'i:1;',
+    'value' => 'i:0;',
   ])
   ->values([
     'name' => 'scheduler_use_vertical_tabs_article',
