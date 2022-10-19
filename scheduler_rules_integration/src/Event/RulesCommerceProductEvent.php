@@ -33,9 +33,9 @@ class RulesCommerceProductEvent extends EventBase {
    * be done, but when editing a rule we get commerceproduct in the drop-downs,
    * whereas all other usages in the Rules forms have commerce_product. This is
    * confusing for the admin/developer who has to select from this list when
-   * editing a rule. There keep the property name matching the entity type id
-   * prevent Coder from reporting the invalid name by disabling this specific
-   * sniff for this file only.
+   * editing a rule. Therefore keep the property name matching the entity type
+   * id and prevent Coder from reporting the invalid name by disabling this
+   * specific sniff for this file only.
    *
    * phpcs:disable Drupal.NamingConventions.ValidVariableName.LowerCamelName
    *

@@ -6,8 +6,8 @@ namespace Drupal\scheduler\Event;
  * Lists the six events dispatched by Scheduler relating to Node entities.
  *
  * The event names here are the original six, when only nodes were supported.
- * See SchedulerMediaEvents for the generic naming convention to follow for any
- * new entity plugin implementations.
+ * See SchedulerTaxonomyTermEvents for the generic naming convention to follow
+ * for any new entity plugin implementations.
  */
 final class SchedulerNodeEvents {
 

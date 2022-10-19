@@ -3,12 +3,12 @@
 namespace Drupal\scheduler\Event;
 
 /**
- * Lists the six events dispatched by Scheduler for commerce_product entities.
+ * Lists the six events dispatched by Scheduler for Commerce Product entities.
  */
 final class SchedulerCommerceProductEvents {
 
   /**
-   * The event triggered after a commerce_product item is published immediately.
+   * The event triggered after a commerce product is published immediately.
    *
    * This event allows modules to react after an entity is published
    * immediately when being saved after editing. The event listener method
@@ -23,7 +23,7 @@ final class SchedulerCommerceProductEvents {
   const PUBLISH_IMMEDIATELY = 'scheduler.commerce_product_publish_immediately';
 
   /**
-   * The event triggered after a commerce_product item is published by cron.
+   * The event triggered after a commerce product is published by cron.
    *
    * This event allows modules to react after an entity is published by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
@@ -37,7 +37,7 @@ final class SchedulerCommerceProductEvents {
   const PUBLISH = 'scheduler.commerce_product_publish';
 
   /**
-   * The event triggered before a commerce_product is published immediately.
+   * The event triggered before a commerce product is published immediately.
    *
    * This event allows modules to react before an entity is published
    * immediately when being saved after editing. The event listener method
@@ -52,7 +52,7 @@ final class SchedulerCommerceProductEvents {
   const PRE_PUBLISH_IMMEDIATELY = 'scheduler.commerce_product_pre_publish_immediately';
 
   /**
-   * The event triggered before a commerce_product item is published by cron.
+   * The event triggered before a commerce product is published by cron.
    *
    * This event allows modules to react before an entity is published by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
@@ -66,7 +66,7 @@ final class SchedulerCommerceProductEvents {
   const PRE_PUBLISH = 'scheduler.commerce_product_pre_publish';
 
   /**
-   * The event triggered before a commerce_product item is unpublished by cron.
+   * The event triggered before a commerce product is unpublished by cron.
    *
    * This event allows modules to react before an entity is unpublished by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.
@@ -80,7 +80,7 @@ final class SchedulerCommerceProductEvents {
   const PRE_UNPUBLISH = 'scheduler.commerce_product_pre_unpublish';
 
   /**
-   * The event triggered after a commerce_product item is unpublished by cron.
+   * The event triggered after a commerce product is unpublished by cron.
    *
    * This event allows modules to react after an entity is unpublished by Cron.
    * The event listener receives a \Drupal\Core\Entity\EntityInterface instance.

@@ -51,7 +51,7 @@ class SchedulerValidationTest extends SchedulerBrowserTestBase {
     $this->submitForm($edit, 'Save');
     // Check that validation prevents publishing the entity directly without an
     // unpublish-on date if unpublishing is required.
-    $this->assertSession()->pageTextContains("Either you must set an 'unpublish on' date or save this node as unpublished.");
+    $this->assertSession()->pageTextContains("Either you must set an 'unpublish on' date or save as unpublished.");
     $this->assertSession()->pageTextNotMatches('/has been (updated|successfully saved)/');
 
     // Create an unpublished entity, and try to edit and save with a publish-on

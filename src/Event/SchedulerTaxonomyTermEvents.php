@@ -37,7 +37,7 @@ final class SchedulerTaxonomyTermEvents {
   const PUBLISH = 'scheduler.taxonomy_term_publish';
 
   /**
-   * The event triggered before a taxonomy_term is published immediately.
+   * The event triggered before a taxonomy term is published immediately.
    *
    * This event allows modules to react before an entity is published
    * immediately when being saved after editing. The event listener method

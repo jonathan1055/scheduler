@@ -90,8 +90,6 @@ class SchedulerEventsTest extends SchedulerBrowserTestBase {
   /**
    * Tests six scheduler events for entity types other than node.
    *
-   * Currently this covers Media and Commerce Products.
-   *
    * @dataProvider dataSchedulerEvents()
    */
   public function testSchedulerEvents($entityTypeId, $bundle) {

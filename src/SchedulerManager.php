@@ -855,7 +855,7 @@ class SchedulerManager {
   }
 
   /**
-   * Get third-party setting for and entity type, via the entity object.
+   * Get third-party setting for an entity type, via the entity object.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity.
