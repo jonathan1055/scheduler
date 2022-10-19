@@ -1269,7 +1269,12 @@ function scheduler_migration_plugins_alter(array &$migrations) {
     $variable_source->checkRequirements();
   }
   catch (RequirementsException $e) {
-    // The source database is not a Drupal 7 database.
+    \Drupal::logger('scheduler')->notice('Scheduler settings cannot be migrated due to RequirementsException: %message, %requirements, line %line in %file', [
+      '%message' => $e->getMessage(),
+      '%requirements' => $e->getRequirementsString(),
+      '%line' => $e->getLine(),
+      '%file' => $e->getFile(),
+    ]);
     return;
   }
   catch (PluginException $e) {
