@@ -39,19 +39,20 @@ jobs:
         # 1767 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
         # ---- Other deprecation notices (0)
         - DEPRECATIONS=1773
-    # @todo Uncomment this when ModuleHandlerInterface::getImplementations() has been fixed.
-    # - php: 8.1
-    #   env:
-    #     # Run the Node tests only.
-    #     - DRUPAL_CORE=10.0.x
-    #     - NODE=YES
-    #     # ---- Remaining self deprecation notices (2)
-    #     #    2 Behat\Mink\Element\ElementInterface::getText() string
-    #     # ---- Remaining direct deprecation notices (3)
-    #     #    3 Drupal\Tests\Listeners\DrupalListener
-    #     # ---- Other deprecation notices (2)
-    #     #    2 PHPUnit\Framework\TestCase::addWarning()
-    #     - DEPRECATIONS=5000
+    - php: 8.1
+      env:
+        # Run the Node tests only.
+        - DRUPAL_CORE=10.0.x
+        - NODE=YES
+        # ---- Remaining self deprecation notices (4)
+        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
+        #    2 Behat\Mink\Element\ElementInterface::waitFor()" might add "mixed"
+        # ---- Remaining direct deprecation notices (3)
+        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal
+        #    2 Drupal\Tests\Listeners\DrupalListener
+        # ---- Other deprecation notices (2)
+        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal
+        - DEPRECATIONS=9
 
 # Be sure to cache composer downloads.
 cache:
