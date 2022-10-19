@@ -76,18 +76,14 @@ function scheduler_form_alter(&$form, FormStateInterface $form_state, $form_id) 
     // of returned possible form ids, and pass that on to the helper function.
     _scheduler_devel_generate_form_alter($form, $form_state, $form_id, $entityTypeId);
   }
-}
-
-/**
- * Implements hook_form_FORM_ID_alter() for media_library_add_form_upload.
- */
-function scheduler_form_media_library_add_form_upload_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if (isset($form['media'])) {
-    $media = $form_state->get('media');
-    // Call the entity form alter function for each of the new media items being
-    // uploaded.
-    foreach ($media as $key => $entity) {
-      _scheduler_entity_form_alter($form['media'][$key]['fields'], $form_state, $form_id, $entity);
+  elseif (in_array($form_id, ['media_library_add_form_oembed', 'media_library_add_form_upload'])) {
+    if (isset($form['media'])) {
+      $media = $form_state->get('media');
+      // Call the entity form alter function for each of the new media items
+      // being uploaded.
+      foreach ($media as $key => $entity) {
+        _scheduler_entity_form_alter($form['media'][$key]['fields'], $form_state, $form_id, $entity);
+      }
     }
   }
 }
@@ -103,12 +99,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
   // properly amend the form in this scenario and the best we can do is remove
   // the Scheduler fields for safety. The Scheduler issue discussing this is
   // https://www.drupal.org/project/scheduler/issues/2916730
-  // Two core issues have been raised, and if/when these are committed then we
-  // can remove this conditional check and allow the function to run fully.
-  // @todo Remove this conditional check when the two issues have been resolved.
-  // @see https://www.drupal.org/project/drupal/issues/3269103
-  // @see https://www.drupal.org/project/drupal/issues/3269471
-  if ($form_id == 'media_library_add_form_upload') {
+  if (!method_exists($form_state->getFormObject(), 'getFormDisplay')) {
     unset($form['publish_on']);
     unset($form['unpublish_on']);
     return;
@@ -116,7 +107,7 @@ function _scheduler_entity_form_alter(&$form, FormStateInterface $form_state, $f
 
   // Get the form display object. If this does not exist because the form is
   // prevented from displaying, such as in Commerce Add Product before any store
-  // has been created, we can not (and do not need) to do anything, so exit.
+  // has been created, we can not (and do not need to) do anything, so exit.
   $param = ($form_id == 'media_library_add_form_upload') ? $entity : $form_state;
   if (!$display = $form_state->getFormObject()->getFormDisplay($param)) {
     return;
