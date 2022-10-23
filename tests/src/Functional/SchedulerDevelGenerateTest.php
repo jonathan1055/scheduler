@@ -6,10 +6,6 @@ namespace Drupal\Tests\scheduler\Functional;
  * Tests the Scheduler interaction with Devel Generate module.
  *
  * @group scheduler
- * @group legacy
- * @todo Remove the 'legacy' tag when Devel no longer uses the deprecated
- * $published parameter for setPublished(), and does not use functions
- * drupal_set_message(), format_date() and db_query_range().
  */
 class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 

@@ -20,7 +20,7 @@ build:
         commands:
           # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
           - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
-          - 'drush status | awk "NR==1{print \$2\$3\$4}"'
+          - 'drush core:status | awk "NR==1{print \$0}"'
           # Show the eslint version
           - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
