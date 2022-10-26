@@ -1,6 +1,6 @@
 services:
   php:
-    image: q0rban/tugboat-drupal:9.3
+    image: q0rban/tugboat-drupal:10.0
     default: true
     http: false
     depends: mysql
@@ -8,6 +8,9 @@ services:
       init: |
         # Install the bcmath extension, required for commerce_product
         docker-php-ext-install bcmath
+        # JPEG support is not included by default, but it is needed when generating content.
+        docker-php-ext-configure gd --enable-gd --with-jpeg
+        docker-php-ext-install gd
 
       update: |
         set -eux
@@ -32,6 +35,21 @@ services:
         # above that uses the $TUGBOAT_REPO_ID environment variable.
         composer require drupal/scheduler:dev-$TUGBOAT_REPO_ID
 
+        # Install Drupal on the site.
+        vendor/bin/drush \
+          --yes \
+          --db-url=mysql://tugboat:tugboat@mysql:3306/tugboat \
+          --site-name="${TUGBOAT_PREVIEW_NAME}" \
+          --account-pass=admin \
+          site:install standard
+
+        # Show site status and GD image support status.
+        vendor/bin/drush status-report
+        vendor/bin/drush php:eval 'phpinfo()' | grep GD
+        vendor/bin/drush php:eval 'print "imagepng() " . (function_exists("imagepng") ? "--yes\n" : "--no\n"); '
+        vendor/bin/drush php:eval 'print "imagejpeg() " . (function_exists("imagejpeg") ? "--yes\n" : "--no\n"); '
+        vendor/bin/drush php:eval 'print_r(gd_info());'
+
         # Commerce 2.29 needs inline_entity_form which does not have a stable
         # version as at March 2022. Therefore get that package here allowing RC
         # to avoid the "does not match your minimum-stability" problem.
@@ -40,17 +58,13 @@ services:
 
         # Get other useful modules.
         composer require drupal/devel_generate
-        composer require drupal/module_filter
-        composer require drupal/workbench_moderation
-        composer require drupal/workbench_moderation_actions:dev-1.x
 
-        # Install Drupal on the site.
-        vendor/bin/drush \
-          --yes \
-          --db-url=mysql://tugboat:tugboat@mysql:3306/tugboat \
-          --site-name="Scheduler issue ${TUGBOAT_PREVIEW_NAME}" \
-          --account-pass=admin \
-          site:install standard
+        # These modules are not compatible with Drupal 10 (yet) so only get them
+        # when running Drupal 9.
+        vendor/bin/drush core:status | awk "NR==1{print \$2\$3\$4}"
+        vendor/bin/drush core:status | awk "NR==1{print \$2\$3\$4}" | \
+          grep version:9 && composer require drupal/module_filter drupal/workbench_moderation \
+          drupal/workbench_moderation_actions:1.x-dev drupal/admin_toolbar
 
         # Set up the files directory permissions.
         mkdir -p $DRUPAL_DOCROOT/sites/default/files
@@ -59,8 +73,11 @@ services:
         chmod -R g+w $DRUPAL_DOCROOT/sites/default/files
 
         # Enable modules.
-        vendor/bin/drush --yes pm:enable scheduler devel devel_generate \
-          module_filter media commerce_product
+        vendor/bin/drush --yes pm:enable scheduler devel devel_generate media commerce_product
+
+        # Enable modules that are only available at Drupal 9.
+        vendor/bin/drush core:status | awk "NR==1{print \$2\$3\$4}" | \
+          grep version:9 && vendor/bin/drush --yes pm:enable module_filter admin_toolbar
 
         # Show versions.
         composer show drupal/scheduler | egrep 'name |vers'
@@ -143,14 +160,17 @@ services:
         vendor/bin/drush user-add-role 'product_viewer' 'Proctor product viewer'
 
         # Generate content.
-        vendor/bin/drush devel-generate-content 2 --bundles=article --authors=1,2 --verbose
-        vendor/bin/drush devel-generate-content 2 --bundles=page --authors=1,2 --verbose
-        vendor/bin/drush devel-generate-media 4 --media-types=image --verbose
+        vendor/bin/drush devel-generate-content 3 --bundles=article --authors=1,2 --verbose
+        vendor/bin/drush devel-generate-content 3 --bundles=page --authors=1,2 --verbose
+        vendor/bin/drush devel-generate-media 3 --media-types=document --verbose
+        vendor/bin/drush devel-generate-media 3 --media-types=image --verbose
 
         # @todo Place the 'Switch users' block in first sidebar.
         # @todo Add 'content overview' and 'media overview' to tools menu.
         # @todo Create a store for products. Then create some products.
         # @todo Generate a vocabulary and some terms. Create users for taxonomy.
+        # @todo page entity type should not be promoted to front page.
+        # @todo Create a menu of links to the pages?
 
       build: |
         set -eux

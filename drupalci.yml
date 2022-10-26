@@ -9,6 +9,7 @@ build:
       host_command:
         commands:
           # Apply patch from https://www.drupal.org/project/drupalci_testbot/issues/3251817
+          # @todo Remove this when Drupal 9.4.9 and 9.5.0 and 10.0.0 have been released.
           - "cd ${SOURCE_DIR} && sudo -u www-data curl https://www.drupal.org/files/issues/2021-11-30/3251817-4.run-tests-with-multiple-groups.patch | sudo -u www-data patch -p1 --verbose"
       csslint:
       eslint:
@@ -21,9 +22,9 @@ build:
           # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
           - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
           # Get workbench moderation modules when testing with Drupal 9.
-          # WBMA 1.0 cannot be installed with D9, so use * to allow the dev version.
-          - 'drush status | awk "NR==1{print \$2\$3\$4}"'
-          - 'drush status | awk "NR==1{print \$2\$3\$4}" | grep version:9 && sudo -u www-data composer require drupal/workbench_moderation:* drupal/workbench_moderation_actions:*'
+          # Use * because only the dev version of WBMA is compatible with D9.
+          - 'drush core:status | awk "NR==1{print \$2\$3\$4}"'
+          - 'drush core:status | awk "NR==1{print \$2\$3\$4}" | grep version:9 && sudo -u www-data composer require drupal/workbench_moderation drupal/workbench_moderation_actions:*'
           # Show the eslint version
           - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
