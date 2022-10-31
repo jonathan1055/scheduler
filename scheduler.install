@@ -79,6 +79,18 @@ function scheduler_install() {
 }
 
 /**
+ * Implements hook_uninstall().
+ */
+function scheduler_uninstall() {
+  // This should not be necessary but incase the entity db tables or config have
+  // got out-of-step with the Scheduler plugins make sure all is up to date so
+  // that uninstalling will run OK.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $scheduler_manager->entityUpdate();
+  $scheduler_manager->entityRevert();
+}
+
+/**
  * Reset date and time formats to default.
  */
 function scheduler_update_8001() {
