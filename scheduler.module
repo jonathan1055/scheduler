@@ -1175,6 +1175,11 @@ function scheduler_cache_flush() {
  * Implements hook_migrate_prepare_row().
  */
 function scheduler_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  // getMigrationTags can return null for a custom migration, so skip these.
+  if (is_null($migration->getMigrationTags())) {
+    return;
+  }
+
   // Process node type third-party-settings.
   if (in_array('Scheduler Settings', $migration->getMigrationTags())) {
     $scheduler_config_name = [
