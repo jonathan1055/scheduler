@@ -1302,7 +1302,7 @@ class SchedulerManager {
           // If the field is marked as deleted then remove it.
           if ($change == $entityUpdateManager::DEFINITION_DELETED && $field = $entityUpdateManager->getFieldStorageDefinition($field_name, $entity_type_id)) {
             $entityUpdateManager->uninstallFieldStorageDefinition($field);
-            $output["$entity_type_id fields"] = $this->t('Scheduler fields removed from @entityType', [
+            $output["{$entity_type_id} fields"] = $this->t('Scheduler fields removed from @entityType', [
               '@entityType' => $entityType->getLabel(),
             ]);
             $this->logger->notice('%field field removed from %entityType entity type', [
@@ -1326,7 +1326,7 @@ class SchedulerManager {
             '%entity' => $bundle->getEntityType()->getLabel(),
             '%bundle' => $bundle->label(),
           ]);
-          $output["{$bundle->id()} settings"] = $this->t('@bundle settings removed', [
+          $output["{$bundle->id()} settings"] = $this->t('Settings removed from @bundle', [
             '@bundle' => $bundle->label(),
           ]);
         }
