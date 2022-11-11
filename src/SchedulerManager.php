@@ -903,7 +903,7 @@ class SchedulerManager {
       // Avoid errors when an implementation of hook_scheduler_{type}_list has
       // added an id of the wrong type.
       if (!$entity = $storage->load($id)) {
-        $this->logger->notice('Entity id @id is not a @type entity. Processing skipped.', [
+        $this->logger->warning('Entity id @id is not a @type entity. Processing skipped.', [
           '@id' => $id,
           '@type' => $type,
         ]);
@@ -1001,15 +1001,15 @@ class SchedulerManager {
   /**
    * Get a plugin for a specific entity type.
    *
-   * @param string $entity_type
-   *   The entity type.
+   * @param string $entityTypeId
+   *   The entity type id, for example 'node' or 'media'.
    *
    * @return mixed
    *   The plugin object associated with a specific entity, or NULL if none.
    */
-  public function getPlugin($entity_type) {
+  public function getPlugin($entityTypeId) {
     $plugins = $this->getPlugins();
-    return $plugins[$entity_type] ?? NULL;
+    return $plugins[$entityTypeId] ?? NULL;
   }
 
   /**
@@ -1232,13 +1232,13 @@ class SchedulerManager {
         $view->set('_core', $core);
         $view->set('uuid', $uuid);
         $view->save();
-        $this->logger->notice('%view view updated.', ['%view' => $source['label']]);
+        $this->logger->info('%view view updated.', ['%view' => $source['label']]);
       }
       else {
         // The view does not exist in active storage so import it from source.
         $view = $view_storage->createFromStorageRecord($source);
         $view->save();
-        $this->logger->notice('%view view loaded from source.', ['%view' => $source['label']]);
+        $this->logger->info('%view view loaded from source.', ['%view' => $source['label']]);
       }
       $updated[] = $source['label'];
     }
@@ -1305,7 +1305,7 @@ class SchedulerManager {
             $output["{$entity_type_id} fields"] = $this->t('Scheduler fields removed from @entityType', [
               '@entityType' => $entityType->getLabel(),
             ]);
-            $this->logger->notice('%field field removed from %entityType entity type', [
+            $this->logger->info('%field field removed from %entityType entity type', [
               '%field' => $field->getLabel(),
               '%entityType' => $entityType->getLabel(),
             ]);
@@ -1322,7 +1322,7 @@ class SchedulerManager {
           foreach (array_keys($third_party_settings) as $setting) {
             $bundle->unsetThirdPartySetting('scheduler', $setting)->save();
           }
-          $this->logger->notice('Scheduler settings removed from %entity %bundle', [
+          $this->logger->info('Scheduler settings removed from %entity %bundle', [
             '%entity' => $bundle->getEntityType()->getLabel(),
             '%bundle' => $bundle->label(),
           ]);
