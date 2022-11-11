@@ -24,21 +24,19 @@ jobs:
         - NODE=YES
         - PRODUCT=YES
         - RULES=YES
-        # ---- Remaining self deprecation notices (2911)
-        # 2911 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+        # ---- Remaining self deprecation notices (0)
         # ---- Other deprecation notices (0)
-        - DEPRECATIONS=2911
+        - DEPRECATIONS=0
     - php: 8.1
       env:
         - DRUPAL_CORE=9.5.x
         - MEDIA=YES
         - TAXONOMY=YES
         # ---- Unsilenced deprecation notices (6)
-        #    6 strlen(): Passing null to parameter #1 ($string) is deprecated
-        # ---- Remaining self deprecation notices (1767)
-        # 1767 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+        #    6 strlen(): Passing null to parameter #1 ($string) is deprecated (SchedulerDrushTest)
+        # ---- Remaining self deprecation notices (0)
         # ---- Other deprecation notices (0)
-        - DEPRECATIONS=1773
+        - DEPRECATIONS=6
     - php: 8.1
       env:
         # Run the Node tests only.
