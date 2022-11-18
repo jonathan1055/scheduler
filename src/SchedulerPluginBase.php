@@ -2,6 +2,7 @@
 
 namespace Drupal\scheduler;
 
+use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -256,6 +257,13 @@ abstract class SchedulerPluginBase extends PluginBase implements SchedulerPlugin
     }
 
     return array_unique($ids);
+  }
+
+  /**
+   * Return all supported entity form display modes.
+   */
+  public function entityFormDisplayModes() {
+    return [EntityDisplayRepositoryInterface::DEFAULT_DISPLAY_MODE];
   }
 
 }

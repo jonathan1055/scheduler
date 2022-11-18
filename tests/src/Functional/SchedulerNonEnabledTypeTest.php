@@ -10,11 +10,21 @@ namespace Drupal\Tests\scheduler\Functional;
 class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
 
   /**
+   * Additional core module field_ui is required for entity form display page.
+   *
+   * @var array
+   */
+  protected static $modules = ['field_ui'];
+
+  /**
    * Tests the publish_enable and unpublish_enable entity type settings.
    *
    * @dataProvider dataNonEnabledScenarios()
    */
   public function testNonEnabledType($id, $entityTypeId, $bundle, $description, $publishing_enabled, $unpublishing_enabled) {
+    // Give adminUser the permissions to use the field_ui 'manage form display'
+    // tab for the entity type being tested.
+    $this->addPermissionsToUser($this->adminUser, ["administer {$entityTypeId} form display"]);
     $this->drupalLogin($this->adminUser);
     $entityType = $this->entityTypeObject($entityTypeId, $bundle);
     $storage = $this->entityStorageObject($entityTypeId);
@@ -23,6 +33,22 @@ class SchedulerNonEnabledTypeTest extends SchedulerBrowserTestBase {
     // The 'default' case specifically checks the behavior of the unchanged
     // settings, so only change these when not running the default test.
     if ($description != 'Default') {
+      // Set the enabled checkboxes via entity type admin form. This will also
+      // partially test the form display adjustments.
+      $this->drupalGet($this->adminUrl('bundle_edit', $entityTypeId, $bundle));
+      $edit = [
+        'scheduler_publish_enable' => $publishing_enabled,
+        'scheduler_unpublish_enable' => $unpublishing_enabled,
+      ];
+      $this->submitForm($edit, 'Save');
+
+      // Show the form display page for info.
+      $this->drupalGet($this->adminUrl('bundle_form_display', $entityTypeId, $bundle));
+
+      // ThirdPartySettings are set correctly by saving the entity type form,
+      // however this does not get replicated back to $entityType here (is this
+      // a bug is core test traits somewhere?). Thwerefore resort to setting the
+      // values here too.
       $entityType->setThirdPartySetting('scheduler', 'publish_enable', $publishing_enabled)
         ->setThirdPartySetting('scheduler', 'unpublish_enable', $unpublishing_enabled)
         ->save();

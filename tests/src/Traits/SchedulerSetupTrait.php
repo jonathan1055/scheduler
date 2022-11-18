@@ -131,6 +131,14 @@ trait SchedulerSetupTrait {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
+    // Enable the scheduler fields in the default form display, mimicking what
+    // would be done if the entity bundle had been enabled via admin UI.
+    $this->container->get('entity_display.repository')
+      ->getFormDisplay('node', $this->type)
+      ->setComponent('publish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->setComponent('unpublish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->save();
+
     // The majority of tests use the standard Scheduler-enabled content type but
     // we also need a content type which is not enabled for Scheduler.
     $this->nonSchedulerNodeType = $this->drupalCreateContentType([
@@ -479,10 +487,10 @@ trait SchedulerSetupTrait {
   }
 
   /**
-   * Returns the url for a specified page and entity type.
+   * Returns the url for a specified page, entity type and optionally bundle.
    *
    * @param string $page
-   *   The page required - 'collection', 'scheduled' or 'generate'.
+   *   The page required - 'collection', 'scheduled', 'generate', etc.
    * @param string $entityTypeId
    *   The machine id of the entity type - 'node', 'media', 'commerce_product'.
    * @param string $bundle
@@ -492,28 +500,38 @@ trait SchedulerSetupTrait {
    *   The url for the required page.
    */
   public function adminUrl($page, $entityTypeId, $bundle = NULL) {
-    // @todo Could be changed to use a route and parameter like entityAddUrl().
+    // $bundle_id will be 'node_type', 'media_type', 'commerce_product_type',
+    // 'taxonomy_vocabulary' etc.
+    $bundle_id = $this->container->get('entity_type.manager')->getDefinition($entityTypeId)->getBundleEntityType();
+
     $urls = [
       'collection' => [
-        'node' => 'admin/content',
-        'media' => 'admin/content/media',
-        'commerce_product' => 'admin/commerce/products',
-        'taxonomy_term' => "admin/structure/taxonomy/manage/$bundle/overview",
+        'node' => Url::fromRoute('system.admin_content'),
+        'taxonomy_term' => Url::fromRoute('entity.taxonomy_vocabulary.overview_form', [$bundle_id => $bundle]),
+        'default' => Url::fromRoute("entity.{$entityTypeId}.collection"),
       ],
       'scheduled' => [
-        'node' => 'admin/content/scheduled',
-        'media' => 'admin/content/media/scheduled',
-        'commerce_product' => 'admin/commerce/products/scheduled',
-        'taxonomy_term' => 'admin/structure/taxonomy/scheduled',
+        'node' => Url::fromRoute('view.scheduler_scheduled_content.overview'),
+        'default' => Url::fromRoute("view.scheduler_scheduled_{$entityTypeId}.overview"),
       ],
       'generate' => [
-        'node' => 'admin/config/development/generate/content',
-        'media' => 'admin/config/development/generate/media',
-        'taxonomy_term' => 'admin/config/development/generate/term',
+        'node' => Url::fromRoute('devel_generate.content'),
+        'media' => Url::fromRoute('devel_generate.media'),
+        'taxonomy_term' => Url::fromRoute('devel_generate.term'),
+      ],
+      'bundle_add' => [
+        'node' => Url::fromRoute('node.type_add'),
+        'default' => Url::fromRoute("entity.{$bundle_id}.add_form"),
+      ],
+      'bundle_edit' => [
+        'default' => Url::fromRoute("entity.{$bundle_id}.edit_form", [$bundle_id => $bundle]),
+      ],
+      'bundle_form_display' => [
+        'default' => Url::fromRoute("entity.entity_form_display.{$entityTypeId}.default", [$bundle_id => $bundle]),
       ],
     ];
 
-    $url = $urls[$page][$entityTypeId] ?? NULL;
+    $url = $urls[$page][$entityTypeId] ?? ($urls[$page]['default'] ?? NULL);
     if (empty($url)) {
       // Incorrect parameter values.
       throw new \Exception(sprintf('Unrecognised combination of page "%s", entityTypeId "%s" and bundle "%s" passed to adminUrl()', $page, $entityTypeId, $bundle));

@@ -79,6 +79,14 @@ trait SchedulerTaxonomyTermSetupTrait {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
+    // Enable the scheduler fields in the default form display, mimicking what
+    // would be done if the entity bundle had been enabled via admin UI.
+    $this->container->get('entity_display.repository')
+      ->getFormDisplay('taxonomy_term', $this->vocabularyId)
+      ->setComponent('publish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->setComponent('unpublish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->save();
+
     // Create a vocabulary which is not enabled for scheduling.
     /** @var \Drupal\taxonomy\VocabularyInterface $nonSchedulerVocabulary */
     $this->nonSchedulerVocabulary = Vocabulary::create([

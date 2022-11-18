@@ -7,6 +7,10 @@ use Drupal\Core\Url;
 /**
  * Tests the display of date entry fields and form elements.
  *
+ * @todo Extend these tests to cover form display processing when entity
+ * type is enabled/disabled.
+ * @see https://www.drupal.org/project/scheduler/issues/3320341
+ *
  * @group scheduler
  */
 class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
@@ -27,17 +31,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
    */
   public function testEntityTypeForm($entityTypeId, $bundle, $operation) {
     $this->drupalLogin($this->adminUser);
-    $entityType = $this->entityTypeObject($entityTypeId, $bundle);
-    $bundle_id = $entityType->bundle();
 
-    if ($operation == 'edit') {
-      $url = Url::fromRoute("entity.{$bundle_id}.edit_form", [$bundle_id => $bundle]);
-    }
-    else {
-      // The route for adding a 'node' entity type has a different format
-      // compared to the new standard for all other entity types.
-      $url = Url::fromRoute($entityTypeId == 'node' ? 'node.type_add' : "entity.{$bundle_id}.add_form");
-    }
     if ($operation == 'add first') {
       // Delete all the entity types for this bundle, to check that 'add'
       // works when it would be the first type being added.
@@ -45,6 +39,7 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
       $this->entityTypeObject($entityTypeId, 'non-enabled')->delete();
     }
 
+    $url = $this->adminUrl($operation == 'edit' ? 'bundle_edit' : 'bundle_add', $entityTypeId, $bundle);
     $this->drupalGet($url);
     $this->assertSession()->fieldExists('edit-scheduler-publish-enable');
     $this->assertSession()->fieldExists('edit-scheduler-unpublish-enable');
@@ -60,8 +55,8 @@ class SchedulerFieldsDisplayTest extends SchedulerBrowserTestBase {
     $types = $this->dataStandardEntityTypes();
     $data = [];
     foreach ($types as $key => $values) {
-      $data["$key-1"] = array_merge($values, ['add']);
-      $data["$key-2"] = array_merge($values, ['add first']);
+      $data["$key-1"] = array_merge($values, ['add first']);
+      $data["$key-2"] = array_merge($values, ['add']);
       $data["$key-3"] = array_merge($values, ['edit']);
     }
     return $data;

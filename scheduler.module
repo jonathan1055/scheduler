@@ -534,6 +534,9 @@ function _scheduler_entity_type_form_alter(&$form, FormStateInterface $form_stat
   ];
 
   $form['#entity_builders'][] = '_scheduler_form_entity_type_form_builder';
+
+  // Add a custom submit handler to adjust the fields in the form displays.
+  $form['actions']['submit']['#submit'][] = '_scheduler_form_entity_type_submit';
 }
 
 /**
@@ -552,6 +555,64 @@ function _scheduler_form_entity_type_form_builder($entity_type, $type, &$form, F
   $type->setThirdPartySetting('scheduler', 'unpublish_enable', $form_state->getValue('scheduler_unpublish_enable'));
   $type->setThirdPartySetting('scheduler', 'unpublish_required', $form_state->getValue('scheduler_unpublish_required'));
   $type->setThirdPartySetting('scheduler', 'unpublish_revision', $form_state->getValue('scheduler_unpublish_revision'));
+}
+
+/**
+ * Entity type form submit handler.
+ */
+function _scheduler_form_entity_type_submit($form, FormStateInterface $form_state) {
+  // Get the entity type id (node, media, taxonomy_term, etc.)
+  $entity_type_id = $form_state->getFormObject()->getEntity()->getEntityType()->getBundleOf();
+  // Get the entity bundle id (page, article, image, etc.)
+  $bundle_id = $form_state->getFormObject()->getEntity()->id();
+
+  /** @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface $display_repository */
+  $display_repository = \Drupal::service('entity_display.repository');
+
+  // Get all active display modes. getFormModes() returns the additional modes
+  // then add the default.
+  $all_display_modes = array_keys($display_repository->getFormModes($entity_type_id));
+  $all_display_modes[] = $display_repository::DEFAULT_DISPLAY_MODE;
+
+  $supported_display_modes = \Drupal::service('scheduler.manager')->getPlugin($entity_type_id)->entityFormDisplayModes();
+
+  // Each of the active form display modes may need to be adjusted to add or
+  // remove the scheduler fields depending on the 'enable' setting.
+  foreach ($all_display_modes as $display_mode) {
+    $form_display = $display_repository->getFormDisplay($entity_type_id, $bundle_id, $display_mode);
+
+    // If this bundle is not enabled for scheduled publishing or the form
+    // display mode is not supported then make sure the publish_on field is
+    // disabled in the form display.
+    if (!$form_state->getValue('scheduler_publish_enable') || !in_array($display_mode, $supported_display_modes)) {
+      $form_display->removeComponent('publish_on')->save();
+    }
+    // @todo Find a more robust way to detect that the checkbox was off before.
+    elseif (!$form['scheduler']['publish']['scheduler_publish_enable']['#default_value']) {
+      // If the entity bundle is now enabled for scheduled publishing but was
+      // not enabled before then set the publish_on field to be displayed and
+      // set the widget type to 'datetime_timestamp_no_default'. Only do this
+      // when the checkbox has been changed, because the widget could be altered
+      // or the field moved by a subsequent process or manually by admin.
+      $form_display->setComponent('scheduler_settings', ['weight' => 50])
+        ->setComponent('publish_on', ['type' => 'datetime_timestamp_no_default', 'weight' => 52])->save();
+    }
+
+    // Do the same for the unpublish_on field.
+    if (!$form_state->getValue('scheduler_unpublish_enable') || !in_array($display_mode, $supported_display_modes)) {
+      $form_display->removeComponent('unpublish_on')->save();
+    }
+    elseif (!$form['scheduler']['unpublish']['scheduler_unpublish_enable']['#default_value']) {
+      $form_display->setComponent('scheduler_settings', ['weight' => 50])
+        ->setComponent('unpublish_on', ['type' => 'datetime_timestamp_no_default', 'weight' => 54])->save();
+    }
+
+    // If the display mode is not supported then also remove the
+    // scheduler_settings group fieldset.
+    if (!in_array($display_mode, $supported_display_modes)) {
+      $form_display->removeComponent('scheduler_settings')->save();
+    }
+  }
 }
 
 /**
@@ -699,7 +760,7 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Publish on'))
       ->setDisplayOptions('form', [
         'type' => 'datetime_timestamp_no_default',
-        'weight' => 30,
+        'region' => 'hidden',
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setTranslatable(TRUE)
@@ -710,7 +771,7 @@ function scheduler_entity_base_field_info(EntityTypeInterface $entity_type) {
       ->setLabel(t('Unpublish on'))
       ->setDisplayOptions('form', [
         'type' => 'datetime_timestamp_no_default',
-        'weight' => 30,
+        'region' => 'hidden',
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setTranslatable(TRUE)
@@ -1016,11 +1077,11 @@ function scheduler_entity_extra_field_info() {
       $unpublishing_enabled = $type->getThirdPartySetting('scheduler', 'unpublish_enable', $config->get('default_unpublish_enable'));
 
       if ($publishing_enabled || $unpublishing_enabled) {
-        // Weight 20 puts this below the core fields by default.
+        // Weight 50 puts this below the core fields by default.
         $fields[$entityTypeId][$type->id()]['form']['scheduler_settings'] = [
           'label' => t('Scheduler Dates'),
           'description' => t('Fieldset containing Scheduler Publish-on and Unpublish-on date input fields'),
-          'weight' => 20,
+          'weight' => 50,
         ];
       }
     }

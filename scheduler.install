@@ -250,3 +250,15 @@ function scheduler_update_8207() {
     return t('No update required.');
   }
 }
+
+/**
+ * Show/hide entity form fields to match Scheduling enabled/disabled settings.
+ */
+function scheduler_update_8208() {
+  if ($result = \Drupal::service('scheduler.manager')->resetFormDisplayFields()) {
+    return implode('</li><li>', $result);
+  }
+  else {
+    return t('No update required.');
+  }
+}

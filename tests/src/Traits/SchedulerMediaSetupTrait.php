@@ -79,6 +79,14 @@ trait SchedulerMediaSetupTrait {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
+    // Enable the scheduler fields in the default form display, mimicking what
+    // would be done if the entity bundle had been enabled via admin UI.
+    $this->container->get('entity_display.repository')
+      ->getFormDisplay('media', $this->mediaTypeName)
+      ->setComponent('publish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->setComponent('unpublish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->save();
+
     // Create a test media type for audio which is not enabled for scheduling.
     /** @var \Drupal\media\Entity\MediaTypeInterface $nonSchedulerMediaType */
     $this->nonSchedulerMediaType = $this->createMediaType('audio_file', [

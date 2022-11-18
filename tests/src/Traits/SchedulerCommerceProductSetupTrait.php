@@ -94,6 +94,14 @@ trait SchedulerCommerceProductSetupTrait {
       ->setThirdPartySetting('scheduler', 'unpublish_enable', TRUE)
       ->save();
 
+    // Enable the scheduler fields in the default form display, mimicking what
+    // would be done if the entity bundle had been enabled via admin UI.
+    $this->container->get('entity_display.repository')
+      ->getFormDisplay('commerce_product', $this->productTypeName)
+      ->setComponent('publish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->setComponent('unpublish_on', ['type' => 'datetime_timestamp_no_default'])
+      ->save();
+
     // Add the body field using the existing commerce_product function.
     commerce_product_add_body_field($this->productType);
 
