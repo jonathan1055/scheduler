@@ -253,7 +253,7 @@ class SchedulerManager {
         $query->accessCheck(FALSE);
         // If the entity type is revisionable then make sure we look for the
         // latest revision. This is important for moderated entities.
-        if ($this->entityTypeManager->getDefinition($entityTypeId)->isRevisionable()) {
+        if ($plugin->entityTypeObject()->isRevisionable()) {
           $query->latestRevision();
         }
         $ids = $query->execute();
@@ -474,7 +474,7 @@ class SchedulerManager {
         $query->accessCheck(FALSE);
         // If the entity type is revisionable then make sure we look for the
         // latest revision. This is important for moderated entities.
-        if ($this->entityTypeManager->getDefinition($entityTypeId)->isRevisionable()) {
+        if ($plugin->entityTypeObject()->isRevisionable()) {
           $query->latestRevision();
         }
         $ids = $query->execute();
