@@ -1415,14 +1415,14 @@ class SchedulerManager {
       'The Scheduler fields are now hidden by default and automatically changed to be displayed when an entity
       bundle is enabled for scheduling. If you have previously manually hidden scheduler fields for enabled
       entity types then these fields will now be displayed. You will need to manually hide them again or
-      implement hook_scheduler_hide_publish_date() or hook_scheduler_{TYPE}_hide_publish_date() and the
+      implement hook_scheduler_hide_publish_date() or hook_scheduler_TYPE_hide_publish_date() and the
       equivalent for unpublish_date. See @issue for details.',
       ['@issue' => $link->toString()]), MessengerInterface::TYPE_STATUS, FALSE);
     $this->logger->warning(
       'The Scheduler fields are now hidden by default and automatically changed to be displayed when an entity
       bundle is enabled for scheduling. If you have previously manually hidden scheduler fields for enabled
       entity types then these fields will now be displayed. You will need to manually hide them again or
-      implement hook_scheduler_hide_publish_date() or hook_scheduler_{TYPE}_hide_publish_date() and the
+      implement hook_scheduler_hide_publish_date() or hook_scheduler_TYPE_hide_publish_date() and the
       equivalent for unpublish_date. See @issue for details.',
       ['@issue' => $link->toString(), 'link' => $link->toString()]
     );
