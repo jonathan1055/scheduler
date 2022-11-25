@@ -1160,14 +1160,16 @@ class SchedulerManager {
     $updated = [];
     $list = $entityUpdateManager->getChangeList();
     foreach ($list as $entity_type_id => $definitions) {
-      if ($definitions['field_storage_definitions']['publish_on'] ?? 0) {
+      if (($definitions['field_storage_definitions']['publish_on'] ?? 0) || ($definitions['field_storage_definitions']['unpublish_on'] ?? 0)) {
         $entity_type = $entityUpdateManager->getEntityType($entity_type_id);
         $fields = scheduler_entity_base_field_info($entity_type);
         foreach ($fields as $field_name => $field_definition) {
           $entityUpdateManager->installFieldStorageDefinition($field_name, $entity_type_id, $entity_type_id, $field_definition);
         }
-        $this->logger->notice('%entity updated with Scheduler publish_on and unpublish_on fields.', [
+        $this->logger->notice('%entity entity type updated with %publish_on and %unpublish_on fields.', [
           '%entity' => $entity_type->getLabel(),
+          '%publish_on' => $fields['publish_on']->getLabel(),
+          '%unpublish_on' => $fields['unpublish_on']->getLabel(),
         ]);
         $updated[] = (string) $entity_type->getLabel();
       }

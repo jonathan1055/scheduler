@@ -1208,20 +1208,20 @@ function scheduler_modules_installed($modules) {
   // define entity types for which Scheduler provides the plugin. Hence we need
   // to check both the plugin entity type and the provider and if either of
   // these match a module that is being installed we run the update functions.
-  $matches = [];
+  $entity_types = [];
   $plugin_definitions = $scheduler_manager->getPluginDefinitions();
   foreach ($plugin_definitions as $definition) {
     // If the plugin entity type, provider or dependency match any of the
-    // modules being installed then add the entity type to the $matches list.
+    // modules being installed then add the entity type to the list.
     if (array_intersect([$definition['entityType'], $definition['provider'], $definition['dependency']], $modules)) {
-      $matches[] = $definition['entityType'];
+      $entity_types[] = $definition['entityType'];
     }
   }
-  if (!empty($matches)) {
+  if (!empty($entity_types)) {
     // Add the database fields.
     $scheduler_manager->entityUpdate();
-    // Load/refresh the scheduler view.
-    $scheduler_manager->viewsUpdate($matches);
+    // Load/refresh the scheduler view(s).
+    $scheduler_manager->viewsUpdate($entity_types);
   }
 }
 
