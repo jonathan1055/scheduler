@@ -20,7 +20,8 @@ build:
       container_command:
         commands:
           # Rule 3.0-alpha7 is not compatible with PHP8.1 but the dev version has been fixed.
-          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev"
+          # Added mglaman/phpstan-drupal:* to allow downgrade. See https://www.drupal.org/i/3326114
+          - "cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/rules:3.x-dev mglaman/phpstan-drupal:*"
           # Get workbench moderation modules when testing with Drupal 9.
           # Use * because only the dev version of WBMA is compatible with D9.
           - 'drush core:status | awk "NR==1{print \$2\$3\$4}"'
@@ -29,8 +30,7 @@ build:
           - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
         types: 'PHPUnit-Functional'
-        # TEMP Do not run Rules tests. See https://www.drupal.org/i/3326114
-        testgroups: 'scheduler,scheduler_api'
+        testgroups: '--all'
         # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
         suppress-deprecations: false
       run_tests.kernel:
