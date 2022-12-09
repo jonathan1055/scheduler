@@ -29,7 +29,8 @@ build:
           - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
         types: 'PHPUnit-Functional'
-        testgroups: '--all'
+        # TEMP Do not run Rules tests. See https://www.drupal.org/i/3326114
+        testgroups: 'scheduler,scheduler_api'
         # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
         suppress-deprecations: false
       run_tests.kernel:
