@@ -165,6 +165,9 @@ services:
         vendor/bin/drush devel-generate-media 3 --media-types=document --verbose
         vendor/bin/drush devel-generate-media 3 --media-types=image --verbose
 
+        # Update form displays to match the entity type settings.
+        vendor/bin/drush ev "\Drupal::service('scheduler.manager')->resetFormDisplayFields()"
+
         # @todo Place the 'Switch users' block in first sidebar.
         # @todo Add 'content overview' and 'media overview' to tools menu.
         # @todo Create a store for products. Then create some products.
