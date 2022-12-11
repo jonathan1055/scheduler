@@ -98,7 +98,7 @@ before_script:
   - if [ "$RULES" == "YES" ]; then travis_retry composer require drupal/rules:"3.x-dev"; fi
   - travis_retry composer require drupal/workbench_moderation
   # Use * because only the dev version of WBMA is compatible with D9. None for D10.
-  - if [ "$DRUPAL_CORE" == "9.5.x" ]; then travis_retry composer require drupal/workbench_moderation_actions:*; fi
+  - if [[ $DRUPAL_CORE =~ ^(8|9) ]]; then travis_retry composer require drupal/workbench_moderation_actions:*; fi
   - travis_retry composer require commerceguys/addressing
   - travis_retry composer require drupal/commerce
 
