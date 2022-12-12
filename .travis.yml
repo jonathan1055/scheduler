@@ -114,12 +114,12 @@ before_script:
   - echo $SYMFONY_DEPRECATIONS_HELPER
 
 script:
-  # Run the PHPUnit tests.
+  # Run the PHPUnit tests, excluding the javascript tests.
   - cd $DRUPAL_ROOT
   - if [ "$RULES" == "YES" ]; then
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/;
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter '/^((?!rules).)*$/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^((?!rules).)*$/i';
     fi
 
   # Check for coding standards. First show the versions.
@@ -130,7 +130,6 @@ script:
   - composer show squizlabs/php_codesniffer | egrep 'name |vers'
   - $DRUPAL_ROOT/vendor/bin/phpcs --version
   - $DRUPAL_ROOT/vendor/bin/phpcs --config-show installed_paths
-
 
   # Change into $MODULE directory to avoid having to add --standard=$DRUPAL_ROOT/modules/$MODULE/phpcs.xml.dist
   - cd $DRUPAL_ROOT/modules/$MODULE

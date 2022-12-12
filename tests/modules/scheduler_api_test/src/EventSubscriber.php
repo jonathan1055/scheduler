@@ -21,8 +21,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * To allow this API test module to be enabled interactively (for development
  * and testing) we must avoid unwanted side-effects on other non-test nodes.
  * This is done simply by checking that the node title starts with 'API TEST'.
- *
- * @group scheduler_api_test
  */
 class EventSubscriber implements EventSubscriberInterface {
 
