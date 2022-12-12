@@ -133,17 +133,17 @@ script:
   - if [ "$DRUPAL_CORE" == "10.0.x" ]; then EXCLUDE+=('HooksLegacy|WorkbenchModeration'); fi
   - EXCLUDE=${EXCLUDE[@]}     # create a space delimited string from array
 
-  # Run the PHPUnit tests.
+  # Run the PHPUnit tests, excluding the javascript test group.
   - cd $DRUPAL_ROOT
   - |
     if [ "$EXCLUDE" != "" ]; then
       echo "Running tests excluding $EXCLUDE ..."
       export FILTER="/^(?!.*(${EXCLUDE// /|})).*/i"   # use parameter expansion to substitute spaces with |
       echo "FILTER=$FILTER"
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --filter "$FILTER"
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter "$FILTER"
     else
       echo "Running all tests ..."
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js
     fi
   # Display the parameters again at the end of the test run.
   - echo "NODE=$NODE MEDIA=$MEDIA PRODUCT=$PRODUCT TAXONOMY=$TAXONOMY RULES=$RULES"
