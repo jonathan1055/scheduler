@@ -78,22 +78,30 @@ before_script:
   - cp -R $TRAVIS_BUILD_DIR/* $DRUPAL_ROOT/modules/$MODULE/
 
   # Get the latest dev versions of the test dependency modules.
-  - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
-  - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation.git modules/workbench_moderation
-  - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation_actions.git modules/workbench_moderation_actions
-  - |
-    if [ "$RULES" == "YES" ]; then
-      echo "Installing Rules and Typed Data ..."
-      travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
-      travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
-    fi
+  # - travis_retry git clone --branch 4.x     --depth 1 https://git.drupalcode.org/project/devel.git modules/devel
+  # - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation.git modules/workbench_moderation
+  # - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation_actions.git modules/workbench_moderation_actions
+  # # Get the latest dev versions of the test dependency modules.
+  # - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation.git modules/workbench_moderation
+  # - travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/workbench_moderation_actions.git modules/workbench_moderation_actions
+  # - |
+  #   if [ "$RULES" == "YES" ]; then
+  #     echo "Installing Rules and Typed Data ..."
+  #     travis_retry git clone --branch 8.x-3.x --depth 1 https://git.drupalcode.org/project/rules.git modules/rules
+  #     travis_retry git clone --branch 8.x-1.x --depth 1 https://git.drupalcode.org/project/typed_data.git modules/typed_data
+  #   fi
 
   # Install the site dependencies via Composer.
   - travis_retry composer install
 
-  # Install drush. COMPOSER_MEMORY_LIMIT=-1 fixes the 'Allowed memory exhausted'
-  # problem when running at core 8.8.
-  - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer require drush/drush:"^9.0 || ^10.0"
+  # Install the testing dependencies via Composer.
+  - travis_retry composer require drupal/devel:"^4"
+  - travis_retry composer require drush/drush:"^9 || ^10"
+  - # Need to get Rules dev because 3.0.0-alpha7 has deprecation warnings.
+  - if [ "$RULES" == "YES" ]; then travis_retry composer require drupal/rules:"3.x-dev"; fi
+  - travis_retry composer require drupal/workbench_moderation
+  # Use * because only the dev version of WBMA is compatible with D9. None for D10.
+  - if [[ $DRUPAL_CORE =~ ^(8|9) ]]; then travis_retry composer require drupal/workbench_moderation_actions:*; fi
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards. This is only for Coder
