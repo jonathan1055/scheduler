@@ -109,7 +109,7 @@ script:
   - if [ "$RULES" == "YES" ]; then
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(meta)/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(meta|devel)/i';
     fi
 
   # Check for coding standards. First show the versions.
