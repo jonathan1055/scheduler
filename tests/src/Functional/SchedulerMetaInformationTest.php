@@ -30,8 +30,6 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     // Since we did not set an unpublish date, there should be no X-Robots-Tag
     // header on the response.
     $this->assertNull($this->getSession()->getResponseHeader('X-Robots-Tag'), 'X-Robots-Tag should not be present when no unpublish date is set.');
-    // Also check that there is no meta tag.
-    $this->assertSession()->responseNotContains('unavailable_after:');
 
     // Set a scheduler unpublish date on the node.
     $unpublish_date = strtotime('+1 day');
@@ -47,16 +45,11 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     $this->drupalGet('node/' . $published_node->id());
     $this->assertSession()->responseHeaderEquals('X-Robots-Tag', 'unavailable_after: ' . date(DATE_RFC850, $unpublish_date));
 
-    // Check that the required meta tag is added to the html head section.
-    $this->assertSession()->responseMatches('~meta name=[\'"]robots[\'"] content=[\'"]unavailable_after: ' . date(DATE_RFC850, $unpublish_date) . '[\'"]~');
-
-    // Check that the node is shown on the summary listing page but the two tags
-    // are not present.
+    // Check that the node is shown on the summary page but the tag is not.
     $this->drupalGet('node');
-     // && $this->getSession()->getStatusCode() == '200') {
+    $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains($node->label());
     $this->assertNull($this->getSession()->getResponseHeader('X-Robots-Tag'), 'X-Robots-Tag should not be added when entity is not in "full" view mode.');
-    $this->assertSession()->responseNotContains('unavailable_after:');
   }
 
 }
