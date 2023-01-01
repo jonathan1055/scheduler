@@ -17,40 +17,15 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.4
+    - php: 7.3
       env:
-        - DRUPAL_CORE=9.5.x
-        # Run the Node and Product tests, with Rules included.
+        - DRUPAL_CORE=8.9.x
         - NODE=YES
         - PRODUCT=YES
-        - RULES=YES
-        # ---- Remaining self deprecation notices (0)
+        # ---- Remaining self deprecation notices (15)
+        #   15 The $published parameter is deprecated (we use old Commerce version)
         # ---- Other deprecation notices (0)
-        - DEPRECATIONS=0
-    - php: 8.1
-      env:
-        - DRUPAL_CORE=9.5.x
-        - MEDIA=YES
-        - TAXONOMY=YES
-        # ---- Unsilenced deprecation notices (6)
-        #    6 strlen(): Passing null to parameter #1 ($string) is deprecated (SchedulerDrushTest)
-        # ---- Remaining self deprecation notices (0)
-        # ---- Other deprecation notices (0)
-        - DEPRECATIONS=6
-    - php: 8.1
-      env:
-        # Run the Node tests only.
-        - DRUPAL_CORE=10.0.x
-        - NODE=YES
-        # ---- Remaining self deprecation notices (4)
-        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
-        #    2 Behat\Mink\Element\ElementInterface::waitFor()" might add "mixed"
-        # ---- Remaining direct deprecation notices (3)
-        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal
-        #    2 Drupal\Tests\Listeners\DrupalListener
-        # ---- Other deprecation notices (2)
-        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal
-        - DEPRECATIONS=9
+        - DEPRECATIONS=15
 
 # Be sure to cache composer downloads.
 cache:
@@ -91,16 +66,26 @@ before_script:
   # Install the site dependencies via Composer.
   - travis_retry composer install
 
+  # Allow composer plugins.
+  - |
+    if [ "$DRUPAL_CORE" == "8.9.x" ]; then
+      composer config --no-plugins allow-plugins.composer/installers true
+      composer config --no-plugins allow-plugins.drupal/core-project-message true
+      composer config --no-plugins allow-plugins.drupal/core-vendor-hardening true
+    fi
+
   # Install the testing dependencies via Composer.
   - travis_retry composer require drupal/devel:"^4 || ^5"
   - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
   - # Need to get Rules dev because 3.0.0-alpha7 has deprecation warnings.
   - if [ "$RULES" == "YES" ]; then travis_retry composer require drupal/rules:"3.x-dev"; fi
-  - travis_retry composer require drupal/workbench_moderation
+  # Limit workbench_moderation to 8.x-1.6, the last version compatible with D8.
+  - travis_retry composer require drupal/workbench_moderation:"<=1.6"
   # Use * because only the dev version of WBMA is compatible with D9. None for D10.
   - if [[ $DRUPAL_CORE =~ ^(8|9) ]]; then travis_retry composer require drupal/workbench_moderation_actions:*; fi
-  - travis_retry composer require commerceguys/addressing
-  - travis_retry composer require drupal/commerce
+  # Limit addressing to 1.3 and commerce to 2.28 (or revert back to PHP7.2)
+  - travis_retry composer require commerceguys/addressing:"<=1.3"
+  - travis_retry composer require drupal/commerce:"<=2.28"
 
   # Coder is already installed as part of composer install. We just need to set
   # the installed_paths to pick up the Drupal standards. This is only for Coder

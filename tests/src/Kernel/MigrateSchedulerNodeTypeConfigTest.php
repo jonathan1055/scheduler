@@ -14,7 +14,7 @@ class MigrateSchedulerNodeTypeConfigTest extends MigrateSchedulerTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['menu_ui'];
+  public static $modules = ['menu_ui'];
 
   /**
    * {@inheritdoc}
