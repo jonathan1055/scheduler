@@ -603,10 +603,21 @@ function scheduler_cron() {
   // Scheduler 7.x provided hook_scheduler_api() which has been replaced by
   // event dispatching in 8.x. Display a warning in the log if any of these
   // hooks still exist, so that admins and developers are informed.
-  foreach (Drupal::moduleHandler()->getImplementations('scheduler_api') as $module) {
-    \Drupal::logger('scheduler')->warning('Function %function has not been executed. In Drupal 8, implementations of hook_scheduler_api() should be replaced by Scheduler event listeners.', [
-      '%function' => $module . '_scheduler_api',
-    ]);
+  if (version_compare(\Drupal::VERSION, '9.4', '>=')) {
+    // getImplementations() is deprecated in D9.4, use invokeAllWith().
+    \Drupal::moduleHandler()->invokeAllWith('scheduler_api', function (callable $hook, string $module) {
+      \Drupal::logger('scheduler')->warning('Function %function has not been executed. Implementations of hook_scheduler_api() should be replaced by Scheduler event listeners.', [
+        '%function' => $module . '_scheduler_api',
+      ]);
+    });
+  }
+  else {
+    // Use getImplementations() to maintain compatibility with Drupal 8.9.
+    foreach (Drupal::moduleHandler()->getImplementations('scheduler_api') as $module) {
+      \Drupal::logger('scheduler')->warning('Function %function has not been executed. Implementations of hook_scheduler_api() should be replaced by Scheduler event listeners.', [
+        '%function' => $module . '_scheduler_api',
+      ]);
+    }
   }
 
   // Reset the static scheduler_cron flag.
