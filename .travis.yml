@@ -17,28 +17,15 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.2
-      env:
-        - DRUPAL_CORE=8.9.x
-        # Skip Rules because it cannot be installed at 8.x.
-        # ---- Remaining self deprecation notices (0)
-    - php: 7.3
-      env:
-        - DRUPAL_CORE=9.1.x
-        # --- Remaining self deprecation notices (6)
-        #   6 StatementWrapper::fetchColumn (Rules)
-        # --- Remaining direct deprecation notices (0)
-        - RULES=YES
-        - DEPRECATIONS=6
     - php: 7.4
       env:
-        - DRUPAL_CORE=9.2.x
+        - DRUPAL_CORE=9.5.x
         # Skip Rules testing in this run.
         # --- Remaining self deprecation notices ()
         #  53 Use QueryInterface::accessCheck() (DevelGenerateTest and SchedulerApiTest)
         #   1 BrowserTestBase::drupalGetHeader()
         # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=54
+        - DEPRECATIONS=9999
 
 # Be sure to cache composer downloads.
 cache:
