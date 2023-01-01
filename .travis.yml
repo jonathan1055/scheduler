@@ -76,8 +76,8 @@ before_script:
     fi
 
   # Install the testing dependencies via Composer.
-  - travis_retry composer require drupal/devel:"^4"
-  - travis_retry composer require drush/drush:"^9 || ^10"
+  - travis_retry composer require drupal/devel:"^4 || ^5"
+  - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
   - # Need to get Rules dev because 3.0.0-alpha7 has deprecation warnings.
   - if [ "$RULES" == "YES" ]; then travis_retry composer require drupal/rules:"3.x-dev"; fi
   # Use * to allow any compatible version, not the latest version.

@@ -48,7 +48,7 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     // Check that the node is shown on the summary page but the tag is not.
     $this->drupalGet('node');
     $this->assertSession()->statusCodeEquals(200);
-    $this->assertSession()->pageTextContains($node->label());
+    $this->assertSession()->pageTextContains($published_node->label().'-ZZZ');
     $this->assertNull($this->getSession()->getResponseHeader('X-Robots-Tag'), 'X-Robots-Tag should not be added when entity is not in "full" view mode.');
   }
 
