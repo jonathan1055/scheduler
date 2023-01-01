@@ -17,18 +17,31 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.4
+    # - php: 7.4
+    #   env:
+    #     - DRUPAL_CORE=9.5.x
+    #     # Skip Rules testing in this run.
+    #     # --- Remaining self deprecation notices ()
+    #     # 359 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+    #     #  53 QueryInterface::accessCheck() drupal:9.2.0 (DevelGenerateTest and SchedulerApiTest)
+    #     #   1 BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0
+    #     #   1 drupal_get_path() is deprecated in drupal:9.3.0
+    #     #   1 drupal_get_filename() is deprecated in drupal:9.3.0
+    #     # --- Remaining direct deprecation notices (0)
+    #     - DEPRECATIONS=415
+
+    - php: 8.1
       env:
-        - DRUPAL_CORE=9.5.x
-        # Skip Rules testing in this run.
-        # --- Remaining self deprecation notices ()
-        # 359 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
-        #  53 QueryInterface::accessCheck() drupal:9.2.0 (DevelGenerateTest and SchedulerApiTest)
-        #   1 BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0
-        #   1 drupal_get_path() is deprecated in drupal:9.3.0
-        #   1 drupal_get_filename() is deprecated in drupal:9.3.0
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=415
+        - DRUPAL_CORE=10.0.x
+        # ---- Remaining self deprecation notices (4)
+        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
+        #    2 Behat\Mink\Element\ElementInterface::waitFor()" might add "mixed"
+        # ---- Remaining direct deprecation notices (3)
+        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal
+        #    2 Drupal\Tests\Listeners\DrupalListener
+        # ---- Other deprecation notices (2)
+        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal
+        - DEPRECATIONS=9999
 
 # Be sure to cache composer downloads.
 cache:
