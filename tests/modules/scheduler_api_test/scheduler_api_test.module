@@ -126,7 +126,8 @@ function scheduler_api_test_scheduler_allow_unpublishing(NodeInterface $node) {
  */
 function scheduler_api_test_scheduler_hide_publish_on_field($form, $form_state, $node) {
   // Hide the publish_on field if the node title contains orange or green.
-  if (stristr($node->title->value, 'orange') || stristr($node->title->value, 'green')) {
+  $title = $node->title->value ?? '';
+  if (stristr($title, 'orange') || stristr($title, 'green')) {
     \Drupal::messenger()->addMessage(t('Scheduler_Api_Test: The publish_on field is hidden for orange or green node titles.'), 'status', FALSE);
     return TRUE;
   }
