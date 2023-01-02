@@ -120,6 +120,38 @@ class SchedulerManager {
   }
 
   /**
+   * Returns an array of function names implemented for a specific hook.
+   *
+   * @param string $hook
+   *   The identifier of the hook function, for example 'publish_action' or
+   *   'allow_unpublishing' or 'hide_publish_on_field'.
+   *
+   * @return array
+   *   An array of callable function names for the implementations of this hook
+   *   function for the type of entity being processed.
+   */
+  public function getHookImplementations(string $hook) {
+    // Find all modules that implement these hooks, then append the $hookName to
+    // the end of the module, thus giving the full function name.
+    $all_hook_implementations = [];
+    $hookName = "scheduler_$hook";
+    if (version_compare(\Drupal::VERSION, '9.4', '>=')) {
+      // getImplementations() is deprecated in D9.4, use invokeAllWith().
+      $this->moduleHandler->invokeAllWith($hookName, function (callable $hook, string $module) use ($hookName, &$all_hook_implementations) {
+        $all_hook_implementations[] = $module . "_" . $hookName;
+      });
+    }
+    else {
+      // Use getImplementations() to maintain compatibility with Drupal 8.9.
+      $implementations = $this->moduleHandler->getImplementations($hookName);
+      array_walk($implementations, function (&$module) use ($hookName, &$all_hook_implementations) {
+        $all_hook_implementations[] = $module . "_" . $hookName;
+      });
+    }
+    return $all_hook_implementations;
+  }
+
+  /**
    * Publish scheduled nodes.
    *
    * @return bool
@@ -239,8 +271,7 @@ class SchedulerManager {
         $hook = 'scheduler_publish_action';
         $processed = FALSE;
         $failed = FALSE;
-        foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-          $function = $module . '_' . $hook;
+        foreach ($this->getHookImplementations($hook) as $function) {
           $return = $function($node);
           $processed = $processed || ($return === 1);
           $failed = $failed || ($return === -1);
@@ -426,8 +457,7 @@ class SchedulerManager {
         $hook = 'scheduler_unpublish_action';
         $processed = FALSE;
         $failed = FALSE;
-        foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-          $function = $module . '_' . $hook;
+        foreach ($this->getHookImplementations($hook) as $function) {
           $return = $function($node);
           $processed = $processed || ($return === 1);
           $failed = $failed || ($return === -1);
@@ -523,8 +553,7 @@ class SchedulerManager {
     $result = TRUE;
     // Check that other modules allow the action.
     $hook = 'scheduler_allow_' . $action . 'ing';
-    foreach ($this->moduleHandler->getImplementations($hook) as $module) {
-      $function = $module . '_' . $hook;
+    foreach ($this->getHookImplementations($hook) as $function) {
       $result &= $function($node);
     }
 
@@ -546,8 +575,7 @@ class SchedulerManager {
   public function nidList($action) {
     $nids = [];
 
-    foreach ($this->moduleHandler->getImplementations('scheduler_nid_list') as $module) {
-      $function = $module . '_scheduler_nid_list';
+    foreach ($this->getHookImplementations('scheduler_nid_list') as $function) {
       $nids = array_merge($nids, $function($action));
     }
 
