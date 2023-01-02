@@ -454,7 +454,7 @@ class SchedulerManager {
         // Invoke all implementations of hook_scheduler_unpublish_action() to
         // allow other modules to do the "unpublishing" process instead of
         // Scheduler.
-        $hook = 'scheduler_unpublish_action';
+        $hook = 'unpublish_action';
         $processed = FALSE;
         $failed = FALSE;
         foreach ($this->getHookImplementations($hook) as $function) {
@@ -575,7 +575,7 @@ class SchedulerManager {
   public function nidList($action) {
     $nids = [];
 
-    foreach ($this->getHookImplementations('scheduler_nid_list') as $function) {
+    foreach ($this->getHookImplementations('nid_list') as $function) {
       $nids = array_merge($nids, $function($action));
     }
 
