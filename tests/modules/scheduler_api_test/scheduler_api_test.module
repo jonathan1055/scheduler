@@ -15,7 +15,7 @@ function scheduler_api_test_scheduler_nid_list($action) {
   $nids = [];
 
   // Check to see what test nodes exist.
-  $query = \Drupal::entityQuery('node');
+  $query = \Drupal::entityQuery('node')->accessCheck(FALSE);
   $nodes = Node::loadMultiple($query->execute());
   $request_time = \Drupal::time()->getRequestTime();
   foreach ($nodes as $nid => $node) {
@@ -39,7 +39,7 @@ function scheduler_api_test_scheduler_nid_list($action) {
  * Implements hook_scheduler_nid_list_alter().
  */
 function scheduler_api_test_scheduler_nid_list_alter(&$nids, $action) {
-  $query = \Drupal::entityQuery('node');
+  $query = \Drupal::entityQuery('node')->accessCheck(FALSE);
   $nodes = Node::loadMultiple($query->execute());
   $request_time = \Drupal::time()->getRequestTime();
   foreach ($nodes as $nid => $node) {
