@@ -53,6 +53,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
   protected function countScheduledNodes($type, $field, $num_nodes, $num_scheduled, $time_range = NULL) {
     // Check that the expected number of nodes have been created.
     $count = $this->nodeStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('type', $type)
       ->count()
       ->execute();
@@ -60,6 +61,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
     // Check that the expected number of nodes have been scheduled.
     $count = $this->nodeStorage->getQuery()
+      ->accessCheck(FALSE)
       ->condition('type', $type)
       ->exists($field)
       ->count()
@@ -78,6 +80,7 @@ class SchedulerDevelGenerateTest extends SchedulerBrowserTestBase {
 
       $query = $this->nodeStorage->getAggregateQuery();
       $result = $query
+        ->accessCheck(FALSE)
         ->condition('type', $type)
         ->aggregate($field, 'min')
         ->aggregate($field, 'max')
