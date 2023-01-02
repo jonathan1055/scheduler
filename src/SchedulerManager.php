@@ -268,7 +268,7 @@ class SchedulerManager {
         // Invoke all implementations of hook_scheduler_publish_action() to
         // allow other modules to do the "publishing" process instead of
         // Scheduler.
-        $hook = 'scheduler_publish_action';
+        $hook = 'publish_action';
         $processed = FALSE;
         $failed = FALSE;
         foreach ($this->getHookImplementations($hook) as $function) {
@@ -285,7 +285,7 @@ class SchedulerManager {
           '@type' => $node_type->label(),
           '%title' => $node->getTitle(),
           'link' => $node_type_link->toString() . ' ' . $view_link->toString(),
-          '@hook' => 'hook_' . $hook,
+          '@hook' => 'hook_scheduler_' . $hook,
         ];
 
         if ($failed) {
@@ -471,7 +471,7 @@ class SchedulerManager {
           '@type' => $node_type->label(),
           '%title' => $node->getTitle(),
           'link' => $node_type_link->toString() . ' ' . $view_link->toString(),
-          '@hook' => 'hook_' . $hook,
+          '@hook' => 'hook_scheduler_' . $hook,
         ];
 
         if ($failed) {
@@ -552,7 +552,7 @@ class SchedulerManager {
     // Default to TRUE.
     $result = TRUE;
     // Check that other modules allow the action.
-    $hook = 'scheduler_allow_' . $action . 'ing';
+    $hook = 'allow_' . $action . 'ing';
     foreach ($this->getHookImplementations($hook) as $function) {
       $result &= $function($node);
     }
