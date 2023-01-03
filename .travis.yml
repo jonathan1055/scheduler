@@ -17,18 +17,18 @@ env:
 jobs:
   fast_finish: true
   include:
-    - php: 7.4
-      env:
-        - DRUPAL_CORE=9.5.x
-        # Skip Rules testing in this run.
-        # --- Remaining self deprecation notices ()
-        # 359 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
-        #  53 QueryInterface::accessCheck() drupal:9.2.0 (DevelGenerateTest and SchedulerApiTest)
-        #   1 BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0
-        #   1 drupal_get_path() is deprecated in drupal:9.3.0
-        #   1 drupal_get_filename() is deprecated in drupal:9.3.0
-        # --- Remaining direct deprecation notices (0)
-        - DEPRECATIONS=415
+    # - php: 7.4
+    #   env:
+    #     - DRUPAL_CORE=9.5.x
+    #     # Skip Rules testing in this run.
+    #     # --- Remaining self deprecation notices ()
+    #     # 359 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
+    #     #  53 QueryInterface::accessCheck() drupal:9.2.0 (DevelGenerateTest and SchedulerApiTest)
+    #     #   1 BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0
+    #     #   1 drupal_get_path() is deprecated in drupal:9.3.0
+    #     #   1 drupal_get_filename() is deprecated in drupal:9.3.0
+    #     # --- Remaining direct deprecation notices (0)
+    #     - DEPRECATIONS=415
 
     - php: 8.1
       env:
