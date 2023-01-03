@@ -120,11 +120,11 @@ before_script:
 
 script:
   # Run the PHPUnit tests, excluding the javascript tests.
+  # ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(basicX|metaX|formX|pastX|Xdevel|Xapi|access|Xfields|defaulttime)/i';
   - cd $DRUPAL_ROOT
   - if [ "$RULES" == "YES" ]; then
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
     else
-      # ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(basicX|metaX|formX|pastX|Xdevel|Xapi|access|Xfields|defaulttime)/i';
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(basic|meta|form|past|devel|api|access|defaulttime))/i';
     fi
 
