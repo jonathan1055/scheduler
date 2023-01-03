@@ -33,6 +33,7 @@ jobs:
     - php: 8.1
       env:
         - DRUPAL_CORE=10.0.x
+        - RULES=YES
         # ---- Remaining self deprecation notices (4)
         #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
         #    2 Behat\Mink\Element\ElementInterface::waitFor()" might add "mixed"
@@ -89,8 +90,6 @@ before_script:
     fi
 
   # Install the testing dependencies via Composer.
-  # - travis_retry composer require drupal/devel:"^4 || ^5"
-  # - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
   - travis_retry composer require drupal/devel
   - travis_retry composer require drush/drush
   - # Need to get Rules dev because 3.0.0-alpha7 has deprecation warnings.
@@ -123,9 +122,9 @@ script:
   # ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(basic|meta|form|past|devel|api|access|defaulttime))/i';
   - cd $DRUPAL_ROOT
   - if [ "$RULES" == "YES" ]; then
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/(rules)/i';
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/(rules|workbench)/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/(rules)/i';
     fi
 
   # Check for coding standards. First show the versions.
