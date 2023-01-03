@@ -89,8 +89,10 @@ before_script:
     fi
 
   # Install the testing dependencies via Composer.
-  - travis_retry composer require drupal/devel:"^4 || ^5"
-  - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
+  # - travis_retry composer require drupal/devel:"^4 || ^5"
+  # - travis_retry composer require drush/drush:"^9 || ^10 || ^11"
+  - travis_retry composer require drupal/devel
+  - travis_retry composer require drush/drush
   - # Need to get Rules dev because 3.0.0-alpha7 has deprecation warnings.
   - if [ "$RULES" == "YES" ]; then travis_retry composer require drupal/rules:"3.x-dev"; fi
   # Use * to allow any compatible version, not the latest version.
@@ -122,7 +124,8 @@ script:
   - if [ "$RULES" == "YES" ]; then
       ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(basicX|metaX|formX|pastX|Xdevel|Xapi|access|Xfields|defaulttime)/i';
+      # ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*(basicX|metaX|formX|pastX|Xdevel|Xapi|access|Xfields|defaulttime)/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(basic|meta|form|past|devel|api|access|defaulttime))/i';
     fi
 
   # Check for coding standards. First show the versions.
