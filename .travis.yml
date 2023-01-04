@@ -35,13 +35,13 @@ jobs:
         - DRUPAL_CORE=10.0.x
         - RULES=YES
         # ---- Remaining self deprecation notices (4)
-        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
-        #    2 Behat\Mink\Element\ElementInterface::waitFor()" might add "mixed"
+        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string" (rules)
+        #    2 Behat\Mink\Element\ElementInterface::waitFor() might add "mixed" (rules)
         # ---- Remaining direct deprecation notices (3)
-        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal
-        #    2 Drupal\Tests\Listeners\DrupalListener
+        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal (rules)
+        #    2 Drupal\Tests\Listeners\DrupalListener (rules)
         # ---- Other deprecation notices (2)
-        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal
+        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal (1 in rules)
         - DEPRECATIONS=9999
 
 # Be sure to cache composer downloads.
