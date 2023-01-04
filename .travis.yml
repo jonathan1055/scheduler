@@ -17,32 +17,40 @@ env:
 jobs:
   fast_finish: true
   include:
-    # - php: 7.4
-    #   env:
-    #     - DRUPAL_CORE=9.5.x
-    #     # Skip Rules testing in this run.
-    #     # --- Remaining self deprecation notices ()
-    #     # 359 ModuleHandlerInterface::getImplementations() is deprecated in drupal:9.4.0
-    #     #  53 QueryInterface::accessCheck() drupal:9.2.0 (DevelGenerateTest and SchedulerApiTest)
-    #     #   1 BrowserTestBase::drupalGetHeader() is deprecated in drupal:9.2.0
-    #     #   1 drupal_get_path() is deprecated in drupal:9.3.0
-    #     #   1 drupal_get_filename() is deprecated in drupal:9.3.0
-    #     # --- Remaining direct deprecation notices (0)
-    #     - DEPRECATIONS=415
+    - php: 7.2
+      env:
+        - DRUPAL_CORE=8.9.x
+        # Skip Rules because it cannot be installed at 8.x.
+        - RULES=NO
+        # ---- Remaining self deprecation notices (0)
+    - php: 7.3
+      env:
+        - DRUPAL_CORE=9.1.x
+        - RULES=YES
+        # --- Remaining self deprecation notices (0)
+        # --- Remaining direct deprecation notices (0)
+    - php: 7.4
+      env:
+        - DRUPAL_CORE=9.5.x
+        # Skip Rules testing in this run.
+        - RULES=NO
+        # --- Remaining self deprecation notices (0)
+        # --- Remaining direct deprecation notices (0)
 
     - php: 8.1
       env:
         - DRUPAL_CORE=10.0.x
         - RULES=YES
         # ---- Remaining self deprecation notices (4)
-        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string" (rules)
-        #    2 Behat\Mink\Element\ElementInterface::waitFor() might add "mixed" (rules)
+        #    2 Behat\Mink\Element\ElementInterface::getText() might add "string"
+        #    2 Behat\Mink\Element\ElementInterface::waitFor() might add "mixed"
         # ---- Remaining direct deprecation notices (3)
-        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal (rules)
-        #    2 Drupal\Tests\Listeners\DrupalListener (rules)
-        # ---- Other deprecation notices (2)
-        #    2 PHPUnit\Framework\TestCase::addWarning() method is considered internal (1 in rules)
-        - DEPRECATIONS=9999
+        #    1 PHPUnit\TextUI\DefaultResultPrinter class is considered internal
+        #    1 DrupalListener implements "PHPUnit\Framework\TestListener
+        #    1 DrupalListener uses "PHPUnit\Framework\TestListenerDefaultImplementation"
+        # ---- Other deprecation notices (1)
+        #    1 PHPUnit\Framework\TestCase::addWarning() method is considered internal
+        - DEPRECATIONS=8
 
 # Be sure to cache composer downloads.
 cache:
@@ -119,12 +127,11 @@ before_script:
 
 script:
   # Run the PHPUnit tests, excluding the javascript tests.
-  # ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(basic|meta|form|past|devel|api|access|defaulttime))/i';
   - cd $DRUPAL_ROOT
   - if [ "$RULES" == "YES" ]; then
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/(rules)/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js;
     else
-      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/(rules)/i';
+      ./vendor/bin/phpunit -c ./core/phpunit.xml.dist --debug ./modules/$MODULE/ --exclude-group=scheduler_js --filter '/^(?!.*(rules)).*/i';
     fi
 
   # Check for coding standards. First show the versions.
