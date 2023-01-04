@@ -144,7 +144,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     // will be processed during cron, and assert that only event 3 is triggered.
     sleep(5);
     $this->cronRun();
-    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('node');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
     $assert->pageTextContains($this->message[3]);
@@ -195,7 +195,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     // will be processed during cron, and assert that only event 6 is triggered.
     sleep(5);
     $this->cronRun();
-    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('node');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
     $assert->pageTextNotContains($this->message[3]);
@@ -249,7 +249,7 @@ class SchedulerRulesEventsTest extends SchedulerBrowserTestBase {
     // be processed during cron, and assert that events 3, 5 & 6 are triggered.
     sleep(6);
     $this->cronRun();
-    $this->drupalGet('admin/reports/dblog');
+    $this->drupalGet('node');
     $assert->pageTextNotContains($this->message[1]);
     $assert->pageTextNotContains($this->message[2]);
     $assert->pageTextContains($this->message[3]);
