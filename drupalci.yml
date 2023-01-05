@@ -27,7 +27,7 @@ build:
           - 'drush core:status | awk "NR==1{print \$2\$3\$4}"'
           - 'drush core:status | awk "NR==1{print \$2\$3\$4}" | grep version:9 && sudo -u www-data composer require drupal/workbench_moderation drupal/workbench_moderation_actions:*'
           # Show the eslint version
-          - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
+          - 'echo "eslint version $(${SOURCE_DIR}/core/node_modules/.bin/eslint --version)"'
       run_tests.functional:
         types: 'PHPUnit-Functional'
         testgroups: '--all'

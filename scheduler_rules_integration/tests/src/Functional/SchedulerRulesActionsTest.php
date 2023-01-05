@@ -1,9 +1,10 @@
 <?php
 
-namespace Drupal\Tests\scheduler\Functional;
+namespace Drupal\Tests\scheduler_rules_integration\Functional;
 
 use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\rules\Context\ContextConfig;
+use Drupal\Tests\scheduler\Functional\SchedulerBrowserTestBase;
 
 /**
  * Tests the six actions that Scheduler provides for use in Rules module.
@@ -27,7 +28,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     $this->rulesStorage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
-    // Login as adminUser so that we can test also the non-enabled node type.
+    // Login as adminUser so that we can also test the non-enabled node type.
     $this->drupalLogin($this->adminUser);
 
     // Create node A which is published and enabled for Scheduling.
