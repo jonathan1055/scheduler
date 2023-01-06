@@ -1,9 +1,10 @@
 <?php
 
-namespace Drupal\Tests\scheduler\Functional;
+namespace Drupal\Tests\scheduler_rules_integration\Functional;
 
 use Drupal\Core\Logger\RfcLogLevel;
 use Drupal\rules\Context\ContextConfig;
+use Drupal\Tests\scheduler\Functional\SchedulerBrowserTestBase;
 
 /**
  * Tests the six actions that Scheduler provides for use in Rules module.
@@ -27,6 +28,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     $this->rulesStorage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
+    // Login as adminUser so that we can also test the non-enabled node type.
     $this->drupalLogin($this->adminUser);
 
     // Create node A which is published and enabled for Scheduling.
@@ -203,7 +205,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
     // Fourthly, edit a pre-existing node which is not enabled for Scheduler.
@@ -227,7 +229,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the node, triggering rule 2.
@@ -246,7 +248,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(3, $log, 'There are now 3 watchdog warning messages from Scheduler');
   }
 
@@ -407,7 +409,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(1, $log, 'There is 1 watchdog warning message from Scheduler');
 
     // Fourthly, edit a pre-existing node which is not enabled for Scheduler.
@@ -431,7 +433,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(2, $log, 'There are now 2 watchdog warning messages from Scheduler');
 
     // Edit the node, triggering rule 4.
@@ -450,7 +452,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
       ->condition('severity', RfcLogLevel::WARNING)
       ->countQuery()
       ->execute()
-      ->fetchColumn();
+      ->fetchField();
     $this->assertEquals(3, $log, 'There are now 3 watchdog warning messages from Scheduler');
   }
 

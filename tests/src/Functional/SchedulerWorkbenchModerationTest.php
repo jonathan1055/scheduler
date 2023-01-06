@@ -10,11 +10,24 @@ namespace Drupal\Tests\scheduler\Functional;
 class SchedulerWorkbenchModerationTest extends SchedulerBrowserTestBase {
 
   /**
-   * Additional modules required.
-   *
-   * @var array
+   * {@inheritdoc}
    */
-  protected static $modules = ['workbench_moderation'];
+  public function setUp(): void {
+    parent::setUp();
+    // This test class is "optional" and will be run if the workbench_moderation
+    // modules are available. This allows testing with Drupal 9 but also will
+    // not fail with Drupal 10, where the workbench moderation modules are not
+    // compatible. See https://www.drupal.org/project/scheduler/issues/3314267
+    $modulesList = \Drupal::service('extension.list.module')->getList();
+    if (!isset($modulesList['workbench_moderation']) || !isset($modulesList['workbench_moderation_actions'])) {
+      $this->markTestSkipped('Skipping test because the workbench moderation module(s) are not available.');
+    }
+    else {
+      // The workbench_moderation module is available so install it.
+      // workbench_moderation_actions is installed later.
+      \Drupal::service('module_installer')->install(['workbench_moderation']);
+    }
+  }
 
   /**
    * Helper function to test publishing and unpublishing via cron.
