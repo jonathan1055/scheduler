@@ -28,6 +28,7 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
 
     $this->rulesStorage = $this->container->get('entity_type.manager')->getStorage('rules_reaction_rule');
     $this->expressionManager = $this->container->get('plugin.manager.rules_expression');
+    // Login as adminUser so that we can also test the non-enabled node types.
     $this->drupalLogin($this->adminUser);
 
   }

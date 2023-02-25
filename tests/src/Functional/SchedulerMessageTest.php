@@ -15,8 +15,12 @@ class SchedulerMessageTest extends SchedulerBrowserTestBase {
    * @dataProvider dataStandardEntityTypes()
    */
   public function testConfirmationMessage($entityTypeId, $bundle) {
-    // Log in.
-    $this->drupalLogin($this->schedulerUser);
+    // The schedulerUser is adequate for node, media and commerce_product. But
+    // for taxonomy_term after editing and saving an unpublished term, the url
+    // taxonomy/term/N gives 403. There is no 'view unpublished taxonomy term'
+    // permission to grant to the ordinary user, therefore we login as adminUser
+    // because 'administer taxonomy' allows viewing the unpublished terms.
+    $entityTypeId == 'taxonomy_term' ? $this->drupalLogin($this->adminUser) : $this->drupalLogin($this->schedulerUser);
     $titleField = $this->titleField($entityTypeId);
 
     $publish_on = strtotime('+ 1 day 5 hours');

@@ -56,12 +56,15 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       "create $customNodeName content",
       "edit any $customNodeName content",
       'schedule publishing of nodes',
+      'view own unpublished content',
       "create $customMediaName media",
       "edit any $customMediaName media",
       'schedule publishing of media',
+      'view own unpublished media',
       "create $customProductName commerce_product",
       "update any $customProductName commerce_product",
       'schedule publishing of commerce_product',
+      'view own unpublished commerce_product',
       // 'administer commerce_store' is needed to see and use any store, i.e
       // cannot add a product without this. Is it a bug?
       'administer commerce_store',

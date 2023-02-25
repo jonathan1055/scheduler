@@ -19,8 +19,8 @@ class SchedulerPastDatesTest extends SchedulerBrowserTestBase {
     $titleField = $this->titleField($entityTypeId);
     $entityType = $this->entityTypeObject($entityTypeId, $bundle);
 
-    // Log in.
-    $this->drupalLogin($this->schedulerUser);
+    // For taxonomy, log in as adminUser to avoid 403 for unpublished terms.
+    $entityTypeId == 'taxonomy_term' ? $this->drupalLogin($this->adminUser) : $this->drupalLogin($this->schedulerUser);
 
     // Create data for use in edits.
     $title = 'Publish in the past ' . $this->randomString(10);

@@ -45,8 +45,10 @@ class SchedulerMetaInformationTest extends SchedulerBrowserTestBase {
     $this->assertSession()->responseMatches('~meta name=[\'"]robots[\'"] content=[\'"]unavailable_after: ' . date(DATE_RFC850, $unpublish_date) . '[\'"]~');
 
     // If the entity type has a summary listing page, check that the entity is
-    // shown but the two tags are not present.
-    if ($this->drupalGet("$entityTypeId") && $this->getSession()->getStatusCode() == '200') {
+    // shown but the two tags are not present. Only do this for node, to avoid
+    // getting 404 because none of the other entity types have a summary page.
+    if ($entityTypeId == 'node') {
+      $this->drupalGet("$entityTypeId");
       $this->assertSession()->pageTextContains($entity->label());
       $this->assertNull($this->getSession()->getResponseHeader('X-Robots-Tag'), 'X-Robots-Tag should not be added when entity is not in "full" view mode.');
       $this->assertSession()->responseNotContains('unavailable_after:');

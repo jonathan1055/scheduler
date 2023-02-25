@@ -39,6 +39,9 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       'administer commerce_store',
       'create terms in ' . $this->vocabularyId,
       'edit terms in ' . $this->vocabularyId,
+      // There is no 'view unpublished taxonomy term' permission so instead we
+      // have to use 'administer taxonomy'.
+      'administer taxonomy',
     ];
 
     // Create a user who can add and edit the standard scheduler-enabled

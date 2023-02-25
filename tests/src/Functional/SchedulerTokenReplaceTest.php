@@ -15,7 +15,8 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
    * @dataProvider dataSchedulerTokenReplacement()
    */
   public function testSchedulerTokenReplacement($entityTypeId, $bundle) {
-    $this->drupalLogin($this->schedulerUser);
+    // For taxonomy, log in as adminUser to avoid 403 for unpublished terms.
+    $entityTypeId == 'taxonomy_term' ? $this->drupalLogin($this->adminUser) : $this->drupalLogin($this->schedulerUser);
     // Define timestamps for consistent use when repeated throughout this test.
     $publish_on_timestamp = $this->requestTime + 3600;
     $unpublish_on_timestamp = $this->requestTime + 7200;
