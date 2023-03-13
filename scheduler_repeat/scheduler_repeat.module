@@ -1,0 +1,219 @@
+<?php
+
+/**
+ * @file
+ * Scheduler Repeat provides options for repeat publishing and un-publishing.
+ */
+
+use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+use Drupal\scheduler_repeat\SchedulerRepeaterInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function scheduler_repeat_entity_base_field_info(EntityTypeInterface $entity_type) {
+  if ($entity_type->id() === 'node') {
+    $fields['scheduler_repeat'] = BaseFieldDefinition::create('scheduler_repeater')
+      ->setLabel(t('Scheduler Repeat'))
+      ->setDisplayOptions('form', [
+        'type' => 'scheduler_repeater_widget',
+        'weight' => 31,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setTranslatable(TRUE)
+      ->setRevisionable(TRUE)
+      ->addConstraint('SchedulerRepeat');
+
+    return $fields;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for node_form().
+ */
+function scheduler_repeat_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  if (!isset($form['publish_on']) || !isset($form['unpublish_on'])) {
+    // Remove the repeat selection field.
+    // @todo What if scheduler_form_node_form_alter() is invoked AFTER this?
+    // @todo What if scheduler date fields are configured as hidden?
+    unset($form['scheduler_repeat']);
+    return;
+  }
+  // Move the repeat widget to the 'scheduler_settings' fieldset.
+  $form['scheduler_repeat']['#group'] = 'scheduler_settings';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
+ */
+function scheduler_repeat_node_presave(EntityInterface $node) {
+  if (!$repeater = _scheduler_repeat_get_repeater($node)) {
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
+  }
+
+  if (!$next_publish_on = _scheduler_repeat_next_publish_on($repeater, $node)) {
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
+  }
+
+  if (!$next_unpublish_on = _scheduler_repeat_next_unpublish_on($repeater, $node)) {
+    _scheduler_repeat_clear_next_occurence($node);
+    return;
+  }
+
+  if ($next_publish_on > $next_unpublish_on) {
+    _scheduler_repeat_log_error(
+      '@repeater repeater calculated conflicting next occurence for node @nid: @from -> @to',
+      [
+        '@repeater' => $node->scheduler_repeat->plugin,
+        '@nid' => $node->id(),
+        '@from' => date("Y-m-d H:i:s", $next_publish_on),
+        '@to' => date("Y-m-d H:i:s", $next_unpublish_on),
+      ]
+    );
+    return;
+  }
+
+  $node->set('scheduler_repeat', [
+    'plugin' => $node->scheduler_repeat->plugin,
+    'next_publish_on' => $next_publish_on,
+    'next_unpublish_on' => $next_unpublish_on,
+  ]);
+}
+
+/**
+ * Remove the repeat plugin and both 'next' date values.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node object to update.
+ */
+function _scheduler_repeat_clear_next_occurence(NodeInterface &$node) {
+  $node->set('scheduler_repeat', [
+    'plugin' => NULL,
+    'next_publish_on' => NULL,
+    'next_unpublish_on' => NULL,
+  ]);
+}
+
+/**
+ * Get the next publish_on date.
+ *
+ * If the existing publish_on date is empty, return the stored next_publish_on
+ * date if availbale. If publish_on date is set, use $repeater to calculate the
+ * next occurence until the value is in the future.
+ *
+ * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ *   The repeater plugin.
+ * @param \Drupal\node\NodeInterface $node
+ *   The node to use.
+ *
+ * @return mixed|null
+ *   The next publish_on date
+ */
+function _scheduler_repeat_next_publish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
+  if ($node->get('publish_on')->isEmpty()) {
+    return !empty($node->get('scheduler_repeat')->next_publish_on) ? $node->get('scheduler_repeat')->next_publish_on : NULL;
+  }
+
+  $next_publish_on = $repeater->calculateNextPublishedOn($node->get('publish_on')->value);
+  $request_time = \Drupal::time()->getRequestTime();
+  while ($next_publish_on < $request_time) {
+    $next_publish_on = $repeater->calculateNextPublishedOn($next_publish_on);
+  }
+  return $next_publish_on;
+}
+
+/**
+ * Get the next unpublish_on date.
+ *
+ * If the existing unpublish_on date is empty, return the stored
+ * next_unpublish_on date if available. If unpublish_on date is set, use
+ * $repeater to calculate the next occurence until the value is in the future.
+ *
+ * @param \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater
+ *   The repeater plugin.
+ * @param \Drupal\node\NodeInterface $node
+ *   The node to use.
+ *
+ * @return mixed|null
+ *   The next unpublish_on date
+ */
+function _scheduler_repeat_next_unpublish_on(SchedulerRepeaterInterface $repeater, NodeInterface $node) {
+  if ($node->get('unpublish_on')->isEmpty()) {
+    return !empty($node->get('scheduler_repeat')->next_unpublish_on) ? $node->get('scheduler_repeat')->next_unpublish_on : NULL;
+  }
+
+  $next_unpublish_on = $repeater->calculateNextUnpublishedOn($node->get('unpublish_on')->value);
+  $request_time = \Drupal::time()->getRequestTime();
+  while ($next_unpublish_on < $request_time) {
+    $next_unpublish_on = $repeater->calculateNextUnpublishedOn($next_unpublish_on);
+  }
+  return $next_unpublish_on;
+}
+
+/**
+ * Get the repeat plugin if one is defined for the node.
+ *
+ * @param \Drupal\node\NodeInterface $node
+ *   The node object to check.
+ *
+ * @return \Drupal\scheduler_repeat\SchedulerRepeaterInterface|null
+ *   The repeat plugin instance.
+ */
+function _scheduler_repeat_get_repeater(NodeInterface $node) {
+  if (empty($node->scheduler_repeat->plugin)) {
+    return NULL;
+  }
+  // @todo When we cater for optional associated data, the id can be extracted,
+  // and the other values added into $plugin_data.
+  $plugin_id = $node->scheduler_repeat->plugin;
+  $plugin_data = ['node' => $node];
+
+  /** @var \Drupal\scheduler_repeat\SchedulerRepeaterManager $scheduler_repeater_manager */
+  $scheduler_repeater_manager = \Drupal::service('plugin.manager.scheduler_repeat.repeater');
+
+  /** @var \Drupal\scheduler_repeat\SchedulerRepeaterInterface $repeater */
+  try {
+    $repeater = $scheduler_repeater_manager->createInstance($plugin_id, $plugin_data);
+  }
+  catch (PluginException $e) {
+    _scheduler_repeat_log_warning('Could not create scheduler repeater instance: @message', ['@message' => $e->getMessage()]);
+    return NULL;
+  }
+
+  return $repeater;
+}
+
+/**
+ * Write an error to the db log.
+ *
+ * @param string $message
+ *   The message text.
+ * @param array $context
+ *   Context variables for substitution.
+ *
+ * @todo This is only called once. Move into scheduler_repeat_node_presave?.
+ */
+function _scheduler_repeat_log_error(string $message, array $context) {
+  \Drupal::logger('scheduler_repeat')->error($message, $context);
+}
+
+/**
+ * Write a warning to the db log.
+ *
+ * @param string $message
+ *   The message text.
+ * @param array $context
+ *   Context variables for substitution.
+ *
+ * @todo This is only called once. Move into _scheduler_repeat_get_repeater?.
+ */
+function _scheduler_repeat_log_warning(string $message, array $context) {
+  \Drupal::logger('scheduler_repeat')->warning($message, $context);
+}
