@@ -58,9 +58,10 @@ cache:
     - $HOME/.composer
 
 before_script:
-  # At job start-up Composer is installed at 1.8.4 then self-update is run. From
-  # 24 October 2020 this bumped the version to Composer 2.
+  # At job start-up Composer is installed. For some earlier versions of PHP this
+  # will be Composer 1 therefore we need to self-update to Composer 2.
   - composer --version
+  - composer self-update --2
   - echo $MODULE
 
   # Remove Xdebug as we don't need it and it causes
