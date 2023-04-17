@@ -60,7 +60,10 @@ cache:
 before_script:
   # At job start-up Composer is installed at 1.8.4 then self-update is run. From
   # 24 October 2020 this bumped the version to Composer 2.
+  # From March 2023 php7.2 was not pre-installed, so downloading it caused the
+  # composer versio to be set back to 1.10. Therefore we need to run 8.1no to er
   - composer --version
+  - composer self-update --2
   - echo $MODULE
 
   # Remove Xdebug as we don't need it and it causes
