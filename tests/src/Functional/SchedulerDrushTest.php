@@ -7,7 +7,7 @@ use Drush\TestTraits\DrushTestTrait;
 /**
  * Tests the Drush commands provided by Scheduler.
  *
- * @group scheduler
+ * @group scheduler_drush
  */
 class SchedulerDrushTest extends SchedulerBrowserTestBase {
 

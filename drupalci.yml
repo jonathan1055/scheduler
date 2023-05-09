@@ -30,8 +30,9 @@ build:
           - "${SOURCE_DIR}/core/node_modules/.bin/eslint --version"
       run_tests.functional:
         types: 'PHPUnit-Functional'
-        testgroups: '--all'
-        # The groups are 'scheduler,scheduler_api,scheduler_rules_integration'
+        # testgroups: '--all'
+        testgroups: 'scheduler,scheduler_api,scheduler_drush'
+        # The groups are 'scheduler,scheduler_api,scheduler_drush,scheduler_rules_integration'
         suppress-deprecations: false
       run_tests.kernel:
         types: 'PHPUnit-Kernel'
