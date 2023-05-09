@@ -4,4 +4,5 @@
 // Drupalci eslint does not have a 'sniff all files' argument, but having this
 // in a patch or MR will cause all files to be checked.
 // See https://www.drupal.org/project/scheduler/issues/3314451
+// *** TEMP CHANGE to force drupal testbot to sniff all files ***
 {}

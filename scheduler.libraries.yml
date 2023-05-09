@@ -18,4 +18,4 @@ default-time-8x:
 admin-css:
   css:
     component:
-      css/styling.css: { }
+      css/styling.css: {}
