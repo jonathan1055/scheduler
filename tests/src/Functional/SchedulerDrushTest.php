@@ -27,13 +27,13 @@ class SchedulerDrushTest extends SchedulerBrowserTestBase {
 
     // Use the sch:cron alias and simulate the --nomsg parameter, then check
     // that the drush confirmation message is not shown.
-    $this->drush('sch:cron', [], ['nomsg' => TRUE]);
+    $this->drush('sch:cron', [], ['nomsg' => '1']);
     $messages = $this->getErrorOutput();
     $this->assertStringNotContainsString('Message: Scheduler lightweight cron completed', $messages, '--nomsg parameter did not work', TRUE);
 
     // Use the alternative alias sch-cron and add the --nolog parameter, then
     // check that the dblog messages are not shown.
-    $this->drush('sch-cron', [], ['nolog' => TRUE]);
+    $this->drush('sch-cron', [], ['nolog' => '1']);
     $messages = $this->getErrorOutput();
     $this->assertStringNotContainsString('Lightweight cron run activated by drush command', $messages, '--nolog parameter did not work for starting message', TRUE);
     $this->assertStringNotContainsString('Lightweight cron run completed', $messages, '--nolog parameter did not work for ending message', TRUE);
