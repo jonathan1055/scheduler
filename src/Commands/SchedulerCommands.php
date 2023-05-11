@@ -54,7 +54,7 @@ class SchedulerCommands extends DrushCommands {
    *   messages to the dblog.
    *
    * @command scheduler:cron
-   * @aliases sch-cron, scheduler-cron
+   * @aliases scheduler-cron, sch-cron
    */
   public function cron(array $options = ['nomsg' => NULL, 'nolog' => NULL]) {
     $this->schedulerManager->runLightweightCron($options);
@@ -68,7 +68,7 @@ class SchedulerCommands extends DrushCommands {
    * Use the standard drush parameter -q for quiet mode (no terminal output).
    *
    * @command scheduler:entity-update
-   * @aliases sch-ent-upd, sch-upd, scheduler-entity-update
+   * @aliases scheduler-entity-update, sch-ent-upd, sch-upd
    */
   public function entityUpdate() {
     $result = $this->schedulerManager->entityUpdate();
@@ -85,7 +85,7 @@ class SchedulerCommands extends DrushCommands {
    *    entity types that need reverting.
    *
    * @command scheduler:entity-revert
-   * @aliases sch-ent-rev, sch-rev, scheduler-entity-revert
+   * @aliases scheduler-entity-revert, sch-ent-rev, sch-rev
    */
   public function entityRevert(array $options = ['types' => '']) {
     $result = $this->schedulerManager->entityRevert(StringUtils::csvToArray($options['types']));
