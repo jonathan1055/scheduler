@@ -53,9 +53,8 @@ include:
 # Scheduler customisations
 ################
 
-# eslint:
-#   allow_failure: false
-# @todo Add this when https://www.drupal.org/project/gitlab_templates/issues/3358301 is done.
+eslint:
+  allow_failure: false
 
 stylelint:
   allow_failure: false
@@ -67,5 +66,6 @@ phpunit:
   parallel:
     matrix:
       # Run test groups in parallel. This also speeds up identification of failing tests.
-      - _PHPUNIT_EXTRA: [ "--group scheduler", "--group scheduler_api", "--group scheduler_drush", "--group scheduler_rules_integration" ]
+      # @todo put back "--group scheduler_drush" when https://www.drupal.org/i/3359998 is solved.
+      - _PHPUNIT_EXTRA: [ "--group scheduler", "--group scheduler_api", "--group scheduler_rules_integration" ]
 
