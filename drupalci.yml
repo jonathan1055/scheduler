@@ -33,6 +33,8 @@ build:
           # Use * because only the dev version of WBMA is compatible with D9.
           - drush core:status | awk "NR==1{print \$2\$3\$4}"
           - drush core:status | awk "NR==1{print \$2\$3\$4}" | grep version:9 && sudo -u www-data composer require drupal/workbench_moderation drupal/workbench_moderation_actions:*
+          # When running with PHP8.2 get the latest Devel 5.x-dev version. This can be removed when Devel 5.1.2 is released.
+          - php -v | awk "NR==1{print \$2}" | grep '8.2' && cd ${SOURCE_DIR} && sudo -u www-data composer require drupal/devel:5.x-dev
       run_tests.functional:
         types: 'PHPUnit-Functional'
         # testgroups: '--all'
