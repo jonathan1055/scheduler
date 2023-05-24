@@ -1370,6 +1370,11 @@ class SchedulerManager {
       foreach ($bundles as $bundle_id => $bundle) {
         foreach ($all_display_modes as $display_mode) {
           $form_display = $display_repository->getFormDisplay($entityTypeId, $bundle_id, $display_mode);
+          // If the form display is new and not saved yet, do nothing with it.
+          // @see https://www.drupal.org/project/scheduler/issues/3359790
+          if ($form_display->isNew()) {
+            continue;
+          }
 
           foreach (['publish', 'unpublish'] as $value) {
             $field = $value . '_on';
