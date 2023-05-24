@@ -3,8 +3,8 @@
 namespace Drupal\Tests\scheduler\Functional;
 
 use Drupal\commerce_product\Entity\ProductType;
-use Drupal\node\Entity\NodeType;
 use Drupal\media\Entity\MediaType;
+use Drupal\node\Entity\NodeType;
 
 /**
  * Tests the API hook functions of the Scheduler module.
