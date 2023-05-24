@@ -28,6 +28,13 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
   protected static $modules = ['scheduler_api_test', 'menu_ui', 'path'];
 
   /**
+   * The web user object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $webUser;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {

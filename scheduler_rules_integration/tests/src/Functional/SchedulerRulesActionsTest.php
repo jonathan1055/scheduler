@@ -21,6 +21,20 @@ class SchedulerRulesActionsTest extends SchedulerBrowserTestBase {
   protected static $modules = ['scheduler_rules_integration'];
 
   /**
+   * The rules_reaction_rule entity object.
+   *
+   * @var \Drupal\rules\Entity\ReactionRuleConfig
+   */
+  protected $rulesStorage;
+
+  /**
+   * The rules expression plugin manager.
+   *
+   * @var \Drupal\rules\Engine\ExpressionManagerInterface
+   */
+  protected $expressionManager;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {

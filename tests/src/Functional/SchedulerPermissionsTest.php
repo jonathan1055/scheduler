@@ -14,6 +14,34 @@ namespace Drupal\Tests\scheduler\Functional;
 class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
   /**
+   * A user who can schedule node entities.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $nodeUser;
+
+  /**
+   * A user who can schedule media entities.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $mediaUser;
+
+  /**
+   * A user who can schedule commerce_product entities.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $commerceProductUser;
+
+  /**
+   * A user who can schedule taxonomy_term entities.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $taxonomyTermUser;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -56,13 +84,13 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
 
     // Create a user who can add and edit the standard scheduler-enabled
     // entities, but only schedule products.
-    $this->commerce_productUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of commerce_product']));
-    $this->commerce_productUser->set('name', 'Proctor the Product Editor')->save();
+    $this->commerceProductUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of commerce_product']));
+    $this->commerceProductUser->set('name', 'Proctor the Product Editor')->save();
 
     // Create a user who can add and edit the standard scheduler-enabled
     // entities, but only schedule taxonomy terms.
-    $this->taxonomy_termUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of taxonomy_term']));
-    $this->taxonomy_termUser->set('name', 'Taximayne the Taxonomy Editor')->save();
+    $this->taxonomyTermUser = $this->drupalCreateUser(array_merge($permissions, ['schedule publishing of taxonomy_term']));
+    $this->taxonomyTermUser->set('name', 'Taximayne the Taxonomy Editor')->save();
   }
 
   /**
@@ -74,7 +102,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     $titleField = $this->titleField($entityTypeId);
 
     // Log in with the required user, as specified by the parameter.
-    $this->drupalLogin($this->$user);
+    $this->drupalLogin($this->{$user});
 
     // Initially run tests when publishing and unpublishing are not required.
     $this->entityTypeObject($entityTypeId)->setThirdPartySetting('scheduler', 'publish_required', FALSE)
@@ -82,12 +110,14 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
       ->save();
 
     // Check that the fields are displayed as expected when creating an entity.
-    // If the user variable matches the entity type id then that user has
+    // If the user variable matches the entity type id (after converting the
+    // entity type id from snake_case to lowerCamelCase) then that user has
     // scheduling permission on this type, so the fields should be shown.
     // Otherwise the fields should not be shown.
     $add_url = $this->entityAddUrl($entityTypeId, $bundle);
     $this->drupalGet($add_url);
-    if (strpos($user, $entityTypeId) !== FALSE) {
+    $camelCaseEntityTypeId = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $entityTypeId))));
+    if (strpos($user, $camelCaseEntityTypeId) !== FALSE) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
       $this->assertSession()->fieldExists('unpublish_on[0][value][date]');
     }
@@ -131,7 +161,7 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     $titleField = $this->titleField($entityTypeId);
 
     // Log in with the required user, as specified by the parameter.
-    $this->drupalLogin($this->$user);
+    $this->drupalLogin($this->{$user});
 
     $publish_time = strtotime('+ 6 hours', $this->requestTime);
     $unpublish_time = strtotime('+ 10 hours', $this->requestTime);
@@ -148,7 +178,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     // Edit the unpublished entity and check that the fields are displayed as
     // expected, depending on the user.
     $this->drupalGet($unpublished_entity->toUrl('edit-form'));
-    if (strpos($user, $entityTypeId) !== FALSE) {
+    $camelCaseEntityTypeId = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $entityTypeId))));
+    if (strpos($user, $camelCaseEntityTypeId) !== FALSE) {
       $this->assertSession()->fieldExists('publish_on[0][value][date]');
       $this->assertSession()->fieldExists('unpublish_on[0][value][date]');
     }
@@ -203,8 +234,8 @@ class SchedulerPermissionsTest extends SchedulerBrowserTestBase {
     foreach ($this->dataStandardEntityTypes() as $key => $values) {
       $data["$key-1"] = array_merge($values, ['nodeUser']);
       $data["$key-2"] = array_merge($values, ['mediaUser']);
-      $data["$key-3"] = array_merge($values, ['commerce_productUser']);
-      $data["$key-4"] = array_merge($values, ['taxonomy_termUser']);
+      $data["$key-3"] = array_merge($values, ['commerceProductUser']);
+      $data["$key-4"] = array_merge($values, ['taxonomyTermUser']);
     }
     return $data;
   }

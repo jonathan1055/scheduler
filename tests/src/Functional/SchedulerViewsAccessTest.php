@@ -17,6 +17,27 @@ class SchedulerViewsAccessTest extends SchedulerBrowserTestBase {
   protected static $modules = ['views'];
 
   /**
+   * The web user object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $webUser;
+
+  /**
+   * The scheduler editor user object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $schedulerEditor;
+
+  /**
+   * The scheduler viewer user object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $schedulerViewer;
+
+  /**
    * Create users and scheduled content for the entity type being tested.
    */
   protected function createScheduledItems($entityTypeId, $bundle) {

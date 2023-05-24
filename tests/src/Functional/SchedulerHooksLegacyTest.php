@@ -27,6 +27,27 @@ class SchedulerHooksLegacyTest extends SchedulerBrowserTestBase {
   ];
 
   /**
+   * The web user object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $webUser;
+
+  /**
+   * Node type machine_name.
+   *
+   * @var string
+   */
+  protected $customName;
+
+  /**
+   * Node type object.
+   *
+   * @var \Drupal\node\Entity\NodeType
+   */
+  protected $customNodetype;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
