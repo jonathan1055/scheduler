@@ -38,7 +38,8 @@ build:
       run_tests.functional:
         types: 'PHPUnit-Functional'
         # testgroups: '--all'
-        testgroups: 'scheduler,scheduler_api,scheduler_drush'
+        # @todo add back scheduler_drush when https://www.drupal.org/i/3359998 is solved.
+        testgroups: 'scheduler,scheduler_api'
         # The groups are 'scheduler,scheduler_api,scheduler_drush,scheduler_rules_integration'
         suppress-deprecations: false
       run_tests.kernel:
