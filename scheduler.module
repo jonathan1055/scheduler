@@ -8,6 +8,7 @@
 use Drupal\Component\Plugin\Exception\PluginException;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\Action\Plugin\Action\UnpublishAction;
+use Drupal\Core\Config\ConfigImporter;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\Core\Entity\EntityInterface;
@@ -1195,7 +1196,12 @@ function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping)
 /**
  * Implements hook_modules_installed().
  */
-function scheduler_modules_installed($modules) {
+function scheduler_modules_installed($modules, $is_syncing) {
+  if ($is_syncing) {
+    // During config import a subset of the processing below is performed as an
+    // additional step. See scheduler_config_import_steps_alter().
+    return;
+  }
   /** @var \Drupal\scheduler\SchedulerManager $scheduler_manager */
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->invalidatePluginCache();
@@ -1424,4 +1430,24 @@ function scheduler_local_tasks_alter(&$local_tasks) {
       ]);
     }
   }
+}
+
+/**
+ * Implements hook_config_import_steps_alter().
+ */
+function scheduler_config_import_steps_alter(&$sync_steps, ConfigImporter $config_importer) {
+  if (!in_array('scheduler', $config_importer->getExtensionChangelist('module', 'uninstall'))) {
+    $sync_steps[] = '_scheduler_config_import_process_entity_definitions';
+  }
+}
+
+/**
+ * Helper function to process the entity definitions updates.
+ */
+function _scheduler_config_import_process_entity_definitions(array &$context, ConfigImporter $config_importer) {
+  // Allow the scheduler manager to update entity definitions accordingly.
+  $scheduler_manager = \Drupal::service('scheduler.manager');
+  $scheduler_manager->entityUpdate();
+  $scheduler_manager->entityRevert();
+  $context['finished'] = 1;
 }

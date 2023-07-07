@@ -71,10 +71,14 @@ function scheduler_requirements($phase) {
 /**
  * Implements hook_install().
  */
-function scheduler_install() {
+function scheduler_install($is_syncing) {
+  if ($is_syncing) {
+    // During config import/sync nothing should be done here.
+    return;
+  }
   // Set cron access key value, as this is now required in SchedulerCronForm.
-  $config = \Drupal::service('config.factory')->getEditable('scheduler.settings');
-  $config->set('lightweight_cron_access_key', substr(md5(rand()), 0, 20))
+  \Drupal::service('config.factory')->getEditable('scheduler.settings')
+    ->set('lightweight_cron_access_key', substr(md5(rand()), 0, 20))
     ->save();
 }
 
@@ -84,7 +88,8 @@ function scheduler_install() {
 function scheduler_uninstall() {
   // This should not be necessary but incase the entity db tables or config have
   // got out-of-step with the Scheduler plugins make sure all is up to date so
-  // that uninstalling will run OK.
+  // that uninstalling will run OK. During config sync these updates should not
+  // cause any problem.
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->entityUpdate();
   $scheduler_manager->entityRevert();
