@@ -52,6 +52,8 @@ include:
 ################
 # Scheduler customisations
 ################
+variables:
+  _PHPUNIT_CONCURRENT: "1"
 
 eslint:
   allow_failure: false
