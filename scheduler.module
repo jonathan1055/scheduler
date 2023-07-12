@@ -1444,7 +1444,7 @@ function scheduler_config_import_steps_alter(&$sync_steps, ConfigImporter $confi
 /**
  * Helper function to process the entity definitions updates.
  */
-function _scheduler_config_import_process_entity_definitions(array &$context, ConfigImporter $config_importer) {
+function _scheduler_config_import_process_entity_definitions(&$context, ConfigImporter $config_importer) {
   // Allow the scheduler manager to update entity definitions accordingly.
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->entityUpdate();
