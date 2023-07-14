@@ -1316,6 +1316,12 @@ class SchedulerManager {
         }
       }
 
+      // Skip entity types without bundle types. This should not be necessary,
+      // but it is better to use defensive programming just in case.
+      if (empty($bundleType)) {
+        continue;
+      }
+
       // Remove Scheduler third-party-settings from each bundle.
       foreach ($this->entityTypeManager->getStorage($bundleType)->loadMultiple() as $bundle) {
         // Remove each third_party_setting. The last one to be removed will also

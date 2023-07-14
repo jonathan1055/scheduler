@@ -1448,6 +1448,5 @@ function _scheduler_config_import_process_entity_definitions(&$context, ConfigIm
   // Allow the scheduler manager to update entity definitions accordingly.
   $scheduler_manager = \Drupal::service('scheduler.manager');
   $scheduler_manager->entityUpdate();
-  $scheduler_manager->entityRevert();
   $context['finished'] = 1;
 }
