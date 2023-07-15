@@ -53,6 +53,9 @@ include:
 # Scheduler customisations
 ################
 variables:
+  _PHPUNIT_EXTRA2:
+    value: "-v"
+    description: "Second phpunit options variable, for use in parallel matrix jobs."
   _PHPUNIT_CONCURRENT: "1"
 
 eslint:
@@ -68,6 +71,9 @@ phpunit:
   parallel:
     matrix:
       # Run test groups in parallel. This also speeds up identification of failing tests.
-      # @todo put back "--group scheduler_drush" when https://www.drupal.org/i/3359998 is solved.
-      - _PHPUNIT_EXTRA: [ "--group scheduler", "--group scheduler_api", "--group scheduler_rules_integration" ]
+      # @todo put back "scheduler_drush" when https://www.drupal.org/i/3359998 is solved.
+      - _MATRIX_VALUE: [ "scheduler", "scheduler_api", "scheduler_rules_integration" ]
+  variables:
+    # Redefine _PHPUNIT_EXTRA to include the group value.
+    _PHPUNIT_EXTRA: $_PHPUNIT_EXTRA2 --group $_MATRIX_VALUE
 
