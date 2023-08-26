@@ -256,6 +256,10 @@ class SchedulerManager {
         if ($plugin->entityTypeObject()->isRevisionable()) {
           $query->latestRevision();
         }
+        // Add tags to let other modules alter the query.
+        $query->addTag('scheduler');
+        $query->addTag('scheduler_publish');
+        $query->addTag('scheduler_' . $entityTypeId . '_publish');
         $ids = $query->execute();
       }
 
@@ -477,6 +481,10 @@ class SchedulerManager {
         if ($plugin->entityTypeObject()->isRevisionable()) {
           $query->latestRevision();
         }
+        // Add tags to let other modules alter the query.
+        $query->addTag('scheduler');
+        $query->addTag('scheduler_unpublish');
+        $query->addTag('scheduler_' . $entityTypeId . '_unpublish');
         $ids = $query->execute();
       }
 
