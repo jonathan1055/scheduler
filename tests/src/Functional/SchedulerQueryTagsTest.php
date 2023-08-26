@@ -189,7 +189,11 @@ class SchedulerQueryTagsTest extends SchedulerBrowserTestBase {
    */
   public function dataQueryTags() {
     $data = $this->dataStandardEntityTypes();
-    return ['#node' => $data['#node'], '#media' => $data['#media']];
+    // Remove the unrequired entity types. This caters for temporary test runs
+    // where #node or #media may already be removed.
+    unset($data['#commerce_product']);
+    unset($data['#taxonomy_term']);
+    return $data;
   }
 
 }
