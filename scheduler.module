@@ -1422,13 +1422,9 @@ function scheduler_local_tasks_alter(&$local_tasks) {
       unset($data['scheduler']);
     }
     // We assume that the duplicates are only caused by Scheduler. Other modules
-    // could be causing more so log this and solve it later if it ever happens.
-    if (count($data) > 1) {
-      \Drupal::logger('scheduler')->warning('Local task route %route contains duplicates in addition to Scheduler. %data', [
-        '%route' => $route,
-        '%data' => print_r($data, TRUE),
-      ]);
-    }
+    // could be causing more. If count($data) is still > 1 after the unset above
+    // then look at $data to find out which module is adding the route.
+    // @see https://www.drupal.org/project/scheduler/issues/3388029
   }
 }
 
