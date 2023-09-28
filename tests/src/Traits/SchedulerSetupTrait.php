@@ -192,7 +192,6 @@ trait SchedulerSetupTrait {
 
     // Store the core dateFormatter service for re-use in the actual tests.
     $this->dateFormatter = $this->container->get('date.formatter');
-
   }
 
   /**

@@ -22,6 +22,7 @@ use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
+use Drupal\scheduler\Form\SchedulerCronForm;
 use Drupal\workbench_moderation\Plugin\Action\ModerationOptOutPublishNode;
 use Drupal\workbench_moderation\Plugin\Action\ModerationOptOutUnpublishNode;
 
@@ -42,7 +43,7 @@ function scheduler_help($route_name, RouteMatchInterface $route_match) {
 
     case 'scheduler.cron_form':
       $base_url = $GLOBALS['base_url'];
-      $access_key = \Drupal::config('scheduler.settings')->get('lightweight_cron_access_key');
+      $access_key = \Drupal::state()->get(SchedulerCronForm::CRON_ACCESS_KEY, '');
       $cron_url = $base_url . '/scheduler/cron/' . $access_key;
       $output = '<p>' . t("When you have set up Drupal's standard crontab job cron.php then Scheduler will be executed during each cron run. However, if you would like finer granularity to scheduler, but don't want to run Drupal's cron more often then you can use the lightweight cron handler provided by Scheduler. This is an independent cron job which only runs the scheduler process and does not execute any cron tasks defined by Drupal core or any other modules.") . '</p>';
       $output .= '<p>' . t("Scheduler's cron is at /scheduler/cron/{access-key} and a sample crontab entry to run scheduler every minute might look like:") . '</p>';

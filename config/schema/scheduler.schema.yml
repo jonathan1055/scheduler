@@ -58,9 +58,6 @@ scheduler.settings:
     hide_seconds:
       type: boolean
       label: 'Hide the seconds on the input control when entering a time'
-    lightweight_cron_access_key:
-      type: string
-      label: 'Lightweight cron access key'
     log:
       type: boolean
       label: 'Log every Scheduler lightweight cron activation and completion message'
