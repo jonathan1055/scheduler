@@ -195,7 +195,7 @@ class SchedulerManager {
     $plugin = $this->getPlugin($entity->getEntityTypeId());
 
     // Exception messages are developer-facing and do not need to be translated
-    // from English. So it is accpetable to create words such as "{$process}ed"
+    // from English. So it is acceptable to create words such as "{$process}ed"
     // and "{$process}ing".
     switch ($exception_name) {
       case 'SchedulerEntityTypeNotEnabledException':

@@ -147,7 +147,7 @@ class SchedulerHooksTest extends SchedulerBrowserTestBase {
       ${"entity$i"} = $storage->load(${"entity$i"}->id());
     }
 
-    // Check tha entity 1 and 2 have been published.
+    // Check that entity 1 and 2 have been published.
     $this->assertTrue($entity1->isPublished(), "After cron, $entityTypeId 1 '{$entity1->label()}' should be published.");
     $this->assertTrue($entity2->isPublished(), "After cron, $entityTypeId 2 '{$entity2->label()}' should be published.");
 
