@@ -53,15 +53,17 @@ include:
 # Scheduler customisations
 ################
 variables:
+  _SHOW_ENVIRONMENT_VARIABLES: 0
+  _PHPUNIT_CONCURRENT: 1
+  _PHPUNIT_TESTGROUPS: ''
   _PHPUNIT_PARAMETERS:
-    value: ""
-    description: "Additional parameters for use in PHPUNIT parallel job matrix."
-  # Cannot filter on test groups when running concurrent=1 due to using run-tests.sh
-  # Put back to concurrent=1 when https://www.drupal.org/project/gitlab_templates/issues/3388185 is resolved.
-  _PHPUNIT_CONCURRENT: "0"
+    value: ''
+    description: 'Additional parameters for use in PHPUNIT parallel job matrix.'
 
 eslint:
   allow_failure: false
+  before_script:
+    - echo "ESLINT version $(${CI_PROJECT_DIR}/${_WEB_ROOT}/core/node_modules/.bin/eslint --version)"
 
 stylelint:
   allow_failure: false
