@@ -53,6 +53,12 @@ include:
 # Scheduler customisations
 ################
 variables:
+  SKIP_COMPOSER_LINT: 0
+  SKIP_ESLINT: 0
+  SKIP_PHPCS: 0
+  SKIP_PHPSTAN: 0
+  SKIP_STYLELINT: 0
+  SKIP_PHPUNIT: 0
   _SHOW_ENVIRONMENT_VARIABLES: 0
   _PHPUNIT_CONCURRENT: 1
   _PHPUNIT_TESTGROUPS: ''
@@ -84,11 +90,17 @@ phpunit:
         - scheduler_kernel
         - scheduler_rules_integration
   rules:
+    # Repeat the standard rules. The skip has to be right at the top.
+    - if: '$SKIP_PHPUNIT == "1"'
+      when: never
+    # Re-define _PHPUNIT_EXTRA depending on _PHPUNIT_CONCURRENT
     - if: '$_PHPUNIT_CONCURRENT == "0"'
       variables:
-        # Specify parameters passed to PHPUNIT
+        # Specify parameters passed to PHPUNIT (needs --group)
         _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS --group $_MATRIX_VALUE
     - if: '$_PHPUNIT_CONCURRENT == "1"'
       variables:
-        # Specify parameters passed to RUN-TESTS.SH
+        # Specify parameters passed to RUN-TESTS.SH (without --group)
         _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS $_MATRIX_VALUE
+    # This is from the standard rules, but has to be at the end of the section.
+    - when: on_success
