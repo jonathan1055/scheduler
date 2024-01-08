@@ -86,7 +86,8 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
         'title' => $this->t('Scheduled media'),
         'route_name' => 'view.scheduler_scheduled_media.overview',
         'parent_id' => 'entity.media.collection',
-        'weight' => 5,
+        // Media Library table tab is weight 10 and grid is 20, so use 30.
+        'weight' => 30,
       ] + $base_plugin_definition;
 
       // This task is added so that we get an 'overview' sub-task link alongside
