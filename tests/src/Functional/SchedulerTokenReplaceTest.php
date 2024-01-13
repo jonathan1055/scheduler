@@ -20,6 +20,9 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
     // Define timestamps for consistent use when repeated throughout this test.
     $publish_on_timestamp = $this->requestTime + 3600;
     $unpublish_on_timestamp = $this->requestTime + 7200;
+    // Derive the token type id from the entity type id. Use second parameter
+    // TRUE to fall back to the input value if the mapping is not found.
+    $tokenTypeId = \Drupal::service('token.entity_mapper')->getTokenTypeForEntityType($entityTypeId, TRUE);
 
     // Create an unpublished entity with scheduled dates.
     $entity = $this->createEntity($entityTypeId, $bundle, [
@@ -48,7 +51,7 @@ class SchedulerTokenReplaceTest extends SchedulerBrowserTestBase {
     foreach ($test_cases as $test_data) {
       // Edit the entity and set the body tokens to use the format being tested.
       $edit = [
-        "{$this->bodyField($entityTypeId)}[0][value]" => "Publish on: [{$entityTypeId}:scheduler-publish{$test_data['token_format']}]. Unpublish on: [{$entityTypeId}:scheduler-unpublish{$test_data['token_format']}].",
+        "{$this->bodyField($entityTypeId)}[0][value]" => "Publish on: [{$tokenTypeId}:scheduler-publish{$test_data['token_format']}]. Unpublish on: [{$tokenTypeId}:scheduler-unpublish{$test_data['token_format']}].",
       ];
       $this->drupalGet($entity->toUrl('edit-form'));
       $this->submitForm($edit, 'Save');

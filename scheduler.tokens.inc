@@ -8,14 +8,31 @@
 use Drupal\Core\Render\BubbleableMetadata;
 
 /**
+ * Internal function to return the token type ids for supported entity types.
+ */
+function _scheduler_token_types() {
+  static $token_types;
+  if (!empty($token_types)) {
+    return $token_types;
+  }
+  $plugin_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
+  // This function should only get executed if the Token module is enabled,
+  // therefore we can assume the token.entity_mapper service exists without
+  // having to check for it.
+  foreach ($plugin_types as $type) {
+    $token_type = \Drupal::service('token.entity_mapper')->getTokenTypeForEntityType($type, TRUE);
+    $token_types[] = $token_type;
+  }
+  return $token_types;
+}
+
+/**
  * Implements hook_token_info().
  */
 function scheduler_token_info() {
-
-  $plugin_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
   // Initialise the array to avoid 'variable is undefined' phpcs error.
   $info = [];
-  foreach ($plugin_types as $type) {
+  foreach (_scheduler_token_types() as $type) {
     $info['tokens'][$type]['scheduler-publish'] = [
       'name' => t('Publish on date'),
       'description' => t("The date the %type will be published.", ['%type' => $type]),
@@ -27,7 +44,6 @@ function scheduler_token_info() {
       'type' => 'date',
     ];
   }
-
   return $info;
 }
 
@@ -40,9 +56,7 @@ function scheduler_tokens($type, $tokens, array $data, array $options, Bubbleabl
   $language_code = $options['langcode'] ?? NULL;
   $replacements = [];
 
-  $plugin_types = \Drupal::service('scheduler.manager')->getPluginEntityTypes();
-
-  if (in_array($type, $plugin_types) && !empty($data[$type])) {
+  if (in_array($type, _scheduler_token_types()) && !empty($data[$type])) {
     $entity = $data[$type];
 
     foreach ($tokens as $name => $original) {
