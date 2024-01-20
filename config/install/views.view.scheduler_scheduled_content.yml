@@ -1123,7 +1123,7 @@ display:
         type: perm
         options:
           perm: 'access content'
-      display_comment: 'Access to the user view is controlled via a custom RouteSubscriber. The high-level "view published content" permission is added to satisfy the security_review module'
+      display_comment: 'Access to the user view is controlled via SchedulerRouteSubscriber::alterRoutes(). The high-level permission "access content" is added to satisfy the security_review module'
     display_plugin: page
     display_title: User
     id: user_page
