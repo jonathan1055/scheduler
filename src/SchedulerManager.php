@@ -1151,6 +1151,9 @@ class SchedulerManager {
 
       case 'view':
         return 'view scheduled ' . ($entityTypeId == 'node' ? 'content' : $entityTypeId);
+
+      default:
+        return '* should never get this *';
     }
   }
 

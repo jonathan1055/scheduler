@@ -57,10 +57,6 @@ class SchedulerBasicNodeTest extends SchedulerBrowserTestBase {
     // Verify that the node was created.
     $node = $this->drupalGetNodeByTitle($edit['title[0][value]']);
     $this->assertNotEmpty($node, sprintf('"%s" was created sucessfully.', $edit['title[0][value]']));
-    if (empty($node)) {
-      $this->assertTrue(FALSE, 'Test halted because node was not created.');
-      return;
-    }
 
     // Assert that the node is correctly published or unpublished.
     if (isset($edit['publish_on[0][value][date]'])) {

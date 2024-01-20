@@ -721,7 +721,7 @@ function _scheduler_translation_validate($form, FormStateInterface $form_state) 
   foreach ($settings as $entity_type => $content_types) {
     $publishing_enabled_types = $scheduler_manager->getEnabledTypes($entity_type, 'publish');
     $unpublishing_enabled_types = $scheduler_manager->getEnabledTypes($entity_type, 'unpublish');
-    if (empty($publishing_enabled_types) && empty($publishing_enabled_types)) {
+    if (empty($publishing_enabled_types) && empty($unpublishing_enabled_types)) {
       continue;
     }
 
