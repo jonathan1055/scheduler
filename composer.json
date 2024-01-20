@@ -8,6 +8,8 @@
         "drupal/rules": "^3",
         "drush/drush": ">=9",
         "drupal/devel_generate": ">=4",
+        "drupal/workbench_moderation": "*",
+        "drupal/workbench_moderation_actions": "*",
         "drupal/commerce": "^2.0"
     },
     "repositories": {
