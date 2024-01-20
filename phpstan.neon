@@ -10,6 +10,7 @@ parameters:
   excludePaths:
     # Legacy code that produces warnings which cannot be added to a .baseline file.
     - tests/src/Traits/PhpunitCompatibilityCore87Trait.php
+    - scripts/*
 
   ignoreErrors:
     # new static() is a best practice in Drupal. Core ignores this.

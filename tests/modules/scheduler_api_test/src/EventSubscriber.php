@@ -3,10 +3,10 @@
 namespace Drupal\scheduler_api_test;
 
 use Drupal\scheduler\Event\SchedulerCommerceProductEvents;
+use Drupal\scheduler\Event\SchedulerEvent;
 use Drupal\scheduler\Event\SchedulerMediaEvents;
 use Drupal\scheduler\Event\SchedulerNodeEvents;
 use Drupal\scheduler\Event\SchedulerTaxonomyTermEvents;
-use Drupal\scheduler\SchedulerEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

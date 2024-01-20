@@ -18,6 +18,7 @@ use Drupal\Core\Link;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
+use Drupal\scheduler\Event\SchedulerEvent;
 use Psr\Log\LoggerInterface;
 
 /**

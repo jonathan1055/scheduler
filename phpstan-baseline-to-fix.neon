@@ -75,11 +75,6 @@ parameters:
       path: src/SchedulerManager.php
 
     -
-      message: "#^Instantiated class Drupal\\\\scheduler\\\\SchedulerEvent not found\\.$#"
-      count: 1
-      path: src/SchedulerManager.php
-
-    -
       message: "#^\\\\Drupal calls should be avoided in classes, use dependency injection instead$#"
       count: 17
       path: src/SchedulerManager.php
@@ -88,10 +83,3 @@ parameters:
       message: "#^\\\\Drupal calls should be avoided in classes, use dependency injection instead$#"
       count: 3
       path: src/Theme/SchedulerThemeNegotiator.php
-
-    -
-      # The initial | before Node will match with the generic functions that are not specifically for an entity type.
-      # Therefore there are 5 "types" x 6 events = 30 occurrences
-      message: "#^Parameter \\$event of method Drupal\\\\scheduler_api_test\\\\EventSubscriber\\:\\:apiTest(|Node|Media|Product|TaxonomyTerm)(PrePublish|Publish|PrePublishImmediately|PublishImmediately|PreUnpublish|Unpublish)\\(\\) has invalid type Drupal\\\\scheduler\\\\SchedulerEvent\\.$#"
-      count: 30
-      path: tests/modules/scheduler_api_test/src/EventSubscriber.php
