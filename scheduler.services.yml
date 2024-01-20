@@ -1,5 +1,4 @@
 services:
-
   scheduler.manager:
     class: Drupal\scheduler\SchedulerManager
     arguments:
