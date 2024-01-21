@@ -26,11 +26,6 @@ parameters:
       path: scheduler_rules_integration/src/Plugin/RulesAction/RemoveUnpublishingDate.php
 
     -
-      message: "#^Parameter \\$container of method Drupal\\\\scheduler_rules_integration\\\\Plugin\\\\RulesAction\\\\SchedulerRulesActionBase\\:\\:create\\(\\) has invalid type Drupal\\\\scheduler_rules_integration\\\\Plugin\\\\RulesAction\\\\ContainerInterface\\.$#"
-      count: 1
-      path: scheduler_rules_integration/src/Plugin/RulesAction/SchedulerRulesActionBase.php
-
-    -
       message: "#^\\\\Drupal calls should be avoided in classes, use dependency injection instead$#"
       count: 2
       path: scheduler_rules_integration/src/Plugin/RulesAction/SchedulerRulesActionBase.php

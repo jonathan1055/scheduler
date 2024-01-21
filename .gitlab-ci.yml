@@ -104,3 +104,12 @@ phpunit:
         _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS $_MATRIX_VALUE
     # This is from the standard rules, but has to be at the end of the section.
     - when: on_success
+
+phpstan:
+  after_script:
+    # Store current directory
+    - CURDIR="$(pwd)" && echo "CURDIR=$CURDIR"
+    - cd $CI_PROJECT_DIR/$_WEB_ROOT/modules/custom/$CI_PROJECT_NAME
+    - test -f phpstan.neon && echo "=== This is phpstan.neon ===" && cat phpstan.neon
+    - php $CI_PROJECT_DIR/scripts/phpstan-baseline-summary.php phpstan-baseline-to-fix.neon
+    - cd $CURDIR && pwd
