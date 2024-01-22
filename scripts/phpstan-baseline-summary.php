@@ -27,9 +27,9 @@ $input_file = $path . '/' . $filename;
 $quiet ?: print "path=$path\nfilename=$filename\nfull input_path=$input_file\n";
 
 $trim_chars = " #^\"\'$\n";
-$summary = [];
-$overall = [];
-$total = 0;
+$summary = $overall = [];
+$total = $count = 0;
+$msg = '';
 
 // Read the file into an array.
 $baseline = @file($input_file) ?: [];
