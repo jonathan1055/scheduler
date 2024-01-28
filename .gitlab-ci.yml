@@ -54,12 +54,14 @@ include:
 ################
 variables:
   SKIP_COMPOSER_LINT: 0
+  SKIP_STYLELINT: 0
   SKIP_ESLINT: 0
   SKIP_PHPCS: 0
   SKIP_PHPSTAN: 0
-  SKIP_STYLELINT: 0
   SKIP_PHPUNIT: 0
-  _SHOW_ENVIRONMENT_VARIABLES: 0
+  OPT_IN_TEST_NEXT_MINOR: 0
+
+  _SHOW_ENVIRONMENT_VARIABLES: 1
   _PHPUNIT_CONCURRENT: 1
   _PHPUNIT_TESTGROUPS: ''
   _PHPUNIT_PARAMETERS:
@@ -77,7 +79,16 @@ stylelint:
 phpcs:
   allow_failure: false
 
-phpunit:
+phpstan:
+  after_script:
+    # Store current directory
+    - CURDIR="$(pwd)" && echo "CURDIR=$CURDIR"
+    - cd $CI_PROJECT_DIR/$_WEB_ROOT/modules/custom/$CI_PROJECT_NAME && pwd
+    - test -f phpstan.neon && echo "=== This is phpstan.neon ===" && cat phpstan.neon
+    - php $CI_PROJECT_DIR/scripts/phpstan-baseline-summary.php phpstan-baseline-to-fix.neon
+    - cd $CURDIR && pwd
+
+.scheduler-matrix: &scheduler-matrix
   parallel:
     matrix:
       # Run test groups in parallel. This also speeds up identification of failing tests.
@@ -89,27 +100,22 @@ phpunit:
         - scheduler_js
         - scheduler_kernel
         - scheduler_rules_integration
-  rules:
-    # Repeat the standard rules. The skip has to be right at the top.
-    - if: '$SKIP_PHPUNIT == "1"'
-      when: never
-    # Re-define _PHPUNIT_EXTRA depending on _PHPUNIT_CONCURRENT
-    - if: '$_PHPUNIT_CONCURRENT == "0"'
-      variables:
-        # Specify parameters passed to PHPUNIT (needs --group)
-        _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS --group $_MATRIX_VALUE
-    - if: '$_PHPUNIT_CONCURRENT == "1"'
-      variables:
-        # Specify parameters passed to RUN-TESTS.SH (without --group)
-        _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS $_MATRIX_VALUE
-    # This is from the standard rules, but has to be at the end of the section.
-    - when: on_success
 
-phpstan:
-  after_script:
-    # Store current directory
-    - CURDIR="$(pwd)" && echo "CURDIR=$CURDIR"
-    - cd $CI_PROJECT_DIR/$_WEB_ROOT/modules/custom/$CI_PROJECT_NAME
-    - test -f phpstan.neon && echo "=== This is phpstan.neon ===" && cat phpstan.neon
-    - php $CI_PROJECT_DIR/scripts/phpstan-baseline-summary.php phpstan-baseline-to-fix.neon
-    - cd $CURDIR && pwd
+.scheduler-phpunit-rule: &scheduler-phpunit-rule
+  # Re-define _PHPUNIT_EXTRA depending on the value of _PHPUNIT_CONCURRENT
+  - if: '$_PHPUNIT_CONCURRENT == "0"'
+    variables:
+      # Specify parameters that will be passed to PHPUNIT (needs --group)
+      _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS --group $_MATRIX_VALUE
+  - if: '$_PHPUNIT_CONCURRENT == "1"'
+    variables:
+      # Specify parameters that will be passed to RUN-TESTS.SH (without --group)
+      _PHPUNIT_EXTRA: $_PHPUNIT_PARAMETERS $_MATRIX_VALUE
+
+phpunit:
+  <<: *scheduler-matrix
+  rules:
+    # - !reference [ .opt-in-current-rule ]
+    - !reference [ .skip-phpunit-rule ]
+    - *scheduler-phpunit-rule
+    - when: on_success

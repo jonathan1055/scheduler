@@ -88,24 +88,21 @@ array_multisort($a_count, SORT_DESC, $summary);
 arsort($overall);
 $quiet ?: print "overall=" . print_r($overall, TRUE) . "\n";
 
-print "---------------------------------------------------------------\n";
-print "Summary of PHPStan messages in {$filename}\n";
+$divider = str_repeat('-', 110) . "\n";
+print "{$divider}Summary of PHPStan messages in {$filename}\n";
 foreach ($summary as $msg => $values) {
-  print "\n'{$msg}'\n\n{$values['count']} occurrence in " . count($values['paths']) . " file(s)\n";
+  print "{$divider}{$msg}'\n\n{$values['count']} occurrence(s) in " . count($values['paths']) . " file(s)\n";
   foreach ($values['paths'] as $path) {
     print "   $path\n";
   }
 }
 
-print "---------------------------------------------------------------\n";
-print "Number of messages by file\n\n";
+print "{$divider}Number of messages by file\n\n";
 foreach ($overall as $file => $num) {
   print "   $num in $file\n";
 }
 
-print "---------------------------------------------------------------\n";
-print "Different types of message: " . count($summary) . "\n";
-print "Total number of messages: " . $total . "\n";
-print "---------------------------------------------------------------\n";
+print "{$divider}Different types of message: " . count($summary) . "\n";
+print "Total number of messages: {$total}\n{$divider}";
 
 exit;
