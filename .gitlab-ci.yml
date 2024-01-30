@@ -43,14 +43,6 @@ include:
 
 ################
 # Pipeline configuration variables
-#
-# These are the variables provided to the Run Pipeline form that a user may want to override.
-#
-# Docs at https://git.drupalcode.org/project/gitlab_templates/-/blob/1.0.x/includes/include.drupalci.variables.yml
-################
-
-################
-# Scheduler customisations
 ################
 variables:
   SKIP_COMPOSER_LINT: 0
@@ -59,7 +51,7 @@ variables:
   SKIP_PHPCS: 0
   SKIP_PHPSTAN: 0
   SKIP_PHPUNIT: 0
-  OPT_IN_TEST_NEXT_MINOR: 0
+  OPT_IN_TEST_NEXT_MINOR: 1
 
   _SHOW_ENVIRONMENT_VARIABLES: 1
   _PHPUNIT_CONCURRENT: 1
@@ -67,6 +59,15 @@ variables:
   _PHPUNIT_PARAMETERS:
     value: ''
     description: 'Additional parameters for use in PHPUNIT parallel job matrix.'
+
+################
+# Job overrides
+################
+composer:
+  after_script:
+    # Show the last three commits. Current directory /builds/project/scheduler ($CI_PROJECT_DIR) is correct.
+    - pwd
+    - git show -3 --stat
 
 eslint:
   allow_failure: false
@@ -81,12 +82,14 @@ phpcs:
 
 phpstan:
   after_script:
-    # Store current directory
-    - CURDIR="$(pwd)" && echo "CURDIR=$CURDIR"
-    - cd $CI_PROJECT_DIR/$_WEB_ROOT/modules/custom/$CI_PROJECT_NAME && pwd
+    - php vendor/bin/phpstan --version
     - test -f phpstan.neon && echo "=== This is phpstan.neon ===" && cat phpstan.neon
     - php $CI_PROJECT_DIR/scripts/phpstan-baseline-summary.php phpstan-baseline-to-fix.neon
-    - cd $CURDIR && pwd
+
+# Do not need to run phpstan twice.
+phpstan (next minor):
+  rules:
+    - when: never
 
 .scheduler-matrix: &scheduler-matrix
   parallel:
@@ -119,3 +122,26 @@ phpunit:
     - !reference [ .skip-phpunit-rule ]
     - *scheduler-phpunit-rule
     - when: on_success
+  after_script:
+    # This is executed in all phpunit jobs because they extend phpunit (not .phpunit-base).
+    # $WHAT_TO_RUN is not included because it is only derived in the phpunit script, so will always be blank here.
+    - echo "_PHPUNIT_CONCURRENT=$_PHPUNIT_CONCURRENT, _PHPUNIT_TESTGROUPS=$_PHPUNIT_TESTGROUPS"
+    - echo "_MATRIX_VALUE=$_MATRIX_VALUE, _PHPUNIT_EXTRA=$_PHPUNIT_EXTRA"
+
+# Do not automatically run phpunit at next minor, but allow the job to started manually.
+phpunit (next minor):
+  # Cannot use parallel matrix when the job is triggered manually, because the
+  # matrix values are not passed through. Therefore remove 'parallel' and run
+  # the tests in one job. Cannot have _PHPUNIT_TESTGROUPS = --all because this
+  # includes scheduler_drush. Therefore list all except that group.
+  parallel:
+  variables:
+    _PHPUNIT_TESTGROUPS: 'scheduler, scheduler_api, scheduler_js, scheduler_kernel, scheduler_rules_integration'
+    # Use core ignoreFile to show deprecations. This will only work with $_PHPUNIT_CONCURRENT=1
+    _PHPUNIT_CONCURRENT: 1
+    SYMFONY_DEPRECATIONS_HELPER: "ignoreFile=$CI_PROJECT_DIR/$_WEB_ROOT/core/.deprecation-ignore.txt"
+  allow_failure: true
+  rules:
+    - !reference [ .opt-in-next-minor-rule ]
+    - !reference [ .skip-phpunit-rule ]
+    - when: manual

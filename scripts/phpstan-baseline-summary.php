@@ -91,7 +91,7 @@ $quiet ?: print "overall=" . print_r($overall, TRUE) . "\n";
 $divider = str_repeat('-', 110) . "\n";
 print "{$divider}Summary of PHPStan messages in {$filename}\n";
 foreach ($summary as $msg => $values) {
-  print "{$divider}{$msg}'\n\n{$values['count']} occurrence(s) in " . count($values['paths']) . " file(s)\n";
+  print "{$divider}{$msg}\n\n{$values['count']} occurrence(s) in " . count($values['paths']) . " file(s)\n";
   foreach ($values['paths'] as $path) {
     print "   $path\n";
   }
