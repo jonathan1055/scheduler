@@ -35,7 +35,7 @@ include:
   # View these include files at https://git.drupalcode.org/project/gitlab_templates/
   ################
   - project: $_GITLAB_TEMPLATES_REPO
-    ref: $_GITLAB_TEMPLATES_REF
+    ref: main
     file:
       - '/includes/include.drupalci.main.yml'
       - '/includes/include.drupalci.variables.yml'
@@ -53,6 +53,7 @@ variables:
   SKIP_PHPUNIT: 0
   OPT_IN_TEST_NEXT_MINOR: 1
 
+  _GITLAB_TEMPLATES_REF: main
   _SHOW_ENVIRONMENT_VARIABLES: 1
   _PHPUNIT_CONCURRENT: 1
   _PHPUNIT_TESTGROUPS: ''
@@ -118,7 +119,7 @@ phpstan (next minor):
 phpunit:
   <<: *scheduler-matrix
   rules:
-    # - !reference [ .opt-in-current-rule ]
+    - !reference [ .opt-in-current-rule ]
     - !reference [ .skip-phpunit-rule ]
     - *scheduler-phpunit-rule
     - when: on_success
@@ -128,7 +129,7 @@ phpunit:
     - echo "_PHPUNIT_CONCURRENT=$_PHPUNIT_CONCURRENT, _PHPUNIT_TESTGROUPS=$_PHPUNIT_TESTGROUPS"
     - echo "_MATRIX_VALUE=$_MATRIX_VALUE, _PHPUNIT_EXTRA=$_PHPUNIT_EXTRA"
 
-# Do not automatically run phpunit at next minor, but allow the job to started manually.
+# Do not automatically run phpunit at next minor, but allow the job to be started manually.
 phpunit (next minor):
   # Cannot use parallel matrix when the job is triggered manually, because the
   # matrix values are not passed through. Therefore remove 'parallel' and run
