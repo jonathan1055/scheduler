@@ -88,7 +88,7 @@ array_multisort($a_count, SORT_DESC, $summary);
 arsort($overall);
 $quiet ?: print "overall=" . print_r($overall, TRUE) . "\n";
 
-$divider = str_repeat('-', 110) . "\n";
+$divider = str_repeat('-', 75) . "\n";
 print "{$divider}Summary of PHPStan messages in {$filename}\n";
 foreach ($summary as $msg => $values) {
   print "{$divider}{$msg}\n\n{$values['count']} occurrence(s) in " . count($values['paths']) . " file(s)\n";
