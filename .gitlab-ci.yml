@@ -35,7 +35,13 @@ include:
   # View these include files at https://git.drupalcode.org/project/gitlab_templates/
   ################
   - project: $_GITLAB_TEMPLATES_REPO
-    ref: $_GITLAB_TEMPLATES_REF
+    # "ref" value can be:
+    # - Recommended (default) - `ref: $_GITLAB_TEMPLATES_REF` - The Drupal Association will update this value to the recommended tag for contrib.
+    # - Latest - `ref: main` - Get the latest additions and bug fixes as they are merged into the templates.
+    # - Minor or Major latests - `ref: 1.x-latest` or `ref: 1.0.x-latest` - Get the latest additions within a minor (mostly bugfixes) or major (bugs and new features).
+    # - Fixed tag - `ref: 1.0.1` - Set the value to a known tag. This will not get any updates.
+    # If you change the default value of ref, you should set the _CURL_TEMPLATES_REF variable in the variables section to be the same as set here.
+    ref: 'main'
     file:
       - '/includes/include.drupalci.main.yml'
       - '/includes/include.drupalci.variables.yml'
@@ -45,20 +51,14 @@ include:
 # Pipeline configuration variables
 ################
 variables:
-  SKIP_COMPOSER_LINT: 0
-  SKIP_STYLELINT: 0
-  SKIP_ESLINT: 0
-  SKIP_PHPCS: 0
-  SKIP_PHPSTAN: 0
-  SKIP_PHPUNIT: 0
   OPT_IN_TEST_NEXT_MINOR: 1
-
   _SHOW_ENVIRONMENT_VARIABLES: 1
   _PHPUNIT_CONCURRENT: 1
   _PHPUNIT_TESTGROUPS: ''
   _PHPUNIT_PARAMETERS:
     value: ''
     description: 'Additional parameters for use in PHPUNIT parallel job matrix.'
+  _CURL_TEMPLATES_REF: 'main'
 
 ################
 # Job overrides
@@ -118,8 +118,7 @@ phpstan (next minor):
 phpunit:
   <<: *scheduler-matrix
   rules:
-    # TEMP comment out this rule until gitlab_templates default-ref points to 1.1.0
-    # - !reference [ .opt-in-current-rule ]
+    - !reference [ .opt-in-current-rule ]
     - !reference [ .skip-phpunit-rule ]
     - *scheduler-phpunit-rule
     - when: on_success
@@ -129,8 +128,12 @@ phpunit:
     - echo "_PHPUNIT_CONCURRENT=$_PHPUNIT_CONCURRENT, _PHPUNIT_TESTGROUPS=$_PHPUNIT_TESTGROUPS"
     - echo "_MATRIX_VALUE=$_MATRIX_VALUE, _PHPUNIT_EXTRA=$_PHPUNIT_EXTRA"
 
-# Do not automatically run phpunit at next minor, but allow the job to be started manually.
 phpunit (next minor):
+  rules:
+    - !reference [ .opt-in-next-minor-rule ]
+    - !reference [ .skip-phpunit-rule ]
+    # Do not automatically run, but allow the job to be started manually.
+    - when: manual
   # Cannot use parallel matrix when the job is triggered manually, because the
   # matrix values are not passed through. Therefore remove 'parallel' and run
   # the tests in one job. Cannot have _PHPUNIT_TESTGROUPS = --all because this
@@ -142,7 +145,3 @@ phpunit (next minor):
     _PHPUNIT_CONCURRENT: 1
     SYMFONY_DEPRECATIONS_HELPER: "ignoreFile=$CI_PROJECT_DIR/$_WEB_ROOT/core/.deprecation-ignore.txt"
   allow_failure: true
-  rules:
-    - !reference [ .opt-in-next-minor-rule ]
-    - !reference [ .skip-phpunit-rule ]
-    - when: manual
