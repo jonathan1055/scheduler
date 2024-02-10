@@ -116,7 +116,8 @@ phpstan (next minor):
 phpunit:
   <<: *scheduler-matrix
   rules:
-    - !reference [ .opt-in-current-rule ]
+    # uncomment this when _GITLAB_TEMPLATES_REF is updated to 1.1.0+
+    # - !reference [ .opt-in-current-rule ]
     - !reference [ .skip-phpunit-rule ]
     - *scheduler-phpunit-rule
     - when: on_success
