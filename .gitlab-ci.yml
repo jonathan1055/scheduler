@@ -40,7 +40,6 @@ include:
     # - Latest - `ref: main` - Get the latest additions and bug fixes as they are merged into the templates.
     # - Minor or Major latests - `ref: 1.x-latest` or `ref: 1.0.x-latest` - Get the latest additions within a minor (mostly bugfixes) or major (bugs and new features).
     # - Fixed tag - `ref: 1.0.1` - Set the value to a known tag. This will not get any updates.
-    # If you change the default value of ref, you should set the _CURL_TEMPLATES_REF variable in the variables section to be the same as set here.
     ref: 'main'
     file:
       - '/includes/include.drupalci.main.yml'
@@ -58,7 +57,6 @@ variables:
   _PHPUNIT_PARAMETERS:
     value: ''
     description: 'Additional parameters for use in PHPUNIT parallel job matrix.'
-  _CURL_TEMPLATES_REF: 'main'
 
 ################
 # Job overrides
