@@ -53,7 +53,7 @@ class SchedulerPluginManager extends DefaultPluginManager {
    */
   protected function findDefinitions() {
     // This is an overridden method from the parent class. This version filters
-    // out plugins with missing module and entity type depencencies before they
+    // out plugins with missing module and entity type dependencies before they
     // are initialized, removing the need for separate checks per plugin.
     $definitions = parent::findDefinitions();
 

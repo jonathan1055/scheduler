@@ -222,7 +222,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
       $this->assertNotEquals($translation3->unpublish_on->value, $translation2->unpublish_on->value, 'The original translation unpublish_on should not be synchronized');
     }
     else {
-      // The scheduer dates should be synchronized across all translations.
+      // The scheduler dates should be synchronized across all translations.
       $this->assertEquals($translation3->publish_on->value, $node->publish_on->value, 'The original translation publish_on should be synchronized');
       $this->assertEquals($translation3->unpublish_on->value, $node->unpublish_on->value, 'The original translation unpublish_on should be synchronized');
       $this->assertEquals($translation3->isPublished(), $node->isPublished(), 'The original translation status should be synchronized');
@@ -265,7 +265,7 @@ class SchedulerMultilingualTest extends SchedulerBrowserTestBase {
    * @return array
    *   The test data. Each array element has the format:
    *   Publish_on translatable
-   *   Unublish_on translatable
+   *   Unpublish_on translatable
    *   Status translatable
    *   Expected status of four translations before cron
    *   Expected status of four translations after cron

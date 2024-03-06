@@ -9,7 +9,7 @@ env:
   global:
     # Make the script re-usable for other modules.
     - MODULE=scheduler
-    # Initialise the real SYMFONY_DEPRECATIONS_HELPER variable.
+    # Initialize the real SYMFONY_DEPRECATIONS_HELPER variable.
     - SYMFONY_DEPRECATIONS_HELPER=0
     # Create a default for the allowed deprecations per branch.
     - DEPRECATIONS=0

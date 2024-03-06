@@ -103,8 +103,13 @@ entities, Commerce Products and Taxonomy Terms are supported.
 
  * To get help with crontab jobs, see https://drupal.org/cron
 
+[//]: # "This comment is correctly not rendered"
+[//]: # (another comment style which is not shown on the page)
+
 ## Maintainers
 
+[//]: # "cSpell:disable "
+[//]: # "Spellchecking is stopped from here. Do not want to add all these names into the project-words file"
 Current maintainers:
 - [Pieter Frenssen](https://www.drupal.org/u/pfrenssen) 2014(6.x)-current
 - [Jonathan Smith](https://www.drupal.org/u/jonathan1055) 2013(6.x)-current

@@ -132,7 +132,7 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
     if ($view && $view->status() && $view->getDisplay('overview')) {
       // In the same manner as for Commerce Products the page created by route
       // entity.taxonomy_vocabulary.collection does not have tabs or sub-links,
-      // so we need to definine one with a route name and base route here, to be
+      // so we need to define one with a route name and base route here, to be
       // used as the parent for the two tabs defined below.
       $this->derivatives['scheduler.taxonomy_collection'] = [
         'route_name' => 'entity.taxonomy_vocabulary.collection',

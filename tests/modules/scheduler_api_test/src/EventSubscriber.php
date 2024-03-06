@@ -36,7 +36,7 @@ class EventSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
 
-    // Initialise the array to avoid 'variable is undefined' phpcs error.
+    // Initialize the array to avoid 'variable is undefined' phpcs error.
     $events = [];
 
     // The values in the arrays give the function names below.
@@ -64,7 +64,7 @@ class EventSubscriber implements EventSubscriberInterface {
     $events[SchedulerCommerceProductEvents::PRE_PUBLISH_IMMEDIATELY][] = ['apiTestProductPrePublishImmediately'];
     $events[SchedulerCommerceProductEvents::PUBLISH_IMMEDIATELY][] = ['apiTestProductPublishImmediately'];
 
-    // These six events are dispatched for Taxomony Term entity types only.
+    // These six events are dispatched for Taxonomy Term entity types only.
     $events[SchedulerTaxonomyTermEvents::PRE_PUBLISH][] = ['apiTestTaxonomyTermPrePublish'];
     $events[SchedulerTaxonomyTermEvents::PUBLISH][] = ['apiTestTaxonomyTermPublish'];
     $events[SchedulerTaxonomyTermEvents::PRE_UNPUBLISH][] = ['apiTestTaxonomyTermPreUnpublish'];

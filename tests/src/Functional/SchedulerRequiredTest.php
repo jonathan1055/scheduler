@@ -26,7 +26,7 @@ class SchedulerRequiredTest extends SchedulerBrowserTestBase {
       ->setThirdPartySetting('scheduler', 'unpublish_required', $unpublish_required)
       ->save();
 
-    // To assist viewing and analysing the generated test result pages create a
+    // To assist viewing and analyzing the generated test result pages create a
     // text string showing all the test case parameters.
     $title_data = ['id = ' . $id,
       $publish_required ? 'Publishing required' : '',

@@ -226,7 +226,7 @@ class SchedulerAdminForm extends ConfigFormBase {
    *   The key of the configuration.
    *
    * @return \Drupal\Core\Config\ImmutableConfig
-   *   The value of the config setting equested.
+   *   The value of the config setting requested.
    */
   protected function setting($key) {
     return $this->configFactory->get('scheduler.settings')->get($key);

@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
-# This phpstan-basline-fix.neon file contains the messages for code which should
-# be worked on, and ultimatelty removed from here when the source is corrected.
+# This phpstan-baseline-fix.neon file contains the messages for code which should
+# be worked on, and ultimately removed from here when the source is corrected.
 # ------------------------------------------------------------------------------
 parameters:
   ignoreErrors:

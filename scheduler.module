@@ -1171,7 +1171,7 @@ function scheduler_feeds_processor_targets_alter(&$targets, $entity_type, $bundl
  * @see https://www.drupal.org/project/scheduler/issues/2651354
  */
 function scheduler_feeds_set_target($source, $entity, $target, $value, $mapping) {
-  // We expect a string or integer, but can accomodate an array, by taking the
+  // We expect a string or integer, but can accommodate an array, by taking the
   // first item. Use trim() so that a string of blanks is reduced to empty.
   $value = is_array($value) ? trim(reset($value)) : trim($value);
 

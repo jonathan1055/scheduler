@@ -110,7 +110,7 @@ class SchedulerCronForm extends ConfigFormBase {
       '#default_value' => $this->state->get($this::CRON_ACCESS_KEY, ''),
       '#required' => TRUE,
       '#size' => 25,
-      '#description' => $this->t("Similar to Drupal's cron key this acts as a security token to prevent unauthorised calls to scheduler/cron. The key should be passed as scheduler/cron/{access key}"),
+      '#description' => $this->t("Similar to Drupal's cron key this acts as a security token to prevent unauthorized calls to scheduler/cron. The key should be passed as scheduler/cron/{access key}"),
     ];
     // Add a submit handler function for the key generation.
     $form['cron_settings']['create_key'][] = [

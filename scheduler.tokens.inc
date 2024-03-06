@@ -30,7 +30,7 @@ function _scheduler_token_types() {
  * Implements hook_token_info().
  */
 function scheduler_token_info() {
-  // Initialise the array to avoid 'variable is undefined' phpcs error.
+  // Initialize the array to avoid 'variable is undefined' phpcs error.
   $info = [];
   foreach (_scheduler_token_types() as $type) {
     $info['tokens'][$type]['scheduler-publish'] = [

@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # This phpstan-baseline-ok.neon file contains the messages for code that will
-# not be changed. This is a permenant list of ignored messages.
+# not be changed. This is a permanent list of ignored messages.
 # ------------------------------------------------------------------------------
 parameters:
   ignoreErrors:

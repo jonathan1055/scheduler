@@ -98,7 +98,7 @@ trait SchedulerMediaSetupTrait {
     /** @var MediaStorageInterface $mediaStorage */
     $this->mediaStorage = $this->container->get('entity_type.manager')->getStorage('media');
 
-    // Add extra permisssions to the role assigned to the adminUser.
+    // Add extra permissions to the role assigned to the adminUser.
     $this->addPermissionsToUser($this->adminUser, [
       'create ' . $this->mediaTypeName . ' media',
       'edit any ' . $this->mediaTypeName . ' media',
@@ -113,7 +113,7 @@ trait SchedulerMediaSetupTrait {
       'view scheduled media',
     ]);
 
-    // Add extra permisssions to the role assigned to the schedulerUser.
+    // Add extra permissions to the role assigned to the schedulerUser.
     $this->addPermissionsToUser($this->schedulerUser, [
       'create ' . $this->mediaTypeName . ' media',
       'edit own ' . $this->mediaTypeName . ' media',

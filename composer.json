@@ -18,6 +18,7 @@
             "url": "https://packages.drupal.org/8"
         }
     },
+    "_comment": "cSpell:disable",
     "authors": [
         {
             "name": "Eric Schaefer (Eric Schaefer)",
@@ -40,6 +41,7 @@
             "role": "Maintainer"
         }
     ],
+    "_comment": "cSpell:enable",
     "support": {
         "issues": "https://www.drupal.org/project/issues/scheduler",
         "source": "https://git.drupalcode.org/project/scheduler"

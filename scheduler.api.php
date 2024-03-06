@@ -21,7 +21,7 @@
  *
  * This hook allows modules to add more entity ids into the list being processed
  * in the current cron run. It is invoked during cron runs only. This function
- * is retained for backwards compatibility but is superceded by the more
+ * is retained for backwards compatibility but is superseded by the more
  * flexible hook_scheduler_list_alter().
  *
  * @param string $process

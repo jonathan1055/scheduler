@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Read a PHPSTAN baseline file and summarise the ignored messages.
+ * Read a PHPSTAN baseline file and summarize the ignored messages.
  *
  * Arguments:
  *   -p --path     path to the input file, defaults to the current directory
