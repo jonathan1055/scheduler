@@ -16,7 +16,7 @@ build:
       eslint:
         halt-on-fail: true
       phpcs:
-        # phpcs halt-on-fail:true gives a grey 'build successful' message but does not stop the job.
+        # phpcs halt-on-fail:true gives a gray 'build successful' message but does not stop the job.
         halt-on-fail: true
       phpstan:
         halt-on-fail: false

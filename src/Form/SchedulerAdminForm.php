@@ -107,12 +107,12 @@ class SchedulerAdminForm extends ConfigFormBase {
         // Some modules may not create a default entity type during installation
         // or the entity type definitions may have been deleted. This is not an
         // exception, but will cause an error if we do not stop this loop.
-        $message_parms = [
+        $message_params = [
           '%module' => $plugin->dependency(),
           '%plugin_label' => $plugin->label(),
           '%bundle_id' => $bundle_id,
         ];
-        $this->logger('scheduler')->notice('No %bundle_id entity types returned by %module module for use in %plugin_label', $message_parms);
+        $this->logger('scheduler')->notice('No %bundle_id entity types returned by %module module for use in %plugin_label', $message_params);
         $links[] = ['title' => "-- $collection_label --  (" . $this->t('no entity types defined') . ')'];
         continue;
       }

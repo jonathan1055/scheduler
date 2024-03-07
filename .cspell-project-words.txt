@@ -11,6 +11,8 @@ nomsg
 nolog
 drupalspoons
 backported
+tnid
+randomstring
 
 # Scheduler words
 timecheck
@@ -27,3 +29,6 @@ Taximayne
 Vicenza
 Webisa
 Wenlock
+
+# Real words missing from dictionary
+unrequired
