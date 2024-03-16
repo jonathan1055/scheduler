@@ -4,8 +4,22 @@
 # View these include files at https://git.drupalcode.org/project/gitlab_templates/
 ################
 include:
-  - project: $_GITLAB_TEMPLATES_REPO
-    ref: $_GITLAB_TEMPLATES_REF
+  # MR 96
+  # - project: issue/gitlab_templates-3408456
+  #   ref: 3408456-test-theory
+
+  # MR 127 Testdox
+  # - project: issue/gitlab_templates-3359927
+  #   ref: 3359927-testdox
+
+  # MR 139 Check for phpunit files
+  - project: issue/gitlab_templates-3419008
+    ref: 3419008-check-for-phpunit-files
+
+  # MR 155 Run cspell in root folder
+  # - project: issue/gitlab_templates-3426136
+  #   ref: 3426136-cspell-in-root-folder
+
     file:
       - '/includes/include.drupalci.main.yml'
       - '/includes/include.drupalci.variables.yml'
@@ -15,7 +29,30 @@ include:
 # Pipeline configuration variables
 ################
 variables:
-  OPT_IN_TEST_NEXT_MINOR: 1
+  # If the MR has changes to a file that is retrieved via curl then specify these two CURL_TEMPLATES variables to match the repo and ref above.
+  # Better to have any value here, even if it does not match the values above, because any MR is likely to be more up-to-date than 'default-ref'.
+  _CURL_TEMPLATES_REPO: issue/gitlab_templates-3426136
+  _CURL_TEMPLATES_REF: 3426136-cspell-in-root-folder
+
+  SKIP_PAGES: 1
+  SKIP_COMPOSER_LINT: 1
+  SKIP_ESLINT: 1
+  SKIP_STYLELINT: 1
+  SKIP_PHPCS: 1
+  SKIP_CSPELL: 1
+  SKIP_PHPSTAN: 1
+
+  SKIP_NIGHTWATCH: 1
+  SKIP_PHPUNIT: 0
+  SKIP_TEST_ONLY_CHANGES: 1
+
+  # OPT_IN_TEST_CURRENT: 0
+  # OPT_IN_TEST_MAX_PHP: 1
+  # OPT_IN_TEST_PREVIOUS_MINOR: 1
+  # OPT_IN_TEST_PREVIOUS_MAJOR: 1
+  OPT_IN_TEST_NEXT_MINOR: 0
+  # OPT_IN_TEST_NEXT_MAJOR: 1
+
   _SHOW_ENVIRONMENT_VARIABLES: 1
   _PHPUNIT_CONCURRENT: 1
   _PHPUNIT_TESTGROUPS: ''
@@ -27,12 +64,62 @@ variables:
 # Job overrides
 ################
 
+.calculate-gitlab-ref: &calculate-gitlab-ref
+  - |
+    [[ $_CURL_TEMPLATES_REF == "" ]] && export _CURL_TEMPLATES_REF=$_GITLAB_TEMPLATES_REF
+    [[ $_CURL_TEMPLATES_REPO == "" ]] && export _CURL_TEMPLATES_REPO=$_GITLAB_TEMPLATES_REPO
+
+.skip-and-opt-in-debug: &skip-and-opt-in-debug
+  - |
+    echo " "
+    echo "Build jobs"
+    echo "SKIP_COMPOSER=$SKIP_COMPOSER" $([[ $SKIP_COMPOSER != 0 ]] && echo "(not default)")
+    echo "SKIP_PAGES=$SKIP_PAGES" $([[ $SKIP_PAGES != 0 ]] && echo "(not default)")
+    echo " "
+    echo "Lint jobs"
+    echo "SKIP_COMPOSER_LINT=$SKIP_COMPOSER_LINT" $([[ $SKIP_COMPOSER_LINT != 0 ]] && echo "(not default)")
+    echo "SKIP_ESLINT=$SKIP_ESLINT" $([[ $SKIP_ESLINT != 0 ]] && echo "(not default)")
+    echo "SKIP_STYLELINT=$SKIP_STYLELINT" $([[ $SKIP_STYLELINT != 0 ]] && echo "(not default)")
+    echo "SKIP_PHPCS=$SKIP_PHPCS" $([[ $SKIP_PHPCS != 0 ]] && echo "(not default)")
+    echo "SKIP_PHPSTAN=$SKIP_PHPSTAN" $([[ $SKIP_PHPSTAN != 0 ]] && echo "(not default)")
+    echo "SKIP_CSPELL=$SKIP_CSPELL" $([[ $SKIP_CSPELL != 0 ]] && echo "(not default)")
+    echo " "
+    echo "Testing jobs"
+    echo "SKIP_PHPUNIT=$SKIP_PHPUNIT" $([[ $SKIP_PHPUNIT != 0 ]] && echo "(not default)")
+    echo "SKIP_NIGHTWATCH=$SKIP_NIGHTWATCH" $([[ $SKIP_NIGHTWATCH != 0 ]] && echo "(not default)")
+    echo " "
+    echo "Opt-in values"
+    echo "OPT_IN_TEST_CURRENT=$OPT_IN_TEST_CURRENT" $([[ $OPT_IN_TEST_CURRENT != 1 ]] && echo "(not default)")
+    echo "OPT_IN_TEST_MAX_PHP=$OPT_IN_TEST_MAX_PHP" $([[ $OPT_IN_TEST_MAX_PHP != 0 ]] && echo "(not default)")
+    echo "OPT_IN_TEST_PREVIOUS_MINOR=$OPT_IN_TEST_PREVIOUS_MINOR" $([[ $OPT_IN_TEST_PREVIOUS_MINOR != 0 ]] && echo "(not default)")
+    echo "OPT_IN_TEST_NEXT_MINOR=$OPT_IN_TEST_NEXT_MINOR" $([[ $OPT_IN_TEST_NEXT_MINOR != 0 ]] && echo "(not default)")
+    echo "OPT_IN_TEST_PREVIOUS_MAJOR=$OPT_IN_TEST_PREVIOUS_MAJOR" $([[ $OPT_IN_TEST_PREVIOUS_MAJOR != 0 ]] && echo "(not default)")
+    echo "OPT_IN_TEST_NEXT_MAJOR=$OPT_IN_TEST_NEXT_MAJOR" $([[ $OPT_IN_TEST_NEXT_MAJOR != 0 ]] && echo "(not default)")
+    echo " "
+    echo "_CUSTOM_VAR=$_CUSTOM_VAR"
+    printf "\n_DEPRECATION_MESSAGE=\n$_DEPRECATION_MESSAGE"
+    echo " "
+    echo "_GITLAB_TEMPLATES_REPO = $_GITLAB_TEMPLATES_REPO"
+    echo "_GITLAB_TEMPLATES_REF  = $_GITLAB_TEMPLATES_REF"
+    echo "_CURL_TEMPLATES_REPO   = $_CURL_TEMPLATES_REPO"
+    echo "_CURL_TEMPLATES_REF    = $_CURL_TEMPLATES_REF"
+
+.phpunit-tests-exist-rule: &phpunit-tests-exist-rule
+  - exists:
+      - tests/**/*Test.php
+    when: on_success
+
 # -------------------------------- BUILD ---------------------------------------
 
-composer:
+.composer-base:
+  before_script:
+    - *skip-and-opt-in-debug
+    - pwd
+    - ls -l
   after_script:
     # Show the last three commits. Current directory /builds/project/scheduler ($CI_PROJECT_DIR) is correct.
     - pwd
+    - ls -l
     - git show -3 --stat
 
 # -------------------------------- VALIDATE ------------------------------------
@@ -93,7 +180,7 @@ phpunit:
     - !reference [ .opt-in-current-rule ]
     - !reference [ .skip-phpunit-rule ]
     - *scheduler-phpunit-rule
-    - when: on_success
+    - *phpunit-tests-exist-rule
   after_script:
     # This is executed in all phpunit jobs because they extend phpunit (not .phpunit-base).
     # $WHAT_TO_RUN is not included because it is only derived in the phpunit script, so will always be blank here.
